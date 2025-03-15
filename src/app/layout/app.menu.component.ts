@@ -28,9 +28,11 @@ export class AppMenuComponent implements OnInit {
                         items: [
                             {
                                 label: 'SALDOS', icon: 'pi pi-fw pi-wallet',
+                                routerLink: ['/cuentas/saldos']
                             },
                             {
                                 label: 'TRASPASOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
+                                routerLink: ['/cuentas/traspasos']
                             },
                         ]
                     },
@@ -39,9 +41,11 @@ export class AppMenuComponent implements OnInit {
                         items: [
                             {
                                 label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
+                                routerLink: ['/ventas/asignar']
                             },
                             {
                                 label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
+                                routerLink: ['/ventas/completas']
                             },
                         ]
                     },
@@ -50,9 +54,11 @@ export class AppMenuComponent implements OnInit {
                         items: [
                             {
                                 label: 'CAJA', icon: 'pi pi-fw pi-box',
+                                routerLink: ['/balance/caja']
                             },
                             {
-                                label: 'VERIFICACION', icon: 'pi pi-fw pi-check-square',
+                                label: 'COMPLETAS', icon: 'pi pi-fw pi-check-square',
+                                routerLink: ['/balance/completas']
                             },
                         ]
                     },
@@ -61,9 +67,11 @@ export class AppMenuComponent implements OnInit {
                         items: [
                             {
                                 label: 'OPERATIVO', icon: 'pi pi-fw pi-building',
+                                routerLink: ['/gastos/operativo']
                             },
                             {
                                 label: 'OTRO', icon: 'pi pi-fw pi-bookmark',
+                                routerLink: ['/gastos/otro']
                             },
                         ]
                     },
@@ -72,9 +80,11 @@ export class AppMenuComponent implements OnInit {
                         items: [
                             {
                                 label: 'COMPLETADA', icon: 'pi pi-fw pi-check',
+                                routerLink: ['/cripto/completada']
                             },
                             {
                                 label: 'VISTA', icon: 'pi pi-fw pi-eye',
+                                routerLink: ['/cripto/vista']
                             },
                         ]
                     }

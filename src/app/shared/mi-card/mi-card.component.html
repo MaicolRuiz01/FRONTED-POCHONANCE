@@ -1,0 +1,17 @@
+<div class="custom-card">
+    <div class="card-header">
+        <span class="user-text">{{ cuenta.usuario || 'Usuario no encontrado' }}</span>
+        <span class="cuotas-text">cupos: {{ cuenta.cupos || 'N/A' }}</span>
+    </div>
+
+    <div class="card-body">
+        <h3>Saldo Actual</h3>
+        <h1>${{ cuenta.saldo | number:'1.0-0' }}</h1>
+        <p class="account-type">{{ cuenta.banco || 'Banco desconocido' }}</p>
+    </div>
+
+    <div class="card-footer">
+        <i class="pi pi-bars"></i>
+    </div>
+</div>
+

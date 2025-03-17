@@ -17,8 +17,12 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { RatingModule } from 'primeng/rating';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogModule } from 'primeng/dialog';
+import { MiCardComponent } from './mi-card/mi-card.component';
 
 @NgModule({
+  declarations: [  // ✅ Agregar aquí
+    MiCardComponent
+  ],
   imports: [
 
     CommonModule,
@@ -36,7 +40,8 @@ import { DialogModule } from 'primeng/dialog';
     RatingModule,
     InputTextareaModule,
     DialogModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    
   ],
   exports: [
     CommonModule,
@@ -54,7 +59,9 @@ import { DialogModule } from 'primeng/dialog';
     RatingModule,
     InputTextareaModule,
     DialogModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MiCardComponent
+    
   ]
 })
 export class SharedModule {}

@@ -37,18 +37,40 @@ export class AppMenuComponent implements OnInit {
                         ]
                     },
                     {
-                        label: 'VENTAS', icon: 'pi pi-fw pi-shopping-cart',
-                        items: [
-                            {
-                                label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                                routerLink: ['/ventas/asignar']
-                            },
-                            {
-                                label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
-                                routerLink: ['/ventas/completas']
-                            },
-                        ]
-                    },
+                      label: 'VENTAS', icon: 'pi pi-fw pi-shopping-cart',
+                      items: [
+                          {
+                              label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
+                              items: [
+                                  {
+                                      label: 'P2P', icon: 'pi pi-fw pi-dollar',
+                                      routerLink: ['/ventas/asignar/p2p']
+                                  },
+                                  {
+                                      label: 'Historial', icon: 'pi pi-fw pi-calendar',
+                                      routerLink: ['/ventas/asignar/historial']
+                                  }
+                              ]
+                          },
+                          {
+                              label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
+                              routerLink: ['/ventas/completas']
+                          },
+                      ]
+                  },
+                  {
+                    label: 'COMPRAS', icon: 'pi pi-fw pi-tag',
+                    items: [
+                        {
+                            label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
+                                    routerLink: ['/compras/asignar']
+                        },
+                        {
+                            label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
+                            routerLink: ['/compras/completas']
+                        },
+                    ]
+                },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
                         items: [
@@ -106,7 +128,7 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/landing']
                     },
                 ]
-            },            
+            },
             {
                 label: 'UI Components',
                 items: [

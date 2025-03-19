@@ -19,6 +19,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogModule } from 'primeng/dialog';
 import { MiCardComponent } from './mi-card/mi-card.component';
 import { CalendarModule } from 'primeng/calendar';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [  // ✅ Agregar aquí
@@ -44,6 +45,7 @@ import { CalendarModule } from 'primeng/calendar';
     DialogModule,
     ReactiveFormsModule,
     CalendarModule,
+    HttpClientModule,
 
   ],
   exports: [

@@ -10,8 +10,8 @@ import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
 import  {TraspasosComponent} from './pages/cuentas/traspasos/traspasos.component';
 import { OperativoComponent } from './pages/gastos/operativo/operativo.component';
 import { OtroComponent } from './pages/gastos/otro/otro.component';
-import { AsignarComponent } from './pages/ventas/asignar/asignar.component';
 import { CompletasVentasComponent } from './pages/ventas/completas-ventas/completas-ventas.component';
+import { P2pAsignarComponent } from './pages/ventas/p2p-asignar/p2p-asignar.component';
 
 
 
@@ -29,7 +29,7 @@ export const routes: Routes = [  {
     {path:'cuentas/traspasos', component:TraspasosComponent},
     {path:'gastos/operativo', component:OperativoComponent},
     {path:'gastos/otro', component:OtroComponent},
-    {path:'ventas/asignar', component:AsignarComponent},
+    {path:'ventas/asignar/p2p', component:P2pAsignarComponent},
     {path:'ventas/completas-ventas', component:CompletasVentasComponent}
 
   ]

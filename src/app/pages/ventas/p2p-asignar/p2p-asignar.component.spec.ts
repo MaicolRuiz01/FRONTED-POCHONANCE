@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AsignarComponent } from './asignar.component';
+import { P2pAsignarComponent } from './p2p-asignar.component';
 
-describe('AsignarComponent', () => {
-  let component: AsignarComponent;
-  let fixture: ComponentFixture<AsignarComponent>;
+describe('P2pAsignarComponent', () => {
+  let component: P2pAsignarComponent;
+  let fixture: ComponentFixture<P2pAsignarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AsignarComponent]
+      imports: [P2pAsignarComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AsignarComponent);
+    fixture = TestBed.createComponent(P2pAsignarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

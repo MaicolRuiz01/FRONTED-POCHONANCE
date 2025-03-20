@@ -34,6 +34,26 @@ export class AppMenuComponent implements OnInit {
                                 label: 'TRASPASOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                                 routerLink: ['/cuentas/traspasos']
                             },
+                            {
+                              label: 'COMPRAS', icon: 'pi pi-fw pi-tag',
+                              routerLink: ['/cuentas/compras']
+                           },
+                           {
+                            label: 'P2P', icon: 'pi pi-fw pi-dollar',
+                            routerLink: ['/cuentas/p2p']
+                           },
+                           {
+                            label: 'VENTAS GENERALES', icon: 'pi pi-fw pi-tags',
+                            routerLink: ['/cuentas/ventasgenerales']
+                           },
+                           {
+                            label: 'IMPUESTOS', icon: 'pi pi-fw pi-calculator',
+                            routerLink: ['/cuentas/impuestos']
+                           },
+                           {
+                            label: 'TRX', icon: 'pi pi-fw pi-prime',
+                            routerLink: ['/cuentas/trx']
+                           },
                         ]
                     },
                     {

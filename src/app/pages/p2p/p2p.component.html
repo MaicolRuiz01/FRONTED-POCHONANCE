@@ -1,0 +1,59 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <!-- Fila con "Compras", "Filtro por Fecha" y "Filtros adicionales" -->
+      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
+        <h5 class="m-0">Lista P2P</h5>
+
+        <!-- Filtro por fecha (extremo derecho) -->
+        <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
+          <i class="pi pi-calendar"></i>
+          <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filtrar por fecha..." class="w-full sm:w-auto" />
+        </span>
+      </div>
+
+      <!-- Filtros adicionales en la misma fila -->
+      <div class="flex flex-column md:flex-row md:justify-content-start md:align-items-center mb-4">
+        <!-- Filtro por tipo -->
+        <span class="block mt-2 md:mt-0 p-input-icon-left mr-2">
+          <i class="pi pi-filter"></i>
+          <input pInputText type="text" (input)="onTradeTypeFilter(dt, $event)" placeholder="Filtrar por tipo" class="w-full sm:w-auto" />
+        </span>
+
+        <!-- Filtro por cuenta -->
+        <span class="block mt-2 md:mt-0 p-input-icon-left mr-2">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" (input)="onAccountFilter(dt, $event)" placeholder="Filtrar por cuenta" class="w-full sm:w-auto" />
+        </span>
+
+        <!-- Filtro por nombre de cuenta -->
+        <span class="block mt-2 md:mt-0 p-input-icon-left">
+          <i class="pi pi-user"></i>
+          <input pInputText type="text" (input)="onAccountNameFilter(dt, $event)" placeholder="Filtrar por cuenta de Binance" class="w-full sm:w-auto" />
+        </span>
+      </div>
+
+      <!-- Tabla -->
+      <p-table #dt [value]="products" [columns]="cols" [rows]="10"
+               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
+               selectionMode="multiple" [rowHover]="true" dataKey="id">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+            <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
+              {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+          <tr>
+            <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
+            <td *ngFor="let col of cols">{{ product[col.field] }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

@@ -12,6 +12,11 @@ import { OperativoComponent } from './pages/gastos/operativo/operativo.component
 import { OtroComponent } from './pages/gastos/otro/otro.component';
 import { CompletasVentasComponent } from './pages/ventas/completas-ventas/completas-ventas.component';
 import { P2pAsignarComponent } from './pages/ventas/p2p-asignar/p2p-asignar.component';
+import { ComprasComponent } from './pages/compras/compras.component';
+import { P2pComponent } from './pages/p2p/p2p.component';
+import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-generales.component';
+import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
+import { TrxComponent } from './pages/trx/trx.component';
 
 
 
@@ -27,6 +32,11 @@ export const routes: Routes = [  {
     {path:'cripto/vista', component:VistaComponent},
     {path:'cuentas/saldos', component:SaldosComponent},
     {path:'cuentas/traspasos', component:TraspasosComponent},
+    {path:'cuentas/compras', component:ComprasComponent},
+    {path:'cuentas/p2p', component:P2pComponent},
+    {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},
+    {path:'cuentas/impuestos', component:ImpuestosComponent},
+    {path:'cuentas/trx', component:TrxComponent},
     {path:'gastos/operativo', component:OperativoComponent},
     {path:'gastos/otro', component:OtroComponent},
     {path:'ventas/asignar/p2p', component:P2pAsignarComponent},

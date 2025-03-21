@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
-import { SharedModule } from '../../shared/shared.module';
 import { Router } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
 import { Table } from 'primeng/table';
 
 @Component({
-  selector: 'app-trx',
+  selector: 'app-asignar-compra',
   standalone: true,
   imports: [SharedModule],
-  templateUrl: './trx.component.html',
-  styleUrl: './trx.component.css'
+  templateUrl: './asignar-compra.component.html',
+  styleUrl: './asignar-compra.component.css'
 })
-export class TrxComponent {
+export class AsignarCompraComponent {
     cols: any[]= [];
     products: any[] = [];
     selectedProducts: any[]= [];
@@ -20,9 +20,10 @@ export class TrxComponent {
     ngOnInit() {
       this.cols = [
         { field: 'date', header: 'Fecha' },
+        { field: 'account', header: 'Cuenta USDT' },
         { field: 'amount', header: 'Monto' },
-        { field: 'fee', header: 'Tasa' },
-        { field: 'currency', header: 'USDT' },
+        { field: 'fee', header: 'Tasa Compras' },
+        { field: 'statement', header: 'Estado' },
 
 
 

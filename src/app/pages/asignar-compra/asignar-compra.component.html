@@ -3,7 +3,7 @@
     <div class="card px-6 py-6">
       <!-- Fila con "Compras" y filtro por fecha -->
       <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
-        <h5 class="m-0">TXR</h5>
+        <h5 class="m-0">Asignar Compras</h5>
         <!-- Filtro por fecha en la extrema derecha -->
         <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
           <i class="pi pi-calendar"></i>
@@ -28,7 +28,16 @@
         <ng-template pTemplate="body" let-product>
           <tr>
             <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
-            <td *ngFor="let col of cols">{{ product[col.field] }}</td>
+            <td *ngFor="let col of cols">
+              <!-- Campo editable solo en la columna de "Tasa Compras" -->
+              <ng-container *ngIf="col.field === 'fee'">
+                <input pInputText type="text" [(ngModel)]="product[col.field]" class="w-full" />
+              </ng-container>
+              <!-- Si no es la columna 'fee', se muestra el valor estático -->
+              <ng-container *ngIf="col.field !== 'fee'">
+                {{ product[col.field] }}
+              </ng-container>
+            </td>
           </tr>
         </ng-template>
       </p-table>

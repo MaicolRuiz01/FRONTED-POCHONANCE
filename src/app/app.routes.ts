@@ -17,6 +17,7 @@ import { P2pComponent } from './pages/p2p/p2p.component';
 import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-generales.component';
 import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
 import { TrxComponent } from './pages/trx/trx.component';
+import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
 
 
 
@@ -40,7 +41,8 @@ export const routes: Routes = [  {
     {path:'gastos/operativo', component:OperativoComponent},
     {path:'gastos/otro', component:OtroComponent},
     {path:'ventas/asignar/p2p', component:P2pAsignarComponent},
-    {path:'ventas/completas-ventas', component:CompletasVentasComponent}
+    {path:'ventas/asignar/compras', component:AsignarCompraComponent},
+    {path:'ventas/completas', component:CompletasVentasComponent}
 
   ]
 }, // Nueva ruta

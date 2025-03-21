@@ -14,7 +14,7 @@ import { Table } from 'primeng/table';
 })
 export class SaldosComponent {
 
-  
+
   productDialog: boolean = false;
 
   deleteProductDialog: boolean = false;
@@ -34,6 +34,13 @@ export class SaldosComponent {
   statuses: any[] = [];
 
   rowsPerPageOptions = [5, 10, 20];
+
+  titleUSDT = 'Saldo USDT';
+  valueUSDT = '$5000';
+  titlePesos = 'Saldo Pesos';
+  valuePesos = '$5´000.000';
+
+  isOriginalText = true;
 
   constructor( private messageService: MessageService) { }
 
@@ -138,6 +145,25 @@ export class SaldosComponent {
           id += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return id;
+  }
+
+
+  toggleText(): void {
+    if (this.isOriginalText) {
+      // Cambiar a los nuevos textos
+      this.titleUSDT = 'Wallet';
+      this.valueUSDT = '123 456 ABC DEF 789';
+      this.titlePesos = 'Correo';
+      this.valuePesos = 'milton@polania.com';
+    } else {
+      // Volver a los textos originales
+      this.titleUSDT = 'Saldo USDT';
+      this.valueUSDT = '$5000';
+      this.titlePesos = 'Saldo Pesos';
+      this.valuePesos = '$5´000.000';
+    }
+    // Alternar el estado del indicador
+    this.isOriginalText = !this.isOriginalText;
   }
 
   onGlobalFilter(table: Table, event: Event) {

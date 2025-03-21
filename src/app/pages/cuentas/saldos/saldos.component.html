@@ -9,13 +9,13 @@
                         <button pButton pRipple label="Eliminar Cuenta" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button>
                     </div>
                 </ng-template>
-  
+
                 <!-- <ng-template pTemplate="right">
                     <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
                     <button pButton pRipple label="Exportar a Excel" icon="pi pi-upload" class="p-button-help" (click)="dt.exportCSV()"></button>
                 </ng-template> -->
             </p-toolbar>
-  
+
             <!-- <p-table #dt [value]="products" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
                 <ng-template pTemplate="caption">
                     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
@@ -80,25 +80,31 @@
                 </ng-template>
             </p-table> -->
         </div>
-        
-        <div class="custom-card">
-            <div class="card-header">
-                <span class="user-text">Usuario de la cuenta</span>
-                <span class="cuotas-text">cupos: #</span>
-            </div>
-        
-            <div class="card-body">
-                <h3>Saldo Actual</h3>
-                <h1>$5´000.000</h1>
-                <p class="account-type">Daviplata</p>
-            </div>
-        
-            <div class="card-footer">
-                <i class="pi pi-bars"></i>
-            </div>
-        </div>
-
-
+        <div class="custom-card" (click)="toggleText()">
+          <div class="card-header">
+              <span class="user-text">Usuario de la cuenta</span>
+          </div>
+          <div class="card-body">
+              <!-- Fila 1 con "Saldo USDT" y su valor -->
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ titleUSDT }}</p>
+                      <p>{{ valueUSDT }}</p>
+                  </div>
+              </div>
+              <!-- Fila 2 con "Saldo Pesos" y su valor -->
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ titlePesos }}</p>
+                      <p>{{ valuePesos }}</p>
+                  </div>
+              </div>
+              <p class="account-type">Binance</p>
+          </div>
+          <div class="card-footer">
+              <i class="pi pi-bars"></i>
+          </div>
+      </div>
         <!-- este es el modal qeu aparece al darle en nuevo -->
         <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Product Details" [modal]="true" class="p-fluid">
             <ng-template pTemplate="content">
@@ -123,7 +129,7 @@
                         </ng-template>
                     </p-dropdown>
                 </div>
-  
+
                 <div class="field">
                     <label class="mb-3">Category</label>
                     <div class="formgrid grid">
@@ -145,7 +151,7 @@
                         </div>
                     </div>
                 </div>
-  
+
                 <div class="formgrid grid">
                     <div class="field col">
                         <label for="price">Price</label>
@@ -157,13 +163,13 @@
                     </div>
                 </div>
             </ng-template>
-  
+
             <ng-template pTemplate="footer">
                 <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
                 <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveProduct()"></button>
             </ng-template>
         </p-dialog>
-  
+
         <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
             <div class="flex align-items-center justify-content-center">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
@@ -174,7 +180,7 @@
                 <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
             </ng-template>
         </p-dialog>
-  
+
         <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
             <div class="flex align-items-center justify-content-center">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
@@ -187,5 +193,5 @@
         </p-dialog>
     </div>
   </div>
-  
-  
+
+

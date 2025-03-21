@@ -57,23 +57,18 @@ export class AppMenuComponent implements OnInit {
                         ]
                     },
                     {
-                      label: 'VENTAS', icon: 'pi pi-fw pi-shopping-cart',
+                      label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
                       items: [
+                        {
+                          label: 'Compras', icon: 'pi pi-fw pi-inbox',
+                          routerLink: ['/ventas/asignar/compras']
+                      },
                           {
-                              label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                              items: [
-                                  {
-                                      label: 'P2P', icon: 'pi pi-fw pi-dollar',
-                                      routerLink: ['/ventas/asignar/p2p']
-                                  },
-                                  {
-                                      label: 'Historial', icon: 'pi pi-fw pi-calendar',
-                                      routerLink: ['/ventas/asignar/historial']
-                                  }
-                              ]
+                              label: 'Ventas P2P', icon: 'pi pi-fw pi-dollar',
+                              routerLink: ['/ventas/asignar/p2p']
                           },
                           {
-                              label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
+                              label: 'Ventas', icon: 'pi pi-fw pi-list-check',
                               routerLink: ['/ventas/completas']
                           },
                       ]

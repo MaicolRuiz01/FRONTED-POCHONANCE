@@ -9,32 +9,30 @@ import { P2pServiceService } from '../../../services/p2pservice/p2p-service.serv
   standalone: true,
   imports: [SharedModule],
   templateUrl: './p2p-asignar.component.html',
-  styleUrl: './p2p-asignar.component.css'
+  styleUrls: ['./p2p-asignar.component.css']
 })
 export class P2pAsignarComponent {
 
-  cols: any[]= [];
+  cols: any[] = [];
   products: any[] = [];
-  selectedProducts: any[]= [];
+  selectedProducts: any[] = [];
 
-  constructor(private router: Router, private p2pService: P2pServiceService)   {}
+  // Opciones para el dropdown de "Asignar Cuenta"
+  cuentasOptions: any[] = [
+    { name: 'Enanitas XXX', value: 'cuenta1' },
+    { name: 'Trabas 18cm', value: 'cuenta2' },
+    { name: 'Cabeza en Vagina', value: 'cuenta3' }
+  ];
+
+  constructor(private router: Router, private p2pService: P2pServiceService) {}
 
   ngOnInit() {
     this.cols = [
-      { field: 'orderNumber', header: 'Número Orden' },
-      { field: 'tradeType', header: 'Tipo' },
-      { field: 'amount', header: 'Cantidad' },
-      { field: 'asset', header: 'Vendido' },
-      { field: 'unitPrice', header: 'Tasa' },
       { field: 'createdTime', header: 'Fecha' },
-      { field: 'commission', header: 'Comisión' },
-      { field: 'accountName', header: 'Nombre de Cuenta' },
-      { field: 'totalPrice', header: 'Cantidad pesos' },
+      { field: 'accountName', header: 'Cuenta Binance' },
+      { field: 'amount', header: 'Valor' },
       { field: 'asignarCuenta', header: 'ASignar Cuenta' }
     ];
-
-
-
 
     this.fetchP2POrders();
   }
@@ -61,7 +59,6 @@ export class P2pAsignarComponent {
       }
     });
   }
-
 
   onDateFilter(table: Table, event: Event) {
     const date = (event.target as HTMLInputElement).value;

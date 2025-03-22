@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
-import { P2pServiceService } from '../../services/p2pservice/p2p-service.service';
+import { P2pServiceService } from '../../core/services/p2p-service.service';
 
 @Component({
   selector: 'app-p2p',

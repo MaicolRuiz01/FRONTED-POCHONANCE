@@ -3,7 +3,6 @@ import { AppLayoutComponent } from './layout/app.layout.component';
 import { MypageComponent } from './core/components/mypage/mypage.component';
 import { NuevaVistaComponent } from './pages/nueva-vista/nueva-vista.component';
 import { CajaComponent } from './pages/balance/caja/caja.component';
-import { CompletasComponent } from './pages/balance/completas/completas.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
 import { VistaComponent } from './pages/cripto/vista/vista.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
@@ -18,6 +17,7 @@ import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-genera
 import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
 import { TrxComponent } from './pages/trx/trx.component';
 import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
+import { VerficacionComponent } from './pages/balance/verficacion/verficacion.component';
 
 
 
@@ -28,7 +28,7 @@ export const routes: Routes = [  {
     {path:'', component:MypageComponent,},
     { path: 'nueva-vista', component: NuevaVistaComponent },
     {path:'balance/caja', component:CajaComponent},
-    {path:'balance/completas', component:CompletasComponent},
+    {path:'balance/completas', component:VerficacionComponent},
     {path:'cripto/completada', component:CompletadaComponent},
     {path:'cripto/vista', component:VistaComponent},
     {path:'cuentas/saldos', component:SaldosComponent},

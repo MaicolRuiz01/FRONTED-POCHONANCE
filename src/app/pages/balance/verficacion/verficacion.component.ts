@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
+import { SharedModule } from '../../../shared/shared.module';
 import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
-import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
-  selector: 'app-completada',
+  selector: 'app-verficacion',
   standalone: true,
   imports: [SharedModule],
-  templateUrl: './completada.component.html',
-  styleUrl: './completada.component.css'
+  templateUrl: './verficacion.component.html',
+  styleUrl: './verficacion.component.css'
 })
-export class CompletadaComponent {
-  cols: any[]= [];
+export class VerficacionComponent {
+ cols: any[]= [];
     products: any[] = [];
     selectedProducts: any[]= [];
 
@@ -27,6 +27,7 @@ export class CompletadaComponent {
         { field: 'cuatrox', header: '4X' },
         { field: 'cripto', header: 'Cripto' },
         { field: 'dif', header: 'DIF' },
+
       ];
 
       this.products = [
@@ -36,18 +37,12 @@ export class CompletadaComponent {
         { date: '2025-03-04', sell: 1580, buyrate: 0.28, sellrate: 0.30, cx: 1.0, cuatrox: 4.0, cripto: 'Litecoin', dif: 0.02 },
         { date: '2025-03-05', sell: 1620, buyrate: 0.32, sellrate: 0.34, cx: 1.4, cuatrox: 5.6, cripto: 'Cardano', dif: 0.02 }
       ];
-    }
 
+      }
 
-    // Función para filtrar por cuenta// Función para filtrar por moneda
-    onCurrencyFilter(table: Table, event: Event) {
-      const currency = (event.target as HTMLInputElement).value;
-      table.filter(currency, 'currency', 'contains'); // Filtra por la propiedad 'currency'
-    }
 
     onDateFilter(table: Table, event: Event) {
       const date = (event.target as HTMLInputElement).value;
       table.filter(date, 'date', 'equals');
     }
-
-  }
+}

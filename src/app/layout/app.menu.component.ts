@@ -73,19 +73,6 @@ export class AppMenuComponent implements OnInit {
                           },
                       ]
                   },
-                  {
-                    label: 'COMPRAS', icon: 'pi pi-fw pi-tag',
-                    items: [
-                        {
-                            label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                                    routerLink: ['/compras/asignar']
-                        },
-                        {
-                            label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
-                            routerLink: ['/compras/completas']
-                        },
-                    ]
-                },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
                         items: [
@@ -94,7 +81,7 @@ export class AppMenuComponent implements OnInit {
                                 routerLink: ['/balance/caja']
                             },
                             {
-                                label: 'COMPLETAS', icon: 'pi pi-fw pi-check-square',
+                                label: 'VERIFICACION', icon: 'pi pi-fw pi-check-square',
                                 routerLink: ['/balance/completas']
                             },
                         ]
@@ -120,7 +107,7 @@ export class AppMenuComponent implements OnInit {
                                 routerLink: ['/cripto/completada']
                             },
                             {
-                                label: 'VISTA', icon: 'pi pi-fw pi-eye',
+                                label: 'ABIERTAS', icon: 'pi pi-fw pi-eye',
                                 routerLink: ['/cripto/vista']
                             },
                         ]

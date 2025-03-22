@@ -3,23 +3,13 @@
     <div class="card px-6 py-6">
       <!-- Fila con "Compras" y filtro por fecha -->
       <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
-        <h5 class="m-0">Completadas</h5>
+        <h5 class="m-0">Verificación</h5>
         <!-- Filtro por fecha en la extrema derecha -->
         <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
           <i class="pi pi-calendar"></i>
           <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filtrar por fecha..." class="w-full sm:w-auto" />
         </span>
       </div>
-
-        <!-- Filtro por moneda en una fila separada -->
-      <div class="flex flex-column md:flex-row md:justify-content-start md:align-items-center mb-4">
-        <span class="block mt-2 md:mt-0 p-input-icon-left">
-          <i class="pi pi-money-bill"></i>
-          <input pInputText type="text" (input)="onCurrencyFilter(dt, $event)" placeholder="Filtrar por moneda" class="w-full sm:w-auto" />
-        </span>
-      </div>
-
-
       <!-- Tabla -->
       <p-table #dt [value]="products" [columns]="cols" [rows]="10"
                [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"

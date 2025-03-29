@@ -15,6 +15,12 @@ cols: any[]= [];
   products: any[] = [];
   selectedProducts: any[]= [];
 
+  displayModal: boolean = false;
+  fecha: string = "";
+  monto: number = 0;
+  tasaCompra: number = 0;
+  tasaVenta: number = 0;
+
   constructor(private router: Router)   {}
 
   ngOnInit() {
@@ -50,5 +56,17 @@ cols: any[]= [];
   onAccountNameFilter(table: Table, event: Event) {
     const accountName = (event.target as HTMLInputElement).value;
     table.filter(accountName, 'accountName', 'contains');
+  }
+
+  save() {
+    const newSale = {
+      fecha: this.fecha,
+      monto: this.monto,
+      tasaCompra: this.tasaCompra,
+      tasaVenta: this.tasaVenta
+    };
+    // Aquí podrías añadir la nueva venta a un array de ventas o enviarla a un servidor
+    console.log(newSale);
+    this.displayModal = false; // Cerrar el modal
   }
 }

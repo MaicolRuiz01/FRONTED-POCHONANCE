@@ -17,9 +17,14 @@ export class P2pComponent {
   products: any[] = [];
   selectedProducts: any[]= [];
 
+  startDateFilter: Date | null = null;
+  endDateFilter: Date | null = null;
+  maxDate: string = ""; // Variable para almacenar la fecha máxima permitida
+
   constructor(private router: Router, private p2pService: P2pServiceService)   {}
 
   ngOnInit() {
+    this.maxDate = new Date().toISOString().split('T')[0];
     this.cols = [
       { field: 'orderNumber', header: 'Número Orden' },
       { field: 'account', header: 'Cuenta' },
@@ -33,10 +38,6 @@ export class P2pComponent {
       { field: 'totalPrice', header: 'Cantidad pesos' },
 
     ];
-
-
-
-
     this.fetchP2POrders();
   }
 
@@ -62,12 +63,33 @@ export class P2pComponent {
       }
     });
   }
-  onDateFilter(table: Table, event: Event) {
-    const date = (event.target as HTMLInputElement).value;
-    table.filter(date, 'date', 'equals');
+  onDateFilterStart(event: Event) {
+    this.startDateFilter = (event.target as HTMLInputElement).valueAsDate;
+    this.applyDateFilters();
   }
 
+  onDateFilterEnd(event: Event) {
+    this.endDateFilter = (event.target as HTMLInputElement).valueAsDate;
+    this.applyDateFilters();
+  }
 
+  applyDateFilters() {
+    if (this.startDateFilter && this.endDateFilter) {
+      // Convertir fechas a string ISO para la consulta API
+      const startDate = this.startDateFilter.toISOString().split('T')[0]; // formato 'yyyy-mm-dd'
+      const endDate = this.endDateFilter.toISOString().split('T')[0];
+
+      this.p2pService.getOrdersByDateRange("MILTON", startDate, endDate).subscribe({
+        next: (response) => {
+          this.products = response.map((item: any) => ({
+            ...item,
+            createdTime: new Date(item.createTime).toLocaleString()
+          }));
+        },
+        error: (error) => console.error('Error fetching orders by date range:', error)
+      });
+    }
+  }
   onTradeTypeFilter(table: Table, event: Event) {
     const tradeType = (event.target as HTMLInputElement).value;
     table.filter(tradeType, 'tradeType', 'contains');

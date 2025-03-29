@@ -1,0 +1,78 @@
+<div class="grid">
+  <div class="col-12">
+    <!-- Tarjeta para la tabla Operativo -->
+    <div class="card px-6 py-6">
+      <p-table #dt [value]="filteredProducts" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+     <ng-template pTemplate="caption">
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+    <h5 class="m-0">Gastos</h5>
+    <!-- Selector de acciones al lado izquierdo -->
+    <span class="block mt-2 md:mt-0 p-input-icon-left">
+      <i class="pi pi-calendar"></i>
+      <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filter by date..." class="w-full sm:w-auto"/>
+    </span>
+  </div>
+  <!-- Contenedor separado para el botón New, con estilo diferenciado utilizando clases de PrimeNG -->
+  <div class="mt-2 flex justify-content-end p-shadow-2" style="background-color: #f8f9fa; border-radius: 5px;">
+    <p-dropdown [options]="actions" [(ngModel)]="selectedType" placeholder="Tipo" class="mr-auto" (onChange)="filterByType()"></p-dropdown>
+    <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="toggleButtons()"></button>
+    <!-- Botones adicionales que se muestran al hacer click en 'New' -->
+    <div *ngIf="showAdditionalButtons" class="flex">
+      <button pButton pRipple label="Operativo" class="p-button-outlined mr-2" (click)="openOperativo()"></button>
+      <button pButton pRipple label="Otro" class="p-button-outlined" (click)="openOtro()"></button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template pTemplate="header">
+  <tr>
+    <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
+    <th pSortableColumn="description">Descripción <p-sortIcon field="description"></p-sortIcon></th>
+    <th pSortableColumn="type">Tipo <p-sortIcon field="type"></p-sortIcon></th>
+    <th pSortableColumn="cost">Monto <p-sortIcon field="cost"></p-sortIcon></th>
+    <td>
+
+    </td>
+  </tr>
+</ng-template>
+<ng-template pTemplate="body" let-product>
+  <tr>
+    <td>{{ product.date | date:'mediumDate' }}</td>
+    <td>{{ product.description }}</td>
+    <td>{{ product.type }}</td> <!-- Asegúrate de mostrar 'type' adecuadamente -->
+    <td>{{ product.cost | currency:'USD' }}</td>
+    <td>
+      <!-- Mostrar botón solo si el tipo no es 'Otro' -->
+      <button *ngIf="product.type !== 'Otro'" type="button" pButton label="Pagar" (click)="pay(product)" class="p-button-success"></button>
+    </td>
+  </tr>
+</ng-template>
+      </p-table>
+    </div>
+    <!-- Tarjeta para la tabla Pagado -->
+    <div class="card px-6 py-6 mt-4"> <!-- Añadido un margen superior para separar visualmente las tarjetas -->
+      <p-table #dtPaid [value]="paidProducts" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,20,30]"
+               [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+        <ng-template pTemplate="caption">
+          <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+            <h5 class="m-0">Pagado</h5>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="paymentDate">Fecha de Pago <p-sortIcon field="paymentDate"></p-sortIcon></th>
+            <th pSortableColumn="description">Descripción <p-sortIcon field="description"></p-sortIcon></th>
+            <th pSortableColumn="amount">Monto <p-sortIcon field="amount"></p-sortIcon></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-paidProduct>
+          <tr>
+            <td>{{ paidProduct.paymentDate | date:'mediumDate' }}</td>
+            <td>{{ paidProduct.description }}</td>
+            <td>{{ paidProduct.amount | currency:'USD' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

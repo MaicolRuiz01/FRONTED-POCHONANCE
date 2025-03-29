@@ -7,8 +7,6 @@ import { CompletadaComponent } from './pages/cripto/completada/completada.compon
 import { VistaComponent } from './pages/cripto/vista/vista.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
 import  {TraspasosComponent} from './pages/cuentas/traspasos/traspasos.component';
-import { OperativoComponent } from './pages/gastos/operativo/operativo.component';
-import { OtroComponent } from './pages/gastos/otro/otro.component';
 import { CompletasVentasComponent } from './pages/ventas/completas-ventas/completas-ventas.component';
 import { P2pAsignarComponent } from './pages/ventas/p2p-asignar/p2p-asignar.component';
 import { ComprasComponent } from './pages/compras/compras.component';
@@ -18,7 +16,7 @@ import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
 import { TrxComponent } from './pages/trx/trx.component';
 import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
 import { VerficacionComponent } from './pages/balance/verficacion/verficacion.component';
-
+import { GastosComponent } from './pages/gastos/gastos.component';
 
 
 export const routes: Routes = [  {
@@ -38,8 +36,9 @@ export const routes: Routes = [  {
     {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},
     {path:'cuentas/impuestos', component:ImpuestosComponent},
     {path:'cuentas/trx', component:TrxComponent},
-    {path:'gastos/operativo', component:OperativoComponent},
-    {path:'gastos/otro', component:OtroComponent},
+    {path:'gastos', component:GastosComponent},
+    // {path:'gastos/operativo', component:OperativoComponent},
+    // {path:'gastos/otro', component:OtroComponent},
     {path:'ventas/asignar/p2p', component:P2pAsignarComponent},
     {path:'ventas/asignar/compras', component:AsignarCompraComponent},
     {path:'ventas/completas', component:CompletasVentasComponent}

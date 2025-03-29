@@ -88,16 +88,7 @@ export class AppMenuComponent implements OnInit {
                     },
                     {
                         label: 'GASTOS', icon: 'pi pi-fw pi-briefcase',
-                        items: [
-                            {
-                                label: 'OPERATIVO', icon: 'pi pi-fw pi-building',
-                                routerLink: ['/gastos/operativo']
-                            },
-                            {
-                                label: 'OTRO', icon: 'pi pi-fw pi-bookmark',
-                                routerLink: ['/gastos/otro']
-                            },
-                        ]
+                        routerLink: ['/gastos']
                     },
                     {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',

@@ -44,7 +44,23 @@ export class GastosComponent {
     ];
 
     this.filteredProducts = this.products; // Inicializa con todos los productos
+
+    this.sortProducts();
   }
+
+
+  sortProducts() {
+    // Ordenar productos para que los 'Operativo' con botón "Paga" aparezcan primero
+    this.products.sort((a, b) => {
+      if (a.type === 'Operativo' && b.type !== 'Operativo') {
+        return -1;
+      } else if (a.type !== 'Operativo' && b.type === 'Operativo') {
+        return 1;
+      }
+      return 0; // Mantener el orden original si ambos son 'Operativo' o ambos no lo son
+    });
+  }
+
 
   toggleButtons() {
     this.showAdditionalButtons = !this.showAdditionalButtons;

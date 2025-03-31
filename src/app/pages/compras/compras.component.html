@@ -36,9 +36,21 @@
         <ng-template pTemplate="body" let-product>
           <tr>
             <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
-            <td *ngFor="let col of cols">{{ product[col.field] }}</td>
+            <td *ngFor="let col of cols">
+              <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                <div class="input-group">
+                  <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
+                  <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                    <i class="pi pi-check"></i>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #other_fields>{{ product[col.field] }}</ng-template>
+            </td>
           </tr>
         </ng-template>
+
+
       </p-table>
     </div>
   </div>

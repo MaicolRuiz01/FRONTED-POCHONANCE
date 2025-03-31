@@ -16,6 +16,16 @@ export class CajaComponent {
   products: any[] = [];
   statuses: any[] = [];
   selectedProducts: any[] = [];
+  displayModal: boolean = false;
+  monthlyData: any[] = [
+    { month: 'Enero', expense: 2000, soldUsdt: 15000, remaining: 13000, amount: 28000 },
+    { month: 'Febrero', expense: 1500, soldUsdt: 18000, remaining: 16500, amount: 35000 }
+    // Añade más datos según sea necesario
+  ];
+
+
+  showDetailsModal: boolean = false
+
 
   constructor(private router: Router) {}
 
@@ -45,6 +55,14 @@ export class CajaComponent {
   onDateFilter(table: Table, event: Event) {
     const date = (event.target as HTMLInputElement).value;
     table.filter(date, 'date', 'equals');
+  }
+
+  openMonthlyInfo() {
+    this.displayModal = true;
+  }
+
+  showDetails() {
+    this.showDetailsModal = true;
   }
 
 }

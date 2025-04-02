@@ -14,52 +14,32 @@ import { Table } from 'primeng/table';
 })
 export class SaldosComponent {
 
+// Array para almacenar múltiples cuentas
+accounts: any[] = [
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$5000', titlePesos: 'Saldo Pesos', valuePesos: '$5,000,000', accountType: 'Binance' },
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$3000', titlePesos: 'Saldo Pesos', valuePesos: '$3,000,000', accountType: 'Coinbase' },
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$2000', titlePesos: 'Saldo Pesos', valuePesos: '$2,000,000', accountType: 'Kraken' }
+];
 
-  productDialog: boolean = false;
+// Resto de propiedades del componente
+productDialog: boolean = false;
+deleteProductDialog: boolean = false;
+deleteProductsDialog: boolean = false;
+products: any[] = [];
+product: any = {};
+selectedProducts: any[] = [];
+submitted: boolean = false;
+cols: any[] = [];
+statuses: any[] = [];
+rowsPerPageOptions = [5, 10, 20];
 
-  deleteProductDialog: boolean = false;
+isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambias textos dinámicamente fuera del contexto de las cuentas
 
-  deleteProductsDialog: boolean = false;
-
-  products: any[] = [];
-
-  product: any = {};
-
-  selectedProducts: any[] = [];
-
-  submitted: boolean = false;
-
-  cols: any[] = [];
-
-  statuses: any[] = [];
-
-  rowsPerPageOptions = [5, 10, 20];
-
-  titleUSDT = 'Saldo USDT';
-  valueUSDT = '$5000';
-  titlePesos = 'Saldo Pesos';
-  valuePesos = '$5´000.000';
-
-  isOriginalText = true;
 
   constructor( private messageService: MessageService) { }
 
   ngOnInit() {
 
-
-      this.cols = [
-          { field: 'product', header: 'Product' },
-          { field: 'price', header: 'Price' },
-          { field: 'category', header: 'Category' },
-          { field: 'rating', header: 'Reviews' },
-          { field: 'inventoryStatus', header: 'Status' }
-      ];
-
-      this.statuses = [
-          { label: 'INSTOCK', value: 'instock' },
-          { label: 'LOWSTOCK', value: 'lowstock' },
-          { label: 'OUTOFSTOCK', value: 'outofstock' }
-      ];
   }
 
   openNew() {
@@ -149,25 +129,6 @@ export class SaldosComponent {
 
 
   toggleText(): void {
-    if (this.isOriginalText) {
-      // Cambiar a los nuevos textos
-      this.titleUSDT = 'Wallet';
-      this.valueUSDT = '123 456 ABC DEF 789';
-      this.titlePesos = 'Correo';
-      this.valuePesos = 'milton@polania.com';
-    } else {
-      // Volver a los textos originales
-      this.titleUSDT = 'Saldo USDT';
-      this.valueUSDT = '$5000';
-      this.titlePesos = 'Saldo Pesos';
-      this.valuePesos = '$5´000.000';
-    }
-    // Alternar el estado del indicador
-    this.isOriginalText = !this.isOriginalText;
-  }
 
-  onGlobalFilter(table: Table, event: Event) {
-      table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
-
 }

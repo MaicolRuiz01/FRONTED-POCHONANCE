@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, SimpleChanges } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
@@ -21,6 +21,24 @@ export class P2pComponent {
   endDateFilter: Date | null = null;
   maxDate: string = ""; // Variable para almacenar la fecha máxima permitida
 
+  newCols: any[] = [
+    { field: 'createdTime', header: 'Fecha' },
+    { field: 'account', header: 'Cuenta' },
+    { field: 'amount', header: 'Valor' },
+    { field: 'unitPrice', header: 'Tasa' },
+    { field: 'totalPrice', header: 'Pesos' },
+    { field: 'details', header: 'Detalles', icon: true }
+  ];
+
+  newProducts: any[] = []; // Aquí irán los datos de la nueva tabla
+
+  //menu
+  selectedProduct: any;
+  displayModal: boolean = false;
+  filteredNewProducts: any[] = [];
+  uniqueAccounts: string[] = [];
+
+
   constructor(private router: Router, private p2pService: P2pServiceService)   {}
 
   ngOnInit() {
@@ -37,9 +55,29 @@ export class P2pComponent {
       { field: 'accountName', header: 'Nombre de Cuenta' },
       { field: 'totalPrice', header: 'Cantidad pesos' },
 
+
     ];
     this.fetchP2POrders();
+    this.newProducts = this.generateSampleData();
   }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // Verifica si 'newProducts' ha cambiado y no es la primera carga
+    if (changes['newProducts'] && !changes['newProducts'].isFirstChange()) {
+      // Actualiza 'uniqueAccounts' cada vez que 'newProducts' cambia
+      this.prepareNewTableData();
+    }
+  }
+
+  prepareNewTableData() {
+    // Asegúrate de que 'newProducts' está disponible
+    if (this.newProducts) {
+      this.uniqueAccounts = [...new Set(this.newProducts.map(product => product.account))];
+      console.log('Updated uniqueAccounts:', this.uniqueAccounts); // Para depuración
+    }
+  }
+
+
 
   fetchP2POrders() {
     this.p2pService.getP2POrders("MILTON").subscribe({
@@ -62,7 +100,9 @@ export class P2pComponent {
         console.error('Error fetching P2P orders:', error);
       }
     });
+
   }
+
   onDateFilterStart(event: Event) {
     this.startDateFilter = (event.target as HTMLInputElement).valueAsDate;
     this.applyDateFilters();
@@ -95,13 +135,62 @@ export class P2pComponent {
     table.filter(tradeType, 'tradeType', 'contains');
   }
 
-  onAccountFilter(table: Table, event: Event) {
-    const account = (event.target as HTMLInputElement).value;
-    table.filter(account, 'account', 'contains');
-  }
-
   onAccountNameFilter(table: Table, event: Event) {
     const accountName = (event.target as HTMLInputElement).value;
     table.filter(accountName, 'accountName', 'contains');
   }
+
+
+
+  onBinanceFilter() {
+    // Implementa la lógica para filtrar por Binance
+    console.log("Filtrando por Binance");
+    // Puedes llamar a p2pService o filtrar 'newProducts' directamente aquí
+  }
+
+  onAccountFilter(event: Event) {
+    const selectedAccount = (event.target as HTMLSelectElement).value;
+    if (selectedAccount) {
+      this.filteredNewProducts = this.newProducts.filter(product => product.account === selectedAccount);
+    } else {
+      this.filteredNewProducts = this.newProducts; // Si no se selecciona ninguna cuenta, muestra todos los productos
+    }
+  }
+
+
+
+  generateSampleData() {
+    const accountNames = ['Milton', 'Jose', 'Gonorrene']; // Nombres específicos para las cuentas
+    const sampleData = [];
+    for (let i = 0; i < 10; i++) {
+      sampleData.push({
+        createdTime: new Date().toISOString().slice(0, 10),
+        account: this.getRandomAccountName(accountNames),
+        amount: Math.floor(Math.random() * 10000 + 1000),
+        unitPrice: (Math.random() * 10).toFixed(2),
+        totalPrice: Math.floor(Math.random() * 100000 + 10000),
+        details: ''
+      });
+    }
+    return sampleData;
+  }
+
+  getRandomAccountName(accountNames: string[]) {
+    const randomIndex = Math.floor(Math.random() * accountNames.length);
+    return accountNames[randomIndex];
+  }
+
+  //menu
+  onShowDetails(rowData: any) {
+    this.selectedProduct = rowData;
+    this.displayModal = true; // Abre el modal
+    console.log('Mostrando detalles para:', rowData);
+  }
+  onSelectAccount(event: Event) {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    console.log('Cuenta seleccionada:', selectedValue);
+    // Aquí puedes implementar cualquier lógica adicional basada en la cuenta seleccionada
+  }
+
+
 }

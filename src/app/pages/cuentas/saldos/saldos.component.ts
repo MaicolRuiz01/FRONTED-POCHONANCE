@@ -16,25 +16,31 @@ export class SaldosComponent {
 
 // Array para almacenar múltiples cuentas
 accounts: any[] = [
-  { titleUSDT: 'Saldo USDT', valueUSDT: '$5000', titlePesos: 'Saldo Pesos', valuePesos: '$5,000,000', accountType: 'Binance' },
-  { titleUSDT: 'Saldo USDT', valueUSDT: '$3000', titlePesos: 'Saldo Pesos', valuePesos: '$3,000,000', accountType: 'Coinbase' },
-  { titleUSDT: 'Saldo USDT', valueUSDT: '$2000', titlePesos: 'Saldo Pesos', valuePesos: '$2,000,000', accountType: 'Kraken' }
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$5000', titlePesos: 'Saldo Pesos', valuePesos: '$5,000,000', accountType: 'Binance', titleWallet: 'Wallet', valueWallet: 1234456697, titlecorreo: 'Correo', valuecorreo: 'miltonscito@popop'},
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$3000', titlePesos: 'Saldo Pesos', valuePesos: '$3,000,000', accountType: 'Coinbase', titleWallet: 'Wallet', valueWallet: 1234456697, titlecorreo: 'Correo', valuecorreo: 'darckitisio@popop'},
+  { titleUSDT: 'Saldo USDT', valueUSDT: '$2000', titlePesos: 'Saldo Pesos', valuePesos: '$2,000,000', accountType: 'Kraken', titleWallet: 'Wallet', valueWallet: 1234456697, titlecorreo: 'Correo', valuecorreo: 'oveja@sololiso' }
 ];
 
 // Resto de propiedades del componente
-productDialog: boolean = false;
-deleteProductDialog: boolean = false;
-deleteProductsDialog: boolean = false;
-products: any[] = [];
-product: any = {};
-selectedProducts: any[] = [];
-submitted: boolean = false;
-cols: any[] = [];
-statuses: any[] = [];
-rowsPerPageOptions = [5, 10, 20];
+    productDialog: boolean = false;
+    deleteProductDialog: boolean = false;
+    deleteProductsDialog: boolean = false;
+    products: any[] = [];
+    product: any = {};
+    selectedProducts: any[] = [];
+    submitted: boolean = false;
+    cols: any[] = [];
+    statuses: any[] = [];
+    rowsPerPageOptions = [5, 10, 20];
 
-isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambias textos dinámicamente fuera del contexto de las cuentas
-
+    isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambias textos dinámicamente fuera del contexto de las cuentas
+    modalVisible = false;
+    tableData = [
+      { fecha: 'Enero', us: 100, tasa: 20, pesos: 2000 },
+      { fecha: 'Febrero', us: 150, tasa: 18, pesos: 2700 },
+      { fecha: 'Marzo', us: 200, tasa: 22, pesos: 4400 },
+      { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
+    ];
 
   constructor( private messageService: MessageService) { }
 
@@ -52,29 +58,12 @@ isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambia
       this.deleteProductsDialog = true;
   }
 
-  editProduct(product: any) {
-      this.product = { ...product };
-      this.productDialog = true;
-  }
-
   deleteProduct(product: any) {
       this.deleteProductDialog = true;
       this.product = { ...product };
   }
 
-  confirmDeleteSelected() {
-      this.deleteProductsDialog = false;
-      this.products = this.products.filter(val => !this.selectedProducts.includes(val));
-      this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-      this.selectedProducts = [];
-  }
 
-  confirmDelete() {
-      this.deleteProductDialog = false;
-      this.products = this.products.filter(val => val.id !== this.product.id);
-      this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-      this.product = {};
-  }
 
   hideDialog() {
       this.productDialog = false;
@@ -88,7 +77,6 @@ isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambia
           if (this.product.id) {
               // @ts-ignore
               this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value : this.product.inventoryStatus;
-              this.products[this.findIndexById(this.product.id)] = this.product;
               this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
           } else {
               this.product.id = this.createId();
@@ -106,17 +94,7 @@ isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambia
       }
   }
 
-  findIndexById(id: string): number {
-      let index = -1;
-      for (let i = 0; i < this.products.length; i++) {
-          if (this.products[i].id === id) {
-              index = i;
-              break;
-          }
-      }
 
-      return index;
-  }
 
   createId(): string {
       let id = '';
@@ -127,8 +105,16 @@ isOriginalText = true;  // Posiblemente no necesitas esta propiedad si no cambia
       return id;
   }
 
-
-  toggleText(): void {
-
+  toggleText(account: any) {
+    account.isFlipped = !account.isFlipped;
   }
+  showModal() {
+    this.modalVisible = true;
+  }
+
+  showDetails() {
+    console.log('Detalles del item:');
+    // Aquí puedes abrir otro modal o mostrar detalles adicionales
+  }
+
 }

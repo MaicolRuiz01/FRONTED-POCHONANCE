@@ -15,6 +15,18 @@
         </span>
 
       </div>
+       <!-- Después del cambio: select para filtrar por cuenta -->
+      <!-- Select para filtrar por cuenta en la segunda tabla -->
+      <select (change)="onAccountFilter($event)" class="p-inputtext p-component mr-2">
+        <option value="" disabled selected>Filtro de cuentas</option>
+        <option value="">Todos</option>
+        <option ></option>
+      </select>
+
+
+
+        <button pButton type="button" label="Filtro por binance" class="p-button-outlined" (click)="onBinanceFilter()"></button>
+      </div>
       <!-- Tabla -->
       <p-table #dt [value]="products" [columns]="cols" [rows]="10"
                [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
@@ -43,47 +55,6 @@
         <h5 class="m-0">Nueva Tabla P2P</h5>
       </div>
      <!-- Segunda fila: Botones de filtrado -->
-    <div class="flex justify-content-between mb-4">
-      <!-- Grupo de botones en el extremo izquierdo -->
-      <div>
-      <!-- Después del cambio: select para filtrar por cuenta -->
-      <!-- Select para filtrar por cuenta en la segunda tabla -->
-      <select (change)="onAccountFilter($event)" class="p-inputtext p-component mr-2">
-        <option value="" disabled selected>Filtro de cuentas</option>
-        <option value="">Todos</option>
-        <option *ngFor="let account of uniqueAccounts" [value]="account">{{ account }}</option>
-      </select>
-
-
-
-        <button pButton type="button" label="Filtro por binance" class="p-button-outlined" (click)="onBinanceFilter()"></button>
-      </div>
-      <!-- Botón en el extremo derecho -->
-      <button pButton type="button" label="Cuentas" class="p-button-outlined"></button>
-    </div>
-      <!-- Tercera fila: Tabla -->
-      <p-table [value]="newProducts" [columns]="newCols" [paginator]="true" [rows]="10">
-        <ng-template pTemplate="header" let-columns>
-          <tr>
-            <th *ngFor="let col of newCols">
-              {{col.header}}
-            </th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-rowData let-columns="newCols">
-          <tr>
-            <td *ngFor="let col of newCols">
-              <!-- Condición para mostrar el ícono solo en la columna de detalles -->
-              <ng-container *ngIf="col.icon; else normalCell">
-                <button pButton pRipple icon="pi pi-info-circle" class="p-button-rounded p-button-info p-button-outlined" (click)="onShowDetails(rowData)"></button>
-              </ng-container>
-              <ng-template #normalCell>{{ rowData[col.field] }}</ng-template>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-    </div>
 
 
 

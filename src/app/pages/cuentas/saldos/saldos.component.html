@@ -1,40 +1,66 @@
-<div class="grid">
-    <div class="col-12">
-        <div class="card px-6 py-6">
-            <p-toast></p-toast>
-            <p-toolbar styleClass="mb-4">
-                <ng-template pTemplate="left">
-                    <div class="my-2">
-                        <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
-                        <button pButton pRipple label="Eliminar Cuenta" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button>
-                    </div>
-                </ng-template>
-
-            </p-toolbar>
-            <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText()">
-              <div class="card-header">
-                <span class="user-text">{{ account.accountType }}</span>
-              </div>
-              <div class="card-body">
-                <div class="saldo-row">
-                  <div class="saldo">
-                    <p>{{ account.titleUSDT }}</p>
-                    <p>{{ account.valueUSDT }}</p>
-                  </div>
-                </div>
-                <div class="saldo-row">
-                  <div class="saldo">
-                    <p>{{ account.titlePesos }}</p>
-                    <p>{{ account.valuePesos }}</p>
-                  </div>
-                </div>
-                <p class="account-type">{{ account.accountType }}</p>
-              </div>
-              <div class="card-footer">
-                <i class="pi pi-bars"></i>
-              </div>
-            </div>
+<div class="grid-container">
+  <div class="toolbar-container">
+      <p-toast></p-toast>
+      <p-toolbar styleClass="mb-4">
+        <div class="saldo-card p-3 border rounded cursor-pointer" (click)="showModal()">
+          <h4>Saldo total</h4>
+          <h2 class="saldo-valor">4,205</h2>
+          <p>$5000 Usdt</p>
+          <p>$20.000.000</p>
         </div>
+          <ng-template pTemplate="left">
+
+              <div class="my-2">
+                  <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                  <button pButton pRipple label="Eliminar Cuenta" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button>
+              </div>
+          </ng-template>
+      </p-toolbar>
+  </div>
+
+  <div class="grid">
+    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+      <div class="card-header">
+        <span class="user-text">{{ account.accountType }}</span>
+        <i class="pi pi-exclamation-circle info-icon"></i>
+      </div>
+      <div class="card-body">
+          <div *ngIf="!account.isFlipped">
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ account.titleUSDT }}</p>
+                      <p>{{ account.valueUSDT }}</p>
+                  </div>
+              </div>
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ account.titlePesos }}</p>
+                      <p>{{ account.valuePesos }}</p>
+                  </div>
+              </div>
+          </div>
+          <div *ngIf="account.isFlipped">
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ account.titleWallet }}</p>
+                      <p>{{ account.valueWallet }}</p>
+                  </div>
+              </div>
+              <div class="saldo-row">
+                  <div class="saldo">
+                      <p>{{ account.titlecorreo }}</p>
+                      <p>{{ account.valuecorreo }}</p>
+                  </div>
+              </div>
+          </div>
+          <p class="account-type">{{ account.accountType }}</p>
+      </div>
+      <div class="card-footer">
+          <i class="pi pi-bars"></i>
+      </div>
+        </div>
+
+      </div>
 
         <!-- este es el modal qeu aparece al darle en nuevo -->
         <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Product Details" [modal]="true" class="p-fluid">
@@ -101,28 +127,31 @@
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
-            <div class="flex align-items-center justify-content-center">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
-            </div>
-            <ng-template pTemplate="footer">
-                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
-                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
-            </ng-template>
-        </p-dialog>
+           </div>
 
-        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
-            <div class="flex align-items-center justify-content-center">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-                <span>Are you sure you want to delete selected products?</span>
-            </div>
-            <ng-template pTemplate="footer">
-                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
-                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
-            </ng-template>
-        </p-dialog>
-    </div>
+
+ <!-- Modal con la tabla -->
+ <p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true" >
+
+  <div class="table-container">
+    <p-table [value]="tableData" styleClass="main-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>US</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.fecha }}</td>
+          <td>{{ item.us }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <button pButton pRipple icon="pi pi-eye" class="p-button-warning p-button-rounded eye-button" (click)="showDetails()"></button>
   </div>
 
-
+  <p-footer>
+    <button pButton label="Cerrar" icon="pi pi-times" (click)="modalVisible = false" class="p-button-text"></button>
+  </p-footer>
+</p-dialog>

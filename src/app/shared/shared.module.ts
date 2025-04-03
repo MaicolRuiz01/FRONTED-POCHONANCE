@@ -21,6 +21,7 @@ import { MiCardComponent } from './mi-card/mi-card.component';
 import { CalendarModule } from 'primeng/calendar';
 import { HttpClientModule } from '@angular/common/http';
 
+
 @NgModule({
   declarations: [  // ✅ Agregar aquí
     MiCardComponent,

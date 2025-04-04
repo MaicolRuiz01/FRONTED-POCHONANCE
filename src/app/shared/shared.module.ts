@@ -20,6 +20,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MiCardComponent } from './mi-card/mi-card.component';
 import { CalendarModule } from 'primeng/calendar';
 import { HttpClientModule } from '@angular/common/http';
+import { Accordion, AccordionModule } from 'primeng/accordion';
 
 @NgModule({
   declarations: [  // ✅ Agregar aquí
@@ -46,6 +47,7 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule,
     CalendarModule,
     HttpClientModule,
+    AccordionModule
 
 
   ],
@@ -68,6 +70,7 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule,
     CalendarModule,
     MiCardComponent,
+    AccordionModule
 
 
   ]

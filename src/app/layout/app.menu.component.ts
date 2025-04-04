@@ -54,6 +54,11 @@ export class AppMenuComponent implements OnInit {
                             label: 'TRX', icon: 'pi pi-fw pi-prime',
                             routerLink: ['/cuentas/trx']
                            },
+                           {
+                            label: 'Asignaciones', icon: 'pi pi-fw pi-cloud',
+                            routerLink: ['/cuentas/asignacion']
+                           },
+
                         ]
                     },
                     {
@@ -75,16 +80,7 @@ export class AppMenuComponent implements OnInit {
                   },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
-                        items: [
-                            {
-                                label: 'CAJA', icon: 'pi pi-fw pi-box',
                                 routerLink: ['/balance/caja']
-                            },
-                            {
-                                label: 'VERIFICACION', icon: 'pi pi-fw pi-check-square',
-                                routerLink: ['/balance/completas']
-                            },
-                        ]
                     },
                     {
                         label: 'GASTOS', icon: 'pi pi-fw pi-briefcase',

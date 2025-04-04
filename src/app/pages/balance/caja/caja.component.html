@@ -75,17 +75,39 @@
 </p-dialog>
 
 <!-- Modal con los detalles -->
-<p-dialog header="Detalles" [(visible)]="showDetailsModal" [modal]="true" [style]="{width: '300px'}" [closable]="false">
+<p-dialog [(visible)]="showDetailsModal" [modal]="true" [style]="{ width: '300px' }" [closable]="false">
+  <!-- Header personalizado -->
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center justify-content-between w-full">
+      <span>Resumen</span>
+      <!-- Botón ojo solo si no se muestran los detalles avanzados -->
+      <button
+        *ngIf="!showAdvancedDetails"
+        pButton
+        pRipple
+        icon="pi pi-eye"
+        class="p-button-warning p-button-rounded eye-button"
+        (click)="onDetailsClicked()"
+        pTooltip="Ver detalles avanzados"
+        tooltipPosition="left"
+      ></button>
+    </div>
+  </ng-template>
+
+  <!-- Contenido dinámico -->
   <div class="detail-blocks">
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      VENTA: <span style="float:right; font-weight: bold;">123,456</span>
+    <div *ngFor="let item of currentDetails" class="detail-block" [style.background-color]="item || ''">
+      {{ item.label }}: <span class="detail-value">{{ item.value }}</span>
     </div>
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      CRIPTO: <span style="float:right; font-weight: bold;">678,910</span>
-    </div>
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      GASTO: <span style="float:right; font-weight: bold;">11,213</span>
-    </div>
-    <button pButton label="ATRÁS" (click)="showDetailsModal=false" style="width: 100%; margin-top: 20px;" class="p-button-danger"></button>
   </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      [label]="showAdvancedDetails ? 'Atrás' : 'Cerrar'"
+      (click)="handleCloseOrBack()"
+      class="p-button-danger w-full"
+    ></button>
+  </ng-template>
 </p-dialog>

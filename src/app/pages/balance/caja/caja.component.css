@@ -7,3 +7,13 @@
 .p-dialog .p-button {
   border-radius: 5px;
 }
+.detail-block {
+  background-color: #defede;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+}
+.detail-value {
+  float: right;
+  font-weight: bold;
+}

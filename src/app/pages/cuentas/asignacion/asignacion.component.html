@@ -1,0 +1,139 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <!-- Header global con título y filtro -->
+      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
+        <h5 class="m-0">Asignaciones</h5>
+        <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
+          <i class="pi pi-calendar"></i>
+          <input
+            pInputText
+            type="date"
+            placeholder="Filtrar por fecha..."
+            class="w-full sm:w-auto"
+          />
+        </span>
+      </div>
+
+      <!-- Accordion PrimeNG -->
+      <p-accordion multiple="true">
+        <!-- Compras -->
+        <p-accordionTab [header]="accordionHeaders.compras"
+        (onOpen)="changeHeader('compras')"
+        (onClose)="resetHeader('compras')">
+          <!-- Contenido para Compras -->
+          <p-table #dt [value]="products" [columns]="cols" [rows]="10"
+               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
+               selectionMode="multiple" [rowHover]="true" dataKey="id">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+            <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
+              {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+          <tr>
+            <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
+            <td *ngFor="let col of cols">
+              <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                <div class="input-group">
+                  <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
+                  <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                    <i class="pi pi-check"></i>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #other_fields>{{ product[col.field] }}</ng-template>
+            </td>
+          </tr>
+        </ng-template>
+
+
+      </p-table>
+        </p-accordionTab>
+
+        <!-- Ventas -->
+        <p-accordionTab  [header]="accordionHeaders.ventas"
+        (onOpen)="changeHeader('ventas')"
+        (onClose)="resetHeader('ventas')">
+          <!-- Contenido para Ventas -->
+          <p-table #dt [value]="products" [columns]="cols" [rows]="10"
+          [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
+          selectionMode="multiple" [rowHover]="true" dataKey="id">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
+                  {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-product>
+              <tr>
+                <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
+                <td *ngFor="let col of cols">
+                  <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                    <div class="input-group">
+                      <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
+                      <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                        <i class="pi pi-check"></i>
+                      </button>
+                    </div>
+                  </ng-container>
+                  <ng-template #other_fields>{{ product[col.field] }}</ng-template>
+                </td>
+              </tr>
+            </ng-template>
+
+
+          </p-table>
+        </p-accordionTab>
+
+        <!-- P2P -->
+        <p-accordionTab   [header]="accordionHeaders.p2p"
+        (onOpen)="changeHeader('p2p')"
+        (onClose)="resetHeader('p2p')">
+          <!-- Contenido para P2P -->
+          <p-table #dt [value]="products" [columns]="cols" [rows]="10"
+          [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
+          selectionMode="multiple" [rowHover]="true" dataKey="id">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
+                  {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-product>
+              <tr>
+                <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
+                <td *ngFor="let col of cols">
+                  <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                    <div class="input-group">
+                      <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
+                      <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                        <i class="pi pi-check"></i>
+                      </button>
+                    </div>
+                  </ng-container>
+                  <ng-template #other_fields>{{ product[col.field] }}</ng-template>
+                </td>
+              </tr>
+            </ng-template>
+
+
+          </p-table>
+        </p-accordionTab>
+      </p-accordion>
+    </div>
+  </div>
+</div>

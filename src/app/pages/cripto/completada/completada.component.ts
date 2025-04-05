@@ -8,46 +8,72 @@ import { SharedModule } from '../../../shared/shared.module';
   standalone: true,
   imports: [SharedModule],
   templateUrl: './completada.component.html',
-  styleUrl: './completada.component.css'
+  styleUrls: ['./completada.component.css']
 })
 export class CompletadaComponent {
-  cols: any[]= [];
-    products: any[] = [];
-    selectedProducts: any[]= [];
+  cols: any[] = [];
+  products: any[] = [];
+  selectedProducts: any[] = [];
+  expandedRows: { [key: number]: boolean } = {};
+  dropdownOptions: any[] = [];
+  selectedOption: any;
 
-    constructor(private router: Router)   {}
+  constructor(private router: Router) {}
 
-    ngOnInit() {
-      this.cols = [
-        { field: 'date', header: 'Fecha' },
-        { field: 'sell', header: 'Venta' },
-        { field: 'buyrate', header: 'T-C' },
-        { field: 'sellrate', header: 'T-V' },
-        { field: 'cx', header: 'Cx US' },
-        { field: 'cuatrox', header: '4X' },
-        { field: 'cripto', header: 'Cripto' },
-        { field: 'dif', header: 'DIF' },
-      ];
+  ngOnInit() {
+    this.cols = [
+      { field: 'date', header: 'Fecha' },
+      { field: 'sell', header: 'Moneda' },
+      { field: 'buyrate', header: 'Cantidad' },
+      { field: 'sellrate', header: 'Tasa' },
+      { field: 'cx', header: 'PNL' },
+    ];
 
-      this.products = [
-        { date: '2025-03-01', sell: 1500, buyrate: 0.30, sellrate: 0.32, cx: 1.2, cuatrox: 4.8, cripto: 'Bitcoin', dif: 0.02 },
-        { date: '2025-03-02', sell: 1600, buyrate: 0.31, sellrate: 0.33, cx: 1.3, cuatrox: 5.2, cripto: 'Ethereum', dif: 0.02 },
-        { date: '2025-03-03', sell: 1550, buyrate: 0.29, sellrate: 0.31, cx: 1.1, cuatrox: 4.4, cripto: 'Ripple', dif: 0.02 },
-        { date: '2025-03-04', sell: 1580, buyrate: 0.28, sellrate: 0.30, cx: 1.0, cuatrox: 4.0, cripto: 'Litecoin', dif: 0.02 },
-        { date: '2025-03-05', sell: 1620, buyrate: 0.32, sellrate: 0.34, cx: 1.4, cuatrox: 5.6, cripto: 'Cardano', dif: 0.02 }
-      ];
-    }
+    this.products = [
+      { id: 1, date: '2025-03-01', sell: 1500, buyrate: 0.30, sellrate: 0.32, cx: 1.2 },
+      { id: 2, date: '2025-03-02', sell: 1600, buyrate: 0.31, sellrate: 0.33, cx: 1.3 },
+      { id: 3, date: '2025-03-03', sell: 1550, buyrate: 0.29, sellrate: 0.31, cx: 1.1 },
+      { id: 4, date: '2025-03-04', sell: 1580, buyrate: 0.28, sellrate: 0.30, cx: 1.0 },
+      { id: 5, date: '2025-03-05', sell: 1620, buyrate: 0.32, sellrate: 0.34, cx: 1.4 }
+    ];
 
-
-    // Función para filtrar por cuenta// Función para filtrar por moneda
-    onCurrencyFilter(table: Table, event: Event) {
-      const currency = (event.target as HTMLInputElement).value;
-      table.filter(currency, 'currency', 'contains'); // Filtra por la propiedad 'currency'
-    }
-
-    onDateFilter(table: Table, event: Event) {
-      const date = (event.target as HTMLInputElement).value;
-      table.filter(date, 'date', 'equals');
-    }
-
+    // Opciones para el dropdown
+    this.dropdownOptions = [
+      { label: 'Detalle Completo', value: 'detail' },
+      { label: 'Historial', value: 'history' },
+      { label: 'Transacciones', value: 'transactions' },
+      { label: 'Gráficos', value: 'charts' }
+    ];
   }
+
+
+// Función corregida para alternar el dropdown
+toggleDropdown(rowIndex: number): void {
+  // Cierra todos los demás dropdowns
+  Object.keys(this.expandedRows).forEach(key => {
+    const numericKey = Number(key); // Convertimos explícitamente a número
+    if (numericKey !== rowIndex) {
+      this.expandedRows[numericKey] = false;
+    }
+  });
+
+  // Abre/cierra el dropdown actual
+  this.expandedRows[rowIndex] = !this.expandedRows[rowIndex];
+}
+
+getRandomValue(): string {
+  // Devuelve un valor aleatorio entre 0 y 100 con 2 decimales
+  return (Math.random() * 100).toFixed(2);
+}
+
+  // Función para filtrar por moneda
+  onCurrencyFilter(table: Table, event: Event) {
+    const currency = (event.target as HTMLInputElement).value;
+    table.filter(currency, 'sell', 'contains');
+  }
+
+  onDateFilter(table: Table, event: Event) {
+    const date = (event.target as HTMLInputElement).value;
+    table.filter(date, 'date', 'equals');
+  }
+}

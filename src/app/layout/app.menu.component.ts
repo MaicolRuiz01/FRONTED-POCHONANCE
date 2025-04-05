@@ -88,16 +88,9 @@ export class AppMenuComponent implements OnInit {
                     },
                     {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',
-                        items: [
-                            {
-                                label: 'COMPLETADA', icon: 'pi pi-fw pi-check',
-                                routerLink: ['/cripto/completada']
-                            },
-                            {
-                                label: 'ABIERTAS', icon: 'pi pi-fw pi-eye',
-                                routerLink: ['/cripto/vista']
-                            },
-                        ]
+
+                                routerLink: ['/cripto']
+
                     }
 
                 ]

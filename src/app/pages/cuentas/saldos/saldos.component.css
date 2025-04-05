@@ -33,9 +33,6 @@
 }
 
 
-.card-header, .account-type {
-  font-size: calc(4px + 0.5vw); /* Ajusta según el ancho del viewport */
-}
 
 
 .saldo-row {
@@ -145,4 +142,42 @@
 
 .eye-button {
   margin-top: 10px; /* Ajusta según necesites para alinear verticalmente con la tabla */
+}
+
+.custom-cuentas-dialog .cuentas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.add-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.cuenta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffd740;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 250px;
+  margin-bottom: 1rem;
+}
+
+.cuenta-nombre {
+  font-weight: bold;
+}
+
+.cuentas-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 250px;
 }

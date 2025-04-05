@@ -1,0 +1,51 @@
+dropdown-container {
+  position: relative;
+}
+
+.dropdown-table-container {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 200px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.dropdown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dropdown-table th,
+.dropdown-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-table th {
+  font-weight: 600;
+  color: #555;
+  width: 40%;
+}
+
+/* Animación para el efecto de aparición */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Para asegurar que el dropdown se muestre correctamente */
+.p-datatable td {
+  position: relative;
+}

@@ -4,7 +4,6 @@ import { MypageComponent } from './core/components/mypage/mypage.component';
 import { NuevaVistaComponent } from './pages/nueva-vista/nueva-vista.component';
 import { CajaComponent } from './pages/balance/caja/caja.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
-import { VistaComponent } from './pages/cripto/vista/vista.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
 import  {TraspasosComponent} from './pages/cuentas/traspasos/traspasos.component';
 import { CompletasVentasComponent } from './pages/ventas/completas-ventas/completas-ventas.component';
@@ -28,8 +27,7 @@ export const routes: Routes = [  {
     { path: 'nueva-vista', component: NuevaVistaComponent },
     {path:'balance/caja', component:CajaComponent},
     {path:'balance/completas', component:VerficacionComponent},
-    {path:'cripto/completada', component:CompletadaComponent},
-    {path:'cripto/vista', component:VistaComponent},
+    {path:'cripto', component:CompletadaComponent},
     {path:'cuentas/saldos', component:SaldosComponent},
     {path:'cuentas/traspasos', component:TraspasosComponent},
     {path:'cuentas/compras', component:ComprasComponent},

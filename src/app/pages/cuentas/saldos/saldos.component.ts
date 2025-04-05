@@ -58,43 +58,6 @@ accounts: any[] = [
       this.deleteProductsDialog = true;
   }
 
-  deleteProduct(product: any) {
-      this.deleteProductDialog = true;
-      this.product = { ...product };
-  }
-
-
-
-  hideDialog() {
-      this.productDialog = false;
-      this.submitted = false;
-  }
-
-  saveProduct() {
-      this.submitted = true;
-
-      if (this.product.name?.trim()) {
-          if (this.product.id) {
-              // @ts-ignore
-              this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value : this.product.inventoryStatus;
-              this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-          } else {
-              this.product.id = this.createId();
-              this.product.code = this.createId();
-              this.product.image = 'product-placeholder.svg';
-              // @ts-ignore
-              this.product.inventoryStatus = this.product.inventoryStatus ? this.product.inventoryStatus.value : 'INSTOCK';
-              this.products.push(this.product);
-              this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-          }
-
-          this.products = [...this.products];
-          this.productDialog = false;
-          this.product = {};
-      }
-  }
-
-
 
   createId(): string {
       let id = '';
@@ -115,6 +78,33 @@ accounts: any[] = [
   showDetails() {
     console.log('Detalles del item:');
     // Aquí puedes abrir otro modal o mostrar detalles adicionales
+  }
+
+  // nueva cuenta
+  addAccount() {
+    const newAccountName = prompt('Nombre de la nueva cuenta:');
+    if (newAccountName) {
+      this.accounts.push({
+        accountType: newAccountName,
+        titleUSDT: 'Saldo USDT',
+        valueUSDT: '$0',
+        titlePesos: 'Saldo Pesos',
+        valuePesos: '$0',
+        titleWallet: 'Wallet',
+        valueWallet: '',
+        titlecorreo: 'Correo',
+        valuecorreo: ''
+      });
+    }
+  }
+
+  removeAccount(index: number) {
+    this.accounts.splice(index, 1);
+  }
+
+  guardarCuentas() {
+    this.messageService.add({severity:'success', summary:'Guardado', detail:'Cuentas actualizadas'});
+    this.productDialog = false;
   }
 
 }

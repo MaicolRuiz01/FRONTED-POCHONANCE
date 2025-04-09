@@ -16,7 +16,7 @@ import { TrxComponent } from './pages/trx/trx.component';
 import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
 import { VerficacionComponent } from './pages/balance/verficacion/verficacion.component';
 import { GastosComponent } from './pages/gastos/gastos.component';
-import { AsignacionComponent } from './pages/cuentas/asignacion/asignacion.component';
+import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
 
 
 export const routes: Routes = [  {
@@ -35,7 +35,7 @@ export const routes: Routes = [  {
     {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},
     {path:'cuentas/impuestos', component:ImpuestosComponent},
     {path:'cuentas/trx', component:TrxComponent},
-    {path:'cuentas/asignacion', component:AsignacionComponent},
+    {path:'cuentas/asignacion', component:TabAsignacionComponent},
     {path:'gastos', component:GastosComponent},
     {path:'ventas/asignar/p2p', component:P2pAsignarComponent},
     {path:'ventas/asignar/compras', component:AsignarCompraComponent},

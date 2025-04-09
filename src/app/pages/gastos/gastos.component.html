@@ -15,12 +15,7 @@
   <!-- Contenedor separado para el botón New, con estilo diferenciado utilizando clases de PrimeNG -->
   <div class="mt-2 flex justify-content-end p-shadow-2" style="background-color: #f8f9fa; border-radius: 5px;">
     <p-dropdown [options]="actions" [(ngModel)]="selectedType" placeholder="Tipo" class="mr-auto" (onChange)="filterByType()"></p-dropdown>
-    <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="toggleButtons()"></button>
-    <!-- Botones adicionales que se muestran al hacer click en 'New' -->
-    <div *ngIf="showAdditionalButtons" class="flex">
-      <button pButton pRipple label="Operativo" class="p-button-outlined mr-2" (click)="openOperativo()"></button>
-      <button pButton pRipple label="Otro" class="p-button-outlined" (click)="openOtro()"></button>
-    </div>
+    <button pButton type="button" (click)="openModal()" label="Añadir Gasto" icon="pi pi-plus"></button>
   </div>
 </ng-template>
 
@@ -76,3 +71,95 @@
     </div>
   </div>
 </div>
+
+<p-dialog [(visible)]="displayModal" [modal]="true" [style]="{width: '30rem'}">
+  <ng-template pTemplate="header">
+    <div class="header-content">
+      <button type="button" pButton label="Gestionar Operativos" icon="pi pi-cog" (click)="manageOperative()" style="margin-right: auto;"></button>
+      <span class="header-title">Añadir Gasto</span>
+      <span></span> <!-- Espacio adicional para centrar el título -->
+    </div>
+  </ng-template>
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="fecha">Fecha</label>
+      <input type="date" pInputText id="fecha" [(ngModel)]="fecha" autofocus />
+    </div>
+    <div class="p-field">
+      <label for="description">Descripción o nombre</label>
+      <input type="text" pInputText id="description" [(ngModel)]="description"/>
+    </div>
+    <div class="p-field">
+      <label for="amount">Monto a pagar</label>
+      <input type="text" pInputText id="amount" [(ngModel)]="amount"/>
+    </div>
+  </div>
+  <p-footer>
+    <button type="button" pButton label="Cancelar" icon="pi pi-times" (click)="displayModal=false"></button>
+    <button type="button" pButton label="Guardar" icon="pi pi-check" (click)="saveExpense()"></button>
+  </p-footer>
+</p-dialog>
+
+
+<p-dialog [(visible)]="secondModalDisplay" [modal]="true" [style]="{width: '30rem'}">
+  <ng-template pTemplate="header">
+    <div class="header-content">
+      <span class="header-title">Gastos Operativos</span>
+    </div>
+  </ng-template>
+  <div class="add-button-container">
+    <button type="button" pButton label="Añadir" icon="pi pi-plus" class="ui-button-success" (click)="openAddExpenseModal()"></button>
+  </div>
+  <div class="p-fluid table-container">
+    <p-table [value]="operationalExpenses">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Gasto</th>
+          <th>Valor</th>
+          <th>Frecuencia</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-expense>
+        <tr>
+          <td>{{expense.name}}</td>
+          <td>{{expense.value | currency}}</td>
+          <td>{{expense.frequency}}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <p-footer>
+    <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="secondModalDisplay=false"></button>
+  </p-footer>
+</p-dialog>
+
+
+<p-dialog [(visible)]="addExpenseModal" [modal]="true" [style]="{width: '30rem'}">
+  <ng-template pTemplate="header">
+    <div class="header-content">
+      <span class="header-title">Añadir Gasto Operativos</span>
+    </div>
+  </ng-template>
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="paymentDate">Fecha de pago</label>
+      <input type="date" pInputText id="paymentDate" [(ngModel)]="paymentDate"/>
+    </div>
+    <div class="p-field">
+      <label for="cobroFrequency">Frecuencia de cobro</label>
+      <p-dropdown [options]="frequencies" [(ngModel)]="selectedFrequency" placeholder="Seleccione una frecuencia"></p-dropdown>
+    </div>
+    <div class="p-field">
+      <label for="description">Descripción o nombre</label>
+      <input type="text" pInputText id="description" [(ngModel)]="description"/>
+    </div>
+    <div class="p-field">
+      <label for="amount">Monto a pagar</label>
+      <input type="text" pInputText id="amount" [(ngModel)]="amount"/>
+    </div>
+  </div>
+  <p-footer>
+    <button type="button" pButton label="Cancelar" icon="pi pi-times" (click)="addExpenseModal=false"></button>
+    <button type="button" pButton label="Guardar" icon="pi pi-check" (click)="saveExpense2()"></button>
+  </p-footer>
+</p-dialog>

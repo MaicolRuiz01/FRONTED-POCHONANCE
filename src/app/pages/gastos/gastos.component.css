@@ -1,0 +1,33 @@
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.header-title {
+  flex-grow: 1;
+  text-align: center;
+}
+
+
+.add-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.ui-button-success {
+  background-color: #5cb85c; /* Color verde típico de botones 'success' */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  text-shadow: none; /* Quitar sombras de texto para una apariencia más limpia */
+}
+
+.ui-button-success:hover {
+  background-color: #4cae4c; /* Un verde ligeramente más oscuro para el hover */
+}

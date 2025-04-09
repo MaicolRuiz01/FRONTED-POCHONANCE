@@ -17,10 +17,25 @@ export class GastosComponent {
   paidProducts: any[] = [];
   submitted: boolean = false;
   productDialog: boolean = false;
-  showAdditionalButtons: boolean = false; // Control de visibilidad para los botones adicionales
   actions: SelectItem[] = []; // Opciones del select
   selectedType: string = '';
   filteredProducts: any[] = [];
+
+  //modal nuevo
+  displayModal: boolean = false;
+  fecha: string = "";
+  paymentDate: string = '';
+  description: string = '';
+  amount: number = 0;
+
+  //segundo modal
+  secondModalDisplay: boolean = false;
+
+
+  //modal agregar operativo
+  addExpenseModal: boolean = false;
+  selectedFrequency: string = '';
+
 
   constructor(private router: Router) {}
 
@@ -48,6 +63,14 @@ export class GastosComponent {
     this.sortProducts();
   }
 
+  //datos modal operativo
+  operationalExpenses = [
+    { name: 'Luz', value: 20000, frequency: 'Mensual' },
+    { name: 'Internet', value: 50000, frequency: 'Quincenal' },
+    { name: 'Agua', value: 15000, frequency: 'Anual' }
+  ];
+
+
 
   sortProducts() {
     // Ordenar productos para que los 'Operativo' con botón "Paga" aparezcan primero
@@ -61,10 +84,42 @@ export class GastosComponent {
     });
   }
 
-
-  toggleButtons() {
-    this.showAdditionalButtons = !this.showAdditionalButtons;
+  openAddExpenseModal() {
+    this.secondModalDisplay = false; // Opcional: cerrar el modal actual
+    this.addExpenseModal = true; // Abrir el nuevo modal
   }
+
+
+  openModal() {
+    this.displayModal = true;  // Esto activará el modal en la UI
+  }
+
+  saveExpense() {
+    // Aquí agregarías la lógica para guardar el gasto en tus datos
+    console.log('Gasto guardado:', this.paymentDate, this.description, this.amount);
+    this.displayModal = false;  // Cerrar el modal después de guardar
+  }
+
+  manageOperative() {
+    this.displayModal = false;  // Opcional: Cerrar el primer modal
+    this.secondModalDisplay = true;  // Abrir el nuevo modal
+  }
+
+  //opertivo save
+
+  frequencies = [
+    { label: 'Mensual', value: 'Mensual' },
+    { label: 'Quincenal', value: 'Quincenal' },
+    { label: 'Anual', value: 'Anual' }
+  ];
+
+
+  saveExpense2() {
+    console.log('Guardando gasto:', this.paymentDate, this.selectedFrequency, this.description, this.amount);
+    // Agregar lógica para guardar los datos
+    this.addExpenseModal = false; // Cerrar modal después de guardar
+  }
+
 
   openOperativo() {
     console.log('Acción para operativo');

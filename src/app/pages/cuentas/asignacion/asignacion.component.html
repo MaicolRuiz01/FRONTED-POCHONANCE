@@ -5,7 +5,7 @@
       <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
         <h5 class="m-0">Asignaciones</h5>
         <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
-          Hola
+          <button class="p-button p-button-raised p-button-success" (click)="displayModalAgg = true">Agregar Venta</button>
         </span>
       </div>
 
@@ -126,41 +126,41 @@
               pRipple
               icon="pi pi-eye"
               class="p-button-warning p-button-rounded eye-button"
-              (click)="showModalDialp2p()"></button>
+              (click)="showModalp2p()"
+              ></button>
             </div>
-          <!-- Contenido para P2P -->
-          <p-table #dt [value]="products" [columns]="cols" [rows]="10"
-          [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
-          selectionMode="multiple" [rowHover]="true" dataKey="id">
-            <ng-template pTemplate="header">
-              <tr>
-                <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-                <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
-                  {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
-                </th>
-              </tr>
-            </ng-template>
 
-            <ng-template pTemplate="body" let-product>
-              <tr>
-                <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
-                <td *ngFor="let col of cols">
-                  <ng-container *ngIf="col.field === 'fee'; else other_fields">
-                    <div class="input-group">
-                      <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
-                      <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
-                        <i class="pi pi-check"></i>
-                      </button>
-                    </div>
-                  </ng-container>
-                  <ng-template #other_fields>{{ product[col.field] }}</ng-template>
-                </td>
-              </tr>
-            </ng-template>
+            <!-- Contenido para P2P -->
+            <p-table #dt [value]="p2pTransactions" [columns]="p2pCols" [rows]="10"
+              [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+              currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros" [(selection)]="selectedP2PTransactions"
+              selectionMode="multiple" [rowHover]="true" dataKey="id">
 
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                  <th *ngFor="let col of p2pCols" pSortableColumn="{{col.field}}">
+                    {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                  </th>
+                </tr>
+              </ng-template>
 
-          </p-table>
+              <ng-template pTemplate="body" let-transaction>
+                <tr>
+                  <td><p-tableCheckbox [value]="transaction"></p-tableCheckbox></td>
+                  <td>{{ transaction.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ transaction.cuenta }}</td>
+                  <td>{{ transaction.monto | currency }}</td>
+                  <td>{{ transaction.pesos | currency }}</td>
+                  <td> <button pButton
+                    pRipple
+                    icon="pi pi-exclamation-circle"
+                    class="p-button-warning p-button-rounded eye-button"
+                    (click)="showModalDialp2p()"></button>
+                  </td> <!-- Columna vacía -->
+                </tr>
+              </ng-template>
+            </p-table>
           </div>
         </p-accordionTab>
       </p-accordion>
@@ -169,57 +169,60 @@
 </div>
 
 
-<p-dialog header="Detalles de Compras"
-          [(visible)]="displayModal"
-          [modal]="true" [style]="{width: '30rem'}">
-          <div class="p-fluid table-container">
-            <p-table [value]="transactions">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Fecha</th>
-                  <th>Monto</th>
-                  <th>Tasa</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-expense>
-                <tr>
-                  <td>{{expense.date}}</td>
-                  <td>{{expense.amount | currency}}</td>
-                  <td>{{expense.rate}}</td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-footer>
-            <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="displayModal=false"></button>
-          </p-footer>
+<p-dialog header="Detalles de Compras" [(visible)]="displayModal" [modal]="true" [style]="{width: '30rem'}">
+  <div class="p-fluid table-container">
+    <p-table [value]="transactions">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Monto</th>
+          <th>Tasa</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-expense let-rowIndex="rowIndex">
+        <tr>
+          <td>{{ expense.date }}</td>
+          <td>{{ expense.amount | currency }}</td>
+          <td>
+            <span class="rate-value" (click)="showMenu($event, expense)">{{ expense.rate }}</span>
+            <!-- Menú contextual anclado a la celda -->
+            <p-menu #menu [popup]="true" [model]="menuItems" [style]="{'left.px': menuX, 'top.px': menuY}" appendTo="body"></p-menu>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <p-footer>
+    <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="displayModal=false"></button>
+  </p-footer>
 </p-dialog>
-<p-dialog header="Detalles de Ventas"
-          [(visible)]="displayModalVentas"
-          [modal]="true" [style]="{width: '30rem'}">
-          <div class="p-fluid table-container">
-            <p-table [value]="transactions">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Fecha</th>
-                  <th>Cuenta</th>
-                  <th>Monto</th>
-                  <th>TasaC / tasaV</th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-expense>
-                <tr>
-                  <td>{{expense.date}}</td>
-                  <td></td>
-                  <td>{{expense.amount | currency}}</td>
-                  <td>{{expense.rate}}</td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-          <p-footer>
-            <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="displayModal=false"></button>
-          </p-footer>
+<p-dialog header="Detalles de Ventas" [(visible)]="displayModalVentas" [modal]="true" [style]="{width: '30rem'}">
+  <div class="p-fluid table-container">
+    <p-table [value]="transactionsSells">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Cuenta</th>
+          <th>Monto</th>
+          <th>TasaC / tasaV</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-expense>
+        <tr>
+          <td>{{expense.date}}</td>
+          <td>{{expense.account}}</td>
+          <td>{{expense.amount | currency}}</td>
+          <td>
+            <span class="rate-value" (click)="showSellsMenu($event, expense)">{{expense.rate}}</span>
+            <p-menu #menuVentas [popup]="true" [model]="menuSellsItems" [style]="{'left.px': menuX, 'top.px': menuY}" appendTo="body"></p-menu>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <p-footer>
+    <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="displayModalVentas=false"></button>
+  </p-footer>
 </p-dialog>
 
 <!-- MODAL: Selección de cuentas -->
@@ -331,4 +334,74 @@
       [disabled]="!cuentaSeleccionada && !showAdvancedView"
     ></button>
   </ng-template>
+</p-dialog>
+
+<!-- Modal p2p-->
+<p-dialog
+  header="Detalles de Transacción"
+  [(visible)]="displayModalp2p"
+  [modal]="true"
+  [style]="{ width: '35rem' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+>
+  <div class="p-fluid table-container">
+    <p-table [value]="transactionData" [paginator]="true" [rows]="5">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Cuenta</th>
+          <th>Monto</th>
+          <th>Pesos</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-transaction>
+        <tr>
+          <td>{{ transaction.date }}</td>
+          <td>{{ transaction.account }}</td>
+          <td>{{ transaction.amount | currency }}</td>
+          <td>
+            <span class="pesos-value" (click)="showP2PMenu($event, transaction)">
+              {{ transaction.pesos | currency }}
+            </span>
+            <p-menu #menuP2P [popup]="true" [model]="menuP2PItems" [style]="{'left.px': menuX, 'top.px': menuY}" appendTo="body"></p-menu>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <p-footer>
+    <button
+      type="button"
+      pButton
+      label="Cerrar"
+      icon="pi pi-times"
+      (click)="displayModalp2p = false"
+    ></button>
+  </p-footer>
+</p-dialog>
+
+<p-dialog header="Agregar Nueva Venta" [(visible)]="displayModalAgg" [modal]="true" [style]="{width: '450px'}" class="p-fluid">
+  <div>
+      <div class="p-field">
+          <label for="fecha">Fecha</label>
+          <input type="date" pInputText id="fecha" [(ngModel)]="fecha" autofocus />
+      </div>
+      <div class="p-field">
+          <label for="monto">Monto</label>
+          <input type="number" pInputText id="monto" [(ngModel)]="monto" />
+      </div>
+      <div class="p-field">
+          <label for="tasaCompra">Tasa de Compra</label>
+          <input type="number" pInputText id="tasaCompra" [(ngModel)]="tasaCompra" />
+      </div>
+      <div class="p-field">
+          <label for="tasaVenta">Tasa de Venta</label>
+          <input type="number" pInputText id="tasaVenta" [(ngModel)]="tasaVenta" />
+      </div>
+      <!-- Botones con CSS nativo y uso correcto de las etiquetas y estilos -->
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" style="background-color: #ff5c5c; color: white; border: none; padding: 10px 20px; cursor: pointer;" (click)="displayModal = false">Cancelar</button>
+          <button type="button" style="background-color: #007ad9; color: white; border: none; padding: 10px 20px; cursor: pointer;" (click)="save()">Guardar</button>
+      </div>
+  </div>
 </p-dialog>

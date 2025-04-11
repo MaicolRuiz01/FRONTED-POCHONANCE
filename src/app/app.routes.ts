@@ -5,7 +5,6 @@ import { NuevaVistaComponent } from './pages/nueva-vista/nueva-vista.component';
 import { CajaComponent } from './pages/balance/caja/caja.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
-import  {TraspasosComponent} from './pages/cuentas/traspasos/traspasos.component';
 import { CompletasVentasComponent } from './pages/ventas/completas-ventas/completas-ventas.component';
 import { P2pAsignarComponent } from './pages/ventas/p2p-asignar/p2p-asignar.component';
 import { ComprasComponent } from './pages/compras/compras.component';
@@ -14,9 +13,9 @@ import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-genera
 import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
 import { TrxComponent } from './pages/trx/trx.component';
 import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
-import { VerficacionComponent } from './pages/balance/verficacion/verficacion.component';
 import { GastosComponent } from './pages/gastos/gastos.component';
 import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
+import { SaldosTabComponent } from './pages/cuentas/saldos/saldos-tab/saldos-tab.component';
 
 
 export const routes: Routes = [  {
@@ -26,10 +25,10 @@ export const routes: Routes = [  {
     {path:'', component:MypageComponent,},
     { path: 'nueva-vista', component: NuevaVistaComponent },
     {path:'balance/caja', component:CajaComponent},
-    {path:'balance/completas', component:VerficacionComponent},
+
     {path:'cripto', component:CompletadaComponent},
-    {path:'cuentas/saldos', component:SaldosComponent},
-    {path:'cuentas/traspasos', component:TraspasosComponent},
+    {path:'cuentas/saldos', component:SaldosTabComponent},
+
     {path:'cuentas/compras', component:ComprasComponent},
     {path:'cuentas/p2p', component:P2pComponent},
     {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},

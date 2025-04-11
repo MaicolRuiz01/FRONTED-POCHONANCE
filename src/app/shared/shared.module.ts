@@ -22,6 +22,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { HttpClientModule } from '@angular/common/http';
 import { Accordion, AccordionModule } from 'primeng/accordion';
 import { TabViewModule } from 'primeng/tabview';
+import { MenuModule } from 'primeng/menu';
+
 
 @NgModule({
   declarations: [  // ✅ Agregar aquí
@@ -49,7 +51,8 @@ import { TabViewModule } from 'primeng/tabview';
     CalendarModule,
     HttpClientModule,
     AccordionModule,
-    TabViewModule
+    TabViewModule,
+    MenuModule
 
 
   ],
@@ -73,7 +76,8 @@ import { TabViewModule } from 'primeng/tabview';
     CalendarModule,
     MiCardComponent,
     AccordionModule,
-    TabViewModule
+    TabViewModule,
+    MenuModule
 
   ]
 })

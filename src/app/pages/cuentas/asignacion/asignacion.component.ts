@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 
 @Component({
   selector: 'app-asignacion',
@@ -22,26 +24,106 @@ export class AsignacionComponent {
     ventas: false,
     p2p: false
   };
+  //agregar modal
+  displayModalAgg: boolean = false;
+  fecha: string = "";
+  monto: number = 0;
+  tasaCompra: number = 0;
+  tasaVenta: number = 0;
+
+  // En la sección de propiedades de la clase
+  p2pCols: any[] = [];
+  p2pTransactions: any[] = [];
+  selectedP2PTransactions: any[] = [];
 
   //modal compras
   displayModal: boolean = false;
   transactions = [
-  { date: '10/01/2025 14:25:27', amount: 500, rate: 100 },
-  { date: '09/01/2025', amount: 200, rate: 100 },
-  { date: '09/01/2025', amount: 500, rate: 100 },
-  { date: '09/01/2025', amount: 100, rate: 100 },
-  { date: '09/01/2025', amount: 3000, rate: 100 },
-  { date: '09/01/2025', amount: 5000, rate: 100 },
-  { date: '09/01/2025', amount: 7000, rate: 100 },
-  { date: '09/01/2025', amount: 8000, rate: 100 },
-  { date: '09/01/2025', amount: 9000, rate: 100 },
-  { date: '09/01/2025', amount: 154949, rate: 100 }
+  { date: '10/01/2025 14:25:27', amount: 500, rate: 100, pesos: 300, cuenta: 'milton'},
+  { date: '09/01/2025', amount: 200, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 500, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 100, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 3000, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 5000, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 7000, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 8000, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 9000, rate: 100, pesos: 300, cuenta: 'milton' },
+  { date: '09/01/2025', amount: 154949, rate: 100, pesos: 300, cuenta: 'milton' }
 ];
+
+  menuX: number = 0;
+  menuY: number = 0;
+  menuItems: MenuItem[] = [];
+
+  showMenu(event: MouseEvent, expense: any) {
+    event.stopPropagation(); // Evita que se propague el clic
+
+    this.menuX = event.clientX;
+  this.menuY = event.clientY;
+
+    this.menuItems = [
+      { label: `Pesos: ${expense.pesos}`, disabled: true,  styleClass: 'black-bg'   },
+      { label: `Cuenta: ${expense.cuenta}`, disabled: true, styleClass: 'yellow-bg' }
+    ];
+
+    // Muestra el menú en la posición del clic
+    this.menu.toggle(event);
+  }
+
+  @ViewChild('menu') menu!: Menu;
 
     //modal ventas
     displayModalVentas: boolean = false;
+    transactionsSells = [
+      { date: '10/01/2025 14:25:27', amount: 500,account: 'jesus' , rate: 100,  pesos: 520000, tipo: 'anal',utilidad: 20},
+      { date: '09/01/2025', account: 'Jose', amount: 200, rate: 100, pesos: 520000, tipo: 'anal',utilidad: 20},
+      { date: '09/01/2025', account: 'jesus' , amount: 500, rate: 100,  pesos: 520000, tipo: 'anal',utilidad: 20},
+      { date: '09/01/2025', account: 'Jose',  amount: 100, rate: 100,  pesos: 520000, tipo: 'anal',utilidad: 20},
+      { date: '09/01/2025',account: 'jesus', amount: 3000, rate: 100,  pesos: 520000, tipo: 'anal',utilidad: 20 },
+      { date: '09/01/2025', account: 'Jose', amount: 5000, rate: 100, pesos: 520000, tipo: 'anal',utilidad: 20},
 
-    //modal p2p
+    ];
+
+    // Variables adicionales para ventas
+menuSellsItems: MenuItem[] = [];
+@ViewChild('menuVentas') menuVentas!: Menu;
+
+// Método para mostrar el menú en ventas
+showSellsMenu(event: MouseEvent, expense: any) {
+  event.stopPropagation();
+
+  // Posición del menú
+  this.menuX = event.clientX;
+  this.menuY = event.clientY;
+
+  // Ítems del menú con estilos (reutilizando las clases CSS existentes)
+  this.menuSellsItems = [
+    {
+      label: `Pesos: ${expense.pesos}`,
+      escape: false,
+      disabled: true,
+      styleClass:'yellow-bg' // Fondo negro, texto blanco
+    },
+    {
+      label: `Tipo: ${expense.tipo}`,
+      escape: false,
+      disabled: true,
+      styleClass: 'black-bg'   // Fondo amarillo, texto negro
+    },
+    {
+      label: `Utilidad: ${expense.utilidad}`,
+      escape: false,
+      disabled: true,
+      styleClass: 'yellow-bg'  // Reutiliza el mismo estilo
+    }
+  ];
+
+  // Mostrar menú
+  this.menuVentas.toggle(event);
+}
+
+
+    //modal p2p tabla
     displayAccountModal: boolean = false;
     cuentaSeleccionada: any = null;
 
@@ -62,7 +144,45 @@ export class AsignacionComponent {
     // Asegúrate de tener estas propiedades definidas:
     otrasCuentas: any[] = []; // Tus otras cuentas diferentes
 
+    //modalp2p ojo
+    displayModalp2p: boolean = false;
+    menuP2PItems: MenuItem[] = [];
 
+    transactionData = [
+      { date: '10/01/2025 14:25:27', account: 'jesus', amount: 500, pesos: 520000, asignada: 'pene feliz', tasa:35 },
+      { date: '09/01/2025', account: 'Jose', amount: 200, pesos: 520000, asignada: 'pene feliz', tasa:35 },
+      { date: '09/01/2025', account: 'jesus', amount: 500, pesos: 520000, asignada: 'pene feliz', tasa:35 },
+      // Agrega más datos según necesites
+    ];
+
+    @ViewChild('menuP2P') menuP2P!: Menu;
+
+showP2PMenu(event: MouseEvent, transaction: any) {
+  event.stopPropagation();
+
+  // Posición del menú
+  this.menuX = event.clientX;
+  this.menuY = event.clientY;
+
+  // Ítems del menú con estilos (reutilizando clases CSS existentes)
+  this.menuP2PItems = [
+    {
+      label: `Asignada: ${transaction.asignada}`,
+      escape: false,
+      disabled: true,
+      styleClass: 'black-bg'  // Fondo negro, texto blanco
+    },
+    {
+      label: `Tasa: ${transaction.tasa}`,
+      escape: false,
+      disabled: true,
+      styleClass: 'yellow-bg'  // Fondo amarillo, texto negro
+    }
+  ];
+
+  // Mostrar menú
+  this.menuP2P.toggle(event);
+}
 
   ngOnInit() {
     this.cols = [
@@ -77,6 +197,41 @@ export class AsignacionComponent {
       { orderNumber: 1, account: 'Main Account', amount: 1000, fee: 0.1, date: '2023-01-01', showButton: true },
       { orderNumber: 2, account: 'Savings Account', amount: 250000, fee: 0.05, date: '2023-02-15', showButton: true },
       { orderNumber: 3, account: 'Main Account', amount: 360000, fee: 0.2, date: '2023-03-10', showButton: true }
+    ];
+
+    this.p2pCols = [
+      { field: 'fecha', header: 'Fecha' },
+      { field: 'cuenta', header: 'Cuenta' },
+      { field: 'monto', header: 'Monto' },
+      { field: 'pesos', header: 'Pesos' },
+      { field: 'vacia', header: '' } // Columna vacía
+    ];
+
+    this.p2pTransactions = [
+      {
+        id: 1,
+        fecha: new Date('2023-01-01'),
+        cuenta: 'Cuenta Principal',
+        monto: 1000,
+        pesos: 50000,
+        moneda: 'USD'
+      },
+      {
+        id: 2,
+        fecha: new Date('2023-02-15'),
+        cuenta: 'Cuenta de Ahorros',
+        monto: 250000,
+        pesos: 12500000,
+        moneda: 'COP'
+      },
+      {
+        id: 3,
+        fecha: new Date('2023-03-10'),
+        cuenta: 'Cuenta Principal',
+        monto: 360000,
+        pesos: 18000000,
+        moneda: 'COP'
+      }
     ];
   }
 
@@ -139,6 +294,24 @@ export class AsignacionComponent {
       }
       // Resto de tu lógica...
       this.displayAccountModal = false;
+    }
+
+    //modal p2p eye
+    showModalp2p() {
+      this.displayModalp2p = true;
+    }
+
+    //modal agregar ventas
+    save() {
+      const newSale = {
+        fecha: this.fecha,
+        monto: this.monto,
+        tasaCompra: this.tasaCompra,
+        tasaVenta: this.tasaVenta
+      };
+      // Aquí podrías añadir la nueva venta a un array de ventas o enviarla a un servidor
+      console.log(newSale);
+      this.displayModal = false; // Cerrar el modal
     }
 
 }

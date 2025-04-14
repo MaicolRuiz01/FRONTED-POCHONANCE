@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
 import { Subscription } from 'rxjs';
 import { SharedModule } from '../../../shared/shared.module';
-import { P2pServiceService } from '../../../services/p2pservice/p2p-service.service';
+import { P2pServiceService } from '../../../core/services/p2p-service.service';
 
 interface P2POrder {
   createdTime: number; // o string si la fecha viene como cadena
@@ -48,7 +48,7 @@ export class P2pAsignarComponent implements OnInit, OnDestroy {
 
   fetchP2POrders() {
     this.subscriptions.add(
-      this.p2pService.getP2POrders("MILTON", this.startDate, this.endDate).subscribe({
+      this.p2pService.getP2POrders("MILTON", ).subscribe({
         next: (response) => {
           console.log('Full response:', response);
           this.products = response.data.map((item: P2POrder) => ({

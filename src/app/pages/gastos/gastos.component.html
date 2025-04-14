@@ -1,9 +1,19 @@
+
+<div class="ng-container">
+  <h1>Gastos</h1>
+  <p-datepicker [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true" />
+  </div>
+<button pButton label="Nuevo Gasto" class="p-button-primary" (click)="openNew()" style=""></button>
+
+<br>
+<br>
 <p-table [value]="gastos" [paginator]="true" [rows]="10">
   <ng-template pTemplate="header">
     <tr>
       <th>Fecha</th>
       <th>Descripción</th>
       <th>Monto</th>
+      <th>Tipo</th>
       <th>Estado</th>
       <th>Acciones</th>
     </tr>
@@ -13,6 +23,7 @@
       <td>{{ gasto.fecha | date:'mediumDate' }}</td>
       <td>{{ gasto.descripcion }}</td>
       <td>{{ gasto.monto | currency }}</td>
+      <td>{{gasto.tipo.descripcion}}</td>
       <td>{{ gasto.pagado ? 'Pagado' : 'Pendiente' }}</td>
       <td>
         <button *ngIf="!gasto.pagado" pButton label="Pagar" class="p-button-success" (click)="pagar(gasto)"></button>
@@ -20,8 +31,6 @@
     </tr>
   </ng-template>
 </p-table>
-
-<button pButton label="Nuevo Gasto" class="p-button-primary" (click)="openNew()"></button>
 
 <p-dialog [(visible)]="productDialog" header="Nuevo Gasto">
   <div class="p-fluid">
@@ -40,3 +49,4 @@
     <button pButton label="Guardar" class="p-button-success" (click)="crearGasto()"></button>
   </div>
 </p-dialog>
+

@@ -5,7 +5,7 @@ import { environment } from '../../../environment/environment';
 
 export interface Gasto {
   id?: number;
-  tipo_id: { id: number };
+  tipo: { id: number };
   descripcion: string;
   fecha: string;
   monto: number;

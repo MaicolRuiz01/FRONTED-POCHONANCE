@@ -21,18 +21,24 @@ export class ComprasComponent {
       this.cols = [
         { field: 'date', header: 'Fecha' },
         { field: 'account', header: 'Cuenta' },
-        { field: 'currency', header: 'USDT' },
+        { field: 'amount', header: 'Monto' },
         { field: 'fee', header: 'Tasa' },
         { field: 'currency', header: 'Pesos' },
+      ];
 
-      ];
- // Suponiendo que los productos contienen una propiedad 'account' para las cuentas
       this.products = [
-        { orderNumber: 1, account: 'Main Account', currency: 'USDT', fee: 0.1, date: '2023-01-01' },
-        { orderNumber: 2, account: 'Savings Account', currency: 'USDT', fee: 0.05, date: '2023-02-15' },
-        { orderNumber: 3, account: 'Main Account', currency: 'USDT', fee: 0.2, date: '2023-03-10' }
+        { orderNumber: 1, account: 'Main Account', amount: 1000, fee: 0.1, date: '2023-01-01', showButton: true },
+        { orderNumber: 2, account: 'Savings Account', amount: 250000, fee: 0.05, date: '2023-02-15', showButton: true },
+        { orderNumber: 3, account: 'Main Account', amount: 360000, fee: 0.2, date: '2023-03-10', showButton: true }
       ];
+    }
+    calculatePesos(product: any) {
+      if (product.fee && product.amount) {
+        product.currency = product.amount * product.fee; // Calcula el valor en pesos
+        product.showButton = false; // Oculta el botón después del cálculo
       }
+    }
+
 
     // Función para filtrar por cuenta
     onAccountFilter(table: Table, event: Event) {

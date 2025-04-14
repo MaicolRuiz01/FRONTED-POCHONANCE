@@ -1,0 +1,9 @@
+.detail-blocks .detail-block {
+  color: #333;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.p-dialog .p-button {
+  border-radius: 5px;
+}

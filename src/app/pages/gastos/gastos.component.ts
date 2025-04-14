@@ -1,30 +1,40 @@
+
+import { Router } from '@angular/router';
+import { SharedModule } from '../../../app/shared/shared.module';
+import { Table } from 'primeng/table';
 import { Component, OnInit } from '@angular/core';
-import { GastoService, Gasto } from '../../../core/services/gasto.service';
+import { GastoService, Gasto } from '../../core/services/gasto.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { DatePickerModule } from 'primeng/datepicker';
+import { CalendarModule } from 'primeng/calendar';
 
 
 @Component({
-  selector: 'app-operativo',
-  templateUrl: './operativo.component.html',
+  selector: 'app-gastos',
   standalone: true,
-  imports: [CommonModule,
+  imports: [SharedModule,
+    CommonModule,
      FormsModule,
       ButtonModule, 
       ReactiveFormsModule,
       TableModule,      
-      DialogModule,     
-      InputTextModule ],
-  styleUrls: ['./operativo.component.css']
+      DialogModule,
+      CalendarModule,
+      DatePickerModule,     
+      InputTextModule,
+  ],
+  templateUrl: './gastos.component.html',
+  styleUrls: ['./gastos.component.css']
 })
-export class OperativoComponent implements OnInit {
+export class GastosComponent implements OnInit{
   gastos: Gasto[] = [];
   productDialog = false;
-  nuevoGasto: Gasto = { tipo_id: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
+  nuevoGasto: Gasto = { tipo: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
 
   constructor(private gastoService: GastoService) {}
 
@@ -39,7 +49,7 @@ export class OperativoComponent implements OnInit {
   }
 
   openNew() {
-    this.nuevoGasto = { tipo_id: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
+    this.nuevoGasto = { tipo: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
     this.productDialog = true;
   }
 

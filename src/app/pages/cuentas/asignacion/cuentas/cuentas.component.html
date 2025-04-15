@@ -27,7 +27,7 @@
           </span>
         </div>
         <!-- Botón "Agregar" al extremo derecho -->
-        <button class="p-button p-button-raised p-button-success" >Agregar</button>
+        <button class="p-button p-button-raised p-button-success" (click)="mostrarModal = true" >Agregar</button>
       </div>
 
 
@@ -37,3 +37,33 @@
   </div>
 </div>
 
+
+
+<!-- Modal con las cuentas -->
+<p-dialog
+  header="Cuentas"
+  [(visible)]="mostrarModal"
+  [modal]="true"
+  [style]="{width: '350px'}"
+  [closable]="false"
+  [baseZIndex]="10000">
+
+  <!-- Botón de agregar cuenta (ícono grande azul) -->
+  <div class="text-center mb-3">
+    <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-info"></button>
+  </div>
+
+  <!-- Lista de cuentas -->
+  <div *ngFor="let cuenta of cuentas" class="cuenta-item">
+    <div class="cuenta-box">
+      {{ cuenta }}
+      <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger p-button-sm"></button>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="mt-4 text-center">
+    <button pButton label="Cancelar" class="p-button-danger mr-2" (click)="mostrarModal = false"></button>
+    <button pButton label="Guardar" class="p-button-success"></button>
+  </div>
+</p-dialog>

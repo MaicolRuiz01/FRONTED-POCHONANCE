@@ -10,4 +10,10 @@ import { SharedModule } from '../../../../shared/shared.module';
 })
 export class CuentasComponent {
 
+
+
+  //modal agregar
+  mostrarModal: boolean = false;
+
+cuentas: string[] = ['Milton', 'Elva', 'Daniel'];
 }

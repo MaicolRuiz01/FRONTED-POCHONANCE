@@ -47,11 +47,6 @@ export class CajaComponent {
   ngOnInit() {
     this.cols = [
       { field: 'date', header: 'Fecha' },
-      { field: 'sell', header: 'Vendido' },
-      { field: 'system', header: 'Sist' },
-      { field: 'cripto', header: 'Cripto' },
-      { field: 'expense', header: 'Gasto' },
-      { field: 'remain', header: 'Restante' },
       { field: 'inventoryStatus', header: 'Saldo' }
   ];
 
@@ -62,7 +57,7 @@ export class CajaComponent {
     ];
     // Simulación de productos con fechas
     this.products = [
-        { date: new Date('2022-01-01'), sell: 'Laptop', price: 1500, category: 'Electronics', rating: 5, inventoryStatus: 'instock' },
+        { date: new Date('2022-01-01'), inventoryStatus: 'instock' },
         // Añade más productos según sea necesario
     ];
   }

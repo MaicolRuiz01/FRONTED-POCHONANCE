@@ -2,6 +2,8 @@ import { Component, ViewChild } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
+import { Orderp2pService } from '../../../core/services/orderp2p.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-asignacion',
@@ -11,6 +13,16 @@ import { Menu } from 'primeng/menu';
   styleUrl: './asignacion.component.css'
 })
 export class AsignacionComponent {
+
+  orders: any[] = [];  // Aquí se almacenarán todas las órdenes combinadas
+  error: string = '';  // Variable para manejar los errores
+  loading: boolean = false;  // Indicador de carga
+
+ // Cuentas para las que vamos a obtener las órdenes
+ accounts: string[] = ['MILTON', 'CESAR', 'MARCEL'];
+
+  constructor(private orderP2pService: Orderp2pService) { }
+
   cols: any[]= [];
   products: any[] = [];
   selectedProducts: any[]= [];
@@ -233,6 +245,32 @@ showP2PMenu(event: MouseEvent, transaction: any) {
         moneda: 'COP'
       }
     ];
+    this.getP2POrdersForAllAccounts();
+  }
+
+  //uso del service
+  getP2POrdersForAllAccounts(): void {
+    this.loading = true;  // Inicia el indicador de carga
+
+    // Creamos un array de observables para todas las cuentas
+    const requests = this.accounts.map(account =>
+      this.orderP2pService.getP2POrders(account)
+    );
+
+    // Ejecutamos todas las solicitudes de forma paralela
+    // Utilizamos 'forkJoin' de RxJS para combinar las respuestas de todas las solicitudes
+    forkJoin(requests).subscribe(
+      (results) => {
+        // Combina los resultados de todas las cuentas
+        this.orders = results.flat();  // 'flat' aplana un array de arrays en uno solo
+        this.loading = false;  // Finaliza el indicador de carga
+      },
+      (error) => {
+        this.error = 'Error al obtener las órdenes P2P';  // Maneja el error
+        this.loading = false;  // Finaliza el indicador de carga
+        console.error(error);  // Imprime el error en consola
+      }
+    );
   }
 
   calculatePesos(product: any) {

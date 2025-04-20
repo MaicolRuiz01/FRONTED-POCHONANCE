@@ -10,8 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DatePickerModule } from 'primeng/datepicker';
 import { CalendarModule } from 'primeng/calendar';
+
 
 
 @Component({
@@ -24,8 +24,7 @@ import { CalendarModule } from 'primeng/calendar';
       ReactiveFormsModule,
       TableModule,      
       DialogModule,
-      CalendarModule,
-      DatePickerModule,     
+      CalendarModule,   
       InputTextModule,
   ],
   templateUrl: './gastos.component.html',

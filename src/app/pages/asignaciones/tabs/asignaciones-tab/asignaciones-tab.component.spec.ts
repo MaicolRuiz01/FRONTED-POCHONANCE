@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { P2pComponent } from './p2p.component';
+import { AsignacionesTabComponent } from './asignaciones-tab.component';
 
-describe('P2pComponent', () => {
-  let component: P2pComponent;
-  let fixture: ComponentFixture<P2pComponent>;
+describe('AsignacionesTabComponent', () => {
+  let component: AsignacionesTabComponent;
+  let fixture: ComponentFixture<AsignacionesTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [P2pComponent]
+      imports: [AsignacionesTabComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(P2pComponent);
+    fixture = TestBed.createComponent(AsignacionesTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

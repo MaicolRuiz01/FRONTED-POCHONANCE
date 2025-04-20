@@ -1,43 +1,50 @@
+.grid {
+  display: flex;
+  flex-wrap: wrap; /* Permite que las tarjetas se envuelvan en la siguiente línea cuando no hay espacio */
+  justify-content: flex-start; /* Alinea las tarjetas al inicio del contenedor */
+  gap: 20px; /* Espacio entre tarjetas */
+}
+
 .custom-card {
-    background-color: #26C75A; /* Color verde similar */
-    color: white;
-    border-radius: 10px;
-    padding: 20px;
-    width: 320px;
-    font-family: Arial, sans-serif;
-    position: relative;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  background-color: #f8df52;
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 320px; /* Asegura un tamaño fijo para cada tarjeta */
+  font-family: Arial, sans-serif;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px; /* Espacio adicional al final de cada tarjeta si es necesario */
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    font-weight: bold;
+.card-header, .account-type {
+  font-size: calc(4px + 0.5vw); /* Ajusta según el ancho del viewport */
 }
 
-.card-body h3 {
-    font-size: 20px;
-    margin: 10px 0;
-    font-weight: bold;
+.saldo-row {
+  display: flex;
+  justify-content: flex-start; /* Cambiado para alinear a la izquierda */
+  margin-bottom: 15px; /* Espacio entre las filas */
 }
 
-.card-body h1 {
-    font-size: 36px;
-    margin: 0;
-    font-weight: bold;
+.saldo {
+  display: flex;
+  flex-direction: row; /* Los elementos h3 y h2 están lado a lado */
+  align-items: center; /* Alineación vertical */
+  text-align: left; /* Alineación del texto a la izquierda */
+  gap: 10px; /* Espacio entre el título y el valor */
+  overflow: hidden; /* Asegura que el contenido no desborde */
 }
 
 .account-type {
-    border-top: 1px solid white;
-    padding-top: 10px;
-    font-size: 14px;
-    font-weight: bold;
+  border-top: 1px solid white;
+  padding-top: 10px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .card-footer {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    font-size: 22px;
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  font-size: 22px;
 }

@@ -18,10 +18,14 @@ import { RatingModule } from 'primeng/rating';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogModule } from 'primeng/dialog';
 import { MiCardComponent } from './mi-card/mi-card.component';
+import { CalendarModule } from 'primeng/calendar';
+import { HttpClientModule } from '@angular/common/http';
+
 
 @NgModule({
   declarations: [  // ✅ Agregar aquí
-    MiCardComponent
+    MiCardComponent,
+
   ],
   imports: [
 
@@ -41,7 +45,10 @@ import { MiCardComponent } from './mi-card/mi-card.component';
     InputTextareaModule,
     DialogModule,
     ReactiveFormsModule,
-    
+    CalendarModule,
+    HttpClientModule,
+
+
   ],
   exports: [
     CommonModule,
@@ -60,8 +67,10 @@ import { MiCardComponent } from './mi-card/mi-card.component';
     InputTextareaModule,
     DialogModule,
     ReactiveFormsModule,
-    MiCardComponent
-    
+    CalendarModule,
+    MiCardComponent,
+
+
   ]
 })
 export class SharedModule {}

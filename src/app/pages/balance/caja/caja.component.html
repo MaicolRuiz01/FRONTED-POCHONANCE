@@ -1,1 +1,91 @@
-<p>caja works!</p>
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-table #dt [value]="products" [columns]="cols" responsiveLayout="scroll" [rows]="10"
+               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" [(selection)]="selectedProducts"
+               selectionMode="multiple" [rowHover]="true" dataKey="id">
+        <ng-template pTemplate="caption">
+          <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+            <h5 class="m-0">Balance</h5>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                    <i class="pi pi-calendar"></i>
+                    <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filtrar por fecha..." class="w-full sm:w-auto"/>
+                </span>
+            </div>
+        </div>
+        <button pButton type="button" label="Info Mes" class="p-button-success" (click)="openMonthlyInfo()"></button>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th>
+                <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
+                <th pSortableColumn="usdToPeso">USDT/Peso <p-sortIcon field="usdToPeso"></p-sortIcon></th>
+                <th pSortableColumn="system">Sistema <p-sortIcon field="system"></p-sortIcon></th>
+                <th pSortableColumn="balance">Saldo <p-sortIcon field="balance"></p-sortIcon></th>
+                <th></th> <!-- Columna vacía -->
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+            <tr>
+                <td>
+                    <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                </td>
+                <td><span class="p-column-title">Fecha</span>{{product.date | date:'mediumDate'}}</td>
+                <td><span class="p-column-title">USDT/Peso</span>{{product.usdToPeso | number:'1.2-2'}}</td>
+                <td><span class="p-column-title">Sistema</span>{{product.system}}</td>
+                <td><span class="p-column-title">Saldo</span>{{product.balance | currency:'USD'}}</td>
+                <td>
+                  <button pButton type="button" icon="pi pi-question-circle" class="p-button-rounded p-button-text" (click)="showDetails()"></button>
+                </td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+
+<p-dialog header="Información Mensual" [(visible)]="displayModal" [style]="{width: '50vw'}" [modal]="true">
+  <p-table [value]="monthlyData">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mes</th>
+        <th>Gasto</th>
+        <th>USDT Vendido</th>
+        <th>Restante</th>
+        <th>Monto</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-data>
+      <tr>
+        <td>{{ data.month }}</td>
+        <td>{{ data.expense | currency:'USD' }}</td>
+        <td>{{ data.soldUsdt | currency:'USD' }}</td>
+        <td>{{ data.remaining | currency:'USD' }}</td>
+        <td>{{ data.amount | currency:'USD' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>
+
+<!-- Modal con los detalles -->
+<p-dialog header="Detalles" [(visible)]="showDetailsModal" [modal]="true" [style]="{width: '300px'}" [closable]="false">
+  <div class="detail-blocks">
+    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
+      VENTA: <span style="float:right; font-weight: bold;">123,456</span>
+    </div>
+    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
+      CRIPTO: <span style="float:right; font-weight: bold;">678,910</span>
+    </div>
+    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
+      GASTO: <span style="float:right; font-weight: bold;">11,213</span>
+    </div>
+    <button pButton label="ATRÁS" (click)="showDetailsModal=false" style="width: 100%; margin-top: 20px;" class="p-button-danger"></button>
+  </div>
+</p-dialog>

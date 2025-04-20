@@ -34,21 +34,32 @@ export class AppMenuComponent implements OnInit {
                                 label: 'TRASPASOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                                 routerLink: ['/cuentas/traspasos']
                             },
+                            {
+                              label: 'COMPRAS', icon: 'pi pi-fw pi-tag',
+                              routerLink: ['/cuentas/compras']
+                           },
+                           {
+                            label: 'P2P9', icon: 'pi pi-fw pi-dollar',
+                            routerLink: ['/cuentas/p2p']
+                           },
+                           {
+                            label: 'VENTAS GENERALES', icon: 'pi pi-fw pi-tags',
+                            routerLink: ['/cuentas/ventasgenerales']
+                           },
+                           {
+                            label: 'IMPUESTOS', icon: 'pi pi-fw pi-calculator',
+                            routerLink: ['/cuentas/impuestos']
+                           },
+                           {
+                            label: 'TRX', icon: 'pi pi-fw pi-prime',
+                            routerLink: ['/cuentas/trx']
+                           },
                         ]
                     },
                     {
-                        label: 'VENTAS', icon: 'pi pi-fw pi-shopping-cart',
-                        items: [
-                            {
-                                label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                                routerLink: ['/ventas/asignar']
-                            },
-                            {
-                                label: 'COMPLETAS', icon: 'pi pi-fw pi-list-check',
-                                routerLink: ['/ventas/completas']
-                            },
-                        ]
-                    },
+                      label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
+                      routerLink: ['/asignaciones']
+                  },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
                         items: [
@@ -57,23 +68,14 @@ export class AppMenuComponent implements OnInit {
                                 routerLink: ['/balance/caja']
                             },
                             {
-                                label: 'COMPLETAS', icon: 'pi pi-fw pi-check-square',
+                                label: 'VERIFICACION', icon: 'pi pi-fw pi-check-square',
                                 routerLink: ['/balance/completas']
                             },
                         ]
                     },
                     {
                         label: 'GASTOS', icon: 'pi pi-fw pi-briefcase',
-                        items: [
-                            {
-                                label: 'OPERATIVO', icon: 'pi pi-fw pi-building',
-                                routerLink: ['/gastos/operativo']
-                            },
-                            {
-                                label: 'OTRO', icon: 'pi pi-fw pi-bookmark',
-                                routerLink: ['/gastos/otro']
-                            },
-                        ]
+                        routerLink: ['/gastos']
                     },
                     {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',
@@ -83,7 +85,7 @@ export class AppMenuComponent implements OnInit {
                                 routerLink: ['/cripto/completada']
                             },
                             {
-                                label: 'VISTA', icon: 'pi pi-fw pi-eye',
+                                label: 'ABIERTAS', icon: 'pi pi-fw pi-eye',
                                 routerLink: ['/cripto/vista']
                             },
                         ]
@@ -91,7 +93,7 @@ export class AppMenuComponent implements OnInit {
 
                 ]
             },
-            {
+            /* {
                 label: 'Pages',
                 icon: 'pi pi-fw pi-briefcase',
                 items: [
@@ -106,7 +108,7 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/landing']
                     },
                 ]
-            },            
+            },
             {
                 label: 'UI Components',
                 items: [
@@ -246,7 +248,7 @@ export class AppMenuComponent implements OnInit {
                         label: 'View Source', icon: 'pi pi-fw pi-search', url: ['https://github.com/primefaces/sakai-ng'], target: '_blank'
                     }
                 ]
-            }
+            } */
         ];
     }
 }

@@ -100,7 +100,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
       accountCopIds:         this.selectedAccountIds,
       accountAmounts:        this.selectedAmounts,
       nameAccount:           nameAcct,
-      nameAccountBinance:    this.selectedOrder.nameAccount ?? ''
+      nameAccountBinance:    this.selectedOrder.binanceAccount ?? ''
     };
 
     this.saleService.createSale(dto).subscribe({
@@ -123,10 +123,10 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
   filterByDate() {
     if (!this.startDate || !this.endDate) return;
-    this.orderService.getOrdersByDateRange('MILTON', this.startDate, this.endDate)
+    this.orderService.getOrdersByDateRangeAllAccounts(this.startDate, this.endDate)
       .subscribe(data => this.p2pOrders = data);
   }
-
+  
   clearFilter() {
     this.startDate = this.endDate = null;
     this.loadOrders();

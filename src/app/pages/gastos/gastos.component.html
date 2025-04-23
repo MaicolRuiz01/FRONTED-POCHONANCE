@@ -1,165 +1,51 @@
-<div class="grid">
-  <div class="col-12">
-    <!-- Tarjeta para la tabla Operativo -->
-    <div class="card px-6 py-6">
-      <p-table #dt [value]="filteredProducts" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
-     <ng-template pTemplate="caption">
-  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-    <h5 class="m-0">Gastos</h5>
-    <!-- Selector de acciones al lado izquierdo -->
-    <span class="block mt-2 md:mt-0 p-input-icon-left">
-      <i class="pi pi-calendar"></i>
-      <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filter by date..." class="w-full sm:w-auto"/>
-    </span>
-  </div>
-  <!-- Contenedor separado para el botón New, con estilo diferenciado utilizando clases de PrimeNG -->
-  <div class="mt-2 flex justify-content-end p-shadow-2" style="background-color: #f8f9fa; border-radius: 5px;">
-    <p-dropdown [options]="actions" [(ngModel)]="selectedType" placeholder="Tipo" class="mr-auto" (onChange)="filterByType()"></p-dropdown>
-    <button pButton type="button" (click)="openModal()" label="Añadir Gasto" icon="pi pi-plus"></button>
-  </div>
-</ng-template>
 
-<ng-template pTemplate="header">
-  <tr>
-    <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
-    <th pSortableColumn="description">Descripción <p-sortIcon field="description"></p-sortIcon></th>
-    <th pSortableColumn="type">Tipo <p-sortIcon field="type"></p-sortIcon></th>
-    <th pSortableColumn="cost">Monto <p-sortIcon field="cost"></p-sortIcon></th>
-    <td>
-
-    </td>
-  </tr>
-</ng-template>
-<ng-template pTemplate="body" let-product>
-  <tr>
-    <td>{{ product.date | date:'mediumDate' }}</td>
-    <td>{{ product.description }}</td>
-    <td>{{ product.type }}</td> <!-- Asegúrate de mostrar 'type' adecuadamente -->
-    <td>{{ product.cost | currency:'USD' }}</td>
-    <td>
-      <!-- Mostrar botón solo si el tipo no es 'Otro' -->
-      <button *ngIf="product.type !== 'Otro'" type="button" pButton label="Pagar" (click)="pay(product)" class="p-button-success"></button>
-    </td>
-  </tr>
-</ng-template>
-      </p-table>
-    </div>
-    <!-- Tarjeta para la tabla Pagado -->
-    <div class="card px-6 py-6 mt-4"> <!-- Añadido un margen superior para separar visualmente las tarjetas -->
-      <p-table #dtPaid [value]="paidProducts" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,20,30]"
-               [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
-        <ng-template pTemplate="caption">
-          <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 class="m-0">Pagado</h5>
-          </div>
-        </ng-template>
-        <ng-template pTemplate="header">
-          <tr>
-            <th pSortableColumn="paymentDate">Fecha de Pago <p-sortIcon field="paymentDate"></p-sortIcon></th>
-            <th pSortableColumn="description">Descripción <p-sortIcon field="description"></p-sortIcon></th>
-            <th pSortableColumn="amount">Monto <p-sortIcon field="amount"></p-sortIcon></th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-paidProduct>
-          <tr>
-            <td>{{ paidProduct.paymentDate | date:'mediumDate' }}</td>
-            <td>{{ paidProduct.description }}</td>
-            <td>{{ paidProduct.amount | currency:'USD' }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
+<div class="ng-container">
+  <h1>Gastos</h1>
   </div>
-</div>
+<button pButton label="Nuevo Gasto" class="p-button-primary" (click)="openNew()" ></button>
 
-<p-dialog [(visible)]="displayModal" [modal]="true" [style]="{width: '30rem'}">
+<br>
+<br>
+<p-table [value]="gastos" [paginator]="true" [rows]="10">
   <ng-template pTemplate="header">
-    <div class="header-content">
-      <button type="button" pButton label="Gestionar Operativos" icon="pi pi-cog" (click)="manageOperative()" style="margin-right: auto;"></button>
-      <span class="header-title">Añadir Gasto</span>
-      <span></span> <!-- Espacio adicional para centrar el título -->
-    </div>
+    <tr>
+      <th>Fecha</th>
+      <th>Descripción</th>
+      <th>Monto</th>
+      <th>Tipo</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
   </ng-template>
+  <ng-template pTemplate="body" let-gasto>
+    <tr>
+      <td>{{ gasto.fecha | date:'mediumDate' }}</td>
+      <td>{{ gasto.descripcion }}</td>
+      <td>{{ gasto.monto | currency }}</td>
+      <td>{{gasto.tipo.descripcion}}</td>
+      <td>{{ gasto.pagado ? 'Pagado' : 'Pendiente' }}</td>
+      <td>
+        <button *ngIf="!gasto.pagado" pButton label="Pagar" class="p-button-success" (click)="pagar(gasto)"></button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="productDialog" header="Nuevo Gasto">
   <div class="p-fluid">
     <div class="p-field">
-      <label for="fecha">Fecha</label>
-      <input type="date" pInputText id="fecha" [(ngModel)]="fecha" autofocus />
+      <label>Descripción</label>
+      <input pInputText [(ngModel)]="nuevoGasto.descripcion">
     </div>
     <div class="p-field">
-      <label for="description">Descripción o nombre</label>
-      <input type="text" pInputText id="description" [(ngModel)]="description"/>
+      <label>Fecha</label>
+      <input type="date" pInputText [(ngModel)]="nuevoGasto.fecha">
     </div>
     <div class="p-field">
-      <label for="amount">Monto a pagar</label>
-      <input type="text" pInputText id="amount" [(ngModel)]="amount"/>
+      <label>Monto</label>
+      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto">
     </div>
+    <button pButton label="Guardar" class="p-button-success" (click)="crearGasto()"></button>
   </div>
-  <p-footer>
-    <button type="button" pButton label="Cancelar" icon="pi pi-times" (click)="displayModal=false"></button>
-    <button type="button" pButton label="Guardar" icon="pi pi-check" (click)="saveExpense()"></button>
-  </p-footer>
 </p-dialog>
 
-
-<p-dialog [(visible)]="secondModalDisplay" [modal]="true" [style]="{width: '30rem'}">
-  <ng-template pTemplate="header">
-    <div class="header-content">
-      <span class="header-title">Gastos Operativos</span>
-    </div>
-  </ng-template>
-  <div class="add-button-container">
-    <button type="button" pButton label="Añadir" icon="pi pi-plus" class="ui-button-success" (click)="openAddExpenseModal()"></button>
-  </div>
-  <div class="p-fluid table-container">
-    <p-table [value]="operationalExpenses">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Gasto</th>
-          <th>Valor</th>
-          <th>Frecuencia</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-expense>
-        <tr>
-          <td>{{expense.name}}</td>
-          <td>{{expense.value | currency}}</td>
-          <td>{{expense.frequency}}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-  <p-footer>
-    <button type="button" pButton label="Cerrar" icon="pi pi-times" (click)="secondModalDisplay=false"></button>
-  </p-footer>
-</p-dialog>
-
-
-<p-dialog [(visible)]="addExpenseModal" [modal]="true" [style]="{width: '30rem'}">
-  <ng-template pTemplate="header">
-    <div class="header-content">
-      <span class="header-title">Añadir Gasto Operativos</span>
-    </div>
-  </ng-template>
-  <div class="p-fluid">
-    <div class="p-field">
-      <label for="paymentDate">Fecha de pago</label>
-      <input type="date" pInputText id="paymentDate" [(ngModel)]="paymentDate"/>
-    </div>
-    <div class="p-field">
-      <label for="cobroFrequency">Frecuencia de cobro</label>
-      <p-dropdown [options]="frequencies" [(ngModel)]="selectedFrequency" placeholder="Seleccione una frecuencia"></p-dropdown>
-    </div>
-    <div class="p-field">
-      <label for="description">Descripción o nombre</label>
-      <input type="text" pInputText id="description" [(ngModel)]="description"/>
-    </div>
-    <div class="p-field">
-      <label for="amount">Monto a pagar</label>
-      <input type="text" pInputText id="amount" [(ngModel)]="amount"/>
-    </div>
-  </div>
-  <p-footer>
-    <button type="button" pButton label="Cancelar" icon="pi pi-times" (click)="addExpenseModal=false"></button>
-    <button type="button" pButton label="Guardar" icon="pi pi-check" (click)="saveExpense2()"></button>
-  </p-footer>
-</p-dialog>

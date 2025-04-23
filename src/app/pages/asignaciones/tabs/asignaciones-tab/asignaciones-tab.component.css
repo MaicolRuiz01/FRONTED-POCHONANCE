@@ -1,0 +1,17 @@
+::ng-deep .p-multiselect-panel {
+  padding-top: 0.5rem;
+}
+
+::ng-deep .p-multiselect-header {
+  display: none !important; /* oculta la línea duplicada de búsqueda si no la necesitas */
+}
+
+::ng-deep .p-multiselect-items-wrapper {
+  max-height: 200px !important;
+  overflow-y: auto;
+}
+
+::ng-deep .p-multiselect-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}

@@ -26,7 +26,7 @@
               pRipple
               icon="pi pi-eye"
               class="p-button-warning p-button-rounded eye-button"
-              (click)="showModalDialog()"></button>
+              ></button>
             </div>
 
             <!-- Tabla existente -->
@@ -50,7 +50,7 @@
                     <ng-container *ngIf="col.field === 'fee'; else other_fields">
                       <div class="input-group">
                         <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
-                        <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                        <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" >
                           <i class="pi pi-check"></i>
                         </button>
                       </div>
@@ -75,7 +75,7 @@
               pRipple
               icon="pi pi-eye"
               class="p-button-warning p-button-rounded eye-button"
-              (click)="showModalDialogVentas()"></button>
+             ></button>
             </div>
           <!-- Contenido para Ventas -->
           <p-table #dt [value]="products" [columns]="cols" [rows]="10"
@@ -98,7 +98,7 @@
                   <ng-container *ngIf="col.field === 'fee'; else other_fields">
                     <div class="input-group">
                       <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
-                      <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                      <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded">
                         <i class="pi pi-check"></i>
                       </button>
                     </div>
@@ -126,7 +126,6 @@
               pRipple
               icon="pi pi-eye"
               class="p-button-warning p-button-rounded eye-button"
-              (click)="showModalp2p()"
               ></button>
             </div>
 
@@ -156,7 +155,7 @@
                     pRipple
                     icon="pi pi-exclamation-circle"
                     class="p-button-warning p-button-rounded eye-button"
-                    (click)="showModalDialp2p()"></button>
+                    ></button>
                   </td> <!-- Columna vacía -->
                 </tr>
               </ng-template>
@@ -310,7 +309,7 @@
             icon="pi pi-plus"
             class="p-button-success"
             type="button"
-            (click)="guardarAvanzado()"
+
           ></button>
         </div>
       </div>
@@ -322,14 +321,13 @@
       pButton
       label="Cancelar"
       icon="pi pi-times"
-      (click)="cancelar()"
+
       class="p-button-text p-button-sm"
     ></button>
     <button
       pButton
       label="Aceptar"
       icon="pi pi-check"
-      (click)="confirmarCuenta()"
       class="p-button-sm"
       [disabled]="!cuentaSeleccionada && !showAdvancedView"
     ></button>
@@ -401,7 +399,7 @@
       <!-- Botones con CSS nativo y uso correcto de las etiquetas y estilos -->
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
           <button type="button" style="background-color: #ff5c5c; color: white; border: none; padding: 10px 20px; cursor: pointer;" (click)="displayModal = false">Cancelar</button>
-          <button type="button" style="background-color: #007ad9; color: white; border: none; padding: 10px 20px; cursor: pointer;" (click)="save()">Guardar</button>
+          <button type="button" style="background-color: #007ad9; color: white; border: none; padding: 10px 20px; cursor: pointer;" >Guardar</button>
       </div>
   </div>
 </p-dialog>

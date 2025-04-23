@@ -25,6 +25,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { MenuModule } from 'primeng/menu';
 
 
+
 @NgModule({
   declarations: [  // ✅ Agregar aquí
     MiCardComponent,

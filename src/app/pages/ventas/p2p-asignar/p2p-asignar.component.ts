@@ -1,8 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
+import { Subscription } from 'rxjs';
 import { SharedModule } from '../../../shared/shared.module';
 import { P2pServiceService } from '../../../core/services/p2p-service.service';
+
+interface P2POrder {
+  createdTime: number; // o string si la fecha viene como cadena
+  accountName: string;
+  amount: number;
+  asignarCuenta?: string; // Si esto se supone que es editable
+}
 
 @Component({
   selector: 'app-p2p-asignar',
@@ -11,13 +19,15 @@ import { P2pServiceService } from '../../../core/services/p2p-service.service';
   templateUrl: './p2p-asignar.component.html',
   styleUrls: ['./p2p-asignar.component.css']
 })
-export class P2pAsignarComponent {
-
+export class P2pAsignarComponent implements OnInit, OnDestroy {
   cols: any[] = [];
-  products: any[] = [];
+  products: P2POrder[] = [];
   selectedProducts: any[] = [];
+  subscriptions: Subscription = new Subscription();
 
-  // Opciones para el dropdown de "Asignar Cuenta"
+  startDate: string = '2025-03-17';
+  endDate: string = '2025-03-25';
+
   cuentasOptions: any[] = [
     { name: 'Enanitas XXX', value: 'cuenta1' },
     { name: 'Trabas 18cm', value: 'cuenta2' },
@@ -31,37 +41,32 @@ export class P2pAsignarComponent {
       { field: 'createdTime', header: 'Fecha' },
       { field: 'accountName', header: 'Cuenta Binance' },
       { field: 'amount', header: 'Valor' },
-      { field: 'asignarCuenta', header: 'ASignar Cuenta' }
+      { field: 'asignarCuenta', header: 'Asignar Cuenta' }
     ];
-
     this.fetchP2POrders();
   }
 
   fetchP2POrders() {
-    this.p2pService.getP2POrders("MILTON").subscribe({
-      next: (response) => {
-        console.log('Full response:', response); // Muestra la respuesta completa en la consola
-        if (response && Array.isArray(response.data)) {
-          // Asegúrate de transformar la fecha de milisegundos a formato legible
-          const formattedData = response.data.map((item: { createTime: string | number | Date; }) => ({
+    this.subscriptions.add(
+      this.p2pService.getP2POrders("MILTON", ).subscribe({
+        next: (response) => {
+          console.log('Full response:', response);
+          this.products = response.data.map((item: P2POrder) => ({
             ...item,
-            createdTime: new Date(item.createTime).toLocaleString() // Convertir el timestamp a fecha legible
+            createdTime: new Date(item.createdTime).toLocaleString()
           }));
-          console.log('Data to be loaded in table:', formattedData); // Muestra los datos antes de cargarlos en la tabla
-          this.products = formattedData;
-        } else {
-          console.error('Expected an object containing an array, but got:', typeof response);
-          this.products = []; // Asegura que la tabla se limpie si la respuesta no es como se espera
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching P2P orders:', error);
-      }
-    });
+        },
+        error: (error) => console.error('Error fetching P2P orders:', error)
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe(); // Asegura que todas las suscripciones se cancelen
   }
 
   onDateFilter(table: Table, event: Event) {
     const date = (event.target as HTMLInputElement).value;
-    table.filter(date, 'date', 'equals');
+    table.filter(date, 'createdTime', 'equals');
   }
 }

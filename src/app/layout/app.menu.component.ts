@@ -39,7 +39,7 @@ export class AppMenuComponent implements OnInit {
                               routerLink: ['/cuentas/compras']
                            },
                            {
-                            label: 'P2P', icon: 'pi pi-fw pi-dollar',
+                            label: 'P2P9', icon: 'pi pi-fw pi-dollar',
                             routerLink: ['/cuentas/p2p']
                            },
                            {
@@ -63,20 +63,7 @@ export class AppMenuComponent implements OnInit {
                     },
                     {
                       label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                      items: [
-                        {
-                          label: 'Compras', icon: 'pi pi-fw pi-inbox',
-                          routerLink: ['/ventas/asignar/compras']
-                      },
-                          {
-                              label: 'Ventas P2P', icon: 'pi pi-fw pi-dollar',
-                              routerLink: ['/ventas/asignar/p2p']
-                          },
-                          {
-                              label: 'Ventas', icon: 'pi pi-fw pi-list-check',
-                              routerLink: ['/ventas/completas']
-                          },
-                      ]
+                      routerLink: ['/asignaciones']
                   },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
@@ -95,7 +82,7 @@ export class AppMenuComponent implements OnInit {
 
                 ]
             },
-            {
+            /* {
                 label: 'Pages',
                 icon: 'pi pi-fw pi-briefcase',
                 items: [
@@ -250,7 +237,7 @@ export class AppMenuComponent implements OnInit {
                         label: 'View Source', icon: 'pi pi-fw pi-search', url: ['https://github.com/primefaces/sakai-ng'], target: '_blank'
                     }
                 ]
-            }
+            } */
         ];
     }
 }

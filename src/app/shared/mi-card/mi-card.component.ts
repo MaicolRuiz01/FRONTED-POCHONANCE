@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CuentasService } from '../../core/services/cuentas.service';
+
 
 @Component({
   selector: 'app-mi-card',
@@ -10,13 +10,13 @@ export class MiCardComponent implements OnInit {
   @Input() cuentaId!: number;  // ID de la cuenta (recibido desde otro componente)
   cuenta: any = {};  // Datos de la cuenta
 
-  constructor(private cuentasService: CuentasService) {}
+  constructor() {}
 
   ngOnInit() {
-    this.cargarDatos();
+
   }
 
-  cargarDatos() {
+  /* cargarDatos() {
     if (this.cuentaId) {
       this.cuentasService.obtenerCuenta(this.cuentaId).subscribe(data => {
         this.cuenta = data;
@@ -24,5 +24,5 @@ export class MiCardComponent implements OnInit {
         console.error('Error al obtener datos de la cuenta:', error);
       });
     }
-  }
+  } */
 }

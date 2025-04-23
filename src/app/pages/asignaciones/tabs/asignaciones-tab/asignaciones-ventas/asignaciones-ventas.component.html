@@ -1,0 +1,111 @@
+<!-- asignaciones-ventas.component.html -->
+
+<!-- filtro rango de fechas -->
+
+  
+  <div class="card">
+    <h2>Asignar Ventas</h2>
+    <div class="p-grid p-align-center p-mb-3 p-g-3">
+        <div class="p-col-12 p-md-4">
+          <p-calendar
+            [(ngModel)]="startDate"
+            placeholder="Desde"
+            dateFormat="yy-mm-dd"
+            (onSelect)="applyFilters()"
+            showIcon="true"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+        </div>
+        <div class="p-col-12 p-md-4">
+          <p-calendar
+            [(ngModel)]="endDate"
+            placeholder="Hasta"
+            dateFormat="yy-mm-dd"
+            (onSelect)="applyFilters()"
+            showIcon="true"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+        </div>
+        <br>
+        <div class="p-col-12 p-md-4 p-pl-2">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Limpiar"
+            class="p-button-text"
+            (click)="clearDateFilter()"
+          ></button>
+        </div>
+      </div>
+
+      <br>
+    <p-table
+      [value]="filteredWithdrawals"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5,10,25]"
+      [scrollable]="true"
+      scrollDirection="horizontal"
+      [tableStyle]="{ 'min-width': '80rem' }"
+      sortMode="single"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="account">Cuenta <p-sortIcon field="account"/></th>
+          <th pSortableColumn="coin">Moneda <p-sortIcon field="coin"/></th>
+          <th pSortableColumn="amount">Monto <p-sortIcon field="amount"/></th>
+          <th pSortableColumn="completeTime">Fecha <p-sortIcon field="completeTime"/></th>
+          <th>Acción</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-w>
+        <tr>
+          <td>{{ w.account }}</td>
+          <td>{{ w.coin }}</td>
+          <td>{{ w.amount | number:'1.0-2' }}</td>
+          <td>{{ w.completeTime | date:'short' }}</td>
+          <td>
+            <button
+              pButton
+              type="button"
+              label="Asignar"
+              class="p-button-sm p-button-success"
+              (click)="openAssignModal(w)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  
+  <!-- diálogo de asignación de venta -->
+  <p-dialog
+    header="Asignar Venta"
+    [(visible)]="displayModal"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    (onHide)="closeModal()"
+  >
+    <div *ngIf="selected">
+      <div class="p-field"><strong>Cuenta:</strong> {{ selected.account }}</div>
+      <div class="p-field"><strong>Moneda:</strong> {{ selected.coin }}</div>
+      <div class="p-field"><strong>Monto:</strong> {{ selected.amount | number:'1.0-2' }}</div>
+      <div class="p-field">
+        <label for="rateInput"><strong>Tasa de venta</strong></label>
+        <input
+          id="rateInput"
+          type="number"
+          pInputText
+          [(ngModel)]="saleRate"
+          placeholder="Ingrese tasa"
+          [style]="{ width: '100%' }"
+        />
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
+      <button pButton type="button" label="Guardar" (click)="saveSale()" [disabled]="!saleRate"></button>
+    </ng-template>
+  </p-dialog>
+  

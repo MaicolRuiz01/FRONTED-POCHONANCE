@@ -2,7 +2,6 @@ import { Component, ViewChild } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
-import { Orderp2pService } from '../../../core/services/orderp2p.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -21,7 +20,6 @@ export class AsignacionComponent {
  // Cuentas para las que vamos a obtener las órdenes
  accounts: string[] = ['MILTON', 'CESAR', 'MARCEL'];
 
-  constructor(private orderP2pService: Orderp2pService) { }
 
   cols: any[]= [];
   products: any[] = [];
@@ -252,9 +250,9 @@ showP2PMenu(event: MouseEvent, transaction: any) {
   getP2POrdersForAllAccounts(): void {
     this.loading = true;  // Inicia el indicador de carga
 
-    // Creamos un array de observables para todas las cuentas
+   /*  // Creamos un array de observables para todas las cuentas
     const requests = this.accounts.map(account =>
-      this.orderP2pService.getP2POrders(account)
+      this.orderP2pService.(account)
     );
 
     // Ejecutamos todas las solicitudes de forma paralela
@@ -350,6 +348,6 @@ showP2PMenu(event: MouseEvent, transaction: any) {
       // Aquí podrías añadir la nueva venta a un array de ventas o enviarla a un servidor
       console.log(newSale);
       this.displayModal = false; // Cerrar el modal
-    }
+    } */
 
-}
+}}

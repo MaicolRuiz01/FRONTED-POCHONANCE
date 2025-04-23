@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { P2pAsignarComponent } from './p2p-asignar.component';
+import { CuentasTabComponent } from './cuentas-tab.component';
 
-describe('P2pAsignarComponent', () => {
-  let component: P2pAsignarComponent;
-  let fixture: ComponentFixture<P2pAsignarComponent>;
+describe('CuentasTabComponent', () => {
+  let component: CuentasTabComponent;
+  let fixture: ComponentFixture<CuentasTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [P2pAsignarComponent]
+      imports: [CuentasTabComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(P2pAsignarComponent);
+    fixture = TestBed.createComponent(CuentasTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

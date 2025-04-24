@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
+import { AccountBinance } from '../../../modules/account-binance';
+import { AccountBinanceService } from '../../../core/services/account-binance.service';
 
 @Component({
   selector: 'app-saldos',
@@ -42,22 +44,43 @@ accounts: any[] = [
       { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
     ];
 
-  constructor( private messageService: MessageService) { }
+    //crear nueva cuenta
+    createAccountDialog = false;
+    newAccount: AccountBinance = {
+      name: '',
+      referenceAccount: ''
+    };
+
+  constructor( private accountService: AccountBinanceService, private messageService: MessageService) { }
 
   ngOnInit() {
-
+    this.accountService.traerCuentas().subscribe({
+      next: (res: AccountBinance[]) => {
+        console.log('📥 Cuentas cargadas desde backend:', res);
+        this.accounts = res.map(cuenta => ({
+          accountType: cuenta.name,           // Usado en el header y tipo de cuenta
+          titleUSDT: cuenta.name,             // Reemplaza visualmente “Saldo USDT”
+          valueUSDT: '$0',                    // Podrías ajustar si hay saldos reales
+          titlePesos: 'Saldo Pesos',
+          valuePesos: '$0',
+          titleWallet: 'Número de cuenta',    // Etiqueta
+          valueWallet: cuenta.referenceAccount, // Muestra el número real
+          titlecorreo: 'Correo',
+          valuecorreo: 'sin@correo.com'       // Temporal o si deseas agregar campo real después
+        }));
+      },
+      error: (err) => {
+        console.error('❌ Error al traer cuentas:', err);
+      }
+    });
   }
+
 
   openNew() {
       this.product = {};
       this.submitted = false;
       this.productDialog = true;
   }
-
-  deleteSelectedProducts() {
-      this.deleteProductsDialog = true;
-  }
-
 
   createId(): string {
       let id = '';
@@ -80,23 +103,7 @@ accounts: any[] = [
     // Aquí puedes abrir otro modal o mostrar detalles adicionales
   }
 
-  // nueva cuenta
-  addAccount() {
-    const newAccountName = prompt('Nombre de la nueva cuenta:');
-    if (newAccountName) {
-      this.accounts.push({
-        accountType: newAccountName,
-        titleUSDT: 'Saldo USDT',
-        valueUSDT: '$0',
-        titlePesos: 'Saldo Pesos',
-        valuePesos: '$0',
-        titleWallet: 'Wallet',
-        valueWallet: '',
-        titlecorreo: 'Correo',
-        valuecorreo: ''
-      });
-    }
-  }
+
 
   removeAccount(index: number) {
     this.accounts.splice(index, 1);
@@ -106,5 +113,35 @@ accounts: any[] = [
     this.messageService.add({severity:'success', summary:'Guardado', detail:'Cuentas actualizadas'});
     this.productDialog = false;
   }
+  //modal crear cuenta
 
+  addAccount() {
+    this.newAccount = { name: '', referenceAccount: '' };
+    this.createAccountDialog = true;
+  }
+
+  cancelarNuevaCuenta() {
+    this.createAccountDialog = false;
+  }
+
+  crearCuentaBinance() {
+
+    if (!this.newAccount.name || !this.newAccount.referenceAccount) {
+      this.messageService.add({severity:'warn', summary:'Faltan datos', detail:'Completa todos los campos'});
+      return;
+    }
+
+    console.log('📤 Enviando nueva cuenta al backend:', this.newAccount);
+
+    this.accountService.crear(this.newAccount).subscribe({
+      next: (res) => {
+        this.accounts.push({ accountType: res.name }); // o ajusta según tu estructura
+        this.messageService.add({severity:'success', summary:'Cuenta creada', detail:'Se agregó la cuenta exitosamente'});
+        this.createAccountDialog = false;
+      },
+      error: () => {
+        this.messageService.add({severity:'error', summary:'Error', detail:'No se pudo crear la cuenta'});
+      }
+    });
+  }
 }

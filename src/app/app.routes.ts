@@ -30,6 +30,10 @@ export const routes: Routes = [  {
       path: 'asignaciones',
       component: AsignacionesWrapperComponent
     },
+    {
+      path: 'cuentas/saldos',
+      component: SaldosTabComponent
+    },
 
 
     {path:'cripto', component:CompletadaComponent},

@@ -106,3 +106,27 @@
   </div>
 
 </p-dialog>
+
+<p-dialog header="Crear nueva cuenta Binance"
+          [(visible)]="createAccountDialog"
+          [modal]="true"
+          [closable]="false"
+          [style]="{width: '400px'}">
+
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="name">Nombre</label>
+      <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
+    </div>
+
+    <div class="p-field">
+      <label for="referenceAccount">Número de cuenta</label>
+      <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
+    </div>
+
+    <div class="p-dialog-footer">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cancelarNuevaCuenta()"></button>
+      <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
+    </div>
+  </div>
+</p-dialog>

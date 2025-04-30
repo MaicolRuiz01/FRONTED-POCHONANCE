@@ -48,7 +48,9 @@ accounts: any[] = [
     createAccountDialog = false;
     newAccount: AccountBinance = {
       name: '',
-      referenceAccount: ''
+      referenceAccount: '',
+      correo: '',
+      userBinance: ''
     };
 
   constructor( private accountService: AccountBinanceService, private messageService: MessageService) { }
@@ -66,7 +68,7 @@ accounts: any[] = [
           titleWallet: 'Número de cuenta',    // Etiqueta
           valueWallet: cuenta.referenceAccount, // Muestra el número real
           titlecorreo: 'Correo',
-          valuecorreo: 'sin@correo.com'       // Temporal o si deseas agregar campo real después
+          valuecorreo: cuenta.correo     // Temporal o si deseas agregar campo real después
         }));
       },
       error: (err) => {
@@ -116,7 +118,7 @@ accounts: any[] = [
   //modal crear cuenta
 
   addAccount() {
-    this.newAccount = { name: '', referenceAccount: '' };
+    this.newAccount = { name: '', referenceAccount: '' ,  correo: '', userBinance: ''};
     this.createAccountDialog = true;
   }
 

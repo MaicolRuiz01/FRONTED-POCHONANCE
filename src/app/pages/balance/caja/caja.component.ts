@@ -23,8 +23,23 @@ export class CajaComponent {
     // Añade más datos según sea necesario
   ];
 
+  //modal
+  showDetailsModal = false;
+  showAdvancedDetails = false;
 
-  showDetailsModal: boolean = false
+  detailsData = [
+    { label: 'VENTA', value: '123,456' },
+    { label: 'CRIPTO', value: '678,910' },
+    { label: 'GASTO', value: '11,213' },
+    { label: 'SALDO', value: '824,213' }
+  ];
+
+  advancedDetails = [
+    { label: 'USDT/peso', value: '18.90' },
+    { label: 'Sistema', value: 'Binance' },
+    { label: 'SALDO', value: '824,213' } // Se conserva
+  ];
+
 
 
   constructor(private router: Router) {}
@@ -32,11 +47,6 @@ export class CajaComponent {
   ngOnInit() {
     this.cols = [
       { field: 'date', header: 'Fecha' },
-      { field: 'sell', header: 'Vendido' },
-      { field: 'system', header: 'Sist' },
-      { field: 'cripto', header: 'Cripto' },
-      { field: 'expense', header: 'Gasto' },
-      { field: 'remain', header: 'Restante' },
       { field: 'inventoryStatus', header: 'Saldo' }
   ];
 
@@ -47,7 +57,7 @@ export class CajaComponent {
     ];
     // Simulación de productos con fechas
     this.products = [
-        { date: new Date('2022-01-01'), sell: 'Laptop', price: 1500, category: 'Electronics', rating: 5, inventoryStatus: 'instock' },
+        { date: new Date('2022-01-01'), inventoryStatus: 'instock' },
         // Añade más productos según sea necesario
     ];
   }
@@ -65,4 +75,20 @@ export class CajaComponent {
     this.showDetailsModal = true;
   }
 
+  get currentDetails() {
+    return this.showAdvancedDetails ? this.advancedDetails : this.detailsData;
+  }
+
+  onDetailsClicked() {
+    this.showAdvancedDetails = true;
+  }
+
+  handleCloseOrBack() {
+    if (this.showAdvancedDetails) {
+      this.showAdvancedDetails = false;
+    } else {
+      this.showDetailsModal = false;
+    }
+
+  }
 }

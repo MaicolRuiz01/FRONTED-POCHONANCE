@@ -11,14 +11,29 @@
   border-radius: 10px;
   padding: 20px;
   width: 320px; /* Asegura un tamaño fijo para cada tarjeta */
-  font-family: Arial, sans-serif;
+
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
   margin-bottom: 20px; /* Espacio adicional al final de cada tarjeta si es necesario */
 }
 
-.card-header, .account-type {
-  font-size: calc(4px + 0.5vw); /* Ajusta según el ancho del viewport */
+.card-header {
+  display: flex;
+  justify-content: space-between; /* Ubica los elementos en los extremos */
+  align-items: center; /* Alineación vertical */
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px;
+  position: relative;
 }
+
+.info-icon {
+  font-size: 18px;
+  cursor: pointer;
+  color: white; /* Ajusta el color según tu diseño */
+}
+
+
+
 
 .saldo-row {
   display: flex;
@@ -47,4 +62,122 @@
   bottom: 10px;
   right: 15px;
   font-size: 22px;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar-container {
+  margin-bottom: 20px;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap; /* Permite que las tarjetas se ajusten en varias líneas si no hay espacio */
+  justify-content: flex-start; /* Alinea las tarjetas de izquierda a derecha */
+  gap: 20px; /* Espaciado entre las tarjetas */
+}
+
+.custom-card {
+  background-color: #f8df52;
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 320px; /* Tamaño fijo para cada tarjeta */
+  font-family: Arial, sans-serif;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px; /* Espacio adicional al final de cada tarjeta */
+}
+
+
+
+/* Nueva tarjeta para mostrar el saldo total */
+.saldo-card {
+  background-color: #e8f1ff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  text-align: left;
+}
+
+.saldo-card h4 {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.saldo-valor {
+  color: #28a745;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.saldo-card p {
+  color: #28a745;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Contenedor de botones alineado a la derecha */
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+
+/* tabla modal*/
+.table-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.main-table {
+  flex: 1;
+}
+
+.eye-button {
+  margin-top: 10px; /* Ajusta según necesites para alinear verticalmente con la tabla */
+}
+
+.custom-cuentas-dialog .cuentas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.add-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.cuenta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffd740;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 250px;
+  margin-bottom: 1rem;
+}
+
+.cuenta-nombre {
+  font-weight: bold;
+}
+
+.cuentas-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 250px;
 }

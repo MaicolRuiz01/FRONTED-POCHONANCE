@@ -24,8 +24,6 @@
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th>
                 <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
-                <th pSortableColumn="usdToPeso">USDT/Peso <p-sortIcon field="usdToPeso"></p-sortIcon></th>
-                <th pSortableColumn="system">Sistema <p-sortIcon field="system"></p-sortIcon></th>
                 <th pSortableColumn="balance">Saldo <p-sortIcon field="balance"></p-sortIcon></th>
                 <th></th> <!-- Columna vacía -->
             </tr>
@@ -37,11 +35,13 @@
                     <p-tableCheckbox [value]="product"></p-tableCheckbox>
                 </td>
                 <td><span class="p-column-title">Fecha</span>{{product.date | date:'mediumDate'}}</td>
-                <td><span class="p-column-title">USDT/Peso</span>{{product.usdToPeso | number:'1.2-2'}}</td>
-                <td><span class="p-column-title">Sistema</span>{{product.system}}</td>
                 <td><span class="p-column-title">Saldo</span>{{product.balance | currency:'USD'}}</td>
                 <td>
-                  <button pButton type="button" icon="pi pi-question-circle" class="p-button-rounded p-button-text" (click)="showDetails()"></button>
+                  <button pButton type="button"
+                  pRipple
+                  icon="pi pi-eye"
+                  class="p-button-warning p-button-rounded eye-button"
+                  (click)="showDetails()"></button>
                 </td>
             </tr>
         </ng-template>
@@ -75,17 +75,39 @@
 </p-dialog>
 
 <!-- Modal con los detalles -->
-<p-dialog header="Detalles" [(visible)]="showDetailsModal" [modal]="true" [style]="{width: '300px'}" [closable]="false">
+<p-dialog [(visible)]="showDetailsModal" [modal]="true" [style]="{ width: '300px' }" [closable]="false">
+  <!-- Header personalizado -->
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center justify-content-between w-full">
+      <span>Resumen</span>
+      <!-- Botón ojo solo si no se muestran los detalles avanzados -->
+      <button
+        *ngIf="!showAdvancedDetails"
+        pButton
+        pRipple
+        icon="pi pi-eye"
+        class="p-button-warning p-button-rounded eye-button"
+        (click)="onDetailsClicked()"
+        pTooltip="Ver detalles avanzados"
+        tooltipPosition="left"
+      ></button>
+    </div>
+  </ng-template>
+
+  <!-- Contenido dinámico -->
   <div class="detail-blocks">
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      VENTA: <span style="float:right; font-weight: bold;">123,456</span>
+    <div *ngFor="let item of currentDetails" class="detail-block" [style.background-color]="item || ''">
+      {{ item.label }}: <span class="detail-value">{{ item.value }}</span>
     </div>
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      CRIPTO: <span style="float:right; font-weight: bold;">678,910</span>
-    </div>
-    <div class="detail-block" style="background-color: #defede; margin-bottom: 10px; padding: 10px;">
-      GASTO: <span style="float:right; font-weight: bold;">11,213</span>
-    </div>
-    <button pButton label="ATRÁS" (click)="showDetailsModal=false" style="width: 100%; margin-top: 20px;" class="p-button-danger"></button>
   </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      [label]="showAdvancedDetails ? 'Atrás' : 'Cerrar'"
+      (click)="handleCloseOrBack()"
+      class="p-button-danger w-full"
+    ></button>
+  </ng-template>
 </p-dialog>

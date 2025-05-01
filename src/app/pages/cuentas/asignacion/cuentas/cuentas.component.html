@@ -1,0 +1,69 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <!-- Fila con "Compras", "Filtro por Fecha" -->
+      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
+        <h5 class="m-0">Cuentas</h5>
+
+        <!-- Filtro por fecha (extremo derecho) -->
+        <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
+          <i class="pi pi-calendar"></i>
+          <input pInputText type="date"  placeholder="Filtrar por fecha..." class="w-full sm:w-auto" />
+        </span>
+      </div>
+
+      <!-- Filtros adicionales y botón "Agregar" en la misma fila -->
+      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
+        <div class="flex flex-wrap">
+          <!-- Filtro por tipo -->
+          <span class="block mt-2 md:mt-0 p-input-icon-left mr-2">
+            <i class="pi pi-filter"></i>
+            <input pInputText type="text"  placeholder="Filtrar por tipo" class="w-full sm:w-auto" />
+          </span>
+          <!-- Filtro por cuenta -->
+          <span class="block mt-2 md:mt-0 p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input pInputText type="text"  placeholder="Filtrar por cuenta" class="w-full sm:w-auto" />
+          </span>
+        </div>
+        <!-- Botón "Agregar" al extremo derecho -->
+        <button class="p-button p-button-raised p-button-success" (click)="mostrarModal = true" >Agregar</button>
+      </div>
+
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal con las cuentas -->
+<p-dialog
+  header="Cuentas"
+  [(visible)]="mostrarModal"
+  [modal]="true"
+  [style]="{width: '350px'}"
+  [closable]="false"
+  [baseZIndex]="10000">
+
+  <!-- Botón de agregar cuenta (ícono grande azul) -->
+  <div class="text-center mb-3">
+    <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-info"></button>
+  </div>
+
+  <!-- Lista de cuentas -->
+  <div *ngFor="let cuenta of cuentas" class="cuenta-item">
+    <div class="cuenta-box">
+      {{ cuenta }}
+      <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger p-button-sm"></button>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="mt-4 text-center">
+    <button pButton label="Cancelar" class="p-button-danger mr-2" (click)="mostrarModal = false"></button>
+    <button pButton label="Guardar" class="p-button-success"></button>
+  </div>
+</p-dialog>

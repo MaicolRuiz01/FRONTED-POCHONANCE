@@ -61,7 +61,7 @@ export class OrderP2PService {
         .set('account', account)
         .set('fechaInicio', from.toISOString().slice(0, 10))
         .set('fechaFin', to.toISOString().slice(0, 10));
-  
+
       return this.http.get<OrderP2PDto[]>(`${this.baseUrl}/date-range`, { params }).pipe(
         map(orders => orders.map(order => ({
           ...order,
@@ -69,12 +69,12 @@ export class OrderP2PService {
         })))
       );
     });
-  
+
     return forkJoin(requests).pipe(
       map(results => results.flat().sort((a, b) =>
         new Date(b.createTime).getTime() - new Date(a.createTime).getTime()
       ))
     );
   }
-  
+
 }

@@ -1,0 +1,17 @@
+.cuenta-item {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.cuenta-box {
+  background-color: #fdd835;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  width: 100%;
+  max-width: 220px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

@@ -9,6 +9,7 @@ export interface BuyDollarsDto {
   date: Date;
   supplierId: number;
   idDeposit:string;
+  pesos: number;
 }
 
 

@@ -20,6 +20,10 @@ import { DialogModule } from 'primeng/dialog';
 import { MiCardComponent } from './mi-card/mi-card.component';
 import { CalendarModule } from 'primeng/calendar';
 import { HttpClientModule } from '@angular/common/http';
+import { Accordion, AccordionModule } from 'primeng/accordion';
+import { TabViewModule } from 'primeng/tabview';
+import { MenuModule } from 'primeng/menu';
+
 
 
 @NgModule({
@@ -47,6 +51,9 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule,
     CalendarModule,
     HttpClientModule,
+    AccordionModule,
+    TabViewModule,
+    MenuModule
 
 
   ],
@@ -69,7 +76,9 @@ import { HttpClientModule } from '@angular/common/http';
     ReactiveFormsModule,
     CalendarModule,
     MiCardComponent,
-
+    AccordionModule,
+    TabViewModule,
+    MenuModule
 
   ]
 })

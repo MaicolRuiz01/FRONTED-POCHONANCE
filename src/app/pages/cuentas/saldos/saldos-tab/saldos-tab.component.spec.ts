@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TraspasosComponent } from './traspasos.component';
+import { SaldosTabComponent } from './saldos-tab.component';
 
-describe('TraspasosComponent', () => {
-  let component: TraspasosComponent;
-  let fixture: ComponentFixture<TraspasosComponent>;
+describe('SaldosTabComponent', () => {
+  let component: SaldosTabComponent;
+  let fixture: ComponentFixture<SaldosTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TraspasosComponent]
+      imports: [SaldosTabComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TraspasosComponent);
+    fixture = TestBed.createComponent(SaldosTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

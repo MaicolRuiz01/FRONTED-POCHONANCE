@@ -103,10 +103,12 @@ export class AsignacionesVentasComponent implements OnInit {
       alert('Ingrese una tasa válida');
       return;
     }
+    const pesos = this.selected.amount * this.saleRate;
     const sell: SellDollar = {
       idWithdrawals: this.selected.id,
       tasa: this.saleRate,
       dollars: this.selected.amount,
+      pesos:pesos,
       nameAccount: this.selected.account,
       date: new Date(this.selected.completeTime),
       supplierId: 1

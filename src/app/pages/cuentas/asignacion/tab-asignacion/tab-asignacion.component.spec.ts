@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VerficacionComponent } from './verficacion.component';
+import { TabAsignacionComponent } from './tab-asignacion.component';
 
-describe('VerficacionComponent', () => {
-  let component: VerficacionComponent;
-  let fixture: ComponentFixture<VerficacionComponent>;
+describe('TabAsignacionComponent', () => {
+  let component: TabAsignacionComponent;
+  let fixture: ComponentFixture<TabAsignacionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VerficacionComponent]
+      imports: [TabAsignacionComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(VerficacionComponent);
+    fixture = TestBed.createComponent(TabAsignacionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

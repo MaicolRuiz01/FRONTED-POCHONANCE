@@ -9,7 +9,7 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [SharedModule,],
   templateUrl: './asignacion.component.html',
-  styleUrl: './asignacion.component.css'
+
 })
 export class AsignacionComponent {
 

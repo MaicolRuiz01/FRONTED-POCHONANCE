@@ -1,0 +1,74 @@
+.elva-card {
+  background-color: #37f03d;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.10);
+  padding: 18px 20px 12px 20px;
+  width: 320px;
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  position: relative;
+}
+
+.elva-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.elva-card-user {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.elva-card-main {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.elva-card-cop {
+  font-size: 2.1rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.elva-currency {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.elva-amount {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.elva-card-usdt {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.elva-card-range {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.elva-card-footer {
+  display: flex;
+  gap: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  padding-top: 8px;
+  margin-top: 8px;
+}

@@ -1,0 +1,27 @@
+<p-carousel [value]="cards" [numVisible]="3" [numScroll]="1" [circular]="true">
+  <ng-template pTemplate="item" let-card>
+    <div class="elva-card">
+      <div class="elva-card-header">
+        <span>Vender USDT con COP</span>
+        <span class="elva-card-user">Elva</span>
+      </div>
+      <div class="elva-card-main">
+        <div class="elva-card-cop">
+          <span class="elva-currency">COP$</span>
+          <span class="elva-amount">4.300,05</span>
+        </div>
+        <div class="elva-card-usdt">
+          $14,1234 USDT
+        </div>
+        <div class="elva-card-range">
+          2.000.000-20.600.000 COP
+        </div>
+      </div>
+      <div class="elva-card-footer">
+        <span>Nequi</span>
+        <span>Bancolombia</span>
+      </div>
+    </div>
+
+  </ng-template>
+</p-carousel>

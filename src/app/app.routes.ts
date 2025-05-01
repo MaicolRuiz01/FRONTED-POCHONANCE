@@ -16,6 +16,7 @@ import { SaldosTabComponent } from './pages/cuentas/saldos/saldos-tab/saldos-tab
 
 
 import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asignaciones-wrapper/asignaciones-wrapper.component';
+import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
 
 
 
@@ -29,6 +30,10 @@ export const routes: Routes = [  {
     {
       path: 'asignaciones',
       component: AsignacionesWrapperComponent
+    },
+    {
+      path: 'actividades',
+      component: ActivadestabComponent
     },
     {
       path: 'cuentas/saldos',

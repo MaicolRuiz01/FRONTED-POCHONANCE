@@ -39,6 +39,10 @@ export class AsignacionesVentap2pComponent implements OnInit {
   startDate: Date | null = null;
   endDate:   Date | null = null;
 
+  //condicion modal
+  modoAsignacion: 'cuentas' | 's4' = 'cuentas';
+
+
   constructor(
     private orderService: OrderP2PService,
     private saleService: SaleP2PService,
@@ -66,8 +70,10 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.selectedAmounts    = {};
     this.totalAsignado      = 0;
     this.saldoRestante      = order.totalPrice;
+    this.modoAsignacion     = 'cuentas'; // reiniciar al abrir
     this.displayDialog      = true;
   }
+
 
   onAccountSelectionChange() {
     this.selectedAmounts = {};
@@ -126,7 +132,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.orderService.getOrdersByDateRangeAllAccounts(this.startDate, this.endDate)
       .subscribe(data => this.p2pOrders = data);
   }
-  
+
   clearFilter() {
     this.startDate = this.endDate = null;
     this.loadOrders();

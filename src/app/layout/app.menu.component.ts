@@ -65,6 +65,10 @@ export class AppMenuComponent implements OnInit {
                       label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
                       routerLink: ['/asignaciones']
                   },
+                  {
+                    label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
+                    routerLink: ['/actividades']
+                },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
                                 routerLink: ['/balance/caja']

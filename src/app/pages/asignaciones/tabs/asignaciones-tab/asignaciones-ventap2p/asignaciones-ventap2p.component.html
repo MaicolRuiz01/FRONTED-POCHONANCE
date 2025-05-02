@@ -46,7 +46,7 @@
       [paginator]="true"
       [rows]="10"
       [value]="p2pOrders"
-      [tableStyle]="{ 'min-width': '80rem' }"
+      [tableStyle]="{ 'min-width': '60rem' }"
       sortMode="single"
       [responsiveLayout]="'scroll'"
     >
@@ -58,7 +58,7 @@
           <th pSortableColumn="totalPrice">Total <p-sortIcon field="totalPrice"/></th>
           <th pSortableColumn="unitPrice">Tasa <p-sortIcon field="unitPrice"/></th>
           <th pSortableColumn="commission">Comisión <p-sortIcon field="commission"/></th>
-          <th pSortableColumn="payMethodName">Pago <p-sortIcon field="payMethodName"/></th>
+          <!-- <th pSortableColumn="payMethodName">Pago <p-sortIcon field="payMethodName"/></th> -->
           <th>Acción</th>
         </tr>
       </ng-template>
@@ -71,7 +71,7 @@
           <td>{{ order.totalPrice | currency }}</td>
           <td>{{ order.unitPrice | currency }}</td>
           <td>{{ order.commission | currency }}</td>
-          <td>{{ order.payMethodName }}</td>
+          <!-- <td>{{ order.payMethodName }}</td> -->
           <td>
             <button
               pButton

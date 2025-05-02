@@ -7,6 +7,7 @@ export interface SaleP2PDto {
   date: Date;
   taxType: string;
   pesosCop: number;
+  commission: number;
   accountCopIds: number[];
   nameAccount: string;
   nameAccountBinance: string;

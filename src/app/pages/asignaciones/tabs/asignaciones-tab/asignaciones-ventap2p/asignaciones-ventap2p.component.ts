@@ -97,6 +97,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
       date:                  new Date(this.selectedOrder.createTime),
       taxType:               '4X',
       pesosCop:              this.selectedOrder.totalPrice,
+      commission:             this.selectedOrder.commission,
       accountCopIds:         this.selectedAccountIds,
       accountAmounts:        this.selectedAmounts,
       nameAccount:           nameAcct,

@@ -3,8 +3,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
-import { AccountBinance } from '../../modules/account-binance';
 
+
+export interface AccountBinance {
+  id?: number;
+  name: string;
+  referenceAccount: string;
+}
 
 @Injectable({
   providedIn: 'root'

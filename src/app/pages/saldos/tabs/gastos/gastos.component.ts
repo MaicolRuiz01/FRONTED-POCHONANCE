@@ -1,9 +1,9 @@
 
 import { Router } from '@angular/router';
-import { SharedModule } from '../../../app/shared/shared.module';
+import { SharedModule } from '../../../../shared/shared.module';
 import { Table } from 'primeng/table';
 import { Component, OnInit } from '@angular/core';
-import { GastoService, Gasto } from '../../core/services/gasto.service';
+import { GastoService, Gasto } from '../../../../core/services/gasto.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';

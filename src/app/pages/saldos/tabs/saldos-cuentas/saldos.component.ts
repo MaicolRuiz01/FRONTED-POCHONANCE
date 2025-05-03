@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { SharedModule } from '../../../shared/shared.module';
+import { SharedModule } from '../../../../shared/shared.module';
 import { MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { AccountBinance } from '../../../../app/core/services/account-binance.service';
-import { AccountBinanceService } from '../../../core/services/account-binance.service';
+import { AccountBinance } from '../../../../../app/core/services/account-binance.service';
+import { AccountBinanceService } from '../../../../core/services/account-binance.service';
 
 @Component({
   selector: 'app-saldos',

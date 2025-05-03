@@ -122,7 +122,8 @@ export class AsignacionesVentap2pComponent implements OnInit {
       date:                  new Date(this.selectedOrder.createTime),
       taxType:               '4X',
       pesosCop:              this.selectedOrder.totalPrice,
-      accountCopIds:         this.selectedAccountIds, // Pasamos un array de números
+      commission:             this.selectedOrder.commission,
+      accountCopIds:         this.selectedAccountIds,
       accountAmounts:        this.selectedAmounts,
       nameAccount:           this.cuentaS4Confirmada ? this.cuentaS4 : '', // Solo asignar cuentaS4 si fue confirmada
       nameAccountBinance:    this.selectedOrder.binanceAccount ?? ''

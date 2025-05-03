@@ -1,1 +1,130 @@
-<p>calculadora works!</p>
+<div class="grid">
+  <div class="col-12">
+    <!-- Contenedor principal -->
+    <div class="card px-6 py-6" style="background-color: #f4f4f4;">
+      <!-- Encabezado -->
+      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
+        <h5 class="m-0">Criptos</h5>
+        <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
+          <button pButton label="Click" icon="pi pi-check"
+          class="p-button-raised p-button-primary"
+          (click)="displayModal = true">></button>
+        </span>
+      </div>
+
+      <!-- Contenedor de cards con gap -->
+      <div class="grid gap-3">
+        <div *ngFor="let card of cards" class="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
+          <!-- Card con fondo blanco que se adapta -->
+          <div class="card bg-white border-round-xl" style="height: 100%;">
+            <div class="milton-card h-full">
+              <!-- Resto del contenido de la card -->
+              <div class="milton-header">
+                <div class="milton-title">
+                  {{card.title}}
+                  <i class="pi pi-refresh milton-exchange"></i>
+                </div>
+                <button class="milton-close">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              <div class="milton-content">
+                <div class="milton-row">
+                  <span class="milton-icon-doc">
+                    <i class="pi pi-file"></i>
+                    <span class="milton-badge">{{card.documents}}</span>
+                  </span>
+                  <span class="milton-value">{{card.value}}</span>
+                </div>
+                <div class="milton-row">
+                  <span class="milton-row-edit">
+                    <i class="pi pi-pencil"></i>
+                  </span>
+                  <span class="milton-edit-value">{{card.editValue}}</span>
+                </div>
+              </div>
+              <div class="milton-divider"></div>
+              <div class="milton-footer">
+                <div class="milton-currency">{{card.currency}}</div>
+                <div class="milton-usdt">{{card.usdtValue}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog header="Agregar Cuenta"
+ [(visible)]="displayModal" [style]="{width: '50vw'}"
+  [modal]="true">
+
+
+  <!-- Card dentro del modal -->
+  <div class="card">
+    <!-- Contenido de la card -->
+    <div class="p-fluid grid">
+      <!-- Primera fila (labels) -->
+      <div class="field col-6">
+        <label for="banco">Banco</label>
+      </div>
+      <div class="field col-6">
+        <label for="tipo">Tipo</label>
+      </div>
+
+      <!-- Segunda fila (inputs) -->
+      <div class="field col-6">
+        <input pInputText id="banco" [(ngModel)]="banco" />
+      </div>
+      <div class="field col-6">
+        <input pInputText id="tipo" [(ngModel)]="tipo" />
+      </div>
+
+      <!-- Tercera fila (labels) -->
+      <div class="field col-6">
+        <label for="nombre">Nombre</label>
+      </div>
+      <div class="field col-6">
+        <label for="identificacion">Identificación</label>
+      </div>
+
+      <!-- Cuarta fila (input y select + input) -->
+      <div class="field col-6">
+        <input pInputText id="nombre" [(ngModel)]="nombre" />
+      </div>
+      <div class="field col-6">
+        <div class="flex gap-2">
+          <p-dropdown [options]="tipoIdentificacion" [(ngModel)]="selectedTipoIdentificacion"
+                     placeholder="CC" [style]="{'width':'80px'}"></p-dropdown>
+          <input pInputText id="identificacion" [(ngModel)]="identificacion" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de una columna -->
+    <div class="p-fluid grid mt-4">
+      <div class="field col-12">
+        <label for="cuenta">Número de cuenta</label>
+        <input pInputText id="cuenta" [(ngModel)]="cuenta" />
+      </div>
+      <div class="field col-12">
+        <label for="monto">Monto</label>
+        <input pInputText id="monto" [(ngModel)]="monto" type="number" />
+      </div>
+    </div>
+
+    <!-- Footer de la card -->
+    <div class="flex justify-content-between mt-4">
+      <button pButton label="Botón Izquierdo" class="p-button-text"></button>
+      <button pButton label="Botón Derecho" class="p-button-text"></button>
+    </div>
+  </div>
+
+  <!-- Footer del dialog -->
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayModal = false"></button>
+    <button pButton label="Confirmar" icon="pi pi-check" class="p-button-text" (click)="confirmar()"></button>
+  </ng-template>
+</p-dialog>

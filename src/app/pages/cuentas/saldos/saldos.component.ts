@@ -50,7 +50,8 @@ accounts: any[] = [
       name: '',
       referenceAccount: '',
       correo: '',
-      userBinance: ''
+      userBinance: '',
+
     };
 
   constructor( private accountService: AccountBinanceService, private messageService: MessageService) { }

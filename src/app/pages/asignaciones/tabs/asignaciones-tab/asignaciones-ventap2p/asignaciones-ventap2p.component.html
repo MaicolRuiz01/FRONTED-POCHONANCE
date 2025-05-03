@@ -95,15 +95,27 @@
 >
   <div class="p-fluid">
     <div class="p-grid">
-      <div class="p-col-12">
+      <div >
         <h4>Orden: {{ selectedOrder?.orderNumber }}</h4>
         <p>Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
       </div>
 
-      <!-- Botones de tipo de asignación -->
-      <div class="p-col-12">
-        <p-button label="Cuentas" (click)="modoAsignacion = 'cuentas'" [class.p-button-outlined]="modoAsignacion !== 'cuentas'"></p-button>
-        <p-button label="S4" (click)="modoAsignacion = 's4'" [class.p-button-outlined]="modoAsignacion !== 's4'"></p-button>
+      <!-- Dentro de tu p-dialog -->
+      <div class="button-row-flex">
+        <button
+          pButton
+          label="Cuentas"
+          (click)="modoAsignacion = 'cuentas'"
+          [class.p-button-outlined]="modoAsignacion !== 'cuentas'"
+          class="small-btn"
+        ></button>
+        <button
+          pButton
+          label="S4"
+          (click)="modoAsignacion = 's4'"
+          [class.p-button-outlined]="modoAsignacion !== 's4'"
+          class="small-btn"
+        ></button>
       </div>
 
       <!-- Sección para modo CUENTAS -->
@@ -136,6 +148,7 @@
                 [min]="0"
                 [max]="selectedOrder.totalPrice"
                 step="0.01"
+                class="p-inputtext p-component"
               />
             </div>
           </div>
@@ -146,25 +159,51 @@
         </div>
       </ng-container>
 
-      <!-- Sección para modo S4 (vacío por ahora) -->
-      <ng-container *ngIf="modoAsignacion === 's4'">
-        <div class="p-col-12">
-          <p>Modo S4 seleccionado. (Aquí puedes incluir la lógica que necesites).</p>
-        </div>
-      </ng-container>
+      <!-- Sección para modo S4 -->
+     <!-- Sección para modo S4 -->
+<ng-container *ngIf="modoAsignacion === 's4'">
+  <div class="p-col-12">
+    <label for="cuentaS4">Ingrese la cuenta:</label>
+    <input
+      id="cuentaS4"
+      type="text"
+      pInputText
+      [(ngModel)]="cuentaS4"
+      placeholder="Ingrese la cuenta"
+      class="p-inputtext p-component"
+    />
+  </div>
+
+  <!-- Botón check para activar la asignación -->
+  <div class="p-col-12" *ngIf="cuentaS4">
+    <button
+      pButton
+      icon="pi pi-check"
+      label="Confirmar cuenta"
+      class="p-button-success"
+      (click)="confirmarCuentaS4()"
+    ></button>
+  </div>
+</ng-container>
+
+
     </div>
   </div>
 
   <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
-    <button
-      pButton
-      label="Guardar"
-      class="p-button-success"
-      [disabled]="modoAsignacion !== 'cuentas' || !selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
-      (click)="guardarAsignacion()"
-    ></button>
+    <div class="p-d-flex p-jc-between p-p-2">
+      <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
+      <button
+        pButton
+        label="Guardar"
+        class="p-button-success"
+        [disabled]="modoAsignacion !== 'cuentas' || !selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
+        (click)="guardarAsignacion()"
+      ></button>
+    </div>
   </ng-template>
 </p-dialog>
+
+
 
 

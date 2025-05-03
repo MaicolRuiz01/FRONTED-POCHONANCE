@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { CajaComponent } from '../../../balance/caja/caja.component';
-import { GastosComponent } from '../../../gastos/gastos.component';
-import { SharedModule } from '../../../../shared/shared.module';
-import { SaldosComponent } from '../saldos.component';
+import { CajaComponent } from '../../saldos/tabs/caja/caja.component';
+import { GastosComponent } from '../tabs/gastos/gastos.component';
+import { SharedModule } from '../../../shared/shared.module';
+import { SaldosComponent } from '../tabs/saldos-cuentas/saldos.component';
 
 @Component({
   selector: 'app-saldos-tab',

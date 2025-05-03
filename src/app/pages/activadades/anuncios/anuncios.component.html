@@ -3,18 +3,18 @@
     <div class="elva-card">
       <div class="elva-card-header">
         <span>Vender USDT con COP</span>
-        <span class="elva-card-user">Elva</span>
+        <span class="elva-card-user">{{ card.name }}</span>
       </div>
       <div class="elva-card-main">
         <div class="elva-card-cop">
           <span class="elva-currency">COP$</span>
-          <span class="elva-amount">4.300,05</span>
+          <span class="elva-amount">{{ card.cop }}</span>
         </div>
         <div class="elva-card-usdt">
-          $14,1234 USDT
+          ${{ card.usdtAmount }} USDT
         </div>
         <div class="elva-card-range">
-          2.000.000-20.600.000 COP
+          {{ card.range }}
         </div>
       </div>
       <div class="elva-card-footer">
@@ -22,6 +22,48 @@
         <span>Bancolombia</span>
       </div>
     </div>
-
   </ng-template>
 </p-carousel>
+
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+
+      <!-- Tabla -->
+      <p-table #dt [value]="products" [columns]="cols" [rows]="10"
+               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
+               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
+               selectionMode="multiple" [rowHover]="true" dataKey="id">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+            <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
+              {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+          <tr>
+            <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
+            <td *ngFor="let col of cols">
+              <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                <div class="input-group">
+                  <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
+                  <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
+                    <i class="pi pi-check"></i>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #other_fields>{{ product[col.field] }}</ng-template>
+            </td>
+          </tr>
+        </ng-template>
+
+
+
+
+      </p-table>
+    </div>
+  </div>
+</div>

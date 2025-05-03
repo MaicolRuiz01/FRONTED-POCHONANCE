@@ -24,9 +24,8 @@ export class CompletadaComponent {
     this.cols = [
       { field: 'date', header: 'Fecha' },
       { field: 'sell', header: 'Moneda' },
-      { field: 'buyrate', header: 'Cantidad' },
-      { field: 'sellrate', header: 'Tasa' },
-      { field: 'cx', header: 'PNL' },
+
+
     ];
 
     this.products = [
@@ -37,13 +36,7 @@ export class CompletadaComponent {
       { id: 5, date: '2025-03-05', sell: 1620, buyrate: 0.32, sellrate: 0.34, cx: 1.4 }
     ];
 
-    // Opciones para el dropdown
-    this.dropdownOptions = [
-      { label: 'Detalle Completo', value: 'detail' },
-      { label: 'Historial', value: 'history' },
-      { label: 'Transacciones', value: 'transactions' },
-      { label: 'Gráficos', value: 'charts' }
-    ];
+
   }
 
 

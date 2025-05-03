@@ -72,3 +72,31 @@
   padding-top: 8px;
   margin-top: 8px;
 }
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Espacio entre el campo de texto y el botón */
+}
+
+.ui-button-success.ui-button-rounded {
+  background-color: #28a745; /* Verde botón */
+  border-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 30px; /* Tamaño compacto */
+  height: 30px; /* Tamaño compacto */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-button-success.ui-button-rounded:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.pi.pi-check {
+  margin: auto;
+}

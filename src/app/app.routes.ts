@@ -5,7 +5,6 @@ import { NuevaVistaComponent } from './pages/nueva-vista/nueva-vista.component';
 import { CajaComponent } from './pages/balance/caja/caja.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
-import { ComprasComponent } from './pages/compras/compras.component';
 import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-generales.component';
 import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
 import { TrxComponent } from './pages/trx/trx.component';
@@ -39,10 +38,11 @@ export const routes: Routes = [  {
       path: 'cuentas/saldos',
       component: SaldosTabComponent
     },
+    {
+      path: 'cripto',
+      component: CompletadaComponent
+    },
 
-
-    {path:'cripto', component:CompletadaComponent},
-    {path:'cuentas/compras', component:ComprasComponent},
 
     {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},
     {path:'cuentas/impuestos', component:ImpuestosComponent},

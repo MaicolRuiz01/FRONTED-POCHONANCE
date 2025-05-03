@@ -136,10 +136,13 @@ export class AsignacionesComprasComponent implements OnInit {
   saveAssignment(): void {
     if (!this.selectedDeposit || !this.purchaseRate) return;
   
+    const pesos = this.selectedDeposit.amount * this.purchaseRate;
+
     const buyData: BuyDollarsDto = {
       dollars: this.selectedDeposit.amount,
       tasa: this.purchaseRate,
       nameAccount: this.selectedDeposit.account,
+      pesos: pesos,
       date: new Date(this.selectedDeposit.date),
       supplierId: 1,
       idDeposit: this.selectedDeposit.id   // <-- aquí

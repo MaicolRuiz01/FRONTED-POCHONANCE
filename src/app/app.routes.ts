@@ -1,13 +1,11 @@
 import { Routes } from '@angular/router';
 import { AppLayoutComponent } from './layout/app.layout.component';
 import { MypageComponent } from './core/components/mypage/mypage.component';
-import { NuevaVistaComponent } from './pages/nueva-vista/nueva-vista.component';
+
 import { CajaComponent } from './pages/balance/caja/caja.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
 import { SaldosComponent } from './pages/cuentas/saldos/saldos.component';
-import { VentasGeneralesComponent } from './pages/ventas-generales/ventas-generales.component';
-import { ImpuestosComponent } from './pages/impuestos/impuestos.component';
-import { TrxComponent } from './pages/trx/trx.component';
+
 import { AsignarCompraComponent } from './pages/asignar-compra/asignar-compra.component';
 import { GastosComponent } from './pages/gastos/gastos.component';
 import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
@@ -24,7 +22,7 @@ export const routes: Routes = [  {
   component:AppLayoutComponent,
   children:[
     {path:'', component:MypageComponent,},
-    { path: 'nueva-vista', component: NuevaVistaComponent },
+
     {path:'balance/caja', component:CajaComponent},
     {
       path: 'asignaciones',
@@ -44,10 +42,9 @@ export const routes: Routes = [  {
     },
 
 
-    {path:'cuentas/ventasgenerales', component:VentasGeneralesComponent},
-    {path:'cuentas/impuestos', component:ImpuestosComponent},
-    {path:'cuentas/trx', component:TrxComponent},
+
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
+
     {path:'gastos', component:GastosComponent},
     {path:'ventas/asignar/compras', component:AsignarCompraComponent},
 

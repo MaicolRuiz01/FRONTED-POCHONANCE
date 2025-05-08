@@ -12,6 +12,7 @@ export interface SaleP2PDto {
   nameAccount: string;
   nameAccountBinance: string;
   accountAmounts: { [key: number]: number }; // Nuevo campo para montos por cuenta
+  dollarsUs:number;
 }
 
 @Injectable({

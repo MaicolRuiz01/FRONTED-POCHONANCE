@@ -101,7 +101,8 @@ export class AsignacionesVentap2pComponent implements OnInit {
       accountCopIds:         this.selectedAccountIds,
       accountAmounts:        this.selectedAmounts,
       nameAccount:           nameAcct,
-      nameAccountBinance:    this.selectedOrder.binanceAccount ?? ''
+      nameAccountBinance:    this.selectedOrder.binanceAccount ?? '',
+      dollarsUs: this.selectedOrder.amount
     };
 
     this.saleService.createSale(dto).subscribe({

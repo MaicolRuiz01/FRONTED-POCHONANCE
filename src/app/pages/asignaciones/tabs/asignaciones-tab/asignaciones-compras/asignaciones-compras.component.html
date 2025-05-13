@@ -9,13 +9,10 @@
 >
   <div *ngIf="selectedDeposit">
     <div class="p-field">
-      <label><strong>Cuenta:</strong> {{ selectedDeposit.account }}</label>
+      <label><strong>Cuenta:</strong> {{ selectedDeposit.nameAccount }}</label>
     </div>
     <div class="p-field">
-      <label><strong>Moneda:</strong> {{ selectedDeposit.currency }}</label>
-    </div>
-    <div class="p-field">
-      <label><strong>Monto:</strong> {{ selectedDeposit.amount | number:'1.0-2' }}</label>
+      <label><strong>Monto:</strong> {{ selectedDeposit.dollars| number:'1.0-2' }}</label>
     </div>
     <div class="p-field">
       <label for="rateInput"><strong>Tasa de compra</strong></label>
@@ -81,16 +78,13 @@
       [rowsPerPageOptions]="[5,10,25]"
       [scrollable]="true"
       scrollDirection="horizontal"
-      [tableStyle]="{ 'min-width': '80rem' }"
+      [tableStyle]="{ 'min-width': '10rem' }"
       sortMode="single"
     >
       <ng-template pTemplate="header">
         <tr>
           <th pSortableColumn="account">
             Cuenta <p-sortIcon field="account"></p-sortIcon>
-          </th>
-          <th pSortableColumn="currency">
-            Moneda <p-sortIcon field="currency"></p-sortIcon>
           </th>
           <th pSortableColumn="amount">
             Monto <p-sortIcon field="amount"></p-sortIcon>
@@ -103,9 +97,8 @@
       </ng-template>
       <ng-template pTemplate="body" let-dep>
         <tr>
-          <td>{{ dep.account }}</td>
-          <td>{{ dep.currency }}</td>
-          <td>{{ dep.amount | number:'1.0-2' }}</td>
+          <td>{{ dep.nameAccount }}</td>
+          <td>{{ dep.dollars | number:'1.0-2' }}</td>
           <td>{{ dep.date | date:'short' }}</td>
           <td>
             <button

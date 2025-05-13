@@ -15,12 +15,13 @@ import { map } from 'rxjs/operators';
 import { CalendarModule } from 'primeng/calendar';
 
 export interface Deposit {
-  id: string;
-  account: string;
-  currency: string;
-  amount: number;
+  dollars: number;
+  tasa: number;
+  nameAccount: string;
   date: string;
-  txId: string;
+  idDeposit: string;
+  pesos: number;
+ 
 }
 
 @Component({
@@ -47,7 +48,7 @@ export class AsignacionesComprasComponent implements OnInit {
 
   // opciones de filtro (PrimeNG Dropdown)
   accountFilterOptions: { label: string; value: string }[] = [];
-  currencyFilterOptions: { label: string; value: string }[] = [];
+
 
   // valores seleccionados de filtro
   startDate: Date | null = null;
@@ -72,37 +73,36 @@ export class AsignacionesComprasComponent implements OnInit {
 
   /** Trae depósitos de todas las cuentas y combina */
   loadDeposits(): void {
-    const requests = this.cuentas.map(account =>
-      this.depositService.getDeposits(account).pipe(
-        map((deposits: any[]) =>
-          deposits.map(d => ({
-            id: d.id,
-            account,
-            currency: d.coin,
-            amount: +d.amount,
-            date: d.completeTime,
-            txId: d.txId
-          }))
-        )
+  const requests = this.cuentas.map(account =>
+    this.depositService.getDeposits(account).pipe(
+      map((deposits: Deposit[]) =>  // Aquí también actualizamos el tipo
+        deposits.map(d => ({
+          dollars: d.dollars,             // Usamos las nuevas propiedades
+          tasa: d.tasa,
+          nameAccount: d.nameAccount,
+          date: d.date,                   // 'date' en lugar de 'completeTime'
+          idDeposit: d.idDeposit,         // 'idDeposit' en lugar de 'txId'
+          pesos: d.pesos                  // 'pesos' en lugar de 'amount'
+        }))
       )
-    );
+    )
+  );
 
-    forkJoin(requests).subscribe({
-      next: (arrays: Deposit[][]) => {
-        this.allDeposits = arrays.flat();
-        this.filteredDeposits = [...this.allDeposits];
+  forkJoin(requests).subscribe({
+    next: (arrays: Deposit[][]) => {
+      this.allDeposits = arrays.flat();
+      this.filteredDeposits = [...this.allDeposits];
 
-        // opciones de filtro
-        this.accountFilterOptions = this.cuentas.map(c => ({ label: c, value: c }));
-        const uniq = Array.from(new Set(this.allDeposits.map(d => d.currency)));
-        this.currencyFilterOptions = uniq.map(c => ({ label: c, value: c }));
-      },
-      error: err => {
-        console.error('Error cargando depósitos', err);
-        alert('No se pudieron cargar los depósitos');
-      }
-    });
-  }
+      // Opciones de filtro
+      this.accountFilterOptions = this.cuentas.map(c => ({ label: c, value: c }));
+    },
+    error: err => {
+      console.error('Error cargando depósitos', err);
+      alert('No se pudieron cargar los depósitos');
+    }
+  });
+}
+
 
   /** Aplica filtros a la tabla */
   applyFilters(): void {
@@ -136,16 +136,16 @@ export class AsignacionesComprasComponent implements OnInit {
   saveAssignment(): void {
     if (!this.selectedDeposit || !this.purchaseRate) return;
   
-    const pesos = this.selectedDeposit.amount * this.purchaseRate;
+    const pesos = this.selectedDeposit.dollars * this.purchaseRate;
 
     const buyData: BuyDollarsDto = {
-      dollars: this.selectedDeposit.amount,
+      dollars: this.selectedDeposit.dollars,
       tasa: this.purchaseRate,
-      nameAccount: this.selectedDeposit.account,
-      pesos: pesos,
+      nameAccount: this.selectedDeposit.nameAccount,
+      pesos: this.selectedDeposit.dollars * this.purchaseRate,
       date: new Date(this.selectedDeposit.date),
       supplierId: 1,
-      idDeposit: this.selectedDeposit.id   // <-- aquí
+      idDeposit: this.selectedDeposit.idDeposit   // <-- aquí
     };
   
     this.buyService.createBuyDollar(buyData).subscribe({

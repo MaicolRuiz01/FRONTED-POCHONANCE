@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
 export interface Deposit {
-  id: string;
+  /* id: string;
   amount: number;
   transactionFee: string;
   coin: string;
@@ -15,19 +15,30 @@ export interface Deposit {
   network: string;
   transferType: number;
   walletType: number;
-  completeTime: string;
+  completeTime: string; */
+
+  dollars: number;
+  tasa: number;
+  nameAccount: string;
+  date: string;
+  idDeposit: string;
+  pesos: number;
+  accountBinanceId: null;
+
+
+  
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class DepositService {
-  private readonly apiUrl = `${environment.apiUrl}/api/spot-orders/depositos`;  // URL de la API que devuelve los depósitos
+  private readonly apiUrl = `${environment.apiUrl}/api/transactions`;  // URL de la API que devuelve los depósitos
 
   constructor(private http: HttpClient) {}
 
   // Método para obtener todos los depósitos
   getDeposits(account: string): Observable<Deposit[]> {
-    return this.http.get<Deposit[]>(`${this.apiUrl}?account=${account}&limit=10000`);
+    return this.http.get<Deposit[]>(`${this.apiUrl}?account=${account}`);
   }
 }

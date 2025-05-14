@@ -1,0 +1,9 @@
+:host ::ng-deep .button-row-flex {
+  display: flex !important;
+  gap: 1rem !important;
+}
+
+:host ::ng-deep .button-row-flex .p-button {
+  width: auto !important;
+  flex: 0 0 auto !important;
+}

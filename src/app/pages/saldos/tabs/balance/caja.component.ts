@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SharedModule } from '../../../../shared/shared.module';
 import { Table } from 'primeng/table';
+import { BalanceService, Balance } from '../../../../core/services/balance.service';
+
 
 @Component({
   selector: 'app-caja',
@@ -10,7 +12,83 @@ import { Table } from 'primeng/table';
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css']
 })
-export class CajaComponent {
+export class CajaComponent implements OnInit{
+
+
+  balances: Balance[] = []; // ← Lista real del backend
+
+
+  constructor(
+    private router: Router,
+    private balanceService: BalanceService // ⬅️ nuevo
+  ) {}
+
+  ngOnInit() {
+    this.loadBalances();
+
+    this.cols = [
+      { field: 'date', header: 'Fecha' },
+      { field: 'saldo', header: 'Saldo' }
+    ];
+  }
+
+  loadBalances(): void {
+    this.balanceService.getAll().subscribe({
+      next: (data) => {
+        console.log('Datos de balance:', data);
+        this.balances = data;
+      },
+      error: (err) => {
+        console.error('Error cargando balances', err);
+      }
+    });
+  }
+
+  onDateFilter(table: Table, event: Event) {
+    const date = (event.target as HTMLInputElement).value;
+    table.filter(date, 'date', 'equals');
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //de aqui en adelante son para elementos estaticos
 
   cols: any[] = [];
   products: any[] = [];
@@ -41,31 +119,6 @@ export class CajaComponent {
   ];
 
 
-
-  constructor(private router: Router) {}
-
-  ngOnInit() {
-    this.cols = [
-      { field: 'date', header: 'Fecha' },
-      { field: 'inventoryStatus', header: 'Saldo' }
-  ];
-
-    this.statuses = [
-        { label: 'INSTOCK', value: 'instock' },
-        { label: 'LOWSTOCK', value: 'lowstock' },
-        { label: 'OUTOFSTOCK', value: 'outofstock' }
-    ];
-    // Simulación de productos con fechas
-    this.products = [
-        { date: new Date('2022-01-01'), inventoryStatus: 'instock' },
-        // Añade más productos según sea necesario
-    ];
-  }
-
-  onDateFilter(table: Table, event: Event) {
-    const date = (event.target as HTMLInputElement).value;
-    table.filter(date, 'date', 'equals');
-  }
 
   openMonthlyInfo() {
     this.displayModal = true;

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CajaComponent } from '../../saldos/tabs/caja/caja.component';
+import { CajaComponent } from '../tabs/balance/caja.component';
 import { GastosComponent } from '../tabs/gastos/gastos.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { SaldosComponent } from '../tabs/saldos-cuentas/saldos.component';

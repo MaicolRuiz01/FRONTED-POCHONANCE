@@ -25,8 +25,6 @@ export interface Deposit {
   pesos: number;
   accountBinanceId: null;
 
-
-  
 }
 
 @Injectable({

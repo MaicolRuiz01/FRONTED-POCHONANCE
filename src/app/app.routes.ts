@@ -39,7 +39,6 @@ export const routes: Routes = [  {
 
 
 
-    {path:'cuentas/compras', component:ComprasComponent},
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
 
     {path:'gastos', component:GastosComponent},

@@ -136,9 +136,6 @@ showDetails(product: Balance): void {
 
 
 
-  openMonthlyInfo() {
-    this.displayModal = true;
-  }
 
 
 

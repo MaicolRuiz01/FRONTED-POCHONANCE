@@ -88,42 +88,21 @@
   </div>
 
   <p-dialog
-  header="Asignar cuenta(s) a la venta"
-  [(visible)]="displayDialog"
-  [modal]="true"
-  [style]="{ width: '50vw' }"
->
-  <div class="p-fluid">
-    <div class="p-grid">
-      <div >
-        <h4>Orden: {{ selectedOrder?.orderNumber }}</h4>
-        <p>Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
-      </div>
-
-      <!-- Dentro de tu p-dialog -->
-      <div class="button-row-flex">
-        <button
-          pButton
-          label="Cuentas"
-          (click)="modoAsignacion = 'cuentas'"
-          [class.p-button-outlined]="modoAsignacion !== 'cuentas'"
-          class="small-btn"
-        ></button>
-        <button
-          pButton
-          label="S4"
-          (click)="modoAsignacion = 's4'"
-          [class.p-button-outlined]="modoAsignacion !== 's4'"
-          class="small-btn"
-        ></button>
-      </div>
-
-      <!-- Sección para modo CUENTAS -->
-      <ng-container *ngIf="modoAsignacion === 'cuentas'">
+    header="Asignar cuenta(s) a la venta"
+    [(visible)]="displayDialog"
+    [modal]="true"
+    [style]="{ width: '50vw' }"
+  >
+    <div class="p-fluid">
+      <div class="p-grid">
+        <div class="p-col-12">
+          <h4>Orden: {{ selectedOrder?.orderNumber }}</h4>
+          <p>Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
+        </div>
         <div class="p-col-12">
           <label>Selecciona cuentas</label>
           <p-multiSelect
-            name="cuentas"
+          name="cuentas"
             [options]="cuentasDisponibles"
             [(ngModel)]="selectedAccountIds"
             optionLabel="name"
@@ -134,7 +113,6 @@
             [appendTo]="'body'"
           ></p-multiSelect>
         </div>
-
         <div class="p-col-12" *ngIf="selectedAccountIds.length > 0">
           <h5>Distribuir monto</h5>
           <div *ngFor="let accId of selectedAccountIds" class="p-field p-grid p-align-center">
@@ -148,7 +126,6 @@
                 [min]="0"
                 [max]="selectedOrder.totalPrice"
                 step="0.01"
-                class="p-inputtext p-component"
               />
             </div>
           </div>
@@ -157,53 +134,16 @@
             <div class="p-col-6"><strong>Saldo restante:</strong> {{ saldoRestante | currency }}</div>
           </div>
         </div>
-      </ng-container>
-
-      <!-- Sección para modo S4 -->
-     <!-- Sección para modo S4 -->
-<ng-container *ngIf="modoAsignacion === 's4'">
-  <div class="p-col-12">
-    <label for="cuentaS4">Ingrese la cuenta:</label>
-    <input
-      id="cuentaS4"
-      type="text"
-      pInputText
-      [(ngModel)]="cuentaS4"
-      placeholder="Ingrese la cuenta"
-      class="p-inputtext p-component"
-    />
-  </div>
-
-  <!-- Botón check para activar la asignación -->
-  <div class="p-col-12" *ngIf="cuentaS4">
-    <button
-      pButton
-      icon="pi pi-check"
-      label="Confirmar cuenta"
-      class="p-button-success"
-      (click)="confirmarCuentaS4()"
-    ></button>
-  </div>
-</ng-container>
-
-
+      </div>
     </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <div class="p-d-flex p-jc-between p-p-2">
+    <ng-template pTemplate="footer">
       <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
       <button
         pButton
         label="Guardar"
         class="p-button-success"
-        [disabled]="modoAsignacion !== 'cuentas' || !selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
+        [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
         (click)="guardarAsignacion()"
       ></button>
-    </div>
-  </ng-template>
-</p-dialog>
-
-
-
-
+    </ng-template>
+  </p-dialog>

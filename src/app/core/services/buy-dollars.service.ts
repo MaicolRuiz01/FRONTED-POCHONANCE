@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environment/environment';
 
 export interface BuyDollarsDto {
   dollars: number;
@@ -17,7 +18,7 @@ export interface BuyDollarsDto {
   providedIn: 'root'
 })
 export class BuyDollarsService {
-  private apiUrl = 'http://localhost:8080/api/buy-dollars';  // URL del endpoint en el backend
+  private apiUrl = `${environment.apiUrl}/api/buy-dollars`;  // URL del endpoint en el backend
 
   constructor(private http: HttpClient) { }
 

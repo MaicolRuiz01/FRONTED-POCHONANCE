@@ -29,15 +29,12 @@ export class AppMenuComponent implements OnInit {
                             {
                                 label: 'SALDOS', icon: 'pi pi-fw pi-wallet',
                                 routerLink: ['/cuentas/saldos']
-                            },
+                            }/* ,
                             {
                                 label: 'TRASPASOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                                 routerLink: ['/cuentas/traspasos']
                             },
-                            {
-                              label: 'COMPRAS', icon: 'pi pi-fw pi-tag',
-                              routerLink: ['/cuentas/compras']
-                           },
+
                            {
                             label: 'P2P9', icon: 'pi pi-fw pi-dollar',
                             routerLink: ['/cuentas/p2p']
@@ -57,7 +54,7 @@ export class AppMenuComponent implements OnInit {
                            {
                             label: 'Asignaciones', icon: 'pi pi-fw pi-cloud',
                             routerLink: ['/cuentas/asignacion']
-                           },
+                           }, */
 
                         ]
                     },
@@ -65,6 +62,10 @@ export class AppMenuComponent implements OnInit {
                       label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
                       routerLink: ['/asignaciones']
                   },
+                  {
+                    label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
+                    routerLink: ['/actividades']
+                },
                     {
                         label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
                                 routerLink: ['/balance/caja']
@@ -73,12 +74,12 @@ export class AppMenuComponent implements OnInit {
                         label: 'GASTOS', icon: 'pi pi-fw pi-briefcase',
                         routerLink: ['/gastos']
                     },
-                    {
+                   /*  {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',
 
                                 routerLink: ['/cripto']
 
-                    }
+                    } */
 
                 ]
             },

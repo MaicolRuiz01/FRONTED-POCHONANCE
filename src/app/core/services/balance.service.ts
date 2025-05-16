@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environment/environment';
 import { Observable } from 'rxjs';
 
@@ -14,6 +14,16 @@ export interface Balance {
   saldo: number;
 }
 
+export interface BalanceSaleP2PDto {
+  Total: number ;
+  vendidos: number ;
+  tasaCompra: number ;
+  tasaVenta: number ;
+  ComisionUsdt: number;
+  impuestosCol: number;
+}
+
+
 @Injectable({ providedIn: 'root' })
 export class BalanceService {
   private readonly apiUrl = `${environment.apiUrl}/balance`;
@@ -23,4 +33,11 @@ export class BalanceService {
   getAll(): Observable<Balance[]> {
     return this.http.get<Balance[]>(this.apiUrl);
   }
+    getBalanceSaleP2P(fecha: string): Observable<BalanceSaleP2PDto> {
+    // fecha debe enviarse en formato 'yyyy-MM-dd'
+    const params = new HttpParams().set('fecha', fecha);
+    return this.http.get<BalanceSaleP2PDto>(this.apiUrl, { params });
+  }
+
+
 }

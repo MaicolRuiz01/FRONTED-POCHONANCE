@@ -36,7 +36,7 @@
           ></button>
         </div>
       </div>
-      
+
 
 
 
@@ -65,7 +65,7 @@
       <ng-template pTemplate="body" let-order>
         <tr>
             <td>{{ order.binanceAccount }}</td>
-          
+
           <td>{{ order.createTime | date:'short' }}</td>
           <td>{{ order.amount | number }}</td>
           <td>{{ order.totalPrice | currency }}</td>
@@ -86,7 +86,7 @@
       </ng-template>
     </p-table>
   </div>
-  
+
   <p-dialog
     header="Asignar cuenta(s) a la venta"
     [(visible)]="displayDialog"
@@ -147,4 +147,3 @@
       ></button>
     </ng-template>
   </p-dialog>
-  

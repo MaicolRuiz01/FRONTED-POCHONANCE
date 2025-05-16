@@ -14,18 +14,18 @@ export type AccountCopCreate = Omit<AccountCop, 'id'>;
   providedIn: 'root'
 })
 export class AccountCopService {
-  private readonly url = `${environment.apiUrl}/cuenta-cop`;
+   private apiUrl = `${environment.apiUrl}/cuenta-cop`;
 
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<AccountCop[]> {
-    return this.http.get<AccountCop[]>(this.url);
+    return this.http.get<AccountCop[]>(this.apiUrl);
   }
 
   create(account: AccountCopCreate): Observable<AccountCop> {
     if (!account.name || account.balance == null) {
       throw new Error('Name and balance cannot be null or empty');
     }
-    return this.http.post<AccountCop>(this.url, account);
+    return this.http.post<AccountCop>(this.apiUrl, account);
   }
 }

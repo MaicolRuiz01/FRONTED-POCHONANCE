@@ -128,7 +128,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.orderService.getOrdersByDateRangeAllAccounts(this.startDate, this.endDate)
       .subscribe(data => this.p2pOrders = data);
   }
-  
+
   clearFilter() {
     this.startDate = this.endDate = null;
     this.loadOrders();

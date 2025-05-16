@@ -111,22 +111,33 @@
           [(visible)]="createAccountDialog"
           [modal]="true"
           [closable]="false"
-          [style]="{width: '400px'}">
+          [style]="{width: '450px'}">
 
   <div class="p-fluid">
     <div class="p-field">
-      <label for="name">Nombre</label>
-      <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
+      <label for="name">Nombre*</label>
+      <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" required />
     </div>
 
     <div class="p-field">
-      <label for="referenceAccount">Número de cuenta</label>
-      <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
+      <label for="referenceAccount">Número de cuenta*</label>
+      <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
+    </div>
+
+    <div class="p-field">
+      <label for="correo">Correo electrónico*</label>
+      <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" required />
+    </div>
+
+    <div class="p-field">
+      <label for="userBinance">Usuario Binance (opcional)</label>
+      <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
     </div>
 
     <div class="p-dialog-footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
+    <small class="p-d-block p-mt-2">* Campos obligatorios</small>
   </div>
 </p-dialog>

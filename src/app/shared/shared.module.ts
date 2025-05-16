@@ -23,6 +23,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Accordion, AccordionModule } from 'primeng/accordion';
 import { TabViewModule } from 'primeng/tabview';
 import { MenuModule } from 'primeng/menu';
+import { CarouselModule } from 'primeng/carousel';
 
 
 
@@ -53,7 +54,8 @@ import { MenuModule } from 'primeng/menu';
     HttpClientModule,
     AccordionModule,
     TabViewModule,
-    MenuModule
+    MenuModule,
+    CarouselModule
 
 
   ],
@@ -78,7 +80,8 @@ import { MenuModule } from 'primeng/menu';
     MiCardComponent,
     AccordionModule,
     TabViewModule,
-    MenuModule
+    MenuModule,
+    CarouselModule
 
   ]
 })

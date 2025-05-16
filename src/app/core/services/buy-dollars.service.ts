@@ -18,7 +18,7 @@ export interface BuyDollarsDto {
   providedIn: 'root'
 })
 export class BuyDollarsService {
-  private apiUrl = `${environment.apiUrl}/buy-dollars`;  // URL del endpoint en el backend
+  private apiUrl = `${environment.apiUrl}/api/buy-dollars`;  // URL del endpoint en el backend
 
   constructor(private http: HttpClient) { }
 

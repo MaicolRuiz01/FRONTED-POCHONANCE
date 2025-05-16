@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
-
 export interface SaleP2PDto {
   numberOrder: string;
   date: Date;
@@ -21,11 +20,11 @@ export interface SaleP2PDto {
   providedIn: 'root'
 })
 export class SaleP2PService {
-  private readonly api = `${environment.apiUrl}/saleP2P;`;
+  private apiUrl = `${environment.apiUrl}/saleP2P`;
 
   constructor(private http: HttpClient) {}
 
   createSale(saleDto: SaleP2PDto): Observable<SaleP2PDto> {
-    return this.http.post<SaleP2PDto>(this.api, saleDto);
+    return this.http.post<SaleP2PDto>(this.apiUrl, saleDto);
   }
 }

@@ -1,6 +1,6 @@
 export const environment = {
     production: false,
 
-    apiUrl: 'http://localhost:8080'  // URL base del backend
+    apiUrl: 'https://backend-binance-resumen-production-afcf.up.railway.app'  // URL base del backend
   };
   

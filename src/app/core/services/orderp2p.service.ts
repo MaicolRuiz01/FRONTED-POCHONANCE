@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HttpParams } from '@angular/common/http';
+import { environment } from '../../../environment/environment';
 
 export interface OrderP2PDto {
   orderNumber: string;
@@ -25,7 +26,7 @@ export interface OrderP2PDto {
   providedIn: 'root',
 })
 export class OrderP2PService {
-  private readonly baseUrl = 'http://localhost:8080/order-p2p';
+  private readonly baseUrl = `${environment.apiUrl}/order-p2p`;
   private readonly accounts = ['MILTON', 'SONIA', 'CESAR', 'MARCEL'];
 
   constructor(private http: HttpClient) {}

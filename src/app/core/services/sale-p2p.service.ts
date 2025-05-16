@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environment/environment';
+
 
 export interface SaleP2PDto {
   numberOrder: string;
@@ -19,7 +21,7 @@ export interface SaleP2PDto {
   providedIn: 'root'
 })
 export class SaleP2PService {
-  private readonly api = 'http://localhost:8080/saleP2P';
+  private readonly api = `${environment.apiUrl}/saleP2P;`;
 
   constructor(private http: HttpClient) {}
 

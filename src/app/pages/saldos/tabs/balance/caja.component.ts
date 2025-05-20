@@ -13,7 +13,10 @@ import { BalanceService, Balance, BalanceSaleP2PDto } from '../../../../core/ser
   styleUrls: ['./caja.component.css']
 })
 export class CajaComponent implements OnInit{
-
+    cols: any[] = [];
+  products: any[] = [];
+  statuses: any[] = [];
+  selectedProducts: any[] = [];
 
   balances: Balance[] = []; // ← Lista real del backend
 
@@ -52,13 +55,80 @@ export class CajaComponent implements OnInit{
     table.filter(date, 'date', 'equals');
   }
 
-showDetails(product: Balance): void {
-  const fechaISO = product.date; // product.date debe ser string tipo ISO 'yyyy-MM-dd' o Date compatible
 
-  this.balanceService.getBalanceSaleP2P(fechaISO).subscribe({
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// TS - dentro de CajaComponent
+
+showDetailsModal = false;
+showAdvancedDetails = false;
+
+// Datos para mostrar en el modal
+detailsData: any[] = [];
+advancedDetails: any[] = [];
+
+get currentDetails() {
+  return this.showAdvancedDetails ? this.advancedDetails : this.detailsData;
+}
+
+showDetails(product: Balance): void {
+const fecha = new Date(product.date);
+  const fechaLocal = fecha.toLocaleDateString('en-CA'); // Formato 'yyyy-MM-dd'
+
+  this.balanceService.getBalanceSaleP2P(fechaLocal).subscribe({
     next: (data) => {
       this.balanceSaleP2PData = data;
-      this.displayModal = true;
+
+      // Aquí asignamos los valores al detalle (solo etiqueta y valores que cambian)
+      this.detailsData = [
+        { label: 'TOTAL', value: data.total },               // Ajustar nombre variable segun objeto recibido
+        { label: 'Vendidos', value: data.vendidos },
+        { label: 'Comision USDT', value: data.comisionUsdt },
+        { label: 'Impuestos COL', value: data.impuestosCol },
+        { label: 'SALDO', value: data.saldo }                // SALDO nunca cambia
+      ];
+
+      this.advancedDetails = [
+        { label: 'Tasa compra', value: data.tasaCompra },
+        { label: 'Tasa venta', value: data.tasaVenta },
+        { label: 'SALDO', value: data.saldo }                // SALDO fijo igual que arriba
+      ];
+
+      this.showAdvancedDetails = false;  // siempre abrir en resumen
+      this.showDetailsModal = true;
     },
     error: (err) => {
       console.error('Error al obtener datos BalanceSaleP2P', err);
@@ -66,94 +136,16 @@ showDetails(product: Balance): void {
   });
 }
 
+onDetailsClicked() {
+  this.showAdvancedDetails = true;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //de aqui en adelante son para elementos estaticos
-
-  cols: any[] = [];
-  products: any[] = [];
-  statuses: any[] = [];
-  selectedProducts: any[] = [];
-
-
-  monthlyData: any[] = [
-    { month: 'Enero', expense: 2000, soldUsdt: 15000, remaining: 13000, amount: 28000 },
-    { month: 'Febrero', expense: 1500, soldUsdt: 18000, remaining: 16500, amount: 35000 }
-    // Añade más datos según sea necesario
-  ];
-
-  //modal
-  showDetailsModal = false;
-  showAdvancedDetails = false;
-
-  detailsData = [
-    { label: 'VENTA', value: '123,456' },
-    { label: 'CRIPTO', value: '678,910' },
-    { label: 'GASTO', value: '11,213' },
-    { label: 'SALDO', value: '824,213' }
-  ];
-
-  advancedDetails = [
-    { label: 'USDT/peso', value: '18.90' },
-    { label: 'Sistema', value: 'Binance' },
-    { label: 'SALDO', value: '824,213' } // Se conserva
-  ];
-
-
-
-
-
-
-
-  get currentDetails() {
-    return this.showAdvancedDetails ? this.advancedDetails : this.detailsData;
+handleCloseOrBack() {
+  if (this.showAdvancedDetails) {
+    this.showAdvancedDetails = false;
+  } else {
+    this.showDetailsModal = false;
   }
+}
 
-  onDetailsClicked() {
-    this.showAdvancedDetails = true;
-  }
-
-  handleCloseOrBack() {
-    if (this.showAdvancedDetails) {
-      this.showAdvancedDetails = false;
-    } else {
-      this.showDetailsModal = false;
-    }
-
-  }
 }

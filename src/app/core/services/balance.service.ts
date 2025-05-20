@@ -15,12 +15,13 @@ export interface Balance {
 }
 
 export interface BalanceSaleP2PDto {
-  Total: number ;
+  total: number ;
   vendidos: number ;
   tasaCompra: number ;
   tasaVenta: number ;
-  ComisionUsdt: number;
+  comisionUsdt: number;
   impuestosCol: number;
+  saldo: number;
 }
 
 
@@ -33,11 +34,13 @@ export class BalanceService {
   getAll(): Observable<Balance[]> {
     return this.http.get<Balance[]>(this.apiUrl);
   }
-    getBalanceSaleP2P(fecha: string): Observable<BalanceSaleP2PDto> {
-    // fecha debe enviarse en formato 'yyyy-MM-dd'
-    const params = new HttpParams().set('fecha', fecha);
-    return this.http.get<BalanceSaleP2PDto>(this.apiUrl, { params });
-  }
+getBalanceSaleP2P(fecha: string): Observable<BalanceSaleP2PDto> {
+  const url = `${this.apiUrl}/saleP2P`;
+  const params = new HttpParams().set('fecha', fecha);
+  return this.http.get<BalanceSaleP2PDto>(url, { params });
+}
+
+
 
 
 }

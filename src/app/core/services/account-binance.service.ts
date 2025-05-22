@@ -11,6 +11,8 @@ export interface AccountBinance {
   referenceAccount: string;
   correo: string;
   userBinance: string;
+  balance: number;
+  address: string;
 }
 
 @Injectable({

@@ -12,21 +12,20 @@ import { BalanceService, Balance, BalanceSaleP2PDto } from '../../../../core/ser
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css']
 })
-export class CajaComponent implements OnInit{
-    cols: any[] = [];
-  products: any[] = [];
-  statuses: any[] = [];
+export class CajaComponent implements OnInit {
+  cols: any[] = [];
+  balances: Balance[] = [];
   selectedProducts: any[] = [];
 
-  balances: Balance[] = []; // ← Lista real del backend
+  showDateFilter: boolean = false; // controla visibilidad del filtro fecha
+  today: string = ''; // fecha máxima permitida en formato yyyy-MM-dd
 
   displayModal: boolean = false;
   balanceSaleP2PData: BalanceSaleP2PDto | null = null;
 
-
   constructor(
     private router: Router,
-    private balanceService: BalanceService // ⬅ nuevo
+    private balanceService: BalanceService
   ) {}
 
   ngOnInit() {
@@ -36,6 +35,10 @@ export class CajaComponent implements OnInit{
       { field: 'date', header: 'Fecha' },
       { field: 'saldo', header: 'Saldo' }
     ];
+
+    // Obtener fecha hoy en formato yyyy-MM-dd para atributo max del input
+    const now = new Date();
+    this.today = now.toISOString().split('T')[0];
   }
 
   loadBalances(): void {
@@ -51,9 +54,27 @@ export class CajaComponent implements OnInit{
   }
 
   onDateFilter(table: Table, event: Event) {
-    const date = (event.target as HTMLInputElement).value;
-    table.filter(date, 'date', 'equals');
+    const input = event.target as HTMLInputElement;
+    const date = input.value; // formato yyyy-MM-dd
+
+    if (!date) {
+      // Si el usuario borra la fecha, limpiar filtro
+      table.clear();
+      return;
+    }
+
+    // Confirmar con el usuario
+    const confirmMsg = `¿Está seguro de generar un balance del ${new Date(date).toLocaleDateString()}?`;
+    if (confirm(confirmMsg)) {
+      // Filtrar solo si confirma
+      table.filter(date, 'date', 'equals');
+    } else {
+      // Si cancela, limpiar la selección del input y filtro
+      input.value = '';
+      table.clear();
+    }
   }
+
 
 
 

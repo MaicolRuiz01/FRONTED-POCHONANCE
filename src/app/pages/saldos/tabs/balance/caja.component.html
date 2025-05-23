@@ -8,14 +8,26 @@
         <ng-template pTemplate="caption">
           <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
             <h5 class="m-0">Balance</h5>
+
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span class="block mt-2 md:mt-0 p-input-icon-left">
-                    <i class="pi pi-calendar"></i>
-                    <input pInputText type="date" (input)="onDateFilter(dt, $event)" placeholder="Filtrar por fecha..." class="w-full sm:w-auto"/>
-                </span>
+              <!-- Botón para mostrar el filtro -->
+              <button pButton type="button" label="Generar balance" class="p-button-primary" (click)="showDateFilter = true" *ngIf="!showDateFilter"></button>
+
+              <!-- Filtro de fecha, solo visible si showDateFilter es true -->
+              <span class="block mt-2 md:mt-0 p-input-icon-left" *ngIf="showDateFilter">
+                <i class="pi pi-calendar"></i>
+                <input
+                  pInputText
+                  type="date"
+                  [max]="today"
+                  (change)="onDateFilter(dt, $event)"
+                  placeholder="Filtrar por fecha..."
+                  class="w-full sm:w-auto"
+                />
+              </span>
             </div>
-        </div>
-        <button pButton type="button" label="Info Mes" class="p-button-success" ></button>
+          </div>
+          <button pButton type="button" label="Info Mes" class="p-button-success"></button>
         </ng-template>
 
         <ng-template pTemplate="header">

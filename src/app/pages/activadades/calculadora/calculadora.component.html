@@ -1,49 +1,59 @@
 <div class="grid">
   <div class="col-12">
-    <!-- Contenedor principal -->
-    <div class="card px-6 py-6" style="background-color: #f4f4f4;">
-      <!-- Encabezado -->
-      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
-        <h5 class="m-0">Criptos</h5>
-        <span class="block mt-2 md:mt-0 p-input-icon-left ml-auto">
-          <button pButton label="Click" icon="pi pi-check"
-          class="p-button-raised p-button-primary"
-          (click)="displayModal = true">></button>
-        </span>
+    <!-- Contenedor principal con padding responsivo -->
+    <div class="card px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6" style="background-color: #f4f4f4;">
+      <!-- Encabezado completamente responsivo -->
+      <div class="flex flex-column sm:flex-row sm:justify-content-between sm:align-items-center mb-3 md:mb-4 gap-2">
+        <h5 class="m-0 text-xl md:text-2xl">Criptos</h5>
+        <button pButton icon="pi pi-check"
+                class="p-button-raised p-button-primary align-self-start sm:align-self-auto"
+                (click)="displayModal = true"
+                label="Agregar"
+                [style]="{'min-width': '120px'}">
+        </button>
       </div>
 
-      <!-- Contenedor de cards con gap -->
-      <div class="grid gap-3">
-        <div *ngFor="let card of cards" class="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
-          <!-- Card con fondo blanco que se adapta -->
-          <div class="card bg-white border-round-xl" style="height: 100%;">
+      <!-- Grid de cards con breakpoints mejorados -->
+      <div class="grid gap-2 sm:gap-3">
+        <div *ngFor="let card of cards"
+             class="col-12 sm:col-6 lg:col-4 xl:col-3 2xl:col-2 p-1 sm:p-2">
+          <!-- Card con altura consistente -->
+          <div class="card bg-white border-round-xl h-full">
             <div class="milton-card h-full">
-              <!-- Resto del contenido de la card -->
+              <!-- Header responsivo -->
               <div class="milton-header">
-                <div class="milton-title">
-                  {{card.title}}
-                  <i class="pi pi-refresh milton-exchange"></i>
+                <div class="milton-title flex-shrink-1">
+                  <span class="milton-title-text">{{card.title}}</span>
+                  <i class="pi pi-refresh milton-exchange hidden sm:inline"></i>
                 </div>
-                <button class="milton-close">
+                <button class="milton-close flex-shrink-0">
                   <i class="pi pi-times"></i>
                 </button>
               </div>
+
+              <!-- Contenido responsivo -->
               <div class="milton-content">
-                <div class="milton-row">
-                  <span class="milton-icon-doc">
+                <!-- Primera fila con mejor spacing -->
+                <div class="milton-row mb-2 sm:mb-3">
+                  <span class="milton-icon-doc flex-shrink-0">
                     <i class="pi pi-file"></i>
                     <span class="milton-badge">{{card.documents}}</span>
                   </span>
-                  <span class="milton-value">{{card.value}}</span>
+                  <span class="milton-value flex-grow-1">{{card.value}}</span>
                 </div>
+
+                <!-- Segunda fila optimizada -->
                 <div class="milton-row">
-                  <span class="milton-row-edit">
+                  <span class="milton-row-edit flex-shrink-0">
                     <i class="pi pi-pencil"></i>
                   </span>
-                  <span class="milton-edit-value">{{card.editValue}}</span>
+                  <span class="milton-edit-value flex-grow-1">{{card.editValue}}</span>
                 </div>
               </div>
+
               <div class="milton-divider"></div>
+
+              <!-- Footer responsivo -->
               <div class="milton-footer">
                 <div class="milton-currency">{{card.currency}}</div>
                 <div class="milton-usdt">{{card.usdtValue}}</div>
@@ -56,75 +66,85 @@
   </div>
 </div>
 
-<!-- Modal -->
-<p-dialog header="Agregar Cuenta"
- [(visible)]="displayModal" [style]="{width: '50vw'}"
-  [modal]="true">
+<!-- Modal completamente responsivo -->
+<p-dialog
+  header="Agregar Cuenta"
+  [(visible)]="displayModal"
+  [style]="{width: '95vw', 'max-width': '600px'}"
+  [modal]="true"
+  [responsive]="true"
+  [breakpoints]="{'960px': '80vw', '640px': '95vw'}"
+  [closable]="true"
+  [dismissableMask]="true">
 
-
-  <!-- Card dentro del modal -->
-  <div class="card">
-    <!-- Contenido de la card -->
+  <!-- Card dentro del modal con padding responsivo -->
+  <div class="card p-3 sm:p-4">
+    <!-- Grid responsivo para formulario -->
     <div class="p-fluid grid">
-      <!-- Primera fila (labels) -->
-      <div class="field col-6">
-        <label for="banco">Banco</label>
+      <!-- Primera sección: Banco y Tipo -->
+      <div class="field col-12 sm:col-6">
+        <label for="banco" class="block mb-2 font-medium">Banco</label>
+        <input pInputText id="banco" [(ngModel)]="banco" class="w-full" />
       </div>
-      <div class="field col-6">
-        <label for="tipo">Tipo</label>
-      </div>
-
-      <!-- Segunda fila (inputs) -->
-      <div class="field col-6">
-        <input pInputText id="banco" [(ngModel)]="banco" />
-      </div>
-      <div class="field col-6">
-        <input pInputText id="tipo" [(ngModel)]="tipo" />
+      <div class="field col-12 sm:col-6">
+        <label for="tipo" class="block mb-2 font-medium">Tipo</label>
+        <input pInputText id="tipo" [(ngModel)]="tipo" class="w-full" />
       </div>
 
-      <!-- Tercera fila (labels) -->
-      <div class="field col-6">
-        <label for="nombre">Nombre</label>
+      <!-- Segunda sección: Nombre e Identificación -->
+      <div class="field col-12 sm:col-6">
+        <label for="nombre" class="block mb-2 font-medium">Nombre</label>
+        <input pInputText id="nombre" [(ngModel)]="nombre" class="w-full" />
       </div>
-      <div class="field col-6">
-        <label for="identificacion">Identificación</label>
-      </div>
-
-      <!-- Cuarta fila (input y select + input) -->
-      <div class="field col-6">
-        <input pInputText id="nombre" [(ngModel)]="nombre" />
-      </div>
-      <div class="field col-6">
+      <div class="field col-12 sm:col-6">
+        <label for="identificacion" class="block mb-2 font-medium">Identificación</label>
         <div class="flex gap-2">
-          <p-dropdown [options]="tipoIdentificacion" [(ngModel)]="selectedTipoIdentificacion"
-                     placeholder="CC" [style]="{'width':'80px'}"></p-dropdown>
-          <input pInputText id="identificacion" [(ngModel)]="identificacion" />
+          <p-dropdown
+            [options]="tipoIdentificacion"
+            [(ngModel)]="selectedTipoIdentificacion"
+            placeholder="CC"
+            [style]="{'min-width':'80px', 'max-width':'100px'}"
+            class="flex-shrink-0">
+          </p-dropdown>
+          <input pInputText id="identificacion" [(ngModel)]="identificacion" class="flex-grow-1" />
         </div>
       </div>
     </div>
 
-    <!-- Tabla de una columna -->
-    <div class="p-fluid grid mt-4">
+    <!-- Sección de campos completos -->
+    <div class="p-fluid grid mt-3">
       <div class="field col-12">
-        <label for="cuenta">Número de cuenta</label>
-        <input pInputText id="cuenta" [(ngModel)]="cuenta" />
+        <label for="cuenta" class="block mb-2 font-medium">Número de cuenta</label>
+        <input pInputText id="cuenta" [(ngModel)]="cuenta" class="w-full" />
       </div>
       <div class="field col-12">
-        <label for="monto">Monto</label>
-        <input pInputText id="monto" [(ngModel)]="monto" type="number" />
+        <label for="monto" class="block mb-2 font-medium">Monto</label>
+        <input pInputText id="monto" [(ngModel)]="monto" type="number" class="w-full" />
       </div>
     </div>
 
-    <!-- Footer de la card -->
-    <div class="flex justify-content-between mt-4">
-      <button pButton label="Botón Izquierdo" class="p-button-text"></button>
-      <button pButton label="Botón Derecho" class="p-button-text"></button>
+    <!-- Footer de la card con botones responsivos -->
+    <div class="flex flex-column sm:flex-row justify-content-between gap-2 mt-4">
+      <button pButton label="Botón Izquierdo" class="p-button-text w-full sm:w-auto"></button>
+      <button pButton label="Botón Derecho" class="p-button-text w-full sm:w-auto"></button>
     </div>
   </div>
 
-  <!-- Footer del dialog -->
+  <!-- Footer del dialog responsivo -->
   <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayModal = false"></button>
-    <button pButton label="Confirmar" icon="pi pi-check" class="p-button-text" (click)="confirmar()"></button>
+    <div class="flex flex-column sm:flex-row gap-2 w-full">
+      <button pButton
+              label="Cancelar"
+              icon="pi pi-times"
+              class="p-button-text w-full sm:w-auto"
+              (click)="displayModal = false">
+      </button>
+      <button pButton
+              label="Confirmar"
+              icon="pi pi-check"
+              class="p-button-raised w-full sm:w-auto"
+              (click)="confirmar()">
+      </button>
+    </div>
   </ng-template>
 </p-dialog>

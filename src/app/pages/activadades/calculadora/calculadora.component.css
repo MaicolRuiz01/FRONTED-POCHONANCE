@@ -1,183 +1,463 @@
-/* Contenedor de la card */
 .card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
 
-/* Card interna con estilo milton */
+/* ===== ESTILOS MILTON CARD RESPONSIVOS ===== */
+
+/* Card interna con mejor responsividad */
 .milton-card {
   width: 100%;
   height: 100%;
   background: #22a75d;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  padding: 18px 18px 0 18px;
+  padding: 12px 12px 0 12px;
   box-sizing: border-box;
   color: #fff;
   border: 3px solid #fff;
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 200px;
 }
 
-/* Resto de tus estilos milton (se mantienen igual) */
+/* Breakpoint para tablets y desktop */
+@media (min-width: 768px) {
+  .milton-card {
+    padding: 18px 18px 0 18px;
+    min-height: 220px;
+  }
+}
+
+/* Header responsivo mejorado */
 .milton-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  gap: 8px;
 }
 
+@media (min-width: 768px) {
+  .milton-header {
+    align-items: center;
+    margin-bottom: 12px;
+  }
+}
+
+/* Título con mejor manejo de texto largo */
 .milton-title {
   background: #fff;
   color: #333;
   font-weight: 700;
   border-radius: 8px;
-  padding: 4px 18px 4px 18px;
-  font-size: 1.15em;
-  letter-spacing: 1px;
+  padding: 4px 12px;
+  font-size: 0.9em;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
 }
 
-/* ... (mantén el resto de tus estilos milton como están) ... */
+.milton-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Breakpoint para móviles grandes y tablets */
+@media (min-width: 576px) {
+  .milton-title {
+    font-size: 1em;
+    padding: 4px 16px;
+    letter-spacing: 1px;
+  }
+}
+
+@media (min-width: 768px) {
+  .milton-title {
+    font-size: 1.15em;
+    padding: 4px 18px;
+  }
+}
+
+/* Icono de exchange responsivo */
 .milton-exchange {
   color: #e6b800;
-  font-size: 1.2em;
-  margin-left: 4px;
+  font-size: 1em;
+  flex-shrink: 0;
 }
+
+@media (min-width: 768px) {
+  .milton-exchange {
+    font-size: 1.2em;
+  }
+}
+
+/* Botón de cerrar mejorado */
 .milton-close {
   background: transparent;
   border: none;
   color: #d32f2f;
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .milton-close {
+    width: 26px;
+    height: 26px;
+    font-size: 1.2em;
+  }
+}
+
+.milton-close:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Contenido con mejor spacing */
+.milton-content {
+  margin-bottom: 8px;
+  flex-grow: 1;
+}
+
+@media (min-width: 768px) {
+  .milton-content {
+    margin-bottom: 10px;
+  }
+}
+
+/* Filas responsivas */
+.milton-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .milton-row {
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+}
+
+/* Iconos con tamaño responsivo */
+.milton-icon-doc, .milton-row-edit {
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2em;
-  cursor: pointer;
-  transition: background 0.2s;
+  position: relative;
 }
-.milton-close:hover {
-  background: rgba(255,255,255,0.15);
+
+@media (min-width: 768px) {
+  .milton-icon-doc, .milton-row-edit {
+    width: 36px;
+    height: 36px;
+    font-size: 1.4em;
+  }
 }
-.milton-content {
-  margin-bottom: 10px;
-}
-.milton-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 10px;
-}
+
 .milton-icon-doc {
   background: #fff;
   color: #222;
-  border-radius: 6px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4em;
-  position: relative;
 }
+
+.milton-row-edit {
+  background: #fff;
+  color: #22a75d;
+}
+
+/* Badge responsivo */
 .milton-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: #d32f2f;
   color: #fff;
-  font-size: 0.9em;
+  font-size: 0.8em;
   font-weight: bold;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
+
+@media (min-width: 768px) {
+  .milton-badge {
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    font-size: 0.9em;
+  }
+}
+
+/* Valores con mejor responsividad */
 .milton-value {
-  font-size: 2em;
+  font-size: 1.4em;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: #fff;
   background: rgba(0,0,0,0.09);
   border-radius: 8px;
-  padding: 0 16px;
-  min-width: 140px;
+  padding: 0 12px;
   text-align: left;
   display: flex;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.milton-row-edit {
-  background: #fff;
-  color: #22a75d;
-  border-radius: 6px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4em;
+
+@media (min-width: 576px) {
+  .milton-value {
+    font-size: 1.6em;
+    padding: 0 14px;
+  }
 }
+
+@media (min-width: 768px) {
+  .milton-value {
+    font-size: 2em;
+    letter-spacing: 2px;
+    padding: 0 16px;
+    min-width: 140px;
+  }
+}
+
 .milton-edit-value {
-  font-size: 1.2em;
+  font-size: 1em;
   font-weight: 500;
   background: rgba(0,0,0,0.09);
   border-radius: 8px;
-  padding: 0 14px;
+  padding: 0 10px;
   color: #fff;
-  min-width: 70px;
   text-align: left;
   display: flex;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+@media (min-width: 768px) {
+  .milton-edit-value {
+    font-size: 1.2em;
+    padding: 0 14px;
+    min-width: 70px;
+  }
+}
+
+/* Divisor responsivo */
 .milton-divider {
   border-top: 2px solid #fff;
-  margin: 14px 0 8px 0;
+  margin: 10px 0 6px 0;
 }
+
+@media (min-width: 768px) {
+  .milton-divider {
+    margin: 14px 0 8px 0;
+  }
+}
+
+/* Footer responsivo */
 .milton-footer {
   text-align: center;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
 }
+
+@media (min-width: 768px) {
+  .milton-footer {
+    padding-bottom: 16px;
+  }
+}
+
 .milton-currency {
-  font-size: 1.1em;
+  font-size: 1em;
   font-weight: 700;
   color: #fff;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
+
+@media (min-width: 768px) {
+  .milton-currency {
+    font-size: 1.1em;
+    letter-spacing: 1px;
+  }
+}
+
 .milton-usdt {
-  font-size: 2em;
+  font-size: 1.6em;
   font-weight: 700;
   color: #fff;
   margin-top: 2px;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
-/* Estilos para el modal */
+@media (min-width: 576px) {
+  .milton-usdt {
+    font-size: 1.8em;
+  }
+}
+
+@media (min-width: 768px) {
+  .milton-usdt {
+    font-size: 2em;
+    letter-spacing: 1px;
+  }
+}
+
+/* ===== ESTILOS PARA EL MODAL RESPONSIVO ===== */
+
+/* Contenido del modal */
 :host ::ng-deep .p-dialog .p-dialog-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
-/* Estilos para la card dentro del modal */
+@media (min-width: 576px) {
+  :host ::ng-deep .p-dialog .p-dialog-content {
+    padding: 1.5rem;
+  }
+}
+
+/* Header del modal */
+:host ::ng-deep .p-dialog .p-dialog-header {
+  padding: 1rem 1rem 0.5rem 1rem;
+}
+
+@media (min-width: 576px) {
+  :host ::ng-deep .p-dialog .p-dialog-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+}
+
+/* Footer del modal */
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  padding: 0.5rem 1rem 1rem 1rem;
+}
+
+@media (min-width: 576px) {
+  :host ::ng-deep .p-dialog .p-dialog-footer {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+  }
+}
+
+/* Card dentro del modal */
 .card {
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
-/* Espaciado entre campos */
-.field {
-  margin-bottom: 1rem;
+@media (min-width: 576px) {
+  .card {
+    padding: 1.5rem;
+  }
 }
 
-/* Estilo para los inputs */
-input, p-dropdown {
+/* Campos del formulario */
+.field {
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .field {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Labels responsivos */
+.field label {
+  font-size: 0.9rem;
+}
+
+@media (min-width: 576px) {
+  .field label {
+    font-size: 1rem;
+  }
+}
+
+/* Inputs y dropdowns */
+input, :host ::ng-deep .p-dropdown {
   width: 100%;
+  min-height: 40px;
+}
+
+@media (min-width: 576px) {
+  input, :host ::ng-deep .p-dropdown {
+    min-height: 44px;
+  }
+}
+
+/* Botones responsivos */
+:host ::ng-deep .p-button {
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .p-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 375px) {
+  .milton-card {
+    padding: 10px 10px 0 10px;
+    min-height: 180px;
+  }
+
+  .milton-title {
+    font-size: 0.8em;
+    padding: 3px 8px;
+  }
+
+  .milton-value {
+    font-size: 1.2em;
+    padding: 0 8px;
+  }
+
+  .milton-usdt {
+    font-size: 1.4em;
+  }
+}
+
+/* Mejoras para pantallas extra grandes */
+@media (min-width: 1400px) {
+  .milton-card {
+    min-height: 240px;
+  }
+
+  .milton-value {
+    font-size: 2.2em;
+  }
+
+  .milton-usdt {
+    font-size: 2.2em;
+  }
 }

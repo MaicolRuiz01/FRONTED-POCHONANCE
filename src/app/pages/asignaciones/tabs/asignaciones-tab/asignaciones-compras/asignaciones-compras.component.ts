@@ -21,7 +21,7 @@ export interface Deposit {
   date: string;
   idDeposit: string;
   pesos: number;
- 
+
 }
 
 @Component({
@@ -58,6 +58,9 @@ export class AsignacionesComprasComponent implements OnInit {
   selectedDeposit: Deposit | null = null;
   displayModal: boolean = false;
   purchaseRate: number | null = null;
+
+  isRateInvalid: boolean = false;
+
 
   // cuentas a consultar
   private cuentas = ['MILTON', 'CESAR', 'MARCEL', 'SONIA'];
@@ -103,6 +106,11 @@ export class AsignacionesComprasComponent implements OnInit {
   });
 }
 
+validateRate(): void {
+  this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
+}
+
+
 
   /** Aplica filtros a la tabla */
   applyFilters(): void {
@@ -119,12 +127,13 @@ export class AsignacionesComprasComponent implements OnInit {
   }
 
   /** Abre modal para asignar compra */
-  openAssignModal(deposit: Deposit): void {
-    console.log('Abriendo modal para', deposit);
-    this.selectedDeposit = deposit;
-    this.purchaseRate = null;
-    this.displayModal = true;
-  }
+ openAssignModal(deposit: Deposit): void {
+  this.selectedDeposit = deposit;
+  this.purchaseRate = null;
+  this.isRateInvalid = false;
+  this.displayModal = true;
+}
+
 
   /** Cierra modal */
   closeModal(): void {
@@ -135,7 +144,7 @@ export class AsignacionesComprasComponent implements OnInit {
 
   saveAssignment(): void {
     if (!this.selectedDeposit || !this.purchaseRate) return;
-  
+
     const pesos = this.selectedDeposit.dollars * this.purchaseRate;
 
     const buyData: BuyDollarsDto = {
@@ -147,7 +156,7 @@ export class AsignacionesComprasComponent implements OnInit {
       supplierId: 1,
       idDeposit: this.selectedDeposit.idDeposit   // <-- aquí
     };
-  
+
     this.buyService.createBuyDollar(buyData).subscribe({
       next: () => {
         alert('Compra asignada correctamente');
@@ -160,5 +169,5 @@ export class AsignacionesComprasComponent implements OnInit {
       }
     });
   }
-  
+
 }

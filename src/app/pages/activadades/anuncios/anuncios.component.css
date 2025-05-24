@@ -1,102 +1,470 @@
+.elva-carousel {
+  margin-bottom: 2rem;
+}
+
+/* Wrapper del item del carousel */
+.carousel-item-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Card principal responsiva */
 .elva-card {
   background-color: #37f03d;
   color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.10);
-  padding: 18px 20px 12px 20px;
-  width: 320px;
-  min-height: 170px;
+  padding: 14px 16px 10px 16px;
+  width: 100%;
+  max-width: 280px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   font-family: 'Segoe UI', Arial, sans-serif;
   position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Hover effect */
+.elva-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Breakpoints para la card */
+@media (min-width: 576px) {
+  .elva-card {
+    padding: 16px 18px 12px 18px;
+    max-width: 300px;
+    min-height: 170px;
+  }
+}
+
+@media (min-width: 768px) {
+  .elva-card {
+    padding: 18px 20px 12px 20px;
+    max-width: 320px;
+    min-height: 180px;
+  }
+}
+
+/* Header responsivo */
 .elva-card-header {
   display: flex;
   justify-content: space-between;
-  font-size: 1.05rem;
+  align-items: flex-start;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.elva-card-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .elva-card-user {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
+  flex-shrink: 0;
 }
 
+@media (min-width: 576px) {
+  .elva-card-header {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .elva-card-user {
+    font-size: 1.05rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .elva-card-header {
+    font-size: 1.05rem;
+  }
+
+  .elva-card-user {
+    font-size: 1.1rem;
+  }
+}
+
+/* Main content responsivo */
 .elva-card-main {
   text-align: left;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  flex-grow: 1;
 }
 
+@media (min-width: 576px) {
+  .elva-card-main {
+    margin-bottom: 10px;
+  }
+}
+
+/* COP amount responsivo */
 .elva-card-cop {
-  font-size: 2.1rem;
+  font-size: 1.6rem;
   font-weight: bold;
   margin-bottom: 2px;
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .elva-currency {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .elva-amount {
-  font-size: 2.1rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.elva-card-usdt {
-  font-size: 1rem;
+@media (min-width: 576px) {
+  .elva-card-cop {
+    font-size: 1.8rem;
+    gap: 7px;
+  }
+
+  .elva-currency {
+    font-size: 1rem;
+  }
+
+  .elva-amount {
+    font-size: 1.8rem;
+    letter-spacing: 0.8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .elva-card-cop {
+    font-size: 2.1rem;
+    gap: 8px;
+  }
+
+  .elva-currency {
+    font-size: 1.1rem;
+  }
+
+  .elva-amount {
+    font-size: 2.1rem;
+    letter-spacing: 1px;
+  }
+}
+
+/* USDT y range responsivos */
+.elva-card-usdt, .elva-card-range {
+  font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .elva-card-range {
-  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 2px;
 }
 
+@media (min-width: 576px) {
+  .elva-card-usdt, .elva-card-range {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+}
+
+@media (min-width: 768px) {
+  .elva-card-usdt, .elva-card-range {
+    font-size: 1rem;
+  }
+}
+
+/* Footer responsivo */
 .elva-card-footer {
   display: flex;
-  gap: 15px;
-  font-size: 1rem;
+  gap: 10px;
+  font-size: 0.85rem;
   font-weight: 600;
   border-top: 1px solid rgba(255,255,255,0.18);
-  padding-top: 8px;
-  margin-top: 8px;
+  padding-top: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
 }
 
-.input-group {
+.payment-method {
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 576px) {
+  .elva-card-footer {
+    gap: 12px;
+    font-size: 0.9rem;
+    padding-top: 7px;
+    margin-top: 7px;
+  }
+}
+
+@media (min-width: 768px) {
+  .elva-card-footer {
+    gap: 15px;
+    font-size: 1rem;
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+}
+
+/* ===== TABLA RESPONSIVA ===== */
+
+.table-responsive-wrapper {
+  overflow-x: auto;
+  margin: -1px;
+}
+
+/* Estilos generales de la tabla */
+:host ::ng-deep .p-datatable {
+  font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  :host ::ng-deep .p-datatable {
+    font-size: 1rem;
+  }
+}
+
+/* Header de columnas */
+.column-header {
   display: flex;
   align-items: center;
-  gap: 5px; /* Espacio entre el campo de texto y el botón */
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
-.ui-button-success.ui-button-rounded {
-  background-color: #28a745; /* Verde botón */
-  border-color: #28a745;
-  color: white;
-  border-radius: 50%;
-  width: 30px; /* Tamaño compacto */
-  height: 30px; /* Tamaño compacto */
-  padding: 0;
+.column-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Columna de checkbox */
+.checkbox-column {
+  width: 3rem !important;
+  min-width: 3rem !important;
+  text-align: center;
+}
+
+/* Clases para diferentes tipos de columnas */
+.col-fee {
+  min-width: 150px;
+}
+
+.col-name {
+  min-width: 120px;
+}
+
+.col-code {
+  min-width: 100px;
+}
+
+.col-category {
+  min-width: 120px;
+}
+
+.col-quantity {
+  min-width: 100px;
+}
+
+/* Input group para fee */
+.fee-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.fee-input {
+  flex: 1;
+  min-width: 80px;
+  max-width: 120px;
+  height: 32px;
+  font-size: 0.9rem;
+}
+
+.fee-button {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.ui-button-success.ui-button-rounded:hover {
-  background-color: #218838;
-  border-color: #1e7e34;
+/* Override de estilos de PrimeNG para el botón */
+:host ::ng-deep .fee-button.p-button {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  color: white !important;
+  min-width: 32px !important;
 }
 
-.pi.pi-check {
-  margin: auto;
+:host ::ng-deep .fee-button.p-button:hover {
+  background-color: #218838 !important;
+  border-color: #1e7e34 !important;
+}
+
+:host ::ng-deep .fee-button .p-button-icon {
+  font-size: 0.8rem;
+}
+
+/* Contenido de celdas para responsividad */
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cell-label {
+  display: none;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.cell-value {
+  font-size: 0.9rem;
+}
+
+/* Responsive breakpoints para tabla */
+@media (max-width: 768px) {
+  /* Mostrar labels en móviles */
+  .cell-label {
+    display: block;
+  }
+
+  /* Ajustar tamaño de la tabla */
+  :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  :host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  /* Ajustar input fee en móviles */
+  .fee-input {
+    max-width: 100px;
+    font-size: 0.8rem;
+    height: 30px;
+  }
+
+  .fee-button {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Hacer la tabla tipo card en móviles muy pequeños */
+  :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+    display: block;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 0.5rem;
+    border: none;
+  }
+
+  :host ::ng-deep .p-datatable .p-datatable-tbody > tr {
+    display: block;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    background: #fff;
+  }
+
+  /* Ocultar header en móviles muy pequeños */
+  :host ::ng-deep .p-datatable .p-datatable-thead {
+    display: none;
+  }
+
+  /* Ajustar checkbox en modo card */
+  .checkbox-column {
+    width: 100% !important;
+    text-align: right !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Estilos para el paginador responsivo */
+:host ::ng-deep .p-paginator {
+  padding: 0.5rem;
+}
+
+@media (max-width: 576px) {
+  :host ::ng-deep .p-paginator {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  :host ::ng-deep .p-paginator .p-paginator-pages {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Navegadores del carousel responsivos */
+:host ::ng-deep .p-carousel .p-carousel-prev,
+:host ::ng-deep .p-carousel .p-carousel-next {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+}
+
+@media (max-width: 576px) {
+  :host ::ng-deep .p-carousel .p-carousel-prev,
+  :host ::ng-deep .p-carousel .p-carousel-next {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+/* Indicadores del carousel */
+:host ::ng-deep .p-carousel .p-carousel-indicators .p-carousel-indicator button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.3);
+}
+
+:host ::ng-deep .p-carousel .p-carousel-indicators .p-carousel-indicator.p-highlight button {
+  background: #37f03d;
 }

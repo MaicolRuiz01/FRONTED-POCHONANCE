@@ -23,41 +23,10 @@ export class AppMenuComponent implements OnInit {
             {
                 label: 'SECCIONES DE LA APLICACION',
                 items: [
-                    {
-                        label: 'CUENTAS', icon: 'pi pi-fw pi-users',
-                        items: [
-                            {
-                                label: 'SALDOS', icon: 'pi pi-fw pi-wallet',
-                                routerLink: ['/cuentas/saldos']
-                            }/* ,
-                            {
-                                label: 'TRASPASOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
-                                routerLink: ['/cuentas/traspasos']
-                            },
-
-                           {
-                            label: 'P2P9', icon: 'pi pi-fw pi-dollar',
-                            routerLink: ['/cuentas/p2p']
-                           },
-                           {
-                            label: 'VENTAS GENERALES', icon: 'pi pi-fw pi-tags',
-                            routerLink: ['/cuentas/ventasgenerales']
-                           },
-                           {
-                            label: 'IMPUESTOS', icon: 'pi pi-fw pi-calculator',
-                            routerLink: ['/cuentas/impuestos']
-                           },
-                           {
-                            label: 'TRX', icon: 'pi pi-fw pi-prime',
-                            routerLink: ['/cuentas/trx']
-                           },
-                           {
-                            label: 'Asignaciones', icon: 'pi pi-fw pi-cloud',
-                            routerLink: ['/cuentas/asignacion']
-                           }, */
-
-                        ]
-                    },
+                  {
+                       label: 'SALDOS', icon: 'pi pi-fw pi-wallet',
+                       routerLink: ['/saldos']
+                  },
                     {
                       label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
                       routerLink: ['/asignaciones']
@@ -66,14 +35,7 @@ export class AppMenuComponent implements OnInit {
                     label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
                     routerLink: ['/actividades']
                 },
-                    {
-                        label: 'BALANCE', icon: 'pi pi-fw pi-chart-line',
-                                routerLink: ['/balance/caja']
-                    },
-                    {
-                        label: 'GASTOS', icon: 'pi pi-fw pi-briefcase',
-                        routerLink: ['/gastos']
-                    },
+
                    /*  {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',
 
@@ -83,7 +45,7 @@ export class AppMenuComponent implements OnInit {
 
                 ]
             },
-            
+
         ];
     }
 }

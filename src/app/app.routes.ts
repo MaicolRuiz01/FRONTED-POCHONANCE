@@ -22,7 +22,6 @@ export const routes: Routes = [  {
   children:[
     {path:'', component:MypageComponent,},
 
-    {path:'balance/caja', component:CajaComponent},
     {
       path: 'asignaciones',
       component: AsignacionesWrapperComponent
@@ -32,7 +31,7 @@ export const routes: Routes = [  {
       component: ActivadestabComponent
     },
     {
-      path: 'cuentas/saldos',
+      path: 'saldos',
       component: SaldosTabComponent
     },
 
@@ -40,8 +39,6 @@ export const routes: Routes = [  {
 
 
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
-
-    {path:'gastos', component:GastosComponent},
 
 
   ]

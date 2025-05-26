@@ -1,0 +1,114 @@
+<p-dialog
+  header="Asignar Compra TRUST"
+  [(visible)]="displayModal"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  (onHide)="closeModal()"
+>
+  <div *ngIf="selectedTransaction">
+    <div class="p-field">
+      <label><strong>Cuenta:</strong> {{ selectedTransaction.nameAccount }}</label>
+    </div>
+    <div class="p-field">
+      <label><strong>Monto:</strong> {{ selectedTransaction.dollars | number:'1.2-6' }}</label>
+    </div>
+    <div class="p-field">
+      <label for="rateInput"><strong>Tasa de compra</strong></label>
+      <input
+        id="rateInput"
+        type="number"
+        pInputText
+        [(ngModel)]="purchaseRate"
+        placeholder="Ingrese tasa"
+        style="width:100%"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
+    <button pButton type="button" label="Guardar" (click)="saveAssignment()" [disabled]="!purchaseRate"></button>
+  </ng-template>
+</p-dialog>
+
+<div class="card">
+  <h2>Asignar Compras TRUST</h2>
+
+  <div class="p-grid p-align-center p-mb-3 p-g-3">
+    <div class="p-col-6 p-sm-6 p-md-4">
+      <p-calendar
+        [(ngModel)]="startDate"
+        placeholder="Desde"
+        dateFormat="yy-mm-dd"
+        (onSelect)="applyFilters()"
+        showIcon="true"
+        [style]="{ width: '50%' }"
+      ></p-calendar>
+    </div>
+
+    <div class="p-col-6 p-sm-6 p-md-4">
+      <p-calendar
+        [(ngModel)]="endDate"
+        placeholder="Hasta"
+        dateFormat="yy-mm-dd"
+        (onSelect)="applyFilters()"
+        showIcon="true"
+        [style]="{ width: '50%' }"
+      ></p-calendar>
+    </div>
+
+    <div class="p-col-12 p-sm-6 p-md-4">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-times"
+        label="Limpiar"
+        class="p-button-text p-mt-2"
+        (click)="clearDateFilter()"
+      ></button>
+    </div>
+  </div>
+
+  <p-table
+    [value]="filteredTrustTransactions"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5,10,25]"
+    [scrollable]="true"
+    scrollDirection="horizontal"
+    [tableStyle]="{ 'min-width': '10rem' }"
+    sortMode="single"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="nameAccount">
+          Cuenta <p-sortIcon field="nameAccount"></p-sortIcon>
+        </th>
+        <th pSortableColumn="dollars">
+          Monto <p-sortIcon field="dollars"></p-sortIcon>
+        </th>
+        <th pSortableColumn="date">
+          Fecha <p-sortIcon field="date"></p-sortIcon>
+        </th>
+        <th>Acción</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-transaction>
+      <tr>
+        <td>{{ transaction.nameAccount }}</td>
+        <td>{{ transaction.dollars | number:'1.2-6' }}</td>
+        <td>{{ transaction.date | date:'short' }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            label="Asignar"
+            class="p-button-sm p-button-success"
+            (click)="openAssignModal(transaction)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

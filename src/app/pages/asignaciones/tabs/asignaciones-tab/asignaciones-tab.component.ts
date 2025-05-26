@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { AsignacionesVentasComponent } from './asignaciones-ventas/asignaciones-ventas.component';
 import { AsignacionesComprasComponent } from './asignaciones-compras/asignaciones-compras.component';
 import { AsignacionesVentap2pComponent } from './asignaciones-ventap2p/asignaciones-ventap2p.component';
+import { AsignacionesTrustComponent } from './asignaciones-trust/asignaciones-trust.component';
 
 @Component({
   selector: 'app-asignaciones-tab',
@@ -23,7 +24,8 @@ import { AsignacionesVentap2pComponent } from './asignaciones-ventap2p/asignacio
     ButtonModule,
     AsignacionesComprasComponent,
     AsignacionesVentasComponent,
-    AsignacionesVentap2pComponent
+    AsignacionesVentap2pComponent,
+    AsignacionesTrustComponent
   ],
   templateUrl: './asignaciones-tab.component.html',
   styleUrls: ['./asignaciones-tab.component.css']

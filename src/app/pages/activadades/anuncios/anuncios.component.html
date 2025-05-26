@@ -1,69 +1,122 @@
-<p-carousel [value]="cards" [numVisible]="3" [numScroll]="1" [circular]="true">
+<!-- Carousel completamente responsivo -->
+<p-carousel
+  [value]="cards"
+  [numVisible]="getNumVisible()"
+  [numScroll]="1"
+  [circular]="true"
+  [responsiveOptions]="carouselResponsiveOptions"
+  [showIndicators]="true"
+  [showNavigators]="true"
+  class="elva-carousel">
+
   <ng-template pTemplate="item" let-card>
-    <div class="elva-card">
-      <div class="elva-card-header">
-        <span>Vender USDT con COP</span>
-        <span class="elva-card-user">{{ card.name }}</span>
-      </div>
-      <div class="elva-card-main">
-        <div class="elva-card-cop">
-          <span class="elva-currency">COP$</span>
-          <span class="elva-amount">{{ card.cop }}</span>
+    <div class="carousel-item-wrapper p-2">
+      <div class="elva-card">
+        <div class="elva-card-header">
+          <span class="elva-card-title">Vender USDT con COP</span>
+          <span class="elva-card-user">{{ card.name }}</span>
         </div>
-        <div class="elva-card-usdt">
-          ${{ card.usdtAmount }} USDT
+        <div class="elva-card-main">
+          <div class="elva-card-cop">
+            <span class="elva-currency">COP$</span>
+            <span class="elva-amount">{{ card.cop }}</span>
+          </div>
+          <div class="elva-card-usdt">
+            ${{ card.usdtAmount }} USDT
+          </div>
+          <div class="elva-card-range">
+            {{ card.range }}
+          </div>
         </div>
-        <div class="elva-card-range">
-          {{ card.range }}
+        <div class="elva-card-footer">
+          <span class="payment-method">Nequi</span>
+          <span class="payment-method">Bancolombia</span>
         </div>
-      </div>
-      <div class="elva-card-footer">
-        <span>Nequi</span>
-        <span>Bancolombia</span>
       </div>
     </div>
   </ng-template>
 </p-carousel>
 
+<!-- Contenedor de tabla responsivo -->
 <div class="grid">
   <div class="col-12">
-    <div class="card px-6 py-6">
+    <div class="card px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
 
-      <!-- Tabla -->
-      <p-table #dt [value]="products" [columns]="cols" [rows]="10"
-               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
-               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedProducts"
-               selectionMode="multiple" [rowHover]="true" dataKey="id">
-        <ng-template pTemplate="header">
-          <tr>
-            <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-            <th *ngFor="let col of cols" pSortableColumn="{{col.field}}">
-              {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
-            </th>
-          </tr>
-        </ng-template>
+      <!-- Wrapper responsivo para la tabla -->
+      <div class="table-responsive-wrapper">
+        <p-table
+          #dt
+          [value]="products"
+          [columns]="cols"
+          [rows]="getTableRows()"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20, 30]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
+          [(selection)]="selectedProducts"
+          selectionMode="multiple"
+          [rowHover]="true"
+          dataKey="id"
+          [responsive]="true"
+          styleClass="p-datatable-responsive-demo">
 
-        <ng-template pTemplate="body" let-product>
-          <tr>
-            <td><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
-            <td *ngFor="let col of cols">
-              <ng-container *ngIf="col.field === 'fee'; else other_fields">
-                <div class="input-group">
-                  <input pInputText type="text" [(ngModel)]="product.fee" class="input-fee">
-                  <button *ngIf="product.showButton" pButton type="button" class="ui-button-success ui-button-rounded" (click)="calculatePesos(product)">
-                    <i class="pi pi-check"></i>
-                  </button>
+          <!-- Header responsivo -->
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 3rem" class="checkbox-column">
+                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              </th>
+              <th *ngFor="let col of cols"
+                  pSortableColumn="{{col.field}}"
+                  [ngClass]="getColumnClass(col.field)">
+                <div class="column-header">
+                  <span class="column-title">{{col.header}}</span>
+                  <p-sortIcon field="{{col.field}}"></p-sortIcon>
                 </div>
-              </ng-container>
-              <ng-template #other_fields>{{ product[col.field] }}</ng-template>
-            </td>
-          </tr>
-        </ng-template>
+              </th>
+            </tr>
+          </ng-template>
 
+          <!-- Body responsivo -->
+          <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+            <tr>
+              <td class="checkbox-column">
+                <p-tableCheckbox [value]="product"></p-tableCheckbox>
+              </td>
+              <td *ngFor="let col of cols" [ngClass]="getColumnClass(col.field)">
+                <!-- Campo especial fee con input y botón -->
+                <ng-container *ngIf="col.field === 'fee'; else other_fields">
+                  <div class="fee-input-group">
+                    <input
+                      pInputText
+                      type="text"
+                      [(ngModel)]="product.fee"
+                      class="fee-input"
+                      [placeholder]="'Ingrese fee'">
+                    <button
+                      *ngIf="product.showButton"
+                      pButton
+                      type="button"
+                      class="p-button-success p-button-rounded fee-button"
+                      (click)="calculatePesos(product)"
+                      [title]="'Calcular'">
+                      <i class="pi pi-check"></i>
+                    </button>
+                  </div>
+                </ng-container>
 
-
-
-      </p-table>
+                <!-- Otros campos con etiquetas para móviles -->
+                <ng-template #other_fields>
+                  <div class="cell-content">
+                    <span class="cell-label">{{ col.header }}:</span>
+                    <span class="cell-value">{{ product[col.field] }}</span>
+                  </div>
+                </ng-template>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
     </div>
   </div>
 </div>

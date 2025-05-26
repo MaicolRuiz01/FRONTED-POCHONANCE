@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { Router } from '@angular/router';
 
@@ -79,5 +79,62 @@ export class AnunciosComponent {
     }
   ];
 
+    getNumVisible(): number {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width >= 1400) return 4;
+      if (width >= 1200) return 3;
+      if (width >= 768) return 2;
+      return 1;
+    }
+    return 3; // Valor por defecto
+  }
+
+  getTableRows(): number {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 576) return 5;  // Móvil: menos filas
+      if (width < 768) return 8;  // Tablet: filas medias
+      return 10; // Desktop: más filas
+    }
+    return 10;
+  }
+
+  getColumnClass(field: string): string {
+  const classes = [];
+
+  switch(field) {
+    case 'fee':
+      classes.push('col-fee');
+      break;
+    case 'name':
+      classes.push('col-name');
+      break;
+    case 'code':
+      classes.push('col-code');
+      break;
+    case 'category':
+      classes.push('col-category');
+      break;
+    case 'quantity':
+      classes.push('col-quantity');
+      break;
+  }
+
+  return classes.join(' ');
+}
+
+// Listener para cambios de tamaño de ventana (opcional)
+@HostListener('window:resize', ['$event'])
+onResize(event: any) {
+  // Forzar re-render del carousel si es necesario
+  // this.carouselRef.refresh();
+}
+carouselResponsiveOptions = [
+  { breakpoint: '1400px', numVisible: 4, numScroll: 1 },
+  { breakpoint: '1200px', numVisible: 3, numScroll: 1 },
+  { breakpoint: '768px', numVisible: 2, numScroll: 1 },
+  { breakpoint: '576px', numVisible: 1, numScroll: 1 }
+];
 
 }

@@ -3,6 +3,7 @@ import { AsignacionesTabComponent } from '../../tabs/asignaciones-tab/asignacion
 import { CuentasTabComponent } from '../../tabs/cuentas-tab/cuentas-tab.component';
 import { CommonModule } from '@angular/common';
 import { TabViewModule } from 'primeng/tabview';
+import { ProveedorTRXTabComponent } from '../../tabs/proveedor-trx-tab/proveedor-trx-tab.component';
 
 @Component({
   selector: 'app-asignaciones-wrapper',
@@ -11,7 +12,8 @@ import { TabViewModule } from 'primeng/tabview';
     AsignacionesTabComponent,
     CuentasTabComponent,
     CommonModule,
-    TabViewModule
+    TabViewModule,
+    ProveedorTRXTabComponent
   ],
   templateUrl: './asignaciones-wrapper.component.html',
   styleUrl: './asignaciones-wrapper.component.css'

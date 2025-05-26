@@ -12,6 +12,7 @@ export interface SellDollar {
   date: Date;
   supplierId: number;
   pesos: number;
+  
 }
 
 @Injectable({ providedIn: 'root' })

@@ -19,6 +19,7 @@ export interface BuyDollarsDto {
 })
 export class BuyDollarsService {
   private apiUrl = `${environment.apiUrl}/api/buy-dollars`;  // URL del endpoint en el backend
+  private apiTrustUrl = `${environment.apiUrl}/api/trx-entradas`;
 
   constructor(private http: HttpClient) { }
 
@@ -26,5 +27,10 @@ export class BuyDollarsService {
   createBuyDollar(buyData: BuyDollarsDto): Observable<any> {
     // Realizar la petición HTTP POST para crear la compra
     return this.http.post<any>(this.apiUrl, buyData);
+  }
+
+  /** Obtiene las transacciones TRUST (entradas) desde backend */
+  getTrustTransactions(): Observable<BuyDollarsDto[]> {
+    return this.http.get<BuyDollarsDto[]>(this.apiTrustUrl);
   }
 }

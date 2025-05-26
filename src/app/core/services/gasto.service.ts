@@ -16,7 +16,7 @@ export interface Gasto {
   providedIn: 'root'
 })
 export class GastoService {
-  private apiUrl = environment.apiUrl + 'api/gastos';
+  private apiUrl = environment.apiUrl + '/api/gastos';
 
   constructor(private http: HttpClient) {}
 

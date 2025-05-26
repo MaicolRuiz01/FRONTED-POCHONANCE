@@ -17,8 +17,8 @@
       </p-toolbar>
   </div>
 
-  <div class="grid">
-    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+ <div class="grid" *ngIf="accounts.length > 0">
+  <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
       <div class="card-header">
         <span >{{ account.accountType }}</span>
         <i class="pi pi-exclamation-circle info-icon"></i>
@@ -120,7 +120,7 @@
     </div>
 
     <div class="p-field">
-      <label for="referenceAccount">Número de cuenta*</label>
+      <label for="referenceAccount">Id de cuenta Binance*</label>
       <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
     </div>
 
@@ -134,10 +134,21 @@
       <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
     </div>
 
+    <div class="p-field">
+      <label for="balance">Saldo inicial en USDT*</label>
+      <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" required />
+    </div>
+
+    <div class="p-field">
+      <label for="address">Wallet (dirección USDT)*</label>
+      <input id="address" type="text" pInputText [(ngModel)]="newAccount.address" required />
+    </div>
+
     <div class="p-dialog-footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
+
     <small class="p-d-block p-mt-2">* Campos obligatorios</small>
   </div>
 </p-dialog>

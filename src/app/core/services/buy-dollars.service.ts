@@ -33,4 +33,10 @@ export class BuyDollarsService {
   getTrustTransactions(): Observable<BuyDollarsDto[]> {
     return this.http.get<BuyDollarsDto[]>(this.apiTrustUrl);
   }
+
+  // en BuyDollarsService agregar método para USDT entradas
+getUSDTEntradas(): Observable<BuyDollarsDto[]> {
+  return this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/usdt-entradas`);
+}
+
 }

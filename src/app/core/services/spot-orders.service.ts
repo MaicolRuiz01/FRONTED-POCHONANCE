@@ -15,6 +15,7 @@ export interface SellDollarsDto {
   equivalenteciaTRX: number | null;
 }
 
+//este service es para obtener las compras trx que luego se envian al proveedor para luego converitlo en un selldolars
 @Injectable({ providedIn: 'root' })
 export class SpotOrdersService {
   private readonly apiUrl = `${environment.apiUrl}/api/spot-orders/trades`;

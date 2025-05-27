@@ -1,6 +1,7 @@
 import { OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { LayoutService } from './service/app.layout.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-menu',
@@ -35,6 +36,11 @@ export class AppMenuComponent implements OnInit {
                     label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
                     routerLink: ['/actividades']
                 },
+
+                {
+                    label: 'TRUST', icon : 'pi pi-fw pi-ethereum',
+                    routerLink: ['/trust']
+                }
 
                    /*  {
                         label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',

@@ -1,13 +1,12 @@
-<!-- spot-trades.component.html -->
+<!-- asignaciones-compra-trust.component.html -->
 <div class="card">
-  <h2>Órdenes TRX/USDT</h2>
+  <h2>Entradas USDT Trust</h2>
 
-    <!-- Añadir justo antes del p-table -->
-<div class="p-mb-2" style="font-weight: 600;">
-  Mostrando {{ filteredTrades.length }} de {{ trades.length }} elementos
-</div>
+  <div class="p-mb-2" style="font-weight: 600;">
+    Mostrando {{ filteredBuys.length }} de {{ buys.length }} elementos
+  </div>
 
-<hr>
+  <hr>
 
   <div class="p-grid p-align-center p-mb-3 p-g-3">
     <div class="p-col-12 p-md-4">
@@ -21,9 +20,8 @@
     </div>
   </div>
 
-
   <p-table
-    [value]="filteredTrades"
+    [value]="filteredBuys"
     [paginator]="true"
     [rows]="10"
     [rowsPerPageOptions]="[5,10,25]"
@@ -34,21 +32,25 @@
   >
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="nameAccount">Cuenta <p-sortIcon field="nameAccount"/></th>
-        <th pSortableColumn="dollars">Dólares <p-sortIcon field="dollars"/></th>
-        <th pSortableColumn="date">Fecha <p-sortIcon field="date"/></th>
-        <th pSortableColumn="equivalenteciaTRX">Equivalencia TRX <p-sortIcon field="equivalenteciaTRX"/></th>
+        <th pSortableColumn="nameAccount">Cuenta <p-sortIcon field="nameAccount" /></th>
+        <th pSortableColumn="dollars">Dólares <p-sortIcon field="dollars" /></th>
+        <th pSortableColumn="date">Fecha <p-sortIcon field="date" /></th>
         <th>Acción</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-trade>
+    <ng-template pTemplate="body" let-buy>
       <tr>
-        <td>{{ trade.nameAccount }}</td>
-        <td>{{ trade.dollars | number: '1.2-2' }}</td>
-        <td>{{ trade.date | date: 'short' }}</td>
-        <td>{{ trade.equivalenteciaTRX | number: '1.2-2' }}</td>
+        <td>{{ buy.nameAccount }}</td>
+        <td>{{ buy.dollars | number: '1.2-2' }}</td>
+        <td>{{ buy.date | date: 'short' }}</td>
         <td>
-          <button pButton type="button" label="Asignar" class="p-button-sm p-button-success" (click)="openAssignModal(trade)"></button>
+          <button
+            pButton
+            type="button"
+            label="Asignar"
+            class="p-button-sm p-button-success"
+            (click)="openAssignModal(buy)"
+          ></button>
         </td>
       </tr>
     </ng-template>
@@ -56,17 +58,17 @@
 </div>
 
 <p-dialog
-  header="Asignar Venta"
+  header="Asignar Compra"
   [(visible)]="displayModal"
   [modal]="true"
   [style]="{ width: '400px' }"
   (onHide)="closeModal()"
 >
-  <div *ngIf="selectedTrade">
-    <div class="p-field"><strong>Cuenta:</strong> {{ selectedTrade.nameAccount }}</div>
-    <div class="p-field"><strong>Dólares:</strong> {{ selectedTrade.dollars | number:'1.2-2' }}</div>
+  <div *ngIf="selectedBuy">
+    <div class="p-field"><strong>Cuenta:</strong> {{ selectedBuy.nameAccount }}</div>
+    <div class="p-field"><strong>Dólares:</strong> {{ selectedBuy.dollars | number: '1.2-2' }}</div>
     <div class="p-field">
-      <label for="rateInput"><strong>Tasa de venta</strong></label>
+      <label for="rateInput"><strong>Tasa de compra</strong></label>
       <input
         id="rateInput"
         type="number"
@@ -79,6 +81,6 @@
   </div>
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
-    <button pButton type="button" label="Guardar" (click)="saveSale()" [disabled]="!saleRate"></button>
+    <button pButton type="button" label="Guardar" (click)="saveBuy()" [disabled]="!saleRate"></button>
   </ng-template>
 </p-dialog>

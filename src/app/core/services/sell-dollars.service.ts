@@ -18,10 +18,15 @@ export interface SellDollar {
 @Injectable({ providedIn: 'root' })
 export class SellDollarsService {
   private readonly apiUrl = `${environment.apiUrl}/api/sell-dollars`;
+  private readonly apiUsdtSalidasUrl = `${environment.apiUrl}/api/usdt-salidas`;
 
   constructor(private http: HttpClient) {}
 
   createSellDollar(sell: SellDollar): Observable<any> {
     return this.http.post<any>(this.apiUrl, sell);
+  }
+
+  getUsdtSalidas(): Observable<SellDollar[]> {
+    return this.http.get<SellDollar[]>(this.apiUsdtSalidasUrl);
   }
 }

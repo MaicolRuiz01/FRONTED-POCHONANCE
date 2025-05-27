@@ -10,9 +10,9 @@ import { GastosComponent } from './pages/saldos/tabs/gastos/gastos.component';
 import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
 import { SaldosTabComponent } from './pages/saldos/container/saldos-tab.component';
 
-
 import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asignaciones-wrapper/asignaciones-wrapper.component';
 import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
+import { OpcionesTabComponent } from './pages/trust-wallet/container/opciones-tab/opciones-tab.component';
 
 
 
@@ -34,13 +34,9 @@ export const routes: Routes = [  {
       path: 'saldos',
       component: SaldosTabComponent
     },
-
-
-
-
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
 
-
+    {path:'trust',component:OpcionesTabComponent }
   ]
 }, // Nueva ruta
   { path: '**', redirectTo: 'nueva-vista' } ];

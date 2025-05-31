@@ -10,6 +10,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-asignaciones-ventap2p',
@@ -21,7 +22,8 @@ import { CalendarModule } from 'primeng/calendar';
     MultiSelectModule,
     ButtonModule,
     FormsModule,
-    CalendarModule
+    CalendarModule,
+    InputNumberModule
   ],
   templateUrl: './asignaciones-ventap2p.component.html'
 })
@@ -39,26 +41,90 @@ export class AsignacionesVentap2pComponent implements OnInit {
   startDate: Date | null = null;
   endDate:   Date | null = null;
 
+  autoAssignEnabled: boolean = true;
+
   constructor(
     private orderService: OrderP2PService,
     private saleService: SaleP2PService,
     private accountCopService: AccountCopService
   ) {}
 
+
+   private staticOrders: OrderP2PDto[] = [
+    {
+      orderNumber: 'ORD001',
+      tradeType: 'BUY',
+      amount: 100,
+      totalPrice: 500000,
+      unitPrice: 5000,
+      orderStatus: 'COMPLETED',
+      createTime: new Date().toISOString(),
+      commission: 10000,
+      counterPartNickName: 'Cliente1',
+      payMethodName: 'Transferencia',
+      nameAccount: 'Cuenta A',
+      accountAmount: 100,
+      binanceAccount: 'Binance-1'
+    },
+    {
+      orderNumber: 'ORD002',
+      tradeType: 'SELL',
+      amount: 50,
+      totalPrice: 250000,
+      unitPrice: 5000,
+      orderStatus: 'PENDING',
+      createTime: new Date().toISOString(),
+      commission: 5000,
+      counterPartNickName: 'Cliente2',
+      payMethodName: 'Efectivo',
+      nameAccount: 'Cuenta B',
+      accountAmount: 50,
+      binanceAccount: 'Binance-2'
+    }
+  ];
+
+  private staticCuentas: AccountCop[] = [
+    { id: 1, name: 'Cuenta A', balance: 57854 },
+    { id: 2, name: 'Cuenta B', balance: 81023 },
+  ];
   ngOnInit(): void {
+
+    this.p2pOrders = this.staticOrders;
+    this.cuentasDisponibles = this.staticCuentas;
+
     this.loadOrders();
     this.loadCuentas();
   }
 
   private loadOrders(): void {
     this.orderService.getAllOrders()
-      .subscribe(data => this.p2pOrders = data);
+      .subscribe({
+        next: data => {
+          this.p2pOrders = (data && data.length > 0) ? data : this.staticOrders;
+        },
+        error: () => {
+          // En caso de error usar datos estáticos
+          this.p2pOrders = this.staticOrders;
+        }
+      });
   }
 
   private loadCuentas(): void {
     this.accountCopService.getAll()
-      .subscribe(c => this.cuentasDisponibles = c);
+      .subscribe({
+        next: c => {
+          this.cuentasDisponibles = (c && c.length > 0) ? c : this.staticCuentas;
+        },
+        error: () => {
+          this.cuentasDisponibles = this.staticCuentas;
+        }
+      });
   }
+
+
+
+
+
 
   abrirAsignacion(order: OrderP2PDto) {
     this.selectedOrder      = order;
@@ -69,19 +135,37 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.displayDialog      = true;
   }
 
-  onAccountSelectionChange() {
-    this.selectedAmounts = {};
-    this.totalAsignado   = 0;
-    this.saldoRestante   = this.selectedOrder.totalPrice;
+updateAmount(accountId: number, event: any) {
+  const val = event.value || 0;
+  this.selectedAmounts[accountId] = val;
+
+  // Lógica para asignación automática cuando hay 2 cuentas y está habilitado
+  if (this.autoAssignEnabled && this.selectedAccountIds.length === 2) {
+    const otherAccountId = this.selectedAccountIds.find(id => id !== accountId);
+    if (otherAccountId !== undefined) {
+      const remaining = this.selectedOrder.totalPrice - val;
+      this.selectedAmounts[otherAccountId] = remaining > 0 ? remaining : 0;
+    }
   }
 
-  updateAmount(accountId: number, event: any) {
-    const val = parseFloat(event.target.value) || 0;
-    this.selectedAmounts[accountId] = val;
-    this.totalAsignado = Object.values(this.selectedAmounts)
-      .reduce((sum, x) => sum + x, 0);
-    this.saldoRestante = this.selectedOrder.totalPrice - this.totalAsignado;
+  // Actualizar totales
+  this.totalAsignado = Object.values(this.selectedAmounts)
+    .reduce((sum, x) => sum + x, 0);
+  this.saldoRestante = this.selectedOrder.totalPrice - this.totalAsignado;
+}
+
+onAccountSelectionChange() {
+  this.selectedAmounts = {};
+  this.totalAsignado = 0;
+  this.saldoRestante = this.selectedOrder.totalPrice;
+
+  // Inicializar valores cuando hay 2 cuentas
+  if (this.selectedAccountIds.length === 2) {
+    this.selectedAccountIds.forEach(id => {
+      this.selectedAmounts[id] = 0;
+    });
   }
+}
 
   guardarAsignacion() {
     if (this.totalAsignado !== this.selectedOrder.totalPrice) {

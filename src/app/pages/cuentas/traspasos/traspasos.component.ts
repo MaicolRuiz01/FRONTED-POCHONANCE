@@ -13,7 +13,6 @@ import { TagModule } from 'primeng/tag';
   standalone: true,
   imports: [CommonModule, TableModule, DropdownModule, SharedModule,TagModule],
   templateUrl: './traspasos.component.html',
-  styleUrls: ['./traspasos.component.css']
 })
 export class TraspasosComponent implements OnInit {
   cols: any[] = [
@@ -99,12 +98,12 @@ export class TraspasosComponent implements OnInit {
     const parsed = parseFloat(amount);
     return parsed < 0 ? 'danger' : 'success';
   }
-  
+
   getFormattedAmount(amount: string, currency: string): string {
     const parsed = parseFloat(amount);
     const abs = Math.abs(parsed);
     return `${parsed < 0 ? '-' : '+'}${abs.toLocaleString()} ${currency}`;
   }
-  
-  
+
+
 }

@@ -1,7 +1,7 @@
-<!-- src/app/pages/asignaciones/tabs/asignaciones-ventap2p/asignaciones-ventap2p.component.html -->
 <div class="card">
+  <h2 class="p-mb-3">Asignaciones de Ventas P2P</h2>
 
-    <div class="p-grid p-align-center p-mb-3">
+  <div class="p-grid p-align-center p-mb-3">
         <div class="p-col-12 p-md-4">
           <p-calendar
           name="startDate"
@@ -87,63 +87,107 @@
     </p-table>
   </div>
 
-  <p-dialog
+ <p-dialog
     header="Asignar cuenta(s) a la venta"
     [(visible)]="displayDialog"
     [modal]="true"
-    [style]="{ width: '50vw' }"
-  >
+    [style]="{ width: '50vw', 'min-width': '400px' }"
+    [draggable]="false"
+    [resizable]="false"
+>
     <div class="p-fluid">
-      <div class="p-grid">
-        <div class="p-col-12">
-          <h4>Orden: {{ selectedOrder?.orderNumber }}</h4>
-          <p>Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
-        </div>
-        <div class="p-col-12">
-          <label>Selecciona cuentas</label>
-          <p-multiSelect
-          name="cuentas"
-            [options]="cuentasDisponibles"
-            [(ngModel)]="selectedAccountIds"
-            optionLabel="name"
-            optionValue="id"
-            placeholder="Seleccionar cuentas"
-            (onChange)="onAccountSelectionChange()"
-            [panelStyle]="{ 'max-height': '200px' }"
-            [appendTo]="'body'"
-          ></p-multiSelect>
-        </div>
-        <div class="p-col-12" *ngIf="selectedAccountIds.length > 0">
-          <h5>Distribuir monto</h5>
-          <div *ngFor="let accId of selectedAccountIds" class="p-field p-grid p-align-center">
-            <div class="p-col-6">{{ getAccountName(accId) }}</div>
-            <div class="p-col-6">
-              <input
-                type="number"
-                pInputText
-                [(ngModel)]="selectedAmounts[accId]"
-                (change)="updateAmount(accId, $event)"
-                [min]="0"
-                [max]="selectedOrder.totalPrice"
-                step="0.01"
-              />
+        <div class="p-grid p-pt-2">
+            <div class="p-col-12 p-mb-3">
+                <h4 class="p-mb-1">Orden: {{ selectedOrder?.orderNumber }}</h4>
+                <p class="p-text-bold p-mt-0">Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
             </div>
-          </div>
-          <div class="p-field p-grid">
-            <div class="p-col-6"><strong>Total asignado:</strong> {{ totalAsignado | currency }}</div>
-            <div class="p-col-6"><strong>Saldo restante:</strong> {{ saldoRestante | currency }}</div>
-          </div>
+
+            <div class="p-col-12 p-mb-4">
+                <label for="cuentasSelect" class="p-d-block p-mb-2">Selecciona cuentas</label>
+                <p-multiSelect
+                    id="cuentasSelect"
+                    name="cuentas"
+                    [options]="cuentasDisponibles"
+                    [(ngModel)]="selectedAccountIds"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Seleccionar cuentas"
+                    (onChange)="onAccountSelectionChange()"
+                    [panelStyle]="{ 'max-height': '200px' }"
+                    [appendTo]="'body'"
+                    [filter]="true"
+                    display="chip"
+                    class="p-inputtext-sm"
+                ></p-multiSelect>
+            </div>
+
+            <div class="p-col-12" *ngIf="selectedAccountIds.length > 0">
+                <h5 class="p-mt-0 p-mb-3">Distribuir monto</h5>
+
+                <div *ngFor="let accId of selectedAccountIds; let i = index" class="p-field p-grid p-align-center p-mb-3">
+                  <label class="p-col-5 p-col-align-center">{{ getAccountName(accId) }}</label>
+                  <div class="p-col-7">
+                      <p-inputNumber
+                          mode="currency"
+                          currency="USD"
+                          locale="en-US"
+                          [(ngModel)]="selectedAmounts[accId]"
+                          (onInput)="updateAmount(accId, $event)"
+                          [minFractionDigits]="2"
+                          [maxFractionDigits]="2"
+                          [showButtons]="true"
+                          inputId="amount-{{accId}}"
+                          class="p-inputtext-sm"
+                          styleClass="p-inputtext-sm w-full"
+                          [disabled]="selectedAccountIds.length === 2 && i === 1 && autoAssignEnabled"
+                      ></p-inputNumber>
+                      <small *ngIf="selectedAccountIds.length === 2 && i === 1 && autoAssignEnabled"
+                            class="p-d-block p-mt-1 p-text-secondary">
+                          Valor calculado automáticamente
+                      </small>
+                  </div>
+              </div>
+                <div class="p-grid p-mt-4 p-pt-3 p-border-top-1 p-border-300">
+                    <div class="p-col-6 p-text-bold p-text-right p-pr-4">Total asignado:</div>
+                    <div class="p-col-6 p-text-bold">{{ totalAsignado | currency }}</div>
+
+                    <div class="p-col-6 p-text-bold p-text-right p-pr-4">Saldo restante:</div>
+                    <div class="p-col-6 p-text-bold" [ngClass]="{
+                        'p-text-success': saldoRestante === 0,
+                        'p-text-warning': saldoRestante > 0,
+                        'p-text-danger': saldoRestante < 0
+                    }">
+                        {{ saldoRestante | currency }}
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+
     <ng-template pTemplate="footer">
-      <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
-      <button
-        pButton
-        label="Guardar"
-        class="p-button-success"
-        [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
-        (click)="guardarAsignacion()"
-      ></button>
+        <div class="p-d-flex p-jc-between p-ai-center">
+            <div *ngIf="saldoRestante !== 0" class="p-text-warning">
+                <i class="pi pi-exclamation-triangle p-mr-2"></i>
+                <span *ngIf="saldoRestante > 0">Falta asignar {{ saldoRestante | currency }}</span>
+                <span *ngIf="saldoRestante < 0">Has excedido por {{ (-saldoRestante) | currency }}</span>
+            </div>
+            <div class="p-d-flex p-ai-center p-gap-2">
+                <button
+                    pButton
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    class="p-button-text"
+                    (click)="displayDialog = false"
+                ></button>
+                <button
+                    pButton
+                    label="Guardar"
+                    icon="pi pi-check"
+                    class="p-button-success"
+                    [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
+                    (click)="guardarAsignacion()"
+                ></button>
+            </div>
+        </div>
     </ng-template>
-  </p-dialog>
+</p-dialog>

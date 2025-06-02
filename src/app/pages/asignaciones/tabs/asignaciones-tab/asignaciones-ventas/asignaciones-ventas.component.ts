@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { FormsModule } from '@angular/forms';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -18,7 +20,8 @@ import { FormsModule } from '@angular/forms';
     ButtonModule,
     InputTextModule,
     CalendarModule,
-    FormsModule
+    FormsModule,
+    ProgressSpinnerModule
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -26,6 +29,8 @@ import { FormsModule } from '@angular/forms';
 export class AsignacionesVentasComponent implements OnInit {
   allSales: SellDollar[] = [];
   filteredSales: SellDollar[] = [];
+  loading: boolean = false;
+
 
   startDate: Date | null = null;
   endDate: Date | null = null;
@@ -41,10 +46,12 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   loadSales(): void {
+    this.loading = true;
     this.sellService.getAllUnregisteredSales().subscribe({
       next: (sales) => {
         this.allSales = sales;
         this.filteredSales = [...this.allSales];
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error cargando ventas', err);

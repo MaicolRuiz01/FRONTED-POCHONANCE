@@ -12,7 +12,7 @@ import { SaldosTabComponent } from './pages/saldos/container/saldos-tab.componen
 
 import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asignaciones-wrapper/asignaciones-wrapper.component';
 import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
-import { OpcionesTabComponent } from './pages/trust-wallet/container/opciones-tab/opciones-tab.component';
+
 
 
 
@@ -36,7 +36,6 @@ export const routes: Routes = [  {
     },
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
 
-    {path:'trust',component:OpcionesTabComponent }
   ]
 }, // Nueva ruta
   { path: '**', redirectTo: 'nueva-vista' } ];

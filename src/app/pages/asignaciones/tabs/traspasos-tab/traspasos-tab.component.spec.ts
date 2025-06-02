@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { OpcionesTabComponent } from './opciones-tab.component';
+import { TraspasosTabComponent } from './traspasos-tab.component';
 
-describe('OpcionesTabComponent', () => {
-  let component: OpcionesTabComponent;
-  let fixture: ComponentFixture<OpcionesTabComponent>;
+describe('TraspasosTabComponent', () => {
+  let component: TraspasosTabComponent;
+  let fixture: ComponentFixture<TraspasosTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [OpcionesTabComponent]
+      imports: [TraspasosTabComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(OpcionesTabComponent);
+    fixture = TestBed.createComponent(TraspasosTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

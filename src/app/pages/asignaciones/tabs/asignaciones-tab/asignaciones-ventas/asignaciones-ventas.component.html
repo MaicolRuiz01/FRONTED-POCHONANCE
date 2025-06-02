@@ -1,38 +1,11 @@
 <!-- asignaciones-ventas.component.html -->
 <div class="card">
   <h2>Asignar Ventas</h2>
-  <div class="p-grid p-align-center p-mb-3 p-g-3">
-    <div class="p-col-12 p-md-4">
-      <p-calendar
-        [(ngModel)]="startDate"
-        placeholder="Desde"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '100%' }"
-      ></p-calendar>
-    </div>
-    <div class="p-col-12 p-md-4">
-      <p-calendar
-        [(ngModel)]="endDate"
-        placeholder="Hasta"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '100%' }"
-      ></p-calendar>
-    </div>
-    <div class="p-col-12 p-md-4 p-pl-2">
-      <button
-        pButton
-        type="button"
-        icon="pi pi-times"
-        label="Limpiar"
-        class="p-button-text"
-        (click)="clearDateFilter()"
-      ></button>
-    </div>
-  </div>
+  <p *ngIf="loading" class="spinner-container">
+  <p-progressSpinner></p-progressSpinner>
+</p>
+
+
 
   <p-table
     [value]="filteredSales"
@@ -43,6 +16,7 @@
     scrollDirection="horizontal"
     [tableStyle]="{ 'min-width': '80rem' }"
     sortMode="single"
+    *ngIf="!loading"
   >
     <ng-template pTemplate="header">
       <tr>

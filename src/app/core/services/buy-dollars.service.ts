@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environment/environment';
 
 export interface BuyDollarsDto {
@@ -9,34 +10,32 @@ export interface BuyDollarsDto {
   nameAccount: string;
   date: Date;
   supplierId: number;
-  idDeposit:string;
+  idDeposit: string;
   pesos: number;
 }
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class BuyDollarsService {
-  private apiUrl = `${environment.apiUrl}/api/buy-dollars`;  // URL del endpoint en el backend
-  private apiTrustUrl = `${environment.apiUrl}/api/trx-entradas`;
+  private readonly apiCompra = `${environment.apiUrl}/api/buy-dollars`;
+  private readonly apiUrl = `${environment.apiUrl}/api/buy-dollars`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  /** Crea un registro de compra de dólares enviándolo al backend */
+  /** Crea una compra de dólares en el backend */
   createBuyDollar(buyData: BuyDollarsDto): Observable<any> {
-    // Realizar la petición HTTP POST para crear la compra
-    return this.http.post<any>(this.apiUrl, buyData);
+    return this.http.post<any>(this.apiCompra, buyData);
   }
 
-  /** Obtiene las transacciones TRUST (entradas) desde backend */
-  getTrustTransactions(): Observable<BuyDollarsDto[]> {
-    return this.http.get<BuyDollarsDto[]>(this.apiTrustUrl);
+  /** Obtiene todas las entradas no registradas (spot, binancepay y tron) */
+  getAllEntradas(): Observable<BuyDollarsDto[]> {
+    const binance$ = this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/compras-binancepay`);
+    const spot$ = this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/spot-orders/compras-no-registradas`);
+    const usdt$ = this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/usdt-entradas`);
+
+    return forkJoin([binance$, spot$, usdt$]).pipe(
+      map(([binance, spot, usdt]) => [...binance, ...spot, ...usdt])
+    );
   }
-
-  // en BuyDollarsService agregar método para USDT entradas
-getUSDTEntradas(): Observable<BuyDollarsDto[]> {
-  return this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/usdt-entradas`);
-}
-
 }

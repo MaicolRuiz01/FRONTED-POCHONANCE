@@ -30,3 +30,46 @@ button[pButton]:not(:disabled):hover {
   transform: translateY(-1px);
   transition: all 0.2s ease;
 }
+
+/* Estilos para el campo S4 */
+.s4-input-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #6366f1;
+}
+
+.s4-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.s4-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.s4-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.s4-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Mejora visual para el estado deshabilitado del botón Guardar */
+.p-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

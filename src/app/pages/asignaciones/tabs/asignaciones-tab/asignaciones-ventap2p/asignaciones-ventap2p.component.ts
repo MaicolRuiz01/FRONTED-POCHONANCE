@@ -55,6 +55,11 @@ export class AsignacionesVentap2pComponent implements OnInit {
   loading: boolean = false;
   loadingTodaySales: boolean = false;
 
+
+  //s4 logica
+  s4Reference: string = '';
+  showS4Input: boolean = false;
+
   constructor(
     private orderService: OrderP2PService,
     private saleService: SaleP2PService,
@@ -195,6 +200,12 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.selectedAmounts = {};
     this.totalAsignado = 0;
     this.saldoRestante = this.selectedOrder.totalPrice;
+    this.s4Reference = '';
+
+    // Verificar si se seleccionó la cuenta S4
+    this.showS4Input = this.selectedAccountIds.some(id =>
+      this.getAccountName(id).toUpperCase().includes('S4')
+    );
 
     if (this.selectedAccountIds.length === 2) {
       this.selectedAccountIds.forEach(id => {

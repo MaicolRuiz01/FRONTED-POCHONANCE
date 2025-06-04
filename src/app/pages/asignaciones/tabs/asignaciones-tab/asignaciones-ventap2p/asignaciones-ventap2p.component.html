@@ -166,7 +166,7 @@
   </p-table>
 </div>
 
- <p-dialog
+<p-dialog
     header="Asignar cuenta(s) a la venta"
     [(visible)]="displayDialog"
     [modal]="true"
@@ -198,6 +198,25 @@
                     display="chip"
                     class="p-inputtext-sm"
                 ></p-multiSelect>
+            </div>
+
+            <!-- Nuevo campo para S4 -->
+            <div class="p-col-12 p-mb-3" *ngIf="showS4Input">
+                <div class="s4-input-container">
+                    <label for="s4Reference" class="s4-label">
+                        <i class="pi pi-info-circle p-mr-2"></i>
+                        Nombre de cuenta para cuenta S4
+                    </label>
+                    <input
+                        id="s4Reference"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="s4Reference"
+                        placeholder="Ingrese nombre de cuenta S4"
+                        class="s4-input"
+                    />
+                    <small class="s4-hint">Por favor ingrese nombre de cuenta</small>
+                </div>
             </div>
 
             <div class="p-col-12" *ngIf="selectedAccountIds.length > 0">
@@ -263,7 +282,7 @@
                     label="Guardar"
                     icon="pi pi-check"
                     class="p-button-success"
-                    [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice"
+                    [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice || (showS4Input && !s4Reference)"
                     (click)="guardarAsignacion()"
                 ></button>
             </div>

@@ -1,91 +1,170 @@
-<div class="card">
-  <h2 class="p-mb-3">Asignaciones de Ventas P2P</h2>
+<div class="card p-p-4">
+  <!-- Título con mayor margen inferior -->
+  <h2 class="p-mb-5 p-text-bold">Asignaciones de Ventas P2P</h2>
 
-  <div class="p-grid p-align-center p-mb-3">
-        <div class="p-col-12 p-md-4">
-          <p-calendar
-          name="startDate"
-            [(ngModel)]="startDate"
-            placeholder="Desde"
-            dateFormat="yy-mm-dd"
-            showIcon="true"
-          ></p-calendar>
-        </div>
-        <div class="p-col-12 p-md-4">
-          <p-calendar
-          name="endDate"
-            [(ngModel)]="endDate"
-            placeholder="Hasta"
-            dateFormat="yy-mm-dd"
-            showIcon="true"
-          ></p-calendar>
-        </div>
-        <div class="p-col-12 p-md-4">
-          <button
-            pButton
-            label="Filtrar"
-            class="p-button-sm"
-            (click)="filterByDate()"
-            [disabled]="!startDate || !endDate"
-          ></button>
-          <button
-            pButton
-            icon="pi pi-times"
-            class="p-button-sm p-button-text"
-            (click)="clearFilter()"
-          ></button>
+  <!-- Contenedor de filtros con mejor espaciado -->
+  <div class="filter-container p-p-4 p-mb-5 p-shadow-2" style="background-color: #f8f9fa; border-radius: 10px;">
+    <div class="p-grid p-fluid">
+      <!-- Cuenta Binance - más espacio -->
+      <div class="p-col-12 p-md-5 p-lg-4 p-mb-4">
+        <label for="binanceAccount" class="p-d-block p-mb-3 filter-label">Cuenta Binance</label>
+        <p-dropdown
+          id="binanceAccount"
+          [options]="binanceAccounts"
+          [(ngModel)]="selectedBinanceAccount"
+          (onChange)="onBinanceAccountChange()"
+          optionLabel="name"
+          placeholder="Seleccionar cuenta"
+          [filter]="true"
+          [showClear]="true"
+          class="w-full"
+          [style]="{'min-height': '40px'}"
+        ></p-dropdown>
+      </div>
+
+      <!-- Grupo de fechas con mejor separación -->
+      <div class="p-col-12 p-md-5 p-lg-4 p-mb-4">
+        <div class="p-grid p-ai-end">
+          <!-- Fecha Desde -->
+          <div class="p-col-6 p-pr-3">
+            <label for="startDate" class="p-d-block p-mb-3 filter-label">Fecha Desde</label>
+            <p-calendar
+              id="startDate"
+              name="startDate"
+              [(ngModel)]="startDate"
+              placeholder="Seleccionar"
+              dateFormat="yy-mm-dd"
+              showIcon="true"
+              class="w-full"
+              inputStyleClass="p-inputtext-sm"
+            ></p-calendar>
+          </div>
+
+          <!-- Fecha Hasta -->
+          <div class="p-col-6 p-pl-3">
+            <label for="endDate" class="p-d-block p-mb-3 filter-label">Fecha Hasta</label>
+            <p-calendar
+              id="endDate"
+              name="endDate"
+              [(ngModel)]="endDate"
+              placeholder="Seleccionar"
+              dateFormat="yy-mm-dd"
+              showIcon="true"
+              class="w-full"
+              inputStyleClass="p-inputtext-sm"
+            ></p-calendar>
+          </div>
         </div>
       </div>
 
+      <!-- Botones con mejor espaciado y alineación -->
+      <div class="p-col-12 p-md-2 p-lg-4 p-d-flex p-jc-end p-ai-end p-pt-2">
+        <button
+          pButton
+          label="Filtrar"
+          icon="pi pi-search"
+          class="p-button-sm p-mr-3"
+          (click)="filterOrders()"
+          [disabled]="!isFilterValid()"
+        ></button>
+        <button
+          pButton
+          icon="pi pi-times"
+          label="Limpiar"
+          class="p-button-sm p-button-outlined"
+          (click)="clearFilter()"
+          pTooltip="Limpiar todos los filtros"
+          tooltipPosition="top"
+        ></button>
+      </div>
+    </div>
+  </div>
 
-
-
-
-
+  <!-- Nueva sección para mostrar ventas del día -->
+  <div class="p-mb-5" *ngIf="todaySales.length > 0">
+    <h3 class="p-mb-3">Ventas de hoy</h3>
     <p-table
-      [paginator]="true"
-      [rows]="10"
-      [value]="p2pOrders"
+      [value]="todaySales"
       [tableStyle]="{ 'min-width': '60rem' }"
-      sortMode="single"
-      [responsiveLayout]="'scroll'"
+      [loading]="loadingTodaySales"
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="nameAccount">Cuenta <p-sortIcon field="nameAccount"/></th>
-          <th pSortableColumn="createTime">Fecha <p-sortIcon field="createTime"/></th>
-          <th pSortableColumn="amount">Monto <p-sortIcon field="amount"/></th>
-          <th pSortableColumn="totalPrice">Total <p-sortIcon field="totalPrice"/></th>
-          <th pSortableColumn="unitPrice">Tasa <p-sortIcon field="unitPrice"/></th>
-          <th pSortableColumn="commission">Comisión <p-sortIcon field="commission"/></th>
-          <!-- <th pSortableColumn="payMethodName">Pago <p-sortIcon field="payMethodName"/></th> -->
-          <th>Acción</th>
+          <th>N° Orden</th>
+          <th>Fecha</th>
+          <th>Valor COP</th>
+          <th>Comisión</th>
+          <th>Cuentas Asignadas</th>
         </tr>
       </ng-template>
-      <ng-template pTemplate="body" let-order>
+      <ng-template pTemplate="body" let-sale>
         <tr>
-            <td>{{ order.binanceAccount }}</td>
-
-          <td>{{ order.createTime | date:'short' }}</td>
-          <td>{{ order.amount | number }}</td>
-          <td>{{ order.totalPrice | currency }}</td>
-          <td>{{ order.unitPrice | currency }}</td>
-          <td>{{ order.commission | currency }}</td>
-          <!-- <td>{{ order.payMethodName }}</td> -->
+          <td>{{ sale.numberOrder }}</td>
+          <td>{{ sale.date | date:'short' }}</td>
+          <td>{{ sale.pesosCop | currency }}</td>
+          <td>{{ sale.commission | currency }}</td>
           <td>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-check"
-              label="Asignar"
-              class="p-button-success p-button-sm"
-              (click)="abrirAsignacion(order)"
-            ></button>
+            <span *ngFor="let accId of sale.accountCopIds" class="p-mr-2">
+              {{ getAccountName(accId) }} ({{ sale.accountAmounts[accId] | currency }})
+            </span>
           </td>
         </tr>
       </ng-template>
     </p-table>
   </div>
+
+  <!-- Tabla de órdenes existente -->
+  <h3 class="p-mb-3">Órdenes P2P</h3>
+
+  <p-table
+    [paginator]="true"
+    [rows]="10"
+    [value]="p2pOrders"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    sortMode="single"
+    [responsiveLayout]="'scroll'"
+    [loading]="loading"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="nameAccount">Cuenta <p-sortIcon field="nameAccount"/></th>
+        <th pSortableColumn="createTime">Fecha <p-sortIcon field="createTime"/></th>
+        <th pSortableColumn="amount">Monto <p-sortIcon field="amount"/></th>
+        <th pSortableColumn="totalPrice">Total <p-sortIcon field="totalPrice"/></th>
+        <th pSortableColumn="unitPrice">Tasa <p-sortIcon field="unitPrice"/></th>
+        <th pSortableColumn="commission">Comisión <p-sortIcon field="commission"/></th>
+        <th>Acción</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-order>
+      <tr>
+        <td>{{ order.binanceAccount }}</td>
+        <td>{{ order.createTime | date:'short' }}</td>
+        <td>{{ order.amount | number }}</td>
+        <td>{{ order.totalPrice | currency }}</td>
+        <td>{{ order.unitPrice | currency }}</td>
+        <td>{{ order.commission | currency }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-check"
+            label="Asignar"
+            class="p-button-success p-button-sm"
+            (click)="abrirAsignacion(order)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="p-text-center">
+          {{ loading ? 'Cargando datos...' : 'No se encontraron órdenes con los filtros aplicados' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
 
  <p-dialog
     header="Asignar cuenta(s) a la venta"

@@ -4,6 +4,7 @@ import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HttpParams } from '@angular/common/http';
 import { environment } from '../../../environment/environment';
+import { SaleP2PDto } from './sale-p2p.service';
 
 export interface OrderP2PDto {
   orderNumber: string;
@@ -27,55 +28,27 @@ export interface OrderP2PDto {
 })
 export class OrderP2PService {
   private readonly apiUrl = `${environment.apiUrl}/order-p2p`;
-  private readonly accounts = ['MILTON', 'SONIA', 'CESAR', 'MARCEL'];
 
   constructor(private http: HttpClient) {}
 
-  getAllOrders(): Observable<OrderP2PDto[]> {
-  const requests = this.accounts.map(account =>
-    this.http.get<OrderP2PDto[]>(`${this.apiUrl}?account=${account}`).pipe(
-      map(orders => orders.map(order => ({
-        ...order,
-        binanceAccount: account // aquí claramente asignado
-      })))
-    )
-  );
-
-  return forkJoin(requests).pipe(
-    map(results => results.flat().sort((a, b) =>
-      new Date(b.createTime).getTime() - new Date(a.createTime).getTime()
-    ))
-  );
-}
-
-
-  getOrdersByDateRange(account: string, from: Date, to: Date): Observable<OrderP2PDto[]> {
+   getOrdersByDateRange(account: string, from: Date, to: Date): Observable<OrderP2PDto[]> {
     const params = new HttpParams()
       .set('account', account)
-      .set('fechaInicio', from.toISOString().slice(0,10))
-      .set('fechaFin',    to.toISOString().slice(0,10));
-    return this.http.get<OrderP2PDto[]>(`${this.apiUrl}/date-range`, { params });
-  }
-  getOrdersByDateRangeAllAccounts(from: Date, to: Date): Observable<OrderP2PDto[]> {
-    const requests = this.accounts.map(account => {
-      const params = new HttpParams()
-        .set('account', account)
-        .set('fechaInicio', from.toISOString().slice(0, 10))
-        .set('fechaFin', to.toISOString().slice(0, 10));
+      .set('fechaInicio', from.toISOString().slice(0, 10))
+      .set('fechaFin', to.toISOString().slice(0, 10));
 
-      return this.http.get<OrderP2PDto[]>(`${this.apiUrl}/date-range`, { params }).pipe(
-        map(orders => orders.map(order => ({
-          ...order,
-          binanceAccount: account
-        })))
-      );
-    });
-
-    return forkJoin(requests).pipe(
-      map(results => results.flat().sort((a, b) =>
-        new Date(b.createTime).getTime() - new Date(a.createTime).getTime()
-      ))
+    return this.http.get<OrderP2PDto[]>(`${this.apiUrl}/date-range`, { params }).pipe(
+      map(orders => orders.map(order => ({
+        ...order,
+        binanceAccount: account
+      })))
     );
   }
+
+    getTodaySales(accountName: string): Observable<SaleP2PDto[]> {
+    const params = new HttpParams().set('account', accountName);
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/saleP2P/today`, { params });
+  }
+
 
 }

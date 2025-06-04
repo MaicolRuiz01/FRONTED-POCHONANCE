@@ -8,3 +8,25 @@
   flex: 0 0 auto !important;
 }
 
+.filter-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #495057;
+  letter-spacing: 0.5px;
+}
+
+.filter-container {
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.table-container {
+  border: 1px solid #e9ecef;
+  background: white;
+}
+
+/* Efecto hover para botones */
+button[pButton]:not(:disabled):hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}

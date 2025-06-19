@@ -37,6 +37,9 @@ export class AsignacionesComprasComponent implements OnInit {
 
   isRateInvalid: boolean = false;
 
+  isLoading: boolean = true;
+  hasError: boolean = false;
+
   constructor(private buyService: BuyDollarsService) {}
 
   ngOnInit(): void {
@@ -44,6 +47,8 @@ export class AsignacionesComprasComponent implements OnInit {
   }
 
   loadDeposits(): void {
+    this.isLoading = true;
+    this.hasError = false;
     this.buyService.getAllEntradas().subscribe({
       next: data => {
         this.allDeposits = data;
@@ -51,7 +56,11 @@ export class AsignacionesComprasComponent implements OnInit {
       },
       error: err => {
         console.error('Error cargando depósitos', err);
-        alert('No se pudieron cargar las compras');
+        setTimeout(() => {
+          this.hasError = true;
+          alert('No se pudieron cargar las compras');
+          }, 4000);
+          this.isLoading = false;
       }
     });
   }

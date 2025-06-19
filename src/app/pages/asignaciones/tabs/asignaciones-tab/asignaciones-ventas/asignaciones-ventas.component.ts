@@ -29,7 +29,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 export class AsignacionesVentasComponent implements OnInit {
   allSales: SellDollar[] = [];
   filteredSales: SellDollar[] = [];
-  loading: boolean = false;
+  isLoading: boolean = true;
+  hasError: boolean = false;
 
 
   startDate: Date | null = null;
@@ -46,16 +47,20 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   loadSales(): void {
-    this.loading = true;
+    this.isLoading = true;
     this.sellService.getAllUnregisteredSales().subscribe({
       next: (sales) => {
         this.allSales = sales;
         this.filteredSales = [...this.allSales];
-        this.loading = false;
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error cargando ventas', err);
+        setTimeout(() => {
+          this.hasError = true;
         alert('No se pudieron cargar las ventas');
+        }, 4000);
+        this.isLoading = false;
       }
     });
   }

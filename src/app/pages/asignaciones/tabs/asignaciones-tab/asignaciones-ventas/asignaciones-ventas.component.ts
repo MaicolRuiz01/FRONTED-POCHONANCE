@@ -58,8 +58,7 @@ export class AsignacionesVentasComponent implements OnInit {
         console.error('Error cargando ventas', err);
         setTimeout(() => {
           this.hasError = true;
-        alert('No se pudieron cargar las ventas');
-        }, 4000);
+        }, 6000);
         this.isLoading = false;
       }
     });

@@ -1,9 +1,8 @@
 <!-- asignaciones-ventas.component.html -->
 <div class="card">
   <h2>Asignar Ventas</h2>
-  <p *ngIf="isLoading" class="spinner-container">
-  <p-progressSpinner></p-progressSpinner>
-</p>
+  <p *ngIf="isLoading">Cargando Ventas...</p>
+  <p *ngIf="hasError" style="color: red;">No se pudieron cargar las Ventas.</p>
 
 
 

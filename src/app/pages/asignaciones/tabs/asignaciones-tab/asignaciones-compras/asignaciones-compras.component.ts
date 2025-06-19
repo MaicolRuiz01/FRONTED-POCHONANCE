@@ -58,8 +58,7 @@ export class AsignacionesComprasComponent implements OnInit {
         console.error('Error cargando depósitos', err);
         setTimeout(() => {
           this.hasError = true;
-          alert('No se pudieron cargar las compras');
-          }, 4000);
+          }, 5000);
           this.isLoading = false;
       }
     });

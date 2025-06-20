@@ -1,20 +1,20 @@
-// asignaciones‑ventap2p.component.ts
 import { Component, OnInit } from '@angular/core';
-import { OrderP2PService, OrderP2PDto } from '../../../../../core/services/orderp2p.service';
-import { AccountCopService, AccountCop } from '../../../../../core/services/account-cop.service';
 import { SaleP2PService, SaleP2PDto } from '../../../../../core/services/sale-p2p.service';
+import { AccountCopService, AccountCop } from '../../../../../core/services/account-cop.service';
+import { AccountBinanceService, AccountBinance } from '../../../../../core/services/account-binance.service';
+import { SupplierService, Supplier } from '../../../../../core/services/supplier.service';  
+
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
-import { CalendarModule } from 'primeng/calendar';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { TooltipModule } from 'primeng/tooltip';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
-import { AccountBinance, AccountBinanceService } from '../../../../../core/services/account-binance.service';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de importar el módulo adecuado
+
+
 
 @Component({
   selector: 'app-asignaciones-ventap2p',
@@ -22,236 +22,149 @@ import { AccountBinance, AccountBinanceService } from '../../../../../core/servi
   imports: [
     CommonModule,
     TableModule,
-    DialogModule,
-    MultiSelectModule,
     ButtonModule,
     FormsModule,
-    CalendarModule,
+    DialogModule,
+    DropdownModule,
     InputNumberModule,
-    OverlayPanelModule,
-    TooltipModule,
-    DropdownModule
+     MultiSelectModule,
+     RadioButtonModule 
   ],
   templateUrl: './asignaciones-ventap2p.component.html',
   styleUrls: ['./asignaciones-ventap2p.component.css']
 })
 export class AsignacionesVentap2pComponent implements OnInit {
-  p2pOrders: OrderP2PDto[] = [];
   todaySales: SaleP2PDto[] = [];
-  cuentasDisponibles: AccountCop[] = [];
   binanceAccounts: AccountBinance[] = [];
   selectedBinanceAccount: AccountBinance | null = null;
+  cuentasDisponibles: AccountCop[] = [];
+  selectedSale: SaleP2PDto | null = null;
 
-  displayDialog = false;
-  selectedOrder!: OrderP2PDto;
-  selectedAccountIds: number[] = [];
-  selectedAmounts: { [key:number]: number } = {};
-  totalAsignado = 0;
-  saldoRestante = 0;
-
-  startDate: Date | null = null;
-  endDate: Date | null = null;
-  autoAssignEnabled: boolean = true;
-  loading: boolean = false;
-  loadingTodaySales: boolean = false;
-
-
-  //s4 logica
-  s4Reference: string = '';
-  showS4Input: boolean = false;
+  // Nuevo estado para la asignación
+  isExternal: boolean = false;  // Si es externa o colombiana
+  selectedAmount: number = 0;  // Monto ingresado por el usuario
+  selectedAccounts: AccountCop[] = [];  // Cuentas seleccionadas
+  displayAssignDialog: boolean = false;
+  externalAccountName: string = '';
 
   constructor(
-    private orderService: OrderP2PService,
     private saleService: SaleP2PService,
+    private accountBinanceService: AccountBinanceService,
     private accountCopService: AccountCopService,
-    private accountBinanceService: AccountBinanceService
+    private supplierService: SupplierService
   ) {}
 
   ngOnInit(): void {
-    this.loadInitialData();
-    this.setDefaultDates();
+    this.loadBinanceAccounts();
+    this.loadCuentas();
   }
 
-  private setDefaultDates(): void {
-    const today = new Date();
-    this.startDate = new Date(today.getFullYear(), today.getMonth(), 1); // Primer día del mes
-    this.endDate = today;
-  }
-
-  private loadInitialData(): void {
-    this.loading = true;
-
-    // Cargar cuentas Binance
+  loadBinanceAccounts(): void {
     this.accountBinanceService.traerCuentas().subscribe({
       next: (accounts) => {
         this.binanceAccounts = accounts;
-        // Cargar cuentas COP
-        this.accountCopService.getAll().subscribe({
-          next: (copAccounts) => {
-            this.cuentasDisponibles = copAccounts;
-            this.loading = false;
-          },
-          error: () => {
-            this.cuentasDisponibles = [];
-            this.loading = false;
-          }
-        });
       },
-      error: () => {
-        this.binanceAccounts = [];
-        this.loading = false;
+      error: (err) => {
+        console.error('Error al cargar las cuentas de Binance:', err);
       }
     });
   }
 
-  onBinanceAccountChange(): void {
-    if (this.selectedBinanceAccount) {
-      this.loadTodaySales();
-      // También podríamos cargar automáticamente las órdenes del rango de fechas por defecto
-      this.filterOrders();
-    } else {
-      this.todaySales = [];
-      this.p2pOrders = [];
-    }
+  loadCuentas(): void {
+    this.accountCopService.getAll().subscribe({
+      next: (accounts) => {
+        this.cuentasDisponibles = accounts;
+      },
+      error: (err) => {
+        console.error('Error al cargar las cuentas COP:', err);
+      }
+    });
   }
 
   loadTodaySales(): void {
-    if (!this.selectedBinanceAccount) return;
-
-    this.loadingTodaySales = true;
-    this.orderService.getTodaySales(this.selectedBinanceAccount.name).subscribe({
+    if (!this.selectedBinanceAccount) {
+      alert("Por favor selecciona una cuenta de Binance.");
+      return;
+    }
+    const accountName = this.selectedBinanceAccount.name;
+    this.saleService.getAllSalesToday(accountName).subscribe({
       next: (sales) => {
         this.todaySales = sales;
-        this.loadingTodaySales = false;
       },
-      error: (error) => {
-        console.error('Error al cargar ventas del día:', error);
-        this.todaySales = [];
-        this.loadingTodaySales = false;
+      error: (err) => {
+        console.error('Error al cargar las ventas del día:', err);
       }
     });
   }
 
-  isFilterValid(): boolean {
-    return !!this.selectedBinanceAccount && !!this.startDate && !!this.endDate;
-  }
-
-  filterOrders(): void {
-    if (!this.isFilterValid()) return;
-
-    this.loading = true;
-    const accountName = this.selectedBinanceAccount!.name;
-
-    this.orderService.getOrdersByDateRange(
-      accountName,
-      this.startDate!,
-      this.endDate!
-    ).subscribe({
-      next: (data) => {
-        this.p2pOrders = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al filtrar órdenes:', error);
-        this.p2pOrders = [];
-        this.loading = false;
-      }
-    });
-  }
-
-  clearFilter(): void {
-    this.selectedBinanceAccount = null;
-    this.startDate = this.endDate = null;
-    this.p2pOrders = [];
-    this.todaySales = [];
-  }
-
-  abrirAsignacion(order: OrderP2PDto): void {
-    this.selectedOrder = order;
-    this.selectedAccountIds = [];
-    this.selectedAmounts = {};
-    this.totalAsignado = 0;
-    this.saldoRestante = order.totalPrice;
-    this.displayDialog = true;
-  }
-
-  updateAmount(accountId: number, event: any): void {
-    const val = event.value || 0;
-    this.selectedAmounts[accountId] = val;
-
-    if (this.autoAssignEnabled && this.selectedAccountIds.length === 2) {
-      const otherAccountId = this.selectedAccountIds.find(id => id !== accountId);
-      if (otherAccountId !== undefined) {
-        const remaining = this.selectedOrder.totalPrice - val;
-        this.selectedAmounts[otherAccountId] = remaining > 0 ? remaining : 0;
-      }
+  openAssignDialog(sale: SaleP2PDto): void {
+    this.selectedSale = sale;
+    // Si la cuenta es externa, establecemos el nombre de la cuenta a la propiedad auxiliar
+    if (this.isExternal) {
+      this.externalAccountName = this.selectedSale?.nameAccount || '';
     }
-
-    this.calculateTotals();
+    this.displayAssignDialog = true;
   }
 
-  private calculateTotals(): void {
-    this.totalAsignado = Object.values(this.selectedAmounts)
-      .reduce((sum, x) => sum + x, 0);
-    this.saldoRestante = this.selectedOrder.totalPrice - this.totalAsignado;
-  }
-
-  onAccountSelectionChange(): void {
-    this.selectedAmounts = {};
-    this.totalAsignado = 0;
-    this.saldoRestante = this.selectedOrder.totalPrice;
-    this.s4Reference = '';
-
-    // Verificar si se seleccionó la cuenta S4
-    this.showS4Input = this.selectedAccountIds.some(id =>
-      this.getAccountName(id).toUpperCase().includes('S4')
-    );
-
-    if (this.selectedAccountIds.length === 2) {
-      this.selectedAccountIds.forEach(id => {
-        this.selectedAmounts[id] = 0;
-      });
+  handleAssignType(): void {
+    // Si es externa, le pedimos nombre de cuenta y monto, sino, mostramos cuentas colombianas
+    if (this.isExternal) {
+      this.selectedAccounts = [];
+    } else {
+      this.selectedAccounts = [];
     }
   }
 
-  guardarAsignacion(): void {
-    if (this.totalAsignado !== this.selectedOrder.totalPrice) {
-      alert(`Total asignado (${this.totalAsignado}) no coincide con ${this.selectedOrder.totalPrice}`);
+assignAccounts(): void {
+  if (!this.selectedSale) {
+    alert("Por favor selecciona una venta.");
+    return;
+  }
+
+  // Verifica si la cuenta es externa
+  if (this.isExternal) {
+    const accounts = [{
+      amount: this.selectedAmount,
+      nameAccount: this.selectedSale?.nameAccount || '', // Usamos el nombre de la cuenta de la venta
+      accountCop: null // Cuenta externa, por lo que el accountCop es null
+    }];
+    this.submitAssignRequest(accounts); // Llamamos a la función para enviar la solicitud
+  } else {
+    // Verificamos si el monto no excede el saldo de la venta
+    if (this.selectedAmount > this.selectedSale?.pesosCop) {
+      alert("El monto no puede ser mayor al saldo de la venta.");
       return;
     }
 
-    const firstId = this.selectedAccountIds[0];
-    const cuenta = this.cuentasDisponibles.find(c => c.id === firstId);
-    const nameAcct = cuenta?.name ?? '';
+    // Para cuentas colombianas, asignamos las cuentas seleccionadas
+    const accounts = this.selectedAccounts.map(account => ({
+      amount: this.selectedAmount,  // El monto a asignar
+      nameAccount: account.name,  // El nombre de la cuenta COP seleccionada
+      accountCop: account.id  // El ID de la cuenta COP seleccionada
+    }));
 
-    const dto: SaleP2PDto = {
-      numberOrder: this.selectedOrder.orderNumber,
-      date: new Date(this.selectedOrder.createTime),
-      taxType: '4X',
-      pesosCop: this.selectedOrder.totalPrice,
-      commission: this.selectedOrder.commission,
-      accountCopIds: this.selectedAccountIds,
-      accountAmounts: this.selectedAmounts,
-      nameAccount: nameAcct,
-      nameAccountBinance: this.selectedOrder.binanceAccount ?? '',
-      dollarsUs: this.selectedOrder.amount
-    };
+    this.submitAssignRequest(accounts); // Llamamos a la función para enviar la solicitud
+  }
+}
 
-    this.saleService.createSale(dto).subscribe({
-      next: () => {
-        this.displayDialog = false;
-        alert('Venta P2P asignada correctamente');
-        // Actualizar la lista de ventas del día
-        this.loadTodaySales();
-      },
-      error: (err) => {
-        console.error('Error asignando venta P2P', err);
-        alert('Error al asignar la venta');
-      }
-    });
+// Función para enviar los datos al backend
+submitAssignRequest(accounts: any): void {
+  if (!this.selectedSale) {
+    alert("Por favor selecciona una venta.");
+    return;
   }
 
-  getAccountName(id: number): string {
-    return this.cuentasDisponibles.find(c => c.id === id)?.name ?? '';
+  this.saleService.assignAccounts(this.selectedSale.id, accounts).subscribe({
+  next: (resp: any) => {
+    alert(resp.message);  // accede al campo del JSON
+    this.displayAssignDialog = false;
+    this.loadTodaySales();
+  },
+  error: (err) => {
+    console.error('Error al asignar cuentas:', err);
+    alert('Error al asignar las cuentas');
   }
+});
+
+}
 }

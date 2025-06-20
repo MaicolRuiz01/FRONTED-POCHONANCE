@@ -5,11 +5,13 @@ import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
+import { CardModule } from 'primeng/card';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-cuentas-tab',
   standalone: true,
-  imports: [DialogModule, ButtonModule, FormsModule, TableModule, InputTextModule],
+  imports: [DialogModule, ButtonModule, FormsModule, TableModule, InputTextModule, CardModule, CommonModule ],
   templateUrl: './cuentas-tab.component.html',
   styleUrls: ['./cuentas-tab.component.css']
 })

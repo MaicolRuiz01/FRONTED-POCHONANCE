@@ -1,37 +1,34 @@
 <!-- Botón para abrir el formulario de creación de cuenta -->
-<button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success" (click)="showCreateDialog()"></button>
+<button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success p-mb-3" (click)="showCreateDialog()"></button>
 
-<!-- Tabla de cuentas -->
-<p-table [value]="cuentas" [tableStyle]="{ 'min-width': '80rem' }">
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="name">Cuenta <p-sortIcon field="name" /></th>
-        <th pSortableColumn="balance">Balance <p-sortIcon field="balance" /></th>
-      </tr>
-    </ng-template>
+<!-- Tarjetas para mostrar las cuentas -->
+<div class="p-grid p-dir-col p-align-start">
+  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
+    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card">
+      <ng-template pTemplate="content">
+        <div class="account-details">
+          <p><strong>Balance: </strong>{{ account.balance | currency }}</p>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
 
-    <ng-template pTemplate="body" let-account>
-      <tr>
-        <td>{{ account.name }}</td>
-        <td>{{ account.balance }}</td>
-      </tr>
-    </ng-template>
-</p-table>
-
+<!-- Formulario de creación de cuenta en un modal -->
 <p-dialog header="Crear Cuenta Colombiana" [(visible)]="displayDialog" [modal]="true" [closable]="true">
-    <div class="p-grid p-fluid">
-      <div class="p-col-12 p-md-6">
-        <label for="name">Nombre de la Cuenta</label>
-        <input id="name" pInputText [(ngModel)]="newAccount.name" />
-      </div>
-      <div class="p-col-12 p-md-6">
-        <label for="balance">Balance</label>
-        <input id="balance" pInputText type="number" [(ngModel)]="newAccount.balance" />
-      </div>
+  <div class="p-grid p-fluid">
+    <div class="p-col-12 p-md-6">
+      <label for="name">Nombre de la Cuenta</label>
+      <input id="name" pInputText [(ngModel)]="newAccount.name" />
     </div>
+    <div class="p-col-12 p-md-6">
+      <label for="balance">Balance</label>
+      <input id="balance" pInputText type="number" [(ngModel)]="newAccount.balance" />
+    </div>
+  </div>
 
-    <p-footer>
-      <button pButton label="Cancelar" icon="pi pi-times" (click)="displayDialog = false" class="p-button-text"></button>
-      <button pButton label="Crear" icon="pi pi-check" (click)="createAccount()" class="p-button-success"></button>
-    </p-footer>
+  <p-footer>
+    <button pButton label="Cancelar" icon="pi pi-times" (click)="displayDialog = false" class="p-button-text"></button>
+    <button pButton label="Crear" icon="pi pi-check" (click)="createAccount()" class="p-button-success"></button>
+  </p-footer>
 </p-dialog>

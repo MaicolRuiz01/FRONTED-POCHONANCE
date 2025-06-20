@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
 export interface SaleP2PDto {
+  id: number;
   numberOrder: string;
   date: Date;
   taxType: string;
@@ -26,5 +27,20 @@ export class SaleP2PService {
 
   createSale(saleDto: SaleP2PDto): Observable<SaleP2PDto> {
     return this.http.post<SaleP2PDto>(this.apiUrl, saleDto);
+  }
+
+  assignAccounts(
+  saleId: number,
+  accounts: { amount: number, nameAccount: string, accountCop: number | null }[]
+): Observable<any> {
+  const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
+  return this.http.post(url, accounts, { responseType: 'text' as 'json' });
+}
+
+
+
+  getAllSalesToday(account: string): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/today?account=${account}`;
+    return this.http.get<SaleP2PDto[]>(url);
   }
 }

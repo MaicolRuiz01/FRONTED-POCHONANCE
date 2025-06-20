@@ -3,12 +3,17 @@ import { Router } from '@angular/router';
 import { SharedModule } from '../../../../shared/shared.module';
 import { Table } from 'primeng/table';
 import { BalanceService, Balance, BalanceSaleP2PDto } from '../../../../core/services/balance.service';
+import { TableModule } from 'primeng/table';
+import {CardModule} from 'primeng/card';
 
 
 @Component({
   selector: 'app-caja',
   standalone: true,
-  imports: [SharedModule],
+  imports: [SharedModule,
+    TableModule,
+    CardModule
+  ],
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css']
 })
@@ -22,6 +27,7 @@ export class CajaComponent implements OnInit {
 
   displayModal: boolean = false;
   balanceSaleP2PData: BalanceSaleP2PDto | null = null;
+  liveBalance: { date: string; saldo: number } | null = null;
 
   constructor(
     private router: Router,
@@ -39,6 +45,19 @@ export class CajaComponent implements OnInit {
     // Obtener fecha hoy en formato yyyy-MM-dd para atributo max del input
     const now = new Date();
     this.today = now.toISOString().split('T')[0];
+
+   this.loadLiveBalance();
+  }
+
+  loadLiveBalance(): void {
+    this.balanceService.getLiveBalance().subscribe({
+      next: (data) => {
+        this.liveBalance = data;
+      },
+      error: (err) => {
+        console.error('Error cargando balance en vivo', err);
+      }
+    });
   }
 
   loadBalances(): void {
@@ -74,43 +93,6 @@ export class CajaComponent implements OnInit {
       table.clear();
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // TS - dentro de CajaComponent
 

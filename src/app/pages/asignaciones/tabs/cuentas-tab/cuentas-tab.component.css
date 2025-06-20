@@ -1,0 +1,75 @@
+/* Estilos personalizados para las tarjetas de cuentas */
+.account-card {
+  margin-bottom: 30px; 
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9fafb;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.account-card .p-card-header {
+  background-color: #007BFF; /* Azul bonito */
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 15px;
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+.account-card .account-details {
+  padding: 20px;
+  text-align: center;
+}
+
+.account-card .account-details p {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+}
+
+/* Acomodar el grid para que se vean las tarjetas bien distribuidas */
+.p-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.p-col-12 {
+  margin-bottom: 15px;
+}
+
+/* Ajuste del botón "Agregar Cuenta" */
+button.p-button-success {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+/* Estilos del modal */
+.p-dialog .p-inputtext {
+  width: 100%;
+}
+
+.p-button-success {
+  background-color: #007BFF;
+  border-color: #007BFF;
+}
+
+.p-button-success:hover {
+  background-color: #0056b3;
+}
+
+.p-button-text {
+  color: #555;
+}
+
+.p-button-text:hover {
+  color: #007BFF;
+}

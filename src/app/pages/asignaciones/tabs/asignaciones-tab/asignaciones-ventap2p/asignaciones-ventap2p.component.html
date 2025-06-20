@@ -1,291 +1,86 @@
 <div class="card p-p-4">
-  <!-- Título con mayor margen inferior -->
-  <h2 class="p-mb-5 p-text-bold">Asignaciones de Ventas P2P</h2>
+  <h2 class="p-mb-5 p-text-bold">Ventas de Hoy</h2>
 
-  <!-- Contenedor de filtros con mejor espaciado -->
-  <div class="filter-container p-p-4 p-mb-5 p-shadow-2" style="background-color: #f8f9fa; border-radius: 10px;">
-    <div class="p-grid p-fluid">
-      <!-- Cuenta Binance - más espacio -->
-      <div class="p-col-12 p-md-5 p-lg-4 p-mb-4">
-        <label for="binanceAccount" class="p-d-block p-mb-3 filter-label">Cuenta Binance</label>
-        <p-dropdown
-          id="binanceAccount"
-          [options]="binanceAccounts"
-          [(ngModel)]="selectedBinanceAccount"
-          (onChange)="onBinanceAccountChange()"
-          optionLabel="name"
-          placeholder="Seleccionar cuenta"
-          [filter]="true"
-          [showClear]="true"
-          class="w-full"
-          [style]="{'min-height': '40px'}"
-        ></p-dropdown>
-      </div>
-
-      <!-- Grupo de fechas con mejor separación -->
-      <div class="p-col-12 p-md-5 p-lg-4 p-mb-4">
-        <div class="p-grid p-ai-end">
-          <!-- Fecha Desde -->
-          <div class="p-col-6 p-pr-3">
-            <label for="startDate" class="p-d-block p-mb-3 filter-label">Fecha Desde</label>
-            <p-calendar
-              id="startDate"
-              name="startDate"
-              [(ngModel)]="startDate"
-              placeholder="Seleccionar"
-              dateFormat="yy-mm-dd"
-              showIcon="true"
-              class="w-full"
-              inputStyleClass="p-inputtext-sm"
-            ></p-calendar>
-          </div>
-
-          <!-- Fecha Hasta -->
-          <div class="p-col-6 p-pl-3">
-            <label for="endDate" class="p-d-block p-mb-3 filter-label">Fecha Hasta</label>
-            <p-calendar
-              id="endDate"
-              name="endDate"
-              [(ngModel)]="endDate"
-              placeholder="Seleccionar"
-              dateFormat="yy-mm-dd"
-              showIcon="true"
-              class="w-full"
-              inputStyleClass="p-inputtext-sm"
-            ></p-calendar>
-          </div>
-        </div>
-      </div>
-
-      <!-- Botones con mejor espaciado y alineación -->
-      <div class="p-col-12 p-md-2 p-lg-4 p-d-flex p-jc-end p-ai-end p-pt-2">
-        <button
-          pButton
-          label="Filtrar"
-          icon="pi pi-search"
-          class="p-button-sm p-mr-3"
-          (click)="filterOrders()"
-          [disabled]="!isFilterValid()"
-        ></button>
-        <button
-          pButton
-          icon="pi pi-times"
-          label="Limpiar"
-          class="p-button-sm p-button-outlined"
-          (click)="clearFilter()"
-          pTooltip="Limpiar todos los filtros"
-          tooltipPosition="top"
-        ></button>
-      </div>
-    </div>
+  <!-- Dropdown para seleccionar la cuenta de Binance -->
+  <div class="p-mb-4">
+    <label for="binanceAccount">Selecciona una cuenta Binance</label>
+    <p-dropdown 
+      id="binanceAccount"
+      [options]="binanceAccounts"
+      [(ngModel)]="selectedBinanceAccount"
+      optionLabel="name"
+      placeholder="Seleccionar cuenta"
+      (onChange)="loadTodaySales()"  
+      [showClear]="true"   
+    ></p-dropdown>
   </div>
 
-  <!-- Nueva sección para mostrar ventas del día -->
-  <div class="p-mb-5" *ngIf="todaySales.length > 0">
-    <h3 class="p-mb-3">Ventas de hoy</h3>
-    <p-table
-      [value]="todaySales"
-      [tableStyle]="{ 'min-width': '60rem' }"
-      [loading]="loadingTodaySales"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th>N° Orden</th>
-          <th>Fecha</th>
-          <th>Valor COP</th>
-          <th>Comisión</th>
-          <th>Cuentas Asignadas</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-sale>
-        <tr>
-          <td>{{ sale.numberOrder }}</td>
-          <td>{{ sale.date | date:'short' }}</td>
-          <td>{{ sale.pesosCop | currency }}</td>
-          <td>{{ sale.commission | currency }}</td>
-          <td>
-            <span *ngFor="let accId of sale.accountCopIds" class="p-mr-2">
-              {{ getAccountName(accId) }} ({{ sale.accountAmounts[accId] | currency }})
-            </span>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
+  <!-- Tabla de ventas del día -->
+  <!-- Tabla de ventas del día -->
+<p-table [value]="todaySales" [tableStyle]="{ 'min-width': '60rem' }">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>N° Orden</th>
+      <th>Fecha</th>
+      <th>Dólares</th>
+      <th>Pesos COP</th>
+      <th>Comisión</th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-sale>
+    <tr>
+      <td>{{ sale.id }}</td>
+      <td>{{ sale.date | date: 'short' }}</td>
+      <td>{{ sale.dollarsUs | currency }}</td>
+      <td>{{ sale.pesosCop | currency }}</td>
+      <td>{{ sale.commission | currency }}</td>
+      <td>
+        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success p-button-sm" (click)="openAssignDialog(sale)"></button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
 
-  <!-- Tabla de órdenes existente -->
-  <h3 class="p-mb-3">Órdenes P2P</h3>
-
-  <p-table
-    [paginator]="true"
-    [rows]="10"
-    [value]="p2pOrders"
-    [tableStyle]="{ 'min-width': '60rem' }"
-    sortMode="single"
-    [responsiveLayout]="'scroll'"
-    [loading]="loading"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="nameAccount">Cuenta <p-sortIcon field="nameAccount"/></th>
-        <th pSortableColumn="createTime">Fecha <p-sortIcon field="createTime"/></th>
-        <th pSortableColumn="amount">Monto <p-sortIcon field="amount"/></th>
-        <th pSortableColumn="totalPrice">Total <p-sortIcon field="totalPrice"/></th>
-        <th pSortableColumn="unitPrice">Tasa <p-sortIcon field="unitPrice"/></th>
-        <th pSortableColumn="commission">Comisión <p-sortIcon field="commission"/></th>
-        <th>Acción</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-order>
-      <tr>
-        <td>{{ order.binanceAccount }}</td>
-        <td>{{ order.createTime | date:'short' }}</td>
-        <td>{{ order.amount | number }}</td>
-        <td>{{ order.totalPrice | currency }}</td>
-        <td>{{ order.unitPrice | currency }}</td>
-        <td>{{ order.commission | currency }}</td>
-        <td>
-          <button
-            pButton
-            type="button"
-            icon="pi pi-check"
-            label="Asignar"
-            class="p-button-success p-button-sm"
-            (click)="abrirAsignacion(order)"
-          ></button>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="7" class="p-text-center">
-          {{ loading ? 'Cargando datos...' : 'No se encontraron órdenes con los filtros aplicados' }}
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
 </div>
 
-<p-dialog
-    header="Asignar cuenta(s) a la venta"
-    [(visible)]="displayDialog"
-    [modal]="true"
-    [style]="{ width: '50vw', 'min-width': '400px' }"
-    [draggable]="false"
-    [resizable]="false"
->
-    <div class="p-fluid">
-        <div class="p-grid p-pt-2">
-            <div class="p-col-12 p-mb-3">
-                <h4 class="p-mb-1">Orden: {{ selectedOrder?.orderNumber }}</h4>
-                <p class="p-text-bold p-mt-0">Monto total: {{ selectedOrder?.totalPrice | currency }}</p>
-            </div>
+<!-- Modal para asignar cuentas -->
+<p-dialog header="Asignar cuenta(s) a la venta"
+  [(visible)]="displayAssignDialog" [modal]="true" [closable]="true" [style]="{ width: '50vw' }">
+  
+  <!-- Selección de tipo de cuenta -->
+  <div class="p-mb-4">
+    <label>¿A qué tipo de cuenta desea asignar?</label>
+    <p-radioButton name="accountType" [value]="true" label="Cuenta Externa" [(ngModel)]="isExternal" (onChange)="handleAssignType()"></p-radioButton>
+    <p-radioButton name="accountType" [value]="false" label="Cuenta Colombiana" [(ngModel)]="isExternal" (onChange)="handleAssignType()"></p-radioButton>
+  </div>
 
-            <div class="p-col-12 p-mb-4">
-                <label for="cuentasSelect" class="p-d-block p-mb-2">Selecciona cuentas</label>
-                <p-multiSelect
-                    id="cuentasSelect"
-                    name="cuentas"
-                    [options]="cuentasDisponibles"
-                    [(ngModel)]="selectedAccountIds"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Seleccionar cuentas"
-                    (onChange)="onAccountSelectionChange()"
-                    [panelStyle]="{ 'max-height': '200px' }"
-                    [appendTo]="'body'"
-                    [filter]="true"
-                    display="chip"
-                    class="p-inputtext-sm"
-                ></p-multiSelect>
-            </div>
+  <!-- En caso de cuenta externa -->
+<div *ngIf="isExternal">
+  <label for="externalAccountName">Nombre de la Cuenta</label>
+  <!-- Usamos la propiedad auxiliar para ngModel -->
+  <input id="externalAccountName" pInputText [(ngModel)]="externalAccountName" />
+  <label for="amount">Monto</label>
+  <input id="amount" type="number" pInputText [(ngModel)]="selectedAmount" />
+</div>
 
-            <!-- Nuevo campo para S4 -->
-            <div class="p-col-12 p-mb-3" *ngIf="showS4Input">
-                <div class="s4-input-container">
-                    <label for="s4Reference" class="s4-label">
-                        <i class="pi pi-info-circle p-mr-2"></i>
-                        Nombre de cuenta para cuenta S4
-                    </label>
-                    <input
-                        id="s4Reference"
-                        type="text"
-                        pInputText
-                        [(ngModel)]="s4Reference"
-                        placeholder="Ingrese nombre de cuenta S4"
-                        class="s4-input"
-                    />
-                    <small class="s4-hint">Por favor ingrese nombre de cuenta</small>
-                </div>
-            </div>
 
-            <div class="p-col-12" *ngIf="selectedAccountIds.length > 0">
-                <h5 class="p-mt-0 p-mb-3">Distribuir monto</h5>
+  <!-- En caso de cuenta colombiana -->
+  <div *ngIf="!isExternal">
+    <label for="account">Seleccionar cuenta colombiana</label>
+    <p-multiSelect 
+      [options]="cuentasDisponibles"
+      [(ngModel)]="selectedAccounts"
+      optionLabel="name"
+      placeholder="Seleccionar cuentas"
+    ></p-multiSelect>
+    <label for="amount">Monto</label>
+    <input id="amount" type="number" pInputText [(ngModel)]="selectedAmount" />
+  </div>
 
-                <div *ngFor="let accId of selectedAccountIds; let i = index" class="p-field p-grid p-align-center p-mb-3">
-                  <label class="p-col-5 p-col-align-center">{{ getAccountName(accId) }}</label>
-                  <div class="p-col-7">
-                      <p-inputNumber
-                          mode="currency"
-                          currency="USD"
-                          locale="en-US"
-                          [(ngModel)]="selectedAmounts[accId]"
-                          (onInput)="updateAmount(accId, $event)"
-                          [minFractionDigits]="2"
-                          [maxFractionDigits]="2"
-                          [showButtons]="true"
-                          inputId="amount-{{accId}}"
-                          class="p-inputtext-sm"
-                          styleClass="p-inputtext-sm w-full"
-                          [disabled]="selectedAccountIds.length === 2 && i === 1 && autoAssignEnabled"
-                      ></p-inputNumber>
-                      <small *ngIf="selectedAccountIds.length === 2 && i === 1 && autoAssignEnabled"
-                            class="p-d-block p-mt-1 p-text-secondary">
-                          Valor calculado automáticamente
-                      </small>
-                  </div>
-              </div>
-                <div class="p-grid p-mt-4 p-pt-3 p-border-top-1 p-border-300">
-                    <div class="p-col-6 p-text-bold p-text-right p-pr-4">Total asignado:</div>
-                    <div class="p-col-6 p-text-bold">{{ totalAsignado | currency }}</div>
-
-                    <div class="p-col-6 p-text-bold p-text-right p-pr-4">Saldo restante:</div>
-                    <div class="p-col-6 p-text-bold" [ngClass]="{
-                        'p-text-success': saldoRestante === 0,
-                        'p-text-warning': saldoRestante > 0,
-                        'p-text-danger': saldoRestante < 0
-                    }">
-                        {{ saldoRestante | currency }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-        <div class="p-d-flex p-jc-between p-ai-center">
-            <div *ngIf="saldoRestante !== 0" class="p-text-warning">
-                <i class="pi pi-exclamation-triangle p-mr-2"></i>
-                <span *ngIf="saldoRestante > 0">Falta asignar {{ saldoRestante | currency }}</span>
-                <span *ngIf="saldoRestante < 0">Has excedido por {{ (-saldoRestante) | currency }}</span>
-            </div>
-            <div class="p-d-flex p-ai-center p-gap-2">
-                <button
-                    pButton
-                    label="Cancelar"
-                    icon="pi pi-times"
-                    class="p-button-text"
-                    (click)="displayDialog = false"
-                ></button>
-                <button
-                    pButton
-                    label="Guardar"
-                    icon="pi pi-check"
-                    class="p-button-success"
-                    [disabled]="!selectedAccountIds.length || totalAsignado !== selectedOrder.totalPrice || (showS4Input && !s4Reference)"
-                    (click)="guardarAsignacion()"
-                ></button>
-            </div>
-        </div>
-    </ng-template>
+  <p-footer>
+    <button pButton label="Cancelar" icon="pi pi-times" (click)="displayAssignDialog = false" class="p-button-text"></button>
+    <button pButton label="Asignar" icon="pi pi-check" class="p-button-success" (click)="assignAccounts()"></button>
+  </p-footer>
 </p-dialog>
+

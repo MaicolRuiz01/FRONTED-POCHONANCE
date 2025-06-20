@@ -40,7 +40,8 @@ getBalanceSaleP2P(fecha: string): Observable<BalanceSaleP2PDto> {
   return this.http.get<BalanceSaleP2PDto>(url, { params });
 }
 
-
-
-
+getLiveBalance(): Observable<{ date: string; saldo: number }> {
+    const url = `${this.apiUrl}/live`;
+    return this.http.get<{ date: string; saldo: number }>(url);
+}
 }

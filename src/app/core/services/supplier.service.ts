@@ -18,6 +18,9 @@ export interface Supplier {
   
     constructor(private http: HttpClient) {}
   
+    getAllSuppliers(): Observable<Supplier[]> {
+      return this.http.get<Supplier[]>(this.apiUrl);
+    }
     // Obtener el Supplier con ID 1
     getSupplier(): Observable<Supplier> {
       return this.http.get<Supplier>(`${this.apiUrl}/1`);  // Asegúrate que el endpoint esté configurado correctamente
@@ -32,4 +35,9 @@ export interface Supplier {
     updateSupplierBalance(supplier: Supplier): Observable<Supplier> {
       return this.http.put<Supplier>(`${this.apiUrl}/1`, supplier); // El id 1 es el único Supplier
     }
+
+    subtractSupplierDebt(supplierId: string, amount: number): Observable<Supplier> {
+      return this.http.put<Supplier>(`${this.apiUrl}/${supplierId}/subtract-debt`, { amount });
+    }
+
   }

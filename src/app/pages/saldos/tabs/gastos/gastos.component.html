@@ -43,7 +43,7 @@
     </div>
     <div class="p-field">
       <label>Monto</label>
-      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto">
+      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto" inputmode="numeric">
     </div>
     <button pButton label="Guardar" class="p-button-success" (click)="crearGasto()"></button>
   </div>

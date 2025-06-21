@@ -2,19 +2,18 @@
 <div class="card">
   <h2>Asignar Ventas</h2>
   <p *ngIf="loading" class="spinner-container">
-  <p-progressSpinner></p-progressSpinner>
-</p>
+    <p-progressSpinner></p-progressSpinner>
+  </p>
 
-
-
+  <!-- Tabla Responsiva -->
   <p-table
     [value]="filteredSales"
     [paginator]="true"
     [rows]="10"
-    [rowsPerPageOptions]="[5,10,25]"
+    [rowsPerPageOptions]="[5, 10, 25]"
     [scrollable]="true"
     scrollDirection="horizontal"
-    [tableStyle]="{ 'min-width': '80rem' }"
+    [tableStyle]="{ 'min-width': '100%' }"
     sortMode="single"
     *ngIf="!loading"
   >
@@ -45,16 +44,15 @@
   </p-table>
 </div>
 
-<p-dialog
-  header="Asignar Venta"
-  [(visible)]="displayModal"
-  [modal]="true"
-  [style]="{ width: '400px' }"
-  (onHide)="closeModal()"
->
+<p-dialog header="Asignar Venta" [(visible)]="displayModal" [modal]="true" [style]="{ width: '100%' }" 
+  (onHide)="closeModal()">
   <div *ngIf="selected">
-    <div class="p-field"><strong>Cuenta:</strong> {{ selected.nameAccount }}</div>
-    <div class="p-field"><strong>Monto:</strong> {{ selected.dollars | number:'1.0-2' }}</div>
+    <div class="p-field">
+      <strong>Cuenta:</strong> {{ selected.nameAccount }}
+    </div>
+    <div class="p-field">
+      <strong>Monto:</strong> {{ selected.dollars | number:'1.0-2' }}
+    </div>
     <div class="p-field">
       <label for="rateInput"><strong>Tasa de venta</strong></label>
       <input
@@ -64,6 +62,7 @@
         [(ngModel)]="saleRate"
         placeholder="Ingrese tasa"
         [style]="{ width: '100%' }"
+        inputmode="numeric"
       />
     </div>
   </div>

@@ -92,7 +92,9 @@
                       type="text"
                       [(ngModel)]="product.fee"
                       class="fee-input"
-                      [placeholder]="'Ingrese fee'">
+                      [placeholder]="'Ingrese fee'"
+                      inputmode="numeric">
+                      
                     <button
                       *ngIf="product.showButton"
                       pButton

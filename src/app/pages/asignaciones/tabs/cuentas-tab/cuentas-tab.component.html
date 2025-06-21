@@ -4,7 +4,7 @@
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card">
+    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card" (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
           <p><strong>Balance: </strong>{{ account.balance | currency }}</p>

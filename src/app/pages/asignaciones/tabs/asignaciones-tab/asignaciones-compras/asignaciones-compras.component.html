@@ -7,30 +7,43 @@
   [style]="{ width: '400px' }"
   (onHide)="closeModal()"
 >
-  <div *ngIf="selectedDeposit">
-    <div class="p-field">
+  <div *ngIf="selectedDeposit" class="p-fluid">
+    <div class="p-field" style="margin-bottom: 1rem;">
       <label><strong>Cuenta:</strong> {{ selectedDeposit.nameAccount }}</label>
     </div>
-    <div class="p-field">
+
+    <div class="p-field" style="margin-bottom: 1rem;">
       <label><strong>Monto:</strong> {{ selectedDeposit.dollars | number:'1.0-2' }}</label>
     </div>
-    <div class="p-field">
+
+    <div class="p-field" style="margin-bottom: 1rem;">
       <label for="rateInput"><strong>Tasa de compra</strong></label>
       <input
         id="rateInput"
         type="number"
-        inputmode="decimal"
-        pattern="[0-9]*"
         pInputText
         [(ngModel)]="purchaseRate"
         [ngClass]="{ 'p-invalid': isRateInvalid }"
         placeholder="Ingrese tasa"
-        style="width:100%"
         (ngModelChange)="validateRate()"
       />
       <small *ngIf="isRateInvalid" class="p-error">
         La tasa debe ser mayor o igual a 3500
       </small>
+    </div>
+
+    <div class="p-field" style="margin-bottom: 1rem;">
+      <label for="supplierSelect"><strong>Proveedor</strong></label>
+      <p-dropdown
+        id="supplierSelect"
+        [options]="suppliers"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selecciona proveedor"
+        [(ngModel)]="selectedSupplierId"
+        [style.width.%]="100"
+        [appendTo]="'body'"
+      ></p-dropdown>
     </div>
   </div>
 
@@ -41,10 +54,11 @@
       type="button"
       label="Guardar"
       (click)="saveAssignment()"
-      [disabled]="!purchaseRate || isRateInvalid"
+      [disabled]="!purchaseRate || isRateInvalid || !selectedSupplierId"
     ></button>
   </ng-template>
 </p-dialog>
+
 
 <div class="card">
     <h2>Asignar Compras</h2>

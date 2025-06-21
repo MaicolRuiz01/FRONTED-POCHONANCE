@@ -17,7 +17,7 @@
 
   <!-- Tabla de ventas del día -->
   <!-- Tabla de ventas del día -->
-<p-table [value]="todaySales" [tableStyle]="{ 'min-width': '60rem' }">
+<p-table [value]="todaySales" [tableStyle]="{ 'min-width': '60rem' }" *ngIf="todaySales.length > 0" >
   <ng-template pTemplate="header">
     <tr>
       <th>N° Orden</th>
@@ -41,7 +41,9 @@
     </tr>
   </ng-template>
 </p-table>
-
+<div *ngIf="noSalesMessage" class="p-mt-3">
+  <p>{{ noSalesMessage }}</p>
+</div>
 </div>
 
 <!-- Modal para asignar cuentas -->

@@ -1,0 +1,29 @@
+<h2>Ventas de la cuenta</h2>
+
+<!-- Botón de regresar -->
+<p-button pButton label="Regresar" icon="pi pi-arrow-left" class="p-button-text p-mb-3" (click)="goBack()"></p-button>
+
+<!-- Card que contiene la tabla -->
+<p-card header="Detalles de las Ventas" styleClass="p-mb-4">
+  <p-table [value]="ventas" *ngIf="ventas.length > 0" class="p-datatable-striped p-datatable-bordered p-shadow-2">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Monto (USD)</th>
+        <th>Monto Pesos</th>
+        <th>Fecha</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-venta>
+      <tr>
+        <td>{{ venta.id }}</td>
+        <td>{{ venta.dollarsUs | currency }}</td>
+        <td>{{ venta.pesosCop | number }}</td>
+        <td>{{ venta.date | date: 'short' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<!-- Mensaje si no hay ventas -->
+<p *ngIf="ventas.length === 0">No hay ventas registradas para esta cuenta.</p>

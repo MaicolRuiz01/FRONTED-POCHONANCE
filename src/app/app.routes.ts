@@ -35,6 +35,12 @@ export const routes: Routes = [  {
       component: SaldosTabComponent
     },
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
+    {
+        path: 'cuentas/:id/ventas',
+        loadComponent: () =>
+          import('./pages/asignaciones/tabs/cuentas-tab/lista-ventas/lista-ventas.component')
+            .then(m => m.ListaVentasComponent)
+      }
 
   ]
 }, // Nueva ruta

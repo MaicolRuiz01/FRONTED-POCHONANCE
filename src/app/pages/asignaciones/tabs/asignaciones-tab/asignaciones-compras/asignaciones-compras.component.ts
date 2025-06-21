@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
-
+import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -20,6 +21,7 @@ import { CalendarModule } from 'primeng/calendar';
     InputTextModule,
     FormsModule,
     CalendarModule,
+    DropdownModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
@@ -36,11 +38,14 @@ export class AsignacionesComprasComponent implements OnInit {
   purchaseRate: number | null = null;
 
   isRateInvalid: boolean = false;
+  suppliers: Supplier[] = [];
+  selectedSupplierId: number | null = null;
 
-  constructor(private buyService: BuyDollarsService) {}
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
   ngOnInit(): void {
     this.loadDeposits();
+    this.loadSuppliers();
   }
 
   loadDeposits(): void {
@@ -53,6 +58,12 @@ export class AsignacionesComprasComponent implements OnInit {
         console.error('Error cargando depósitos', err);
         alert('No se pudieron cargar las compras');
       }
+    });
+  }
+  loadSuppliers(): void {
+    this.supplierService.getAllSuppliers().subscribe({
+      next: data => this.suppliers = data,
+      error: err => console.error('Error cargando proveedores', err)
     });
   }
 
@@ -79,6 +90,7 @@ export class AsignacionesComprasComponent implements OnInit {
     this.purchaseRate = null;
     this.isRateInvalid = false;
     this.displayModal = true;
+    this.selectedSupplierId = null;
   }
 
   closeModal(): void {
@@ -88,7 +100,7 @@ export class AsignacionesComprasComponent implements OnInit {
   }
 
   saveAssignment(): void {
-    if (!this.selectedDeposit || !this.purchaseRate) return;
+    if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
 
     const pesos = this.selectedDeposit.dollars * this.purchaseRate;
 
@@ -98,7 +110,7 @@ export class AsignacionesComprasComponent implements OnInit {
       nameAccount: this.selectedDeposit.nameAccount,
       pesos: pesos,
       date: new Date(this.selectedDeposit.date),
-      supplierId: 1,
+      supplierId: this.selectedSupplierId,
       idDeposit: this.selectedDeposit.idDeposit
     };
 

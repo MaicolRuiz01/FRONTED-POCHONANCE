@@ -46,6 +46,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
   selectedAccounts: AccountCop[] = [];  // Cuentas seleccionadas
   displayAssignDialog: boolean = false;
   externalAccountName: string = '';
+  noSalesMessage: string = '';
 
   constructor(
     private saleService: SaleP2PService,
@@ -82,20 +83,28 @@ export class AsignacionesVentap2pComponent implements OnInit {
   }
 
   loadTodaySales(): void {
-    if (!this.selectedBinanceAccount) {
-      alert("Por favor selecciona una cuenta de Binance.");
-      return;
-    }
-    const accountName = this.selectedBinanceAccount.name;
-    this.saleService.getAllSalesToday(accountName).subscribe({
-      next: (sales) => {
-        this.todaySales = sales;
-      },
-      error: (err) => {
-        console.error('Error al cargar las ventas del día:', err);
-      }
-    });
+  this.noSalesMessage = '';  // Reiniciar mensaje
+
+  if (!this.selectedBinanceAccount) {
+    alert("Por favor selecciona una cuenta de Binance.");
+    return;
   }
+
+  const accountName = this.selectedBinanceAccount.name;
+  this.saleService.getAllSalesToday(accountName).subscribe({
+    next: (sales) => {
+      this.todaySales = sales;
+      if (!sales || sales.length === 0) {
+        this.noSalesMessage = 'No hay ventas p2p hechas el día de hoy';
+      }
+    },
+    error: (err) => {
+      console.error('Error al cargar las ventas del día:', err);
+      this.noSalesMessage = 'Error al obtener ventas';
+    }
+  });
+}
+
 
   openAssignDialog(sale: SaleP2PDto): void {
     this.selectedSale = sale;
@@ -155,8 +164,8 @@ submitAssignRequest(accounts: any): void {
   }
 
   this.saleService.assignAccounts(this.selectedSale.id, accounts).subscribe({
-  next: (resp: any) => {
-    alert(resp.message);  // accede al campo del JSON
+  next: () => {
+    alert('Cuentas asignadas exitosamente.');  // ✅ Mensaje definido en el cliente
     this.displayAssignDialog = false;
     this.loadTodaySales();
   },
@@ -165,6 +174,7 @@ submitAssignRequest(accounts: any): void {
     alert('Error al asignar las cuentas');
   }
 });
+
 
 }
 }

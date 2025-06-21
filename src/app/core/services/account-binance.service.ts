@@ -30,4 +30,10 @@ export class AccountBinanceService {
   crear(account: AccountBinance): Observable<AccountBinance> {
     return this.http.post<AccountBinance>(this.apiUrl, account);
   }
+
+  getUSDTBalanceBinance(name: string): Observable<string> {
+  const url = `${this.apiUrl}/balance-usdt?name=${encodeURIComponent(name)}`;
+  return this.http.get(url, { responseType: 'text' });
+}
+  
 }

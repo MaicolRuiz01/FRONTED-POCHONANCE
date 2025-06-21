@@ -1,35 +1,36 @@
-import { Component } from '@angular/core';
-import { SharedModule } from '../../../../shared/shared.module';
-import { MessageService } from 'primeng/api';
-import { Table } from 'primeng/table';
-import { AccountBinance } from '../../../../../app/core/services/account-binance.service';
+import { Component, OnInit } from '@angular/core';
 import { AccountBinanceService } from '../../../../core/services/account-binance.service';
+import { MessageService } from 'primeng/api';
+import { AccountBinance } from '../../../../../app/core/services/account-binance.service';
+import { ToastModule } from 'primeng/toast';
+import { ToolbarModule } from 'primeng/toolbar';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+
+
 @Component({
   selector: 'app-saldos',
-  standalone: true,
-  imports: [SharedModule],
   templateUrl: './saldos.component.html',
-  styleUrl: './saldos.component.css',
-  providers: [MessageService]
+  standalone: true,
+  styleUrls: ['./saldos.component.css'],
+  providers: [MessageService],
+  imports: [ToastModule,
+    ToolbarModule,
+    DialogModule,
+    TableModule,
+    FormsModule,
+    CommonModule 
+  ]
 })
-export class SaldosComponent {
-
+export class SaldosComponent implements OnInit {
   accounts: any[] = [];
 
   // Modales y estados
   productDialog = false;
-  deleteProductDialog = false;
-  deleteProductsDialog = false;
   createAccountDialog = false;
   modalVisible = false;
-
-  // Datos de tabla
-  tableData = [
-    { fecha: 'Enero', us: 100, tasa: 20, pesos: 2000 },
-    { fecha: 'Febrero', us: 150, tasa: 18, pesos: 2700 },
-    { fecha: 'Marzo', us: 200, tasa: 22, pesos: 4400 },
-    { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
-  ];
 
   // Nuevos datos de cuenta
   newAccount: AccountBinance = {
@@ -47,9 +48,24 @@ export class SaldosComponent {
   ) {}
 
   ngOnInit() {
+    this.loadAccounts();
+  }
+
+  // Datos de tabla
+tableData = [
+  { fecha: 'Enero', us: 100, tasa: 20, pesos: 2000 },
+  { fecha: 'Febrero', us: 150, tasa: 18, pesos: 2700 },
+  { fecha: 'Marzo', us: 200, tasa: 22, pesos: 4400 },
+  { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
+];
+
+showDetails() {
+  console.log('Detalles del item:');
+}
+
+  loadAccounts() {
     this.accountService.traerCuentas().subscribe({
       next: (res: AccountBinance[]) => {
-        console.log('📥 Cuentas cargadas desde backend:', res);
         this.accounts = res.map(cuenta => ({
           accountType: cuenta.name,
           titleUSDT: 'Saldo USDT',
@@ -62,10 +78,24 @@ export class SaldosComponent {
           valuecorreo: cuenta.correo,
           isFlipped: false
         }));
+        this.updateBalances();
       },
       error: (err) => {
         console.error('❌ Error al traer cuentas:', err);
       }
+    });
+  }
+
+  updateBalances() {
+    this.accounts.forEach(account => {
+      this.accountService.getUSDTBalanceBinance(account.accountType).subscribe({
+        next: (balance) => {
+          account.valueUSDT = `$${balance || '0.00'}`;
+        },
+        error: (err) => {
+          console.error('❌ Error actualizando balance:', err);
+        }
+      });
     });
   }
 
@@ -75,10 +105,6 @@ export class SaldosComponent {
 
   showModal() {
     this.modalVisible = true;
-  }
-
-  showDetails() {
-    console.log('Detalles del item:');
   }
 
   openNew() {
@@ -110,8 +136,6 @@ export class SaldosComponent {
       });
       return;
     }
-
-    console.log('📤 Enviando nueva cuenta al backend:', this.newAccount);
 
     this.accountService.crear(this.newAccount).subscribe({
       next: (res) => {

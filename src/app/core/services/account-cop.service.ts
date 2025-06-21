@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
+import { SaleP2PDto } from './sale-p2p.service';
+import { AccountBinance } from './account-binance.service';
+
 
 export interface AccountCop {
   id?:number;
@@ -27,5 +30,10 @@ export class AccountCopService {
       throw new Error('Name and balance cannot be null or empty');
     }
     return this.http.post<AccountCop>(this.apiUrl, account);
+  }
+
+  getSalesByAccountCopId(accountCopId: number): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/${accountCopId}/sales`;
+    return this.http.get<SaleP2PDto[]>(url);
   }
 }

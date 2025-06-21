@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cuentas-tab',
@@ -20,11 +21,14 @@ export class CuentasTabComponent implements OnInit {
   newAccount: AccountCopCreate = { name: '', balance: 0 };
   displayDialog: boolean = false;
 
-  constructor(private accountService: AccountCopService) {}
+  constructor(private accountService: AccountCopService,private router: Router) {}
 
   ngOnInit(): void {
     this.loadCuentas();
   }
+  goToVentas(accountId: number) {
+  this.router.navigate(['/cuentas', accountId, 'ventas']);
+}
 
   loadCuentas() {
     this.accountService.getAll().subscribe({

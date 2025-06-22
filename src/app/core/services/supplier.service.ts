@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';  // Ajusta la ruta según corresponda
 
 export interface Supplier {
-    id: string;
+    id: number;
     name: string;
     balance: number;
     lastPaymentDate: Date;

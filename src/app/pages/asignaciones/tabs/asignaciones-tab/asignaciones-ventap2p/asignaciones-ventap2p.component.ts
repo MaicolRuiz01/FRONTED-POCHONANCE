@@ -13,6 +13,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de importar el módulo adecuado
+import { InputTextModule } from 'primeng/inputtext';
 
 
 
@@ -28,7 +29,8 @@ import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de import
     DropdownModule,
     InputNumberModule,
      MultiSelectModule,
-     RadioButtonModule 
+     RadioButtonModule,
+     InputTextModule 
   ],
   templateUrl: './asignaciones-ventap2p.component.html',
   styleUrls: ['./asignaciones-ventap2p.component.css']

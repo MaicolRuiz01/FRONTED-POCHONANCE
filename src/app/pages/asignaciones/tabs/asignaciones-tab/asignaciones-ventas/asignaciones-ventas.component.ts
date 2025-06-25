@@ -8,7 +8,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { FormsModule } from '@angular/forms';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
+import { SupplierService, Supplier } from '../../../../../core/services/supplier.service';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -21,7 +22,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     InputTextModule,
     CalendarModule,
     FormsModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    DropdownModule
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -34,15 +36,17 @@ export class AsignacionesVentasComponent implements OnInit {
 
   startDate: Date | null = null;
   endDate: Date | null = null;
-
+  suppliers: Supplier[] = [];
   selected: SellDollar | null = null;
   displayModal = false;
   saleRate: number | null = null;
+  selectedSupplierId: number | null = null;
 
-  constructor(private sellService: SellDollarsService) {}
+  constructor(private sellService: SellDollarsService, private supplierService: SupplierService) {}
 
   ngOnInit(): void {
     this.loadSales();
+    this.loadSuppliers();
   }
 
   loadSales(): void {
@@ -56,6 +60,18 @@ export class AsignacionesVentasComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando ventas', err);
         alert('No se pudieron cargar las ventas');
+      }
+    });
+  }
+
+  loadSuppliers(): void {
+    this.supplierService.getAllSuppliers().subscribe({
+      next: (suppliers) => {
+        this.suppliers = suppliers;
+      },
+      error: (err) => {
+        console.error('Error cargando proveedores', err);
+        alert('No se pudieron cargar los proveedores');
       }
     });
   }
@@ -77,6 +93,7 @@ export class AsignacionesVentasComponent implements OnInit {
     this.selected = sale;
     this.saleRate = null;
     this.displayModal = true;
+    this.selectedSupplierId = null; 
   }
 
   closeModal(): void {
@@ -86,7 +103,7 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   saveSale(): void {
-    if (!this.selected || !this.saleRate || this.saleRate <= 0) {
+    if (!this.selected || !this.saleRate || this.saleRate <= 0 || !this.selectedSupplierId) {
       alert('Ingrese una tasa válida');
       return;
     }
@@ -95,8 +112,10 @@ export class AsignacionesVentasComponent implements OnInit {
       ...this.selected,
       tasa: this.saleRate,
       pesos: pesos,
-      supplierId: 1
+      supplier: this.selectedSupplierId
     };
+    // Ver datos antes de enviarlos
+  console.log('Datos a enviar:', sell);
     this.sellService.createSellDollar(sell).subscribe({
       next: () => {
         alert('Venta asignada correctamente');

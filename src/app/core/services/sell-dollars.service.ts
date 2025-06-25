@@ -11,7 +11,7 @@ export interface SellDollar {
   dollars: number;
   nameAccount: string;
   date: Date;
-  supplierId: number;
+  supplier: number;
   pesos: number;
 }
 

@@ -44,15 +44,30 @@
   </p-table>
 </div>
 
-<p-dialog header="Asignar Venta" [(visible)]="displayModal" [modal]="true" [style]="{ width: '100%' }" 
+<p-dialog header="Asignar Venta" [(visible)]="displayModal" [modal]="true" [style]="{ width: '90vw', maxWidth: '500px' }"
+ 
   (onHide)="closeModal()">
   <div *ngIf="selected">
     <div class="p-field">
       <strong>Cuenta:</strong> {{ selected.nameAccount }}
     </div>
+    <br>
     <div class="p-field">
       <strong>Monto:</strong> {{ selected.dollars | number:'1.0-2' }}
     </div>
+    <br>
+    <!-- Agregar un dropdown para seleccionar el proveedor -->
+    <div class="p-field">
+      
+      <p-dropdown 
+        [options]="suppliers" 
+        [(ngModel)]="selectedSupplierId" 
+        optionValue="id" 
+        optionLabel="name" 
+        placeholder="Seleccione Proveedor">
+      </p-dropdown>
+    </div>
+    <br>
     <div class="p-field">
       <label for="rateInput"><strong>Tasa de venta</strong></label>
       <input

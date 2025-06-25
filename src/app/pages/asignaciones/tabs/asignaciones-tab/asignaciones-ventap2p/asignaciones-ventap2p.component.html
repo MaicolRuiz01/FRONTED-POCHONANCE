@@ -47,42 +47,91 @@
 </div>
 
 <!-- Modal para asignar cuentas -->
-<p-dialog header="Asignar cuenta(s) a la venta"
-  [(visible)]="displayAssignDialog" [modal]="true" [closable]="true" [style]="{ width: '50vw' }">
-  
-  <!-- Selección de tipo de cuenta -->
-  <div class="p-mb-4">
-    <label>¿A qué tipo de cuenta desea asignar?</label>
-    <p-radioButton name="accountType" [value]="true" label="Cuenta Externa" [(ngModel)]="isExternal" (onChange)="handleAssignType()"></p-radioButton>
-    <p-radioButton name="accountType" [value]="false" label="Cuenta Colombiana" [(ngModel)]="isExternal" (onChange)="handleAssignType()"></p-radioButton>
+<p-dialog 
+  header="Asignar cuenta(s) a la venta"
+  [(visible)]="displayAssignDialog" 
+  [modal]="true" 
+  [closable]="true" 
+  [style]="{ width: '450px' }"
+  [breakpoints]="{ '960px': '95vw' }"
+>
+  <div class="p-fluid p-formgrid p-grid">
+
+    <!-- Tipo de cuenta -->
+    <div class="p-field p-col-12">
+      <label>¿A qué tipo de cuenta desea asignar?</label>
+      <div class="p-formgroup-inline">
+        <p-radioButton 
+          name="accountType" 
+          [value]="true" 
+          [(ngModel)]="isExternal" 
+          inputId="external" 
+          (onChange)="handleAssignType()"
+        ></p-radioButton>
+        <label for="external" class="p-mr-3">Cuenta Externa</label>
+        <br>
+        <br>
+        <p-radioButton 
+          name="accountType" 
+          [value]="false" 
+          [(ngModel)]="isExternal" 
+          inputId="colombian" 
+          (onChange)="handleAssignType()"
+        ></p-radioButton>
+        <label for="colombian">Cuenta Colombiana</label>
+      </div>
+    </div>
+
+    <!-- Si es cuenta externa -->
+    <ng-container *ngIf="isExternal">
+      <div class="p-field p-col-12">
+        <label for="externalAccountName">Nombre de la Cuenta</label>
+        <input id="externalAccountName" pInputText [(ngModel)]="externalAccountName" />
+      </div>
+      <div class="p-field p-col-12">
+        <label for="amountExternal">Monto</label>
+        <input id="amountExternal" type="number" pInputText [(ngModel)]="selectedAmount" />
+      </div>
+    </ng-container>
+
+    <!-- Si es cuenta colombiana -->
+    <ng-container *ngIf="!isExternal">
+      <div class="p-field p-col-12">
+        <label for="account">Seleccionar cuenta colombiana</label>
+        <p-multiSelect 
+          id="account"
+          [options]="cuentasDisponibles"
+          [(ngModel)]="selectedAccounts"
+          optionLabel="name"
+          placeholder="Seleccionar cuentas"
+          [appendTo]="'body'"
+        ></p-multiSelect>
+      </div>
+      <div class="p-field p-col-12">
+        <label for="amountColombian">Monto</label>
+        <input id="amountColombian" type="number" pInputText [(ngModel)]="selectedAmount" />
+      </div>
+    </ng-container>
+
   </div>
 
-  <!-- En caso de cuenta externa -->
-<div *ngIf="isExternal">
-  <label for="externalAccountName">Nombre de la Cuenta</label>
-  <!-- Usamos la propiedad auxiliar para ngModel -->
-  <input id="externalAccountName" pInputText [(ngModel)]="externalAccountName" />
-  <label for="amount">Monto</label>
-  <input id="amount" type="number" pInputText [(ngModel)]="selectedAmount" />
-</div>
-
-
-  <!-- En caso de cuenta colombiana -->
-  <div *ngIf="!isExternal">
-    <label for="account">Seleccionar cuenta colombiana</label>
-    <p-multiSelect 
-      [options]="cuentasDisponibles"
-      [(ngModel)]="selectedAccounts"
-      optionLabel="name"
-      placeholder="Seleccionar cuentas"
-    ></p-multiSelect>
-    <label for="amount">Monto</label>
-    <input id="amount" type="number" pInputText [(ngModel)]="selectedAmount" />
-  </div>
-
-  <p-footer>
-    <button pButton label="Cancelar" icon="pi pi-times" (click)="displayAssignDialog = false" class="p-button-text"></button>
-    <button pButton label="Asignar" icon="pi pi-check" class="p-button-success" (click)="assignAccounts()"></button>
-  </p-footer>
+  <!-- Footer del diálogo -->
+  <ng-template pTemplate="footer">
+    <button 
+      pButton 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      (click)="displayAssignDialog = false" 
+      class="p-button-text"
+    ></button>
+    <button 
+      pButton 
+      label="Asignar" 
+      icon="pi pi-check" 
+      class="p-button-success" 
+      (click)="assignAccounts()"
+    ></button>
+  </ng-template>
 </p-dialog>
+
 

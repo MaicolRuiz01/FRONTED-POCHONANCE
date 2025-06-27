@@ -85,6 +85,8 @@
   <button pButton type="button" label="Agregar Cuenta" icon="pi pi-plus" (click)="addAccountField()"></button>
 </div>
 
+<br>
+
 <div *ngFor="let acc of accounts; let i = index">
   <p-dropdown 
     [options]="accountCops"
@@ -100,6 +102,7 @@
     placeholder="Monto"
     style="margin-left: 10px;" />
   <button pButton icon="pi pi-trash" class="p-button-text" (click)="removeAccountField(i)"></button>
+  <br>
 </div>
 
   </div>

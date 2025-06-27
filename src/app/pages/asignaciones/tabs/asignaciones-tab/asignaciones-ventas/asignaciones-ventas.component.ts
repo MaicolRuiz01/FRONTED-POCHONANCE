@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SupplierService, Supplier } from '../../../../../core/services/supplier.service';
 import { DropdownModule } from 'primeng/dropdown';
+import { AssignAccount } from '../../../../../core/services/sell-dollars.service';
+import { AccountCop, AccountCopService } from '../../../../../core/services/account-cop.service'; // Assuming this is the correct import path
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -31,6 +33,9 @@ import { DropdownModule } from 'primeng/dropdown';
 export class AsignacionesVentasComponent implements OnInit {
   allSales: SellDollar[] = [];
   filteredSales: SellDollar[] = [];
+  accounts: AssignAccount[] = [];
+  accountCops: AccountCop[] = [];
+
   loading: boolean = false;
 
 
@@ -42,11 +47,15 @@ export class AsignacionesVentasComponent implements OnInit {
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
 
-  constructor(private sellService: SellDollarsService, private supplierService: SupplierService) {}
+  constructor(private sellService: SellDollarsService, private supplierService: SupplierService, private accountCopService: AccountCopService ) {}
 
   ngOnInit(): void {
     this.loadSales();
     this.loadSuppliers();
+    this.accountCopService.getAll().subscribe({
+  next: (accounts) => this.accountCops = accounts,
+  error: () => alert('Error cargando cuentas COP')
+});
   }
 
   loadSales(): void {
@@ -94,6 +103,7 @@ export class AsignacionesVentasComponent implements OnInit {
     this.saleRate = null;
     this.displayModal = true;
     this.selectedSupplierId = null; 
+     this.accounts = []
   }
 
   closeModal(): void {
@@ -101,6 +111,14 @@ export class AsignacionesVentasComponent implements OnInit {
     this.selected = null;
     this.saleRate = null;
   }
+  addAccountField(): void {
+  this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
+}
+
+removeAccountField(index: number): void {
+  this.accounts.splice(index, 1);
+}
+
 
   saveSale(): void {
     if (!this.selected || !this.saleRate || this.saleRate <= 0 || !this.selectedSupplierId) {
@@ -112,7 +130,8 @@ export class AsignacionesVentasComponent implements OnInit {
       ...this.selected,
       tasa: this.saleRate,
       pesos: pesos,
-      supplier: this.selectedSupplierId
+      supplier: this.selectedSupplierId,
+      accounts: this.accounts
     };
     // Ver datos antes de enviarlos
   console.log('Datos a enviar:', sell);

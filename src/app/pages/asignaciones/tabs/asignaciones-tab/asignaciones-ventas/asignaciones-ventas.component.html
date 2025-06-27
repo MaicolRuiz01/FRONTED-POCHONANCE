@@ -80,6 +80,28 @@
         inputmode="numeric"
       />
     </div>
+    <br>
+    <div class="p-field">
+  <button pButton type="button" label="Agregar Cuenta" icon="pi pi-plus" (click)="addAccountField()"></button>
+</div>
+
+<div *ngFor="let acc of accounts; let i = index">
+  <p-dropdown 
+    [options]="accountCops"
+    [(ngModel)]="accounts[i].accountCop"
+    optionValue="id"
+    optionLabel="name"
+    placeholder="Seleccione cuenta COP">
+  </p-dropdown>
+  <input 
+    type="number"
+    pInputText
+    [(ngModel)]="accounts[i].amount"
+    placeholder="Monto"
+    style="margin-left: 10px;" />
+  <button pButton icon="pi pi-trash" class="p-button-text" (click)="removeAccountField(i)"></button>
+</div>
+
   </div>
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>

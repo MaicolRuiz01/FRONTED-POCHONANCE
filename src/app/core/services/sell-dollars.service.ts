@@ -5,6 +5,12 @@ import { Observable, forkJoin } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { map } from 'rxjs/operators';
 
+export interface AssignAccount {
+  amount: number;
+  nameAccount: string;
+  accountCop: number;
+}
+
 export interface SellDollar {
   idWithdrawals: string;
   tasa: number;
@@ -13,6 +19,7 @@ export interface SellDollar {
   date: Date;
   supplier: number;
   pesos: number;
+  accounts: AssignAccount[];
 }
 
 @Injectable({ providedIn: 'root' })

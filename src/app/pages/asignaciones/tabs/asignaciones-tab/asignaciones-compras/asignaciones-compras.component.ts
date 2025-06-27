@@ -113,7 +113,7 @@ export class AsignacionesComprasComponent implements OnInit {
       supplierId: this.selectedSupplierId,
       idDeposit: this.selectedDeposit.idDeposit
     };
-
+console.log('Datos a enviar compra:', buyData);
     this.buyService.createBuyDollar(buyData).subscribe({
       next: () => {
         alert('Compra asignada correctamente');

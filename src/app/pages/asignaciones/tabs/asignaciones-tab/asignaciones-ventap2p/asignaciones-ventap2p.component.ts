@@ -41,11 +41,11 @@ export class AsignacionesVentap2pComponent implements OnInit {
   selectedBinanceAccount: AccountBinance | null = null;
   cuentasDisponibles: AccountCop[] = [];
   selectedSale: SaleP2PDto | null = null;
+externalAmount: number = 0;
 
   // Nuevo estado para la asignación
   isExternal: boolean = false;  // Si es externa o colombiana
-  selectedAmount: number = 0;  // Monto ingresado por el usuario
-  selectedAccounts: AccountCop[] = [];  // Cuentas seleccionadas
+  selectedAssignments: { account: AccountCop; amount: number }[] = [];
   displayAssignDialog: boolean = false;
   externalAccountName: string = '';
   noSalesMessage: string = '';
@@ -109,22 +109,33 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
 
   openAssignDialog(sale: SaleP2PDto): void {
-    this.selectedSale = sale;
-    // Si la cuenta es externa, establecemos el nombre de la cuenta a la propiedad auxiliar
-    if (this.isExternal) {
-      this.externalAccountName = this.selectedSale?.nameAccount || '';
-    }
-    this.displayAssignDialog = true;
-  }
+  this.selectedSale = sale;
+  this.displayAssignDialog = true;
+  this.externalAccountName = '';
+  this.selectedAssignments = [];
+  this.isExternal = false;
+}
+
 
   handleAssignType(): void {
-    // Si es externa, le pedimos nombre de cuenta y monto, sino, mostramos cuentas colombianas
-    if (this.isExternal) {
-      this.selectedAccounts = [];
-    } else {
-      this.selectedAccounts = [];
-    }
+  if (this.isExternal) {
+    this.externalAccountName = '';
+  } else {
+    this.selectedAssignments = [];
   }
+}
+selectedAccounts: AccountCop[] = [];
+
+onAccountsChange(): void {
+  this.selectedAssignments = this.selectedAccounts.map(account => {
+    const existing = this.selectedAssignments.find(a => a.account.id === account.id);
+    return {
+      account,
+      amount: existing?.amount || 0
+    };
+  });
+}
+
 
 assignAccounts(): void {
   if (!this.selectedSale) {
@@ -132,29 +143,27 @@ assignAccounts(): void {
     return;
   }
 
-  // Verifica si la cuenta es externa
   if (this.isExternal) {
     const accounts = [{
-      amount: this.selectedAmount,
-      nameAccount: this.selectedSale?.nameAccount || '', // Usamos el nombre de la cuenta de la venta
-      accountCop: null // Cuenta externa, por lo que el accountCop es null
+      amount: this.externalAmount,
+      nameAccount: this.externalAccountName || '',
+      accountCop: null
     }];
-    this.submitAssignRequest(accounts); // Llamamos a la función para enviar la solicitud
+    this.submitAssignRequest(accounts);
   } else {
-    // Verificamos si el monto no excede el saldo de la venta
-    if (this.selectedAmount > this.selectedSale?.pesosCop) {
-      alert("El monto no puede ser mayor al saldo de la venta.");
+    const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
+    if (total > this.selectedSale.pesosCop) {
+      alert("El total asignado excede el monto de la venta.");
       return;
     }
 
-    // Para cuentas colombianas, asignamos las cuentas seleccionadas
-    const accounts = this.selectedAccounts.map(account => ({
-      amount: this.selectedAmount,  // El monto a asignar
-      nameAccount: account.name,  // El nombre de la cuenta COP seleccionada
-      accountCop: account.id  // El ID de la cuenta COP seleccionada
+    const accounts = this.selectedAssignments.map(a => ({
+      amount: a.amount,
+      nameAccount: a.account.name,
+      accountCop: a.account.id
     }));
 
-    this.submitAssignRequest(accounts); // Llamamos a la función para enviar la solicitud
+    this.submitAssignRequest(accounts);
   }
 }
 

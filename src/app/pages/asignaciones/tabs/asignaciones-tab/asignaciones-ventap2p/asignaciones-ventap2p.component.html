@@ -90,7 +90,8 @@
       </div>
       <div class="p-field p-col-12">
         <label for="amountExternal">Monto</label>
-        <input id="amountExternal" type="number" pInputText [(ngModel)]="selectedAmount" />
+        <input id="amountExternal" type="number" pInputText [(ngModel)]="externalAmount"
+ />
       </div>
     </ng-container>
 
@@ -99,18 +100,37 @@
       <div class="p-field p-col-12">
         <label for="account">Seleccionar cuenta colombiana</label>
         <p-multiSelect 
-          id="account"
-          [options]="cuentasDisponibles"
-          [(ngModel)]="selectedAccounts"
-          optionLabel="name"
-          placeholder="Seleccionar cuentas"
-          [appendTo]="'body'"
-        ></p-multiSelect>
+  id="account"
+  [options]="cuentasDisponibles"
+  [(ngModel)]="selectedAccounts"
+  optionLabel="name"
+  placeholder="Seleccionar cuentas"
+  [appendTo]="'body'"
+  (onChange)="onAccountsChange()"
+></p-multiSelect>
+<div class="p-field p-col-12" *ngFor="let assignment of selectedAssignments">
+  <label>{{ assignment.account.name }}</label>
+  <input 
+    type="number" 
+    pInputText 
+    [(ngModel)]="assignment.amount" 
+    [placeholder]="'Monto para ' + assignment.account.name"
+  />
+</div>
+
+
       </div>
-      <div class="p-field p-col-12">
-        <label for="amountColombian">Monto</label>
-        <input id="amountColombian" type="number" pInputText [(ngModel)]="selectedAmount" />
-      </div>
+      <div class="p-field p-col-12" *ngIf="isExternal">
+  <label for="externalAmount">Monto</label>
+  <input
+    type="number"
+    pInputText
+    id="externalAmount"
+    [(ngModel)]="externalAmount"
+    placeholder="Monto"
+  />
+</div>
+
     </ng-container>
 
   </div>

@@ -68,10 +68,8 @@ showDetails() {
       next: (res: AccountBinance[]) => {
         this.accounts = res.map(cuenta => ({
           accountType: cuenta.name,
-          titleUSDT: 'Saldo USDT',
+          titleUSDT: 'SALDO EN VIVO',
           valueUSDT: `$${cuenta.balance?.toFixed(2) || '0.00'}`,
-          titlePesos: 'Saldo Pesos',
-          valuePesos: `$${(cuenta.balance * 4000).toLocaleString()}`, // conversión estimada
           titleWallet: 'Wallet',
           valueWallet: cuenta.address || 'N/A',
           titlecorreo: 'Correo',
@@ -143,8 +141,6 @@ showDetails() {
           accountType: res.name,
           titleUSDT: 'Saldo USDT',
           valueUSDT: `$${res.balance?.toFixed(2) || '0.00'}`,
-          titlePesos: 'Saldo Pesos',
-          valuePesos: `$${(res.balance * 4000).toLocaleString()}`,
           titleWallet: 'Wallet',
           valueWallet: res.address || 'N/A',
           titlecorreo: 'Correo',

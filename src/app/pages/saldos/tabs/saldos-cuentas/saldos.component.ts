@@ -8,6 +8,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 
 @Component({
@@ -21,11 +22,14 @@ import { CommonModule } from '@angular/common';
     DialogModule,
     TableModule,
     FormsModule,
-    CommonModule 
+    CommonModule
   ]
 })
 export class SaldosComponent implements OnInit {
   accounts: any[] = [];
+  // Nuevo: saldo total traído desde el backend
+  totalBalanceUsd: number = 0;
+  totalBalanceCop: number = 0;
 
   // Modales y estados
   productDialog = false;
@@ -44,24 +48,38 @@ export class SaldosComponent implements OnInit {
 
   constructor(
     private accountService: AccountBinanceService,
-    private messageService: MessageService
-  ) {}
+    private messageService: MessageService,
+    private http: HttpClient
+  ) { }
 
   ngOnInit() {
     this.loadAccounts();
+    this.getTotalBalance();
   }
 
-  // Datos de tabla
-tableData = [
-  { fecha: 'Enero', us: 100, tasa: 20, pesos: 2000 },
-  { fecha: 'Febrero', us: 150, tasa: 18, pesos: 2700 },
-  { fecha: 'Marzo', us: 200, tasa: 22, pesos: 4400 },
-  { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
-];
-
-showDetails() {
-  console.log('Detalles del item:');
+  getTotalBalance() {
+    this.http.get<number>('http://127.0.0.1:8080/cuenta-binance/total-balance')
+       .subscribe({
+      next: (res) => {
+        this.totalBalanceCop = res;
+        const latestRate = 4500;
+        this.totalBalanceUsd = this.totalBalanceCop / latestRate;
+      },
+      error: (err) => console.error('Error obteniendo saldo total:', err)
+    });
 }
+
+  // Datos de tabla
+  tableData = [
+    { fecha: 'Enero', us: 100, tasa: 20, pesos: 2000 },
+    { fecha: 'Febrero', us: 150, tasa: 18, pesos: 2700 },
+    { fecha: 'Marzo', us: 200, tasa: 22, pesos: 4400 },
+    { fecha: 'Abril', us: 120, tasa: 19, pesos: 2280 }
+  ];
+
+  showDetails() {
+    console.log('Detalles del item:');
+  }
 
   loadAccounts() {
     this.accountService.traerCuentas().subscribe({
@@ -176,4 +194,5 @@ showDetails() {
     });
     this.productDialog = false;
   }
+
 }

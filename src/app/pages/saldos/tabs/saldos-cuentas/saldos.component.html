@@ -1,68 +1,69 @@
 <div class="grid-container">
   <div class="toolbar-container">
-      <p-toast></p-toast>
-      <p-toolbar styleClass="mb-4">
-        <div class="saldo-card p-3 border rounded cursor-pointer" (click)="showModal()">
-          <h4>Saldo total</h4>
-          <h2 class="saldo-valor">4,205</h2>
-          <p>$5000 Usdt</p>
-          <p>$20.000.000</p>
-        </div>
-          <ng-template pTemplate="left">
+    <p-toast></p-toast>
+    <p-toolbar styleClass="mb-4">
+      <div class="saldo-card p-3 border rounded cursor-pointer" (click)="showModal()">
+        <h4>Saldo total</h4>
+        <h2 class="saldo-valor">${{ totalBalanceUsd | number:'1.2-2' }} USDT</h2>
+        <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
+      </div>
 
-              <div class="my-2">
-                  <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
-              </div>
-          </ng-template>
-      </p-toolbar>
+      <ng-template pTemplate="left">
+
+        <div class="my-2">
+          <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2"
+            (click)="openNew()"></button>
+        </div>
+      </ng-template>
+    </p-toolbar>
   </div>
 
- <div class="grid" *ngIf="accounts.length > 0">
-  <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+  <div class="grid" *ngIf="accounts.length > 0">
+    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
       <div class="card-header">
-        <span >{{ account.accountType }}</span>
+        <span>{{ account.accountType }}</span>
         <i class="pi pi-exclamation-circle info-icon"></i>
       </div>
       <div class="card-body">
-          <div *ngIf="!account.isFlipped">
-              <div class="saldo-row">
-                  <div class="saldo">
-                      <p>{{ account.titleUSDT }}</p>
-                      <p>{{ account.valueUSDT }}</p>
-                  </div>
-              </div>
-              <div class="saldo-row">
-                  <div class="saldo">
-                      <p>{{ account.titlePesos }}</p>
-                      <p>{{ account.valuePesos }}</p>
-                  </div>
-              </div>
+        <div *ngIf="!account.isFlipped">
+          <div class="saldo-row">
+            <div class="saldo">
+              <p>{{ account.titleUSDT }}</p>
+              <p>{{ account.valueUSDT }}</p>
+            </div>
           </div>
-          <div *ngIf="account.isFlipped">
-              <div class="saldo-row">
-                  <div class="saldo">
-                      <p>{{ account.titleWallet }}</p>
-                      <p>{{ account.valueWallet }}</p>
-                  </div>
-              </div>
-              <div class="saldo-row">
-                  <div class="saldo">
-                      <p>{{ account.titlecorreo }}</p>
-                      <p>{{ account.valuecorreo }}</p>
-                  </div>
-              </div>
+          <div class="saldo-row">
+            <div class="saldo">
+              <p>{{ account.titlePesos }}</p>
+              <p>{{ account.valuePesos }}</p>
+            </div>
           </div>
-          <p class="account-type">{{ account.accountType }}</p>
+        </div>
+        <div *ngIf="account.isFlipped">
+          <div class="saldo-row">
+            <div class="saldo">
+              <p>{{ account.titleWallet }}</p>
+              <p>{{ account.valueWallet }}</p>
+            </div>
+          </div>
+          <div class="saldo-row">
+            <div class="saldo">
+              <p>{{ account.titlecorreo }}</p>
+              <p>{{ account.valuecorreo }}</p>
+            </div>
+          </div>
+        </div>
+        <p class="account-type">{{ account.accountType }}</p>
       </div>
       <div class="card-footer">
-          <i class="pi pi-bars"></i>
+        <i class="pi pi-bars"></i>
       </div>
-        </div>
+    </div>
 
-      </div>
-           </div>
- <!-- Modal con la tabla -->
- <p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true" >
+  </div>
+</div>
+<!-- Modal con la tabla -->
+<p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true">
 
   <div class="table-container">
     <p-table [value]="tableData" styleClass="main-table">
@@ -79,7 +80,8 @@
         </tr>
       </ng-template>
     </p-table>
-    <button pButton pRipple icon="pi pi-eye" class="p-button-warning p-button-rounded eye-button" (click)="showDetails()"></button>
+    <button pButton pRipple icon="pi pi-eye" class="p-button-warning p-button-rounded eye-button"
+      (click)="showDetails()"></button>
   </div>
 
   <p-footer>
@@ -87,11 +89,13 @@
   </p-footer>
 </p-dialog>
 
-<p-dialog header="Cuentas" [(visible)]="productDialog" [modal]="true" [closable]="false" styleClass="custom-cuentas-dialog">
+<p-dialog header="Cuentas" [(visible)]="productDialog" [modal]="true" [closable]="false"
+  styleClass="custom-cuentas-dialog">
 
   <div class="cuentas-container">
     <div class="add-button-wrapper">
-      <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-secondary" (click)="addAccount()"></button>
+      <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-secondary"
+        (click)="addAccount()"></button>
     </div>
 
     <div *ngFor="let acc of accounts; let i = index" class="cuenta-item">
@@ -107,11 +111,8 @@
 
 </p-dialog>
 
-<p-dialog header="Crear nueva cuenta Binance"
-          [(visible)]="createAccountDialog"
-          [modal]="true"
-          [closable]="false"
-          [style]="{width: '450px'}">
+<p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false"
+  [style]="{width: '450px'}">
 
   <div class="p-fluid">
     <div class="p-field">
@@ -145,7 +146,8 @@
     </div>
 
     <div class="p-dialog-footer">
-      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cancelarNuevaCuenta()"></button>
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+        (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
 

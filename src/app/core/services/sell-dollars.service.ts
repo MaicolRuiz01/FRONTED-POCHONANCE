@@ -25,8 +25,11 @@ export interface SellDollar {
 @Injectable({ providedIn: 'root' })
 export class SellDollarsService {
   private readonly apiUrl = `${environment.apiUrl}/api/sell-dollars`;
+  //payment
   private readonly apiVentasNoRegistradas = `${environment.apiUrl}/api/spot-orders/ventas-no-registradas`;
+  //service spot
   private readonly apiVentasNoRegistradasBinancePay = `${environment.apiUrl}/api/ventas-no-registradas-binancepay`;
+  //service de tron
   private readonly apiUsdtSalidas = `${environment.apiUrl}/api/usdt-salidas`;
 
   constructor(private http: HttpClient) {}

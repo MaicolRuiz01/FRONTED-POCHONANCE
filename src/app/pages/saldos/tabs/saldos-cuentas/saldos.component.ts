@@ -88,6 +88,8 @@ export class SaldosComponent implements OnInit {
           accountType: cuenta.name,
           titleUSDT: 'SALDO EN VIVO',
           valueUSDT: `$${cuenta.balance?.toFixed(2) || '0.00'}`,
+          titleBalance: 'Balance',
+          balance: cuenta.balance,
           titleWallet: 'Wallet',
           valueWallet: cuenta.address || 'N/A',
           titlecorreo: 'Correo',

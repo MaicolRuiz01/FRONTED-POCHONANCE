@@ -34,10 +34,11 @@
           </div>
           <div class="saldo-row">
             <div class="saldo">
-              <p>{{ account.titlePesos }}</p>
-              <p>{{ account.valuePesos }}</p>
+              <p>{{ account.titleBalance }}</p>
+              <p>{{ account.balance | number:'1.2-2' }}</p>
             </div>
           </div>
+
         </div>
         <div *ngIf="account.isFlipped">
           <div class="saldo-row">

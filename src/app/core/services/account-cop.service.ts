@@ -36,4 +36,8 @@ export class AccountCopService {
     const url = `${this.apiUrl}/${accountCopId}/sales`;
     return this.http.get<SaleP2PDto[]>(url);
   }
+  getTotalBalance(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
+}
+
 }

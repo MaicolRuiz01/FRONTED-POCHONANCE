@@ -1,0 +1,85 @@
+[33m46ed3ee[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge branch 'main' of https://github.com/MaicolRuiz01/FRONTED-POCHONANCE
+[33mbd8fba4[m modificacion vista de asiganciones venta
+[33m13a1334[m balance en tarjetas
+[33mfa106f5[m Merge branch 'main' of https://github.com/MaicolRuiz01/FRONTED-POCHONANCE
+[33mc3477f9[m configuraciones
+[33mde573cb[m balance saldo total
+[33m4fd109e[m cambio de url
+[33md0debf4[m cambio de url
+[33mafbb3f1[m nuevos cambios
+[33m7d154ec[m correccion de api back
+[33m920430d[m se actualizo ventas
+[33mbc41a58[m esto es arreglo del dialog de ventas p2p
+[33ma693cdf[m arreglo de compras y ventas
+[33m1b234b2[m se agrego los pagos y lista pagos realizados
+[33m5e434d1[m se arreglo en dialog de asignar compras, el listado de ventas por cuenta
+[33md55aaaa[m se arreglo en dialog de asignar compras, el listado de ventas por cuenta
+[33mc3c513b[m campos numericos y algo de response en ventas
+[33m72eb391[m se modifico p2p
+[33mb013302[m html para s4 pero falta logica del ts
+[33me0bef6c[m correcion en p2p service y se agrego el metodo de fogel para traer las p2p del dia pero retorna 404 imagino que porqque no hay
+[33m200e86f[m todo listo compras,venas, traspsos, trx,wallet y trus y susu asignaciones listos
+[33maaca320[m aqui se configuro toda la vista de compras yv entas y se juntaron con las de trus y trx
+[33mbac9c62[m mejorado modal p2p + datos estaticos
+[33mbc03d5f[m se agrego lo resalionado con trust
+[33mcd2a6ce[m cositas
+[33m476cebe[m[33m ([m[1;31morigin/ZeusRamaF[m[33m)[m cambio de url
+[33m5aa0ead[m componente trx
+[33m81b815e[m se corrigieron endpoints y otras cosas y una nueva vista llamada trust
+[33m3097607[m se corrigieron endpoints y otras cosas y una nueva vista llamada trust
+[33m2d3dd94[m se agrego vista de trus y se corrigieron algunos enpoint y tablas
+[33m7cbb29a[m corrección vista actividades responsividad
+[33m0f77ec2[m modal compras
+[33m0cfd89c[m limpieza menu
+[33md6825f9[m se supomne que crea balance
+[33m78c2f39[m id binance account
+[33m5ee1716[m modal crear cuenta modificado
+[33m865b3eb[m modal de balance
+[33m22f1021[m solucion certificado
+[33m9587be7[m configuracion23
+[33m072153b[m configuracion2
+[33mdfdb1a8[m configuracion
+[33mc1ac037[m cambios de url
+[33m871e0de[m corrección variables dinamicas
+[33m6a933df[m Merge remote-tracking branch 'origin/elvin_branch'
+[33mad890dc[m balance del endpoint
+[33mb394bf7[m se creo el service de balance y su tabla en el componente caja
+[33macc6db3[m modificacion vista de compras y ventas
+[33m176fe85[m guardar los dolares en la asignacion
+[33m94c0386[m se acomodo el desorden de carpteas y componentes
+[33m74396cb[m[33m ([m[1;31morigin/elvin_branch[m[33m)[m continuando con asignaciones vista calculadora
+[33m51336f0[m Merge remote-tracking branch 'origin/main' into elvin_branch
+[33m99f9c59[m correccion en saldos
+[33mb3ea951[m vista de actividades segunda tab, digamos que funciona el asignar cuenta nequi en p2p, se debe probar
+[33m5fd1503[m asignacion cuenta binance y asignar comision
+[33m5d11819[m dialogo de p2p modificado solo de forma visual, se empezó con la creación del modulo de actividades
+[33mb6fe7df[m algunas cosas
+[33m9bca53a[m binnace account
+[33mf5d194e[m limpieza
+[33mee992b7[m crear cuenta binance y listarla, implementado
+[33m157b2d0[m Merge branch 'main' of https://github.com/MaicolRuiz01/FRONTED-POCHONANCE into elvin_branch
+[33mf6d9358[m lista de ventas p2p
+[33mc7e4f06[m Merge pull request #1 from MaicolRuiz01/rama-mike
+[33mb511d09[m[33m ([m[1;31morigin/rama-mike[m[33m)[m asignaciones completas
+[33md7370e7[m varios cambios pero no recuerdo cuales, revisar
+[33mdf0e596[m cambios en gasto
+[33m1efc6ca[m terminado por completo vista asignaciones-tab asignacion
+[33m80eed65[m cambiado vista asignaciones casi completa
+[33m3202dce[m criptos y saldos actualizado
+[33m6ad9b92[m agregada vista asignaciones, mejorada y terminada vista balance
+[33m0c5e551[m modificando vista saldo
+[33m95b5cca[m guardando cambios
+[33m0c730a2[m modificando vista p2p no funciona filtro de cuentas, aún no hay lógica de filtro binance, solo ilustrativo segunda tabla
+[33m8bddf71[m nueva vista balance dentro de caja se debe mover, compras vista modificado
+[33m5e705de[m nueva vista gastos, actualizacion ventas generales
+[33mea18a88[m vista traspasos hecha
+[33m13df32c[m vistas de criptomonedas, las dos
+[33me8ff300[m nueva rama
+[33m11836ab[m trx │ asignar, compras, ventas p2p, ventas
+[33m4dd1753[m secciones compras │ p2p │ ventas generales │ impuestos │ casi TRX
+[33m1461815[m p2p vista + conexión con backend en local para traer las p2p
+[33mdae6c35[m otro gasto + modal para genrar nuevo gasto
+[33mafcef3b[m balance-caja gastos-operativo
+[33mc4d6908[m tabla
+[33mde03c6b[m se crearon las secciones del cliente y la navegacion
+[33mc94a38f[m primer commit

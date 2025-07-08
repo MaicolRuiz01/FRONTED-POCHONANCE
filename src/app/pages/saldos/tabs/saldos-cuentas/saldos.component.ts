@@ -58,16 +58,14 @@ export class SaldosComponent implements OnInit {
   }
 
   getTotalBalance() {
-    this.http.get<number>('http://127.0.0.1:8080/cuenta-binance/total-balance')
-       .subscribe({
-      next: (res) => {
-        this.totalBalanceCop = res;
-        const latestRate = 4500;
-        this.totalBalanceUsd = this.totalBalanceCop / latestRate;
-      },
-      error: (err) => console.error('Error obteniendo saldo total:', err)
-    });
+  this.accountService.getTotalBalance().subscribe({
+    next: (res) => {
+      this.totalBalanceCop = res;
+    },
+    error: (err) => console.error('Error obteniendo saldo total:', err)
+  });
 }
+
 
   // Datos de tabla
   tableData = [

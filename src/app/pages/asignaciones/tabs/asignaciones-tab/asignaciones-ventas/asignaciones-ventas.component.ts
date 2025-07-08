@@ -12,6 +12,8 @@ import { SupplierService, Supplier } from '../../../../../core/services/supplier
 import { DropdownModule } from 'primeng/dropdown';
 import { AssignAccount } from '../../../../../core/services/sell-dollars.service';
 import { AccountCop, AccountCopService } from '../../../../../core/services/account-cop.service'; // Assuming this is the correct import path
+import { InputNumberModule } from 'primeng/inputnumber';
+
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -25,7 +27,9 @@ import { AccountCop, AccountCopService } from '../../../../../core/services/acco
     CalendarModule,
     FormsModule,
     ProgressSpinnerModule,
-    DropdownModule
+    DropdownModule,
+    InputTextModule,     // <— para <input pInputText>
+  InputNumberModule
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -35,6 +39,9 @@ export class AsignacionesVentasComponent implements OnInit {
   filteredSales: SellDollar[] = [];
   accounts: AssignAccount[] = [];
   accountCops: AccountCop[] = [];
+
+
+
 
   loading: boolean = false;
 
@@ -85,17 +92,13 @@ export class AsignacionesVentasComponent implements OnInit {
     });
   }
 
-  applyFilters(): void {
-    this.filteredSales = this.allSales.filter(sale => {
-      const saleDate = new Date(sale.date);
-      return (!this.startDate || saleDate >= this.startDate) &&
-             (!this.endDate || saleDate <= this.endDate);
-    });
+  get totalPesos(): number {
+    return (this.selected?.dollars || 0) * (this.saleRate || 0);
   }
 
-  clearDateFilter(): void {
-    this.startDate = this.endDate = null;
-    this.filteredSales = [...this.allSales];
+  get montoProveedor(): number {
+    const asignado = this.accounts.reduce((sum, a) => sum + (a.amount || 0), 0);
+    return this.totalPesos - asignado;
   }
 
   openAssignModal(sale: SellDollar): void {
@@ -121,30 +124,24 @@ removeAccountField(index: number): void {
 
 
   saveSale(): void {
-    if (!this.selected || !this.saleRate || this.saleRate <= 0 || !this.selectedSupplierId) {
-      alert('Ingrese una tasa válida');
+    if (!this.selected || !this.saleRate || !this.selectedSupplierId) {
+      alert('Faltan datos obligatorios');
       return;
     }
     const pesos = this.selected.dollars * this.saleRate;
     const sell: SellDollar = {
       ...this.selected,
       tasa: this.saleRate,
-      pesos: pesos,
+      pesos,
       supplier: this.selectedSupplierId,
       accounts: this.accounts
     };
-    // Ver datos antes de enviarlos
-  console.log('Datos a enviar:', sell);
     this.sellService.createSellDollar(sell).subscribe({
       next: () => {
-        alert('Venta asignada correctamente');
         this.closeModal();
         this.loadSales();
       },
-      error: (err) => {
-        console.error('Error guardando venta', err);
-        alert('Error al guardar la venta');
-      }
+      error: err => alert('Error guardando la venta')
     });
   }
 }

@@ -64,41 +64,6 @@
 
 <div class="card">
     <h2>Asignar Compras</h2>
-    <!-- FILTRO POR RANGO DE FECHAS -->
-<div class="p-grid p-align-center p-mb-3 p-g-3">
-    <!-- En xs serán 6/12 (50%), en sm 4/12 (~33%), y en md+ 4/12 (~33%) -->
-    <div class="p-col-6 p-sm-6 p-md-4">
-      <p-calendar
-        [(ngModel)]="startDate"
-        placeholder="Desde"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '50%' }"
-      ></p-calendar>
-    </div>
-    <br>
-    <div class="p-col-12 p-sm-6 p-md-4">
-      <p-calendar
-        [(ngModel)]="endDate"
-        placeholder="Hasta"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '50%' }"
-      ></p-calendar>
-    </div>
-    <div class="p-col-12 p-sm-6 p-md-4">
-      <button
-        pButton
-        type="button"
-        icon="pi pi-times"
-        label="Limpiar"
-        class="p-button-text p-mt-2"
-        (click)="clearDateFilter()"
-      ></button>
-    </div>
-  </div>
 
   <br>
     <p-table

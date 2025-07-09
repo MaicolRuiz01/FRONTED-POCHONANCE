@@ -5,6 +5,9 @@
       <div class="saldo-card p-3 border rounded cursor-pointer">
         <h4>Saldo Interno total</h4>
         <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
+        <p style="margin-top: 5px;">
+    <strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }} COP/USDT
+  </p>
       </div>
 
       <ng-template pTemplate="left">
@@ -18,48 +21,45 @@
   </div>
 
   <div class="grid" *ngIf="accounts.length > 0">
-    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
-      <div class="card-header">
-        <span>{{ account.accountType }}</span>
-        <i class="pi pi-exclamation-circle info-icon"></i>
-      </div>
-      <div class="card-body">
-        <div *ngIf="!account.isFlipped">
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titleUSDT }}</p>
-              <p>{{ account.valueUSDT }}</p>
-            </div>
-          </div>
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titlePesos }}</p>
-              <p>{{ account.valuePesos }}</p>
-            </div>
-          </div>
-        </div>
-        <div *ngIf="account.isFlipped">
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titleWallet }}</p>
-              <p>{{ account.valueWallet }}</p>
-            </div>
-          </div>
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titlecorreo }}</p>
-              <p>{{ account.valuecorreo }}</p>
-            </div>
-          </div>
-        </div>
-        <p class="account-type">{{ account.accountType }}</p>
-      </div>
-      <div class="card-footer">
-        <i class="pi pi-bars"></i>
-      </div>
+  <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+    <div class="card-header">
+      <span>{{ account.accountType }}</span>
     </div>
-
+    <div class="card-body">
+      <ng-container *ngIf="!account.isFlipped; else detalles">
+        <!-- Vista principal: saldos -->
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Saldo Interno (USDT)</strong></p>
+            <p>{{ account.saldoInterno | number:'1.2-2' }}</p>
+          </div>
+        </div>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Saldo Externo (USDT)</strong></p>
+            <p>{{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Detalles ocultos al hacer flip -->
+      <ng-template #detalles>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Correo:</strong></p>
+            <p>{{ account.correo }}</p>
+          </div>
+        </div>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Wallet:</strong></p>
+            <p>{{ account.address }}</p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </div>
+</div>
+
 </div>
 <!-- Modal con la tabla -->
 <p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true">

@@ -4,6 +4,9 @@
   justify-content: flex-start; /* Alinea las tarjetas al inicio del contenedor */
   gap: 20px; /* Espacio entre tarjetas */
 }
+.color {
+ color: red;/* necesario para que el margen inferior funcione */
+}
 
 .custom-card {
   background-color: #f8df52;
@@ -31,7 +34,6 @@
   cursor: pointer;
   color: white; /* Ajusta el color según tu diseño */
 }
-
 
 
 

@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -21,7 +22,8 @@ import { DropdownModule } from 'primeng/dropdown';
     InputTextModule,
     FormsModule,
     CalendarModule,
-    DropdownModule
+    DropdownModule,
+    ProgressSpinnerModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
@@ -36,6 +38,7 @@ export class AsignacionesComprasComponent implements OnInit {
   selectedDeposit: BuyDollarsDto | null = null;
   displayModal: boolean = false;
   purchaseRate: number | null = null;
+  loading: boolean = false;
 
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
@@ -43,20 +46,25 @@ export class AsignacionesComprasComponent implements OnInit {
 
   constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
+
   ngOnInit(): void {
+    this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
   }
 
   loadDeposits(): void {
+    this.loading = true;
     this.buyService.getAllEntradas().subscribe({
       next: data => {
         this.allDeposits = data;
         this.filteredDeposits = [...this.allDeposits];
+        this.loading = false;
       },
       error: err => {
         console.error('Error cargando depósitos', err);
         alert('No se pudieron cargar las compras');
+        this.loading = false;
       }
     });
   }

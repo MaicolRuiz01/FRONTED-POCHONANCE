@@ -9,6 +9,8 @@ import { TableModule } from 'primeng/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ButtonModule } from 'primeng/button';
+
 
 
 @Component({
@@ -22,7 +24,8 @@ import { HttpClient } from '@angular/common/http';
     DialogModule,
     TableModule,
     FormsModule,
-    CommonModule
+    CommonModule,
+    ButtonModule
   ]
 })
 export class SaldosComponent implements OnInit {

@@ -11,7 +11,7 @@
       <ng-template pTemplate="left">
 
         <div class="my-2">
-          <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2"
+          <button pButton pRipple label="cuentas exitentes" icon="pi pi-bars" class="p-button-success mr-2"
             (click)="openNew()"></button>
         </div>
       </ng-template>
@@ -86,7 +86,7 @@
   </div>
 
   <p-footer>
-    <button pButton label="Cerrar" icon="pi pi-times" (click)="modalVisible = false" class="p-button-text"></button>
+    <p-button pButton label="Cerrar" icon="pi pi-times" (click)="modalVisible = false" class="p-button-text"></p-button>
   </p-footer>
 </p-dialog>
 
@@ -95,13 +95,13 @@
 
   <div class="cuentas-container">
     <div class="add-button-wrapper">
-      <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-secondary"
-        (click)="addAccount()"></button>
+      <p-button pButton icon="pi pi-plus" class="p-button-rounded "
+        (click)="addAccount()"></p-button>
     </div>
 
     <div *ngFor="let acc of accounts; let i = index" class="cuenta-item">
       <div class="cuenta-nombre">{{ acc.accountType }}</div>
-      <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger" (click)="removeAccount(i)"></button>
+      <button pButton icon="pi pi-times" class=" p-button-danger" (click)="removeAccount(i)"></button>
     </div>
 
     <div class="cuentas-actions">
@@ -112,46 +112,47 @@
 
 </p-dialog>
 
-<p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false"
-  [style]="{width: '450px'}">
+<p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false">
 
   <div class="p-fluid">
     <div class="p-field">
-      <label for="name">Nombre*</label>
+      <label for="name" class="color"> Nombre *</label> <br>
       <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" required />
     </div>
-
+<br>
     <div class="p-field">
-      <label for="referenceAccount">Id de cuenta Binance*</label>
+      <label for="referenceAccount" class="color">Id de cuenta Binance *</label><br>
       <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
     </div>
-
+<br>
     <div class="p-field">
-      <label for="correo">Correo electrónico*</label>
+      <label for="correo" class="color">Correo electrónico *</label><br>
       <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" required />
     </div>
-
+<br>
     <div class="p-field">
-      <label for="userBinance">Usuario Binance (opcional)</label>
+      <label for="userBinance">Usuario Binance (opcional)</label><br>
       <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
     </div>
-
+<br>
     <div class="p-field">
-      <label for="balance">Saldo inicial en USDT*</label>
+      <label for="balance" class="color">Saldo inicial en USDT *</label><br>
       <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" required />
     </div>
-
+<br>
     <div class="p-field">
-      <label for="address">Wallet (dirección USDT)*</label>
+      <label for="address" class="color">Wallet (dirección USDT) *</label><br>
       <input id="address" type="text" pInputText [(ngModel)]="newAccount.address" required />
     </div>
 
+<br>
     <div class="p-dialog-footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
         (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
-
+<br>
     <small class="p-d-block p-mt-2">* Campos obligatorios</small>
   </div>
+  
 </p-dialog>

@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ButtonModule } from 'primeng/button';
 
 export interface DisplayAccount {
   accountType: string;
@@ -37,7 +38,7 @@ export interface DisplayAccount {
     TableModule,
     FormsModule,
     CommonModule,
-    
+    ButtonModule
   ]
 })
 export class SaldosComponent implements OnInit {

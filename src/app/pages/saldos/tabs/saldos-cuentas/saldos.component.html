@@ -113,43 +113,51 @@
 <p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false"
   [style]="{width: '450px'}">
 
+  <br>
   <div class="p-fluid">
     <div class="p-field">
-      <label for="name">Nombre*</label>
+      <label for="name" class="info">Nombre*</label>
       <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" required />
     </div>
 
+    <br>
     <div class="p-field">
-      <label for="referenceAccount">Id de cuenta Binance*</label>
+      <label for="referenceAccount" class="info">Id de cuenta Binance*</label>
       <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
     </div>
 
+    <br>
     <div class="p-field">
-      <label for="correo">Correo electrónico*</label>
+      <label for="correo" class="info">Correo electrónico*</label>
       <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" required />
     </div>
 
+    <br>
     <div class="p-field">
       <label for="userBinance">Usuario Binance (opcional)</label>
       <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
     </div>
 
+    <br>
     <div class="p-field">
-      <label for="balance">Saldo inicial en USDT*</label>
+      <label for="balance" class="info">Saldo inicial en USDT*</label>
       <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" required />
     </div>
 
+    <br>
     <div class="p-field">
-      <label for="address">Wallet (dirección USDT)*</label>
+      <label for="address" class="info">Wallet (dirección USDT)*</label>
       <input id="address" type="text" pInputText [(ngModel)]="newAccount.address" required />
     </div>
 
+    <br>
     <div class="p-dialog-footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
         (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
 
-    <small class="p-d-block p-mt-2">* Campos obligatorios</small>
+    <br>
+    <small class="p-d-block p-mt-2 info" >* Campos obligatorios</small>
   </div>
 </p-dialog>

@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -21,7 +22,8 @@ import { DropdownModule } from 'primeng/dropdown';
     InputTextModule,
     FormsModule,
     CalendarModule,
-    DropdownModule
+    DropdownModule,
+    ProgressSpinnerModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
@@ -40,26 +42,32 @@ export class AsignacionesComprasComponent implements OnInit {
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
+  loading: boolean = false;
 
   constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
   ngOnInit(): void {
+    this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
   }
 
-  loadDeposits(): void {
+   loadDeposits(): void {
+    this.loading = true;
     this.buyService.getAllEntradas().subscribe({
       next: data => {
         this.allDeposits = data;
         this.filteredDeposits = [...this.allDeposits];
+        this.loading = false;
       },
       error: err => {
         console.error('Error cargando depósitos', err);
         alert('No se pudieron cargar las compras');
+        this.loading = false;
       }
     });
   }
+  
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: data => this.suppliers = data,

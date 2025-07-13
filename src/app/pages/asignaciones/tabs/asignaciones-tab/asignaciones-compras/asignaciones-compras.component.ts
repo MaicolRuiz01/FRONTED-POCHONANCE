@@ -88,21 +88,6 @@ export class AsignacionesComprasComponent implements OnInit {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
   }
 
-  
-
-  applyFilters(): void {
-    this.filteredDeposits = this.allDeposits.filter(d => {
-      const dt = new Date(d.date);
-      return (!this.startDate || dt >= this.startDate)
-          && (!this.endDate   || dt <= this.endDate);
-    });
-  }
-
-  clearDateFilter(): void {
-    this.startDate = null;
-    this.endDate = null;
-    this.filteredDeposits = [...this.allDeposits];
-  }
 
   openAssignModal(deposit: BuyDollarsDto): void {
     this.selectedDeposit = deposit;

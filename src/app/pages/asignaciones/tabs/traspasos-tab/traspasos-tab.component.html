@@ -1,30 +1,42 @@
-<!-- src/app/components/traspasos-tab/traspasos-tab.component.html -->
-<p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+<p-card [ngStyle]="{ 'box-shadow': '0 2px 8px rgba(0,0,0,0.1)', 'padding': '1.5rem' }">
+  <h3 style="margin-bottom: 1rem;">TRASPASOS DEL DÍA</h3>
 
-<p-table [value]="traspasos" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
-  <ng-template pTemplate="header">
-    <tr>
-      <th>Fecha</th>
-      <th>Cuenta Origen</th>
-      <th>Cuenta Destino</th>
-      <th>Monto</th>
-      
-      <th>Tipo</th>
-      <th>Acciones</th>
-    </tr>
-  </ng-template>
-  <ng-template pTemplate="body" let-traspaso>
-    <tr>
-      <td>{{ traspaso.fecha | date:'short' }}</td>
-      <td>{{ traspaso.cuentaFrom }}</td>
-      <td>{{ traspaso.cuentaTo }}</td>
-      <td>{{ traspaso.monto | currency:'USD' }}</td>
-      
-      <td>{{ traspaso.tipo }}</td>
-      <td>
-        <button pButton type="button" label="Confirmar traspaso" icon="pi pi-check" (click)="confirmarTraspaso(traspaso)"></button>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+  <!-- Spinner mientras se cargan los datos -->
+  <div *ngIf="cargando" style="text-align: center; margin-top: 2rem;">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Mensaje si no hay datos -->
+  <div *ngIf="!cargando && traspasos.length === 0" style="text-align: center; margin-top: 2rem;">
+    <p>No hay traspasos el día de hoy.</p>
+  </div>
+
+  <!-- Tabla cuando ya se han cargado y hay datos -->
+  <p-table
+    *ngIf="!cargando && traspasos.length > 0"
+    [value]="traspasos"
+    [paginator]="true"
+    [rows]="10"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Cuenta Origen</th>
+        <th>Cuenta Destino</th>
+        <th>Monto</th>
+        <th>Tipo</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-traspaso>
+      <tr>
+        <td>{{ traspaso.fecha | date:'short' }}</td>
+        <td>{{ traspaso.cuentaFrom }}</td>
+        <td>{{ traspaso.cuentaTo }}</td>
+        <td>{{ traspaso.monto | currency:'USD' }}</td>
+        <td>{{ traspaso.tipo || '-' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

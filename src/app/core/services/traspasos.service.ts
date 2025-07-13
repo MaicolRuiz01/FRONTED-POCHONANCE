@@ -48,4 +48,8 @@ export class TraspasosService {
       map(([trust, noRegistrados, binancePay]) => [...trust, ...noRegistrados, ...binancePay])
     );
   }
+
+    getTransaccionesDeHoy(): Observable<TransaccionesDTO[]> {
+    return this.http.get<TransaccionesDTO[]>(`${this.baseUrl}/transacciones/hoy`);
+  }
 }

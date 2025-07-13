@@ -67,9 +67,20 @@ export class AsignacionesComprasComponent implements OnInit {
     });
   }
 
+  formatDate(date: Date): string {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 19);
+}
+
+
+  
+
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
   }
+
+  
 
   applyFilters(): void {
     this.filteredDeposits = this.allDeposits.filter(d => {
@@ -109,7 +120,7 @@ export class AsignacionesComprasComponent implements OnInit {
       tasa: this.purchaseRate,
       nameAccount: this.selectedDeposit.nameAccount,
       pesos: pesos,
-      date: new Date(this.selectedDeposit.date),
+      date: this.selectedDeposit.date,
       supplierId: this.selectedSupplierId,
       idDeposit: this.selectedDeposit.idDeposit
     };

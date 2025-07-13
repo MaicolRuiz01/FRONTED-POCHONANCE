@@ -1,120 +1,39 @@
-<div class="grid">
-  
-  <div class="col-12">
-    <br>
-    <p-card *ngIf="liveBalance" header="Balance en Vivo" styleClass="custom-card">
-  <ng-template pTemplate="content">
-    <div class="balance-info">
-      <p><strong>Fecha:</strong> {{ liveBalance.date }}</p>
-      <p><strong>Saldo:</strong> {{ liveBalance.saldo | currency }}</p>
-    </div>
-  </ng-template>
-</p-card>
-
-<br><br>
-    <div class="card px-6 py-6">
-      
-      
-
-
-      <p-table #dt [value]="balances" [columns]="cols" responsiveLayout="scroll" [rows]="10"
-               [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true"
-               currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" [(selection)]="selectedProducts"
-               selectionMode="multiple" [rowHover]="true" dataKey="id">
-        <ng-template pTemplate="caption">
-          <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 class="m-0">Balance</h5>
-
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <!-- Botón para mostrar el filtro -->
-              <button pButton type="button" label="Generar balance" class="p-button-primary" (click)="showDateFilter = true" *ngIf="!showDateFilter"></button>
-
-              <!-- Filtro de fecha, solo visible si showDateFilter es true -->
-              <span class="block mt-2 md:mt-0 p-input-icon-left" *ngIf="showDateFilter">
-                <i class="pi pi-calendar"></i>
-                <input
-                  pInputText
-                  type="date"
-                  [max]="today"
-                  (change)="onDateFilter(dt, $event)"
-                  placeholder="Filtrar por fecha..."
-                  class="w-full sm:w-auto"
-                />
-              </span>
-            </div>
-          </div>
-          <button pButton type="button" label="Info Mes" class="p-button-success"></button>
-        </ng-template>
-
-        <ng-template pTemplate="header">
-            <tr>
-                <th style="width: 3rem">
-                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                </th>
-                <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
-                <th pSortableColumn="balance">Saldo <p-sortIcon field="balance"></p-sortIcon></th>
-                <th></th> <!-- Columna vacía -->
-            </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-product>
-            <tr>
-                <td>
-                    <p-tableCheckbox [value]="product"></p-tableCheckbox>
-                </td>
-                <td><span class="p-column-title">Fecha</span>{{product.date | date:'mediumDate'}}</td>
-                <td><span class="p-column-title">Saldo</span>{{product.saldo | currency:'USD'}}</td>
-
-                <td>
-                 <button
-                  pButton
-                  type="button"
-                  pRipple
-                  icon="pi pi-eye"
-                  class="p-button-warning p-button-rounded eye-button"
-                  (click)="showDetails(product)"
-                ></button>
-
-                </td>
-            </tr>
-        </ng-template>
-      </p-table>
-    </div>
-  </div>
-</div>
-
-
-
-
-<p-dialog [(visible)]="showDetailsModal" [modal]="true" [style]="{ width: '300px' }" [closable]="false">
+<p-table [value]="balances">
   <ng-template pTemplate="header">
-    <div class="flex align-items-center justify-content-between w-full">
-      <span>Resumen</span>
-      <button
-        *ngIf="!showAdvancedDetails"
-        pButton
-        pRipple
-        icon="pi pi-eye"
-        class="p-button-warning p-button-rounded eye-button"
-        (click)="onDetailsClicked()"
-        pTooltip="Ver detalles avanzados"
-        tooltipPosition="left"
-      ></button>
-    </div>
+    <tr>
+      <th>Fecha</th>
+      <th>Saldo</th>
+      <th>Acciones</th>
+    </tr>
   </ng-template>
+  <ng-template pTemplate="body" let-balance>
+    <tr>
+      <td>{{ balance.date }}</td>
+      <td>{{ balance.saldo | currency: 'USD' }}</td>
+      <td>
+        <button
+          pButton
+          icon="pi pi-eye"
+          class="p-button-warning p-button-rounded"
+          (click)="showDetails(balance)"
+        ></button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
 
-  <div class="detail-blocks">
-    <div *ngFor="let item of currentDetails" class="detail-block" [style.background-color]="item.color || ''">
-      {{ item.label }}: <span class="detail-value">{{ item.value }}</span>
-    </div>
+<p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
+  <div *ngIf="selectedBalance">
+    <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
+    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'USD' }}</p>
+    <p><strong>Tasa Compra:</strong> {{ selectedBalance.tasaCompra }}</p>
+    <p><strong>Tasa Venta:</strong> {{ selectedBalance.tasaVenta }}</p>
+    <p><strong>Total P2P:</strong> {{ selectedBalance.totalP2P }}</p>
+    <p><strong>Comisiones P2P:</strong> {{ selectedBalance.comisionesP2P }}</p>
+    <p><strong>Total General Sales:</strong> {{ selectedBalance.totalGeneralSales }}</p>
   </div>
 
   <ng-template pTemplate="footer">
-    <button
-      pButton
-      [label]="showAdvancedDetails ? 'Atrás' : 'Cerrar'"
-      (click)="handleCloseOrBack()"
-      class="p-button-danger w-full"
-    ></button>
+    <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
 </p-dialog>

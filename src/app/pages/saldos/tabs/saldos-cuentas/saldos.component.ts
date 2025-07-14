@@ -75,6 +75,7 @@ export class SaldosComponent implements OnInit {
     this.loadAccounts();
     this.getTotalBalance();
     this.getLatestPurchaseRate();
+    this.getBalanceTotalInterno();
   }
 
   getTotalBalance() {
@@ -85,6 +86,14 @@ export class SaldosComponent implements OnInit {
     error: (err) => console.error('Error obteniendo saldo total:', err)
   });
 }
+
+  getBalanceTotalInterno() {
+    this.accountService.getBalanceTotalInterno().subscribe({
+      next: (res) => {
+        this.totalBalanceUsd = res;
+      },
+      error: (err) => console.error('Error obteniendo saldo total interno:', err) 
+  })}
 
 
   // Datos de tabla

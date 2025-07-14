@@ -42,4 +42,7 @@ getLatestPurchaseRate(): Observable<number> {
   return this.http.get<number>(`${environment.apiUrl}/purchase-rate/latest`);
 }
 
+getBalanceTotalInterno(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance-interno`);
+}
 }

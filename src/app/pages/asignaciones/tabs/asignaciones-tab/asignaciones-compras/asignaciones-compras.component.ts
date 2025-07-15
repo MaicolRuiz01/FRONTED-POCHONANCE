@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
 import { TableModule } from 'primeng/table';
@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -23,12 +25,30 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     FormsModule,
     CalendarModule,
     DropdownModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    PanelMenuModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
 })
 export class AsignacionesComprasComponent implements OnInit {
+
+   items: MenuItem[] = [];
+
+  @ViewChild('compraTemplate') compraTemplate!: TemplateRef<any>;
+  @ViewChild('ventasTemplate') ventasTemplate!: TemplateRef<any>;
+  @ViewChild('p2pTemplate') p2pTemplate!: TemplateRef<any>;
+
+  ngAfterViewInit() {
+    this.items = [
+      {
+        label: 'compras por asignar',
+        items: [
+        ]
+      }
+    ];
+  }
+  
   allDeposits: BuyDollarsDto[] = [];
   filteredDeposits: BuyDollarsDto[] = [];
 
@@ -51,6 +71,7 @@ export class AsignacionesComprasComponent implements OnInit {
     this.loadDeposits();
     this.loadSuppliers();
   }
+
 
    loadDeposits(): void {
     this.loading = true;

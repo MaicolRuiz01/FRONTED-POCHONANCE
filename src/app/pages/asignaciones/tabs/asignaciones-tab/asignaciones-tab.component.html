@@ -1,8 +1,14 @@
 <!-- 1) Componente hijo para compras/buy-dollars -->
-<app-asignaciones-compras></app-asignaciones-compras>
-<hr />
-<app-asignaciones-ventas></app-asignaciones-ventas>
-<hr />
-<app-asignaciones-ventap2p></app-asignaciones-ventap2p>
-<hr/>
-<!-- <app-asignaciones-trust></app-asignaciones-trust> -->
+<p-accordion [multiple]="true">
+  <p-accordionTab header="Compras">
+    <app-asignaciones-compras></app-asignaciones-compras>
+  </p-accordionTab>
+
+  <p-accordionTab header="Ventas">
+    <app-asignaciones-ventas></app-asignaciones-ventas>
+  </p-accordionTab>
+
+  <p-accordionTab header="P2P">
+    <app-asignaciones-ventap2p></app-asignaciones-ventap2p>
+  </p-accordionTab>
+</p-accordion>

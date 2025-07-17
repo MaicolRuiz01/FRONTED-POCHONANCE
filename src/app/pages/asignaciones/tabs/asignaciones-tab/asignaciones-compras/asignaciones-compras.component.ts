@@ -10,8 +10,10 @@ import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AccordionModule } from 'primeng/accordion';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
+
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -26,7 +28,9 @@ import { MenuItem } from 'primeng/api';
     CalendarModule,
     DropdownModule,
     ProgressSpinnerModule,
+    AccordionModule,
     PanelMenuModule
+
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']

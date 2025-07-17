@@ -73,3 +73,15 @@ button.p-button-success {
 .p-button-text:hover {
   color: #007BFF;
 }
+
+.botones-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.botones-container button {
+    min-width: 160px;
+}

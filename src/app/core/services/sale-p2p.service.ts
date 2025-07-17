@@ -43,4 +43,6 @@ export class SaleP2PService {
     const url = `${this.apiUrl}/today?account=${account}`;
     return this.http.get<SaleP2PDto[]>(url);
   }
+
+
 }

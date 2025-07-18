@@ -7,11 +7,14 @@ export interface BalanceGeneral {
   id: number;
   date: string;
   saldo: number;
-  tasaCompra: number;
-  tasaVenta: number;
-  totalP2P: number;
-  comisionesP2P: number;
-  totalGeneralSales: number;
+  tasaPromedioDelDia: number;
+  tasaVentaDelDia: number;
+  totalP2PdelDia: number;
+  comisionesP2PdelDia: number;
+  cuatroPorMilDeVentas: number;
+  utilidadP2P: number;
+  totalVentasGeneralesDelDia: number;
+  utilidadVentasGenerales: number;
 }
 
 @Injectable({

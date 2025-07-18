@@ -46,6 +46,7 @@ export class SaldosComponent implements OnInit {
   totalBalanceUsd: number = 0;
   totalBalanceCop: number = 0;
   latestRate: number = 0;
+  balanceTotalExterno: number = 0;
 
 
   // Modales y estados
@@ -76,6 +77,7 @@ export class SaldosComponent implements OnInit {
     this.getTotalBalance();
     this.getLatestPurchaseRate();
     this.getBalanceTotalInterno();
+    this.getBalanceTotalExterno();
   }
 
   getTotalBalance() {
@@ -86,6 +88,14 @@ export class SaldosComponent implements OnInit {
     error: (err) => console.error('Error obteniendo saldo total:', err)
   });
 }
+
+getBalanceTotalExterno() {
+  this.accountService.getBalanceTotalExterno().subscribe({ 
+    next: (res) => {
+      this.balanceTotalExterno = res;
+    },
+    error: (err) => console.error('Error obteniendo saldo total externo:', err)
+  })};
 
   getBalanceTotalInterno() {
     this.accountService.getBalanceTotalInterno().subscribe({

@@ -7,9 +7,13 @@
         <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
         <p>${{totalBalanceUsd | number:'1.0-0'}} USDT</p>
         <p style="margin-top: 5px;">
-    <strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }} COP/USDT
-  </p>
+           <strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}
+        </p>
       </div>
+      <div class="saldo-card p-3 border rounded cursor-pointer">
+        <h4>Saldo Externo total</h4>
+        <p>${{ balanceTotalExterno | number:'1.0-0' }} USDT</p>
+        </div>
 
       <ng-template pTemplate="left">
 

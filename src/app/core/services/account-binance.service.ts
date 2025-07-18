@@ -45,4 +45,7 @@ getLatestPurchaseRate(): Observable<number> {
 getBalanceTotalInterno(): Observable<number> {
   return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance-interno`);
 }
+getBalanceTotalExterno(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/balance-total-externo`); 
+}
 }

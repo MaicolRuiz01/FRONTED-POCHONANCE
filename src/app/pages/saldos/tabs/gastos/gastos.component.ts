@@ -1,64 +1,77 @@
-
-import { Router } from '@angular/router';
-import { SharedModule } from '../../../../shared/shared.module';
-import { Table } from 'primeng/table';
 import { Component, OnInit } from '@angular/core';
 import { GastoService, Gasto } from '../../../../core/services/gasto.service';
+import { AccountCop, AccountCopService } from '../../../../core/services/account-cop.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
+
+import { SharedModule } from '../../../../shared/shared.module';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
-
-
 
 @Component({
   selector: 'app-gastos',
   standalone: true,
-  imports: [SharedModule,
+  imports: [
     CommonModule,
-     FormsModule,
-      ButtonModule,
-      ReactiveFormsModule,
-      TableModule,
-      DialogModule,
-      CalendarModule,
-      InputTextModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SharedModule,
+    TableModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
+    CalendarModule
   ],
   templateUrl: './gastos.component.html',
   styleUrls: ['./gastos.component.css']
 })
-export class GastosComponent implements OnInit{
+export class GastosComponent implements OnInit {
   gastos: Gasto[] = [];
   productDialog = false;
-  nuevoGasto: Gasto = { tipo: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
+  nuevoGasto: Gasto = { descripcion: '', monto: 0 };
 
-  constructor(private gastoService: GastoService) {}
+  cuentas: AccountCop[] = [];
+  cajas: { id: number, name: string, saldo: number }[] = [];
 
-  ngOnInit() {
+  tipoPago: 'cuenta' | 'caja' = 'cuenta';
+  cuentaSeleccionadaId?: number;
+  cajaSeleccionadaId?: number;
+
+  constructor(
+    private gastoService: GastoService,
+    private accountService: AccountCopService
+  ) {}
+
+  ngOnInit(): void {
     this.cargarGastos();
+    this.accountService.getAll().subscribe(data => this.cuentas = data);
+    this.accountService.getAllCajas().subscribe(data => this.cajas = data);
   }
 
-  cargarGastos() {
-    this.gastoService.listar().subscribe(data => {
-      this.gastos = data;
-    });
+  cargarGastos(): void {
+    this.gastoService.listar().subscribe(data => this.gastos = data);
   }
 
-  openNew() {
-    this.nuevoGasto = { tipo: { id: 1 }, descripcion: '', fecha: '', monto: 0, pagado: false };
+  openNew(): void {
+    this.nuevoGasto = { descripcion: '', monto: 0 };
+    this.tipoPago = 'cuenta';
+    this.cuentaSeleccionadaId = undefined;
+    this.cajaSeleccionadaId = undefined;
     this.productDialog = true;
   }
 
-  pagar(gasto: Gasto) {
-    this.gastoService.pagar(gasto.id!).subscribe(() => {
-      gasto.pagado = true;
-    });
-  }
+  crearGasto(): void {
+    if (this.tipoPago === 'cuenta' && this.cuentaSeleccionadaId) {
+      this.nuevoGasto.cuentaPago = { id: this.cuentaSeleccionadaId } as any;
+      this.nuevoGasto.pagoEfectivo = undefined;
+    } else if (this.tipoPago === 'caja' && this.cajaSeleccionadaId) {
+      this.nuevoGasto.pagoEfectivo = { id: this.cajaSeleccionadaId } as any;
+      this.nuevoGasto.cuentaPago = undefined;
+    }
 
-  crearGasto() {
     this.gastoService.crear(this.nuevoGasto).subscribe(() => {
       this.productDialog = false;
       this.cargarGastos();

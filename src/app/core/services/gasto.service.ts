@@ -5,18 +5,17 @@ import { environment } from '../../../environment/environment';
 
 export interface Gasto {
   id?: number;
-  tipo: { id: number };
   descripcion: string;
-  fecha: string;
   monto: number;
-  pagado: boolean;
+  cuentaPago?: { id: number };
+  pagoEfectivo?: { id: number };
+  fecha?: string; // solo si el backend lo devuelve
 }
-
 @Injectable({
   providedIn: 'root'
 })
 export class GastoService {
-  private apiUrl = environment.apiUrl + '/api/gastos';
+  private apiUrl = environment.apiUrl + '/gastos';
 
   constructor(private http: HttpClient) {}
 

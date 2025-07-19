@@ -39,5 +39,8 @@ export class AccountCopService {
   getTotalBalance(): Observable<number> {
   return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
 }
+getAllCajas(): Observable<{ id: number, name: string, saldo: number }[]> {
+    return this.http.get<{ id: number, name: string, saldo: number }[]>(`${environment.apiUrl}/efectivo`);
+}
 
 }

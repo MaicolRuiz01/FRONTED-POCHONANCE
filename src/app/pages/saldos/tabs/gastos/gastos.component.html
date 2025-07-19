@@ -1,20 +1,17 @@
-
 <div class="ng-container">
   <h1>Gastos</h1>
-  </div>
-<button pButton label="Nuevo Gasto" class="p-button-primary" (click)="openNew()" ></button>
+</div>
 
-<br>
-<br>
+<button pButton label="Nuevo Gasto" class="p-button-primary" (click)="openNew()"></button>
+
+<br><br>
+
 <p-table [value]="gastos" [paginator]="true" [rows]="10">
   <ng-template pTemplate="header">
     <tr>
       <th>Fecha</th>
       <th>Descripción</th>
       <th>Monto</th>
-      <th>Tipo</th>
-      <th>Estado</th>
-      <th>Acciones</th>
     </tr>
   </ng-template>
   <ng-template pTemplate="body" let-gasto>
@@ -22,30 +19,83 @@
       <td>{{ gasto.fecha | date:'mediumDate' }}</td>
       <td>{{ gasto.descripcion }}</td>
       <td>{{ gasto.monto | currency }}</td>
-      <td>{{gasto.tipo.descripcion}}</td>
-      <td>{{ gasto.pagado ? 'Pagado' : 'Pendiente' }}</td>
-      <td>
-        <button *ngIf="!gasto.pagado" pButton label="Pagar" class="p-button-success" (click)="pagar(gasto)"></button>
-      </td>
     </tr>
   </ng-template>
 </p-table>
 
-<p-dialog [(visible)]="productDialog" header="Nuevo Gasto">
-  <div class="p-fluid">
-    <div class="p-field">
+<p-dialog [(visible)]="productDialog" header="Nuevo Gasto" [modal]="true" [style]="{ width: '400px' }">
+  <div class="p-fluid p-formgrid p-grid">
+
+    <!-- Tipo de pago -->
+    <div class="p-field p-col-12">
+      <label>Forma de pago</label>
+      <p-dropdown [(ngModel)]="tipoPago" [options]="[
+          { label: 'Cuenta COP', value: 'cuenta' },
+          { label: 'Caja (efectivo)', value: 'caja' }
+        ]"
+        placeholder="Seleccione tipo de pago">
+      </p-dropdown>
+    </div>
+
+    <!-- Selección de cuenta COP -->
+    <div *ngIf="tipoPago === 'cuenta'" class="p-field p-col-12">
+      <label>Cuenta COP</label>
+      <p-dropdown
+        [options]="cuentas"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="cuentaSeleccionadaId"
+        [filter]="true"
+        placeholder="Seleccione una cuenta"
+        [appendTo]="'body'">
+        <ng-template let-cuenta pTemplate="item">
+          <div class="p-d-flex p-jc-between">
+            <span>{{ cuenta.name }}</span>
+            <small>{{ cuenta.balance | currency:'USD' }}</small>
+          </div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+
+    <!-- Selección de caja -->
+    <div *ngIf="tipoPago === 'caja'" class="p-field p-col-12">
+      <label>Caja</label>
+      <p-dropdown
+        [options]="cajas"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="cajaSeleccionadaId"
+        [filter]="true"
+        placeholder="Seleccione una caja"
+        [appendTo]="'body'">
+        <ng-template let-caja pTemplate="item">
+          <div class="p-d-flex p-jc-between">
+            <span>{{ caja.name }}</span>
+            <small>{{ caja.saldo | currency:'USD' }}</small>
+          </div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+
+    <!-- Campos comunes -->
+    <div class="p-field p-col-12">
       <label>Descripción</label>
-      <input pInputText [(ngModel)]="nuevoGasto.descripcion">
+      <input pInputText [(ngModel)]="nuevoGasto.descripcion" />
     </div>
-    <div class="p-field">
-      <label>Fecha</label>
-      <input type="date" pInputText [(ngModel)]="nuevoGasto.fecha">
-    </div>
-    <div class="p-field">
+
+    <div class="p-field p-col-12">
       <label>Monto</label>
-      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto" inputmode="numeric">
+      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto" inputmode="numeric" />
     </div>
-    <button pButton label="Guardar" class="p-button-success" (click)="crearGasto()"></button>
+
+    <div class="p-col-12">
+      <button
+        pButton
+        label="Guardar"
+        class="p-button-success p-mt-2"
+        (click)="crearGasto()"
+        [disabled]="!nuevoGasto.descripcion || !nuevoGasto.monto">
+      </button>
+    </div>
   </div>
 </p-dialog>
-

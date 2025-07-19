@@ -13,7 +13,7 @@ import { SaldosTabComponent } from './pages/saldos/container/saldos-tab.componen
 import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asignaciones-wrapper/asignaciones-wrapper.component';
 import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
 import { ProveedorComponent } from './pages/proveedor/proveedor.component';
-
+import { MovimientosComponent } from './pages/movimientos/movimientos.component';
 
 
 
@@ -42,6 +42,10 @@ export const routes: Routes = [  {
         loadComponent: () =>
           import('./pages/asignaciones/tabs/cuentas-tab/lista-ventas/lista-ventas.component')
             .then(m => m.ListaVentasComponent)
+      },
+      {
+        path: 'movimientos',
+        component: MovimientosComponent
       }
 
   ]

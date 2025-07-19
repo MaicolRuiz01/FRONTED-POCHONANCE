@@ -15,6 +15,15 @@ export interface MovimientoDto {
   caja?: number;
 }
 
+export interface MovimientoVistaDto {
+  tipo: string;
+  fecha: Date;
+  monto: number;
+  cuentaOrigen?: string;
+  cuentaDestino?: string;
+  caja?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,16 +50,28 @@ export class MovimientoService {
   return this.http.post(url, {});
 }
 
-registrarDeposito(idCuentaDestino: number, monto: number) {
+  registrarDeposito(idCuentaDestino: number, monto: number) {
   const url = `${this.apiUrl}/deposito?cuentaId=${idCuentaDestino}&monto=${monto}`;
   return this.http.post(url, {});
-}
+  }
 
-registrarTransferencia(idCuentaOrigen: number, idCuentaDestino: number, monto: number) {
+  registrarTransferencia(idCuentaOrigen: number, idCuentaDestino: number, monto: number) {
   const url = `${this.apiUrl}/transferencia?origenId=${idCuentaOrigen}&destinoId=${idCuentaDestino}&monto=${monto}`;
   return this.http.post(url, {});
-}
+  }
 
+  getTransferencias(): Observable<MovimientoVistaDto[]> {
+    const url = `${this.apiUrl}/transferencias`;
+    return this.http.get<MovimientoVistaDto[]>(url);
+  }
 
+  getDepositos(): Observable<MovimientoVistaDto[]> {
+    const url = `${this.apiUrl}/depositos`;
+    return this.http.get<MovimientoVistaDto[]>(url);
+  }
+  getRetiros(): Observable<MovimientoVistaDto[]> {
+    const url = `${this.apiUrl}/retiros`;
+    return this.http.get<MovimientoVistaDto[]>(url);
+  }
 
 }

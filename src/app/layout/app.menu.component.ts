@@ -39,6 +39,10 @@ export class AppMenuComponent implements OnInit {
                 {
                     label: 'PROVEEDORES', icon: 'pi pi-fw pi-users',
                     routerLink: ['/proveedor']
+                },
+                {
+                    label: 'MOVIMIENTOS', icon: 'pi pi-fw pi-exchange',
+                    routerLink: ['/movimientos']
                 }
 
                 

@@ -1,0 +1,65 @@
+<p-tabView>
+  <p-tabPanel header="Retiros">
+    <p-table [value]="retiros">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Monto</th>
+          <th>Cuenta Origen</th>
+          <th>Caja</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.fecha | date:'short' }}</td>
+          <td>{{ row.monto | currency:'USD' }}</td>
+          <td>{{ row.cuentaOrigen }}</td>
+          <td>{{ row.caja }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+
+  <p-tabPanel header="Depósitos">
+    <p-table [value]="depositos">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Monto</th>
+          <th>Cuenta Destino</th>
+          <th>Caja</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.fecha | date:'short' }}</td>
+          <td>{{ row.monto | currency:'USD' }}</td>
+          <td>{{ row.cuentaDestino }}</td>
+          <td>{{ row.caja }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+
+  <p-tabPanel header="Transferencias">
+    <p-table [value]="transferencias">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Monto</th>
+          <th>Cuenta Origen</th>
+          <th>Cuenta Destino</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>{{ row.fecha | date:'short' }}</td>
+          <td>{{ row.monto | currency:'USD' }}</td>
+          <td>{{ row.cuentaOrigen }}</td>
+            <td>{{ row.cuentaDestino }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+</p-tabView>
+

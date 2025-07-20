@@ -183,3 +183,7 @@
   width: 100%;
   max-width: 250px;
 }
+.p-dropdown-panel {
+    z-index: 1100 !important;
+    position: fixed !important;
+}

@@ -1,168 +1,107 @@
-<div class="grid-container">
-  <div class="toolbar-container">
-    <p-toast></p-toast>
-    <p-toolbar styleClass="mb-4">
-      <div class="saldo-card p-3 border rounded cursor-pointer">
+<p-toast></p-toast>
+
+<p-toolbar styleClass="mb-4">
+    <div class="saldo-card p-3 border rounded">
         <h4>Saldo Interno total</h4>
         <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
-        <p>${{totalBalanceUsd | number:'1.0-0'}} USDT</p>
-        <p style="margin-top: 5px;">
-           <strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}
-        </p>
-      </div>
-      <div class="saldo-card p-3 border rounded cursor-pointer">
+        <p>${{ totalBalanceUsd | number:'1.0-0' }} USDT</p>
+        <p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
+    </div>
+    <div class="saldo-card p-3 border rounded">
         <h4>Saldo Externo total</h4>
         <p>${{ balanceTotalExterno | number:'1.0-0' }} USDT</p>
-        </div>
-
-      <ng-template pTemplate="left">
-
-        <div class="my-2">
-          <button pButton pRipple label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success mr-2"
-            (click)="openNew()"></button>
-        </div>
-      </ng-template>
-    </p-toolbar>
-  </div>
-
-  <div class="grid" *ngIf="accounts.length > 0">
-  <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
-    <div class="card-header">
-      <span>{{ account.accountType }}</span>
     </div>
-    <div class="card-body">
-      <ng-container *ngIf="!account.isFlipped; else detalles">
-        <!-- Vista principal: saldos -->
-        <div class="saldo-row">
-          <div class="saldo">
-            <p><strong>Saldo Interno (USDT)</strong></p>
-            <p>{{ account.saldoInterno | number:'1.2-2' }}</p>
-          </div>
-        </div>
-        <div class="saldo-row">
-          <div class="saldo">
-            <p><strong>Saldo Externo (USDT)</strong></p>
-            <p>{{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
-          </div>
-        </div>
-      </ng-container>
-      <!-- Detalles ocultos al hacer flip -->
-      <ng-template #detalles>
-        <div class="saldo-row">
-          <div class="saldo">
-            <p><strong>Correo:</strong></p>
-            <p>{{ account.correo }}</p>
-          </div>
-        </div>
-        <div class="saldo-row">
-          <div class="saldo">
-            <p><strong>Wallet:</strong></p>
-            <p>{{ account.address }}</p>
-          </div>
-        </div>
-      </ng-template>
-    </div>
-  </div>
+
+    <div class="saldo-card p-3 border rounded" *ngFor="let caja of cajas">
+    <h4>{{ caja.name }}</h4>
+    <p>${{ caja.saldo | number:'1.0-0' }} COP</p>
 </div>
 
+    
+    <ng-template pTemplate="left">
+        <button pButton label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+    </ng-template>
+</p-toolbar>
+
+<div class="grid" *ngIf="accounts.length > 0">
+    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+        <div class="card-header">{{ account.accountType }}</div>
+        <div class="card-body">
+            <ng-container *ngIf="!account.isFlipped; else detalles">
+                <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>
+                <p><strong>Saldo Externo (USDT)</strong>: {{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
+            </ng-container>
+            <ng-template #detalles>
+                <p><strong>Correo:</strong> {{ account.correo }}</p>
+                <p><strong>Wallet:</strong> {{ account.address }}</p>
+            </ng-template>
+        </div>
+    </div>
 </div>
-<!-- Modal con la tabla -->
-<p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true">
 
-  <div class="table-container">
-    <p-table [value]="tableData" styleClass="main-table">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Fecha</th>
-          <th>US</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-item>
-        <tr>
-          <td>{{ item.fecha }}</td>
-          <td>{{ item.us }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <button pButton pRipple icon="pi pi-eye" class="p-button-warning p-button-rounded eye-button"
-      (click)="showDetails()"></button>
-  </div>
+<p-dialog header="Crear nueva cuenta Binance"
+    [(visible)]="createAccountDialog"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [baseZIndex]="1100">
 
-  <p-footer>
-    <button pButton label="Cerrar" icon="pi pi-times" (click)="modalVisible = false" class="p-button-text"></button>
-  </p-footer>
+    <div class="p-fluid">
+        <div class="p-field">
+            <label for="name">Nombre*</label>
+            <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
+        </div>
+
+        <div class="p-field">
+            <label for="reference">Id de cuenta Binance*</label>
+            <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
+        </div>
+
+        <div class="p-field">
+            <label for="correo">Correo electrónico*</label>
+            <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
+        </div>
+
+        <div class="p-field">
+            <label for="user">Usuario Binance</label>
+            <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
+        </div>
+
+        <div class="p-field">
+            <label for="balance">Saldo inicial en USDT*</label>
+            <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" />
+        </div>
+
+        <div class="p-field">
+            <label for="wallet">Wallet (dirección USDT)*</label>
+            <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
+        </div>
+
+        <div class="p-field">
+            <label>Tipo de cuenta*</label>
+            <p-dropdown [options]="tiposCuenta"
+                        [(ngModel)]="newAccount.tipo"
+                        placeholder="Seleccione tipo"
+                        [showClear]="true"
+                        [appendTo]="'body'">
+            </p-dropdown>
+        </div>
+
+        <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
+            <label>API Key*</label>
+            <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
+        </div>
+
+        <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
+            <label>API Secret*</label>
+            <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+                (click)="cancelarNuevaCuenta()"></button>
+        <button pButton label="Crear" icon="pi pi-check" class="p-button-success"
+                (click)="crearCuentaBinance()"></button>
+    </ng-template>
 </p-dialog>
 
-<p-dialog header="Cuentas" [(visible)]="productDialog" [modal]="true" [closable]="false"
-  styleClass="custom-cuentas-dialog">
-
-  <div class="cuentas-container">
-    <div class="add-button-wrapper">
-      <button pButton icon="pi pi-plus" class="p-button-rounded p-button-lg p-button-secondary"
-        (click)="addAccount()"></button>
-    </div>
-
-    <div *ngFor="let acc of accounts; let i = index" class="cuenta-item">
-      <div class="cuenta-nombre">{{ acc.accountType }}</div>
-      <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger" (click)="removeAccount(i)"></button>
-    </div>
-
-    <div class="cuentas-actions">
-      <button pButton label="Cancelar" class="p-button-danger" (click)="productDialog = false"></button>
-      <button pButton label="Guardar" class="p-button-success" (click)="guardarCuentas()"></button>
-    </div>
-  </div>
-
-</p-dialog>
-
-<p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false"
-  [style]="{width: '450px'}">
-
-  <br>
-  <div class="p-fluid">
-    <div class="p-field">
-      <label for="name" class="info">Nombre*</label>
-      <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" required />
-    </div>
-
-    <br>
-    <div class="p-field">
-      <label for="referenceAccount" class="info">Id de cuenta Binance*</label>
-      <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
-    </div>
-
-    <br>
-    <div class="p-field">
-      <label for="correo" class="info">Correo electrónico*</label>
-      <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" required />
-    </div>
-
-    <br>
-    <div class="p-field">
-      <label for="userBinance">Usuario Binance (opcional)</label>
-      <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
-    </div>
-
-    <br>
-    <div class="p-field">
-      <label for="balance" class="info">Saldo inicial en USDT*</label>
-      <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" required />
-    </div>
-
-    <br>
-    <div class="p-field">
-      <label for="address" class="info">Wallet (dirección USDT)*</label>
-      <input id="address" type="text" pInputText [(ngModel)]="newAccount.address" required />
-    </div>
-
-    <br>
-    <div class="p-dialog-footer">
-      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
-        (click)="cancelarNuevaCuenta()"></button>
-      <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
-    </div>
-
-    <br>
-    <small class="p-d-block p-mt-2 info" >* Campos obligatorios</small>
-  </div>
-</p-dialog>

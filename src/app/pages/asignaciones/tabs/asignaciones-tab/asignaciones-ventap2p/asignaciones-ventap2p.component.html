@@ -2,22 +2,17 @@
   <h2 class="p-mb-5 p-text-bold">Ventas de P2P Hoy</h2>
 
   <!-- Dropdown para seleccionar la cuenta de Binance -->
-  <div class="p-mb-4">
-    <label for="binanceAccount">Selecciona una cuenta Binance</label>
-    <p-dropdown 
-      id="binanceAccount"
-      [options]="binanceAccounts"
-      [(ngModel)]="selectedBinanceAccount"
-      optionLabel="name"
-      placeholder="Seleccionar cuenta"
-      (onChange)="loadTodaySales()"  
-      [showClear]="true"   
-    ></p-dropdown>
-  </div>
- 
+  <div *ngIf="loading" class="spinner-container">
 
+    <p-progressSpinner></p-progressSpinner>
+  
+  
   <!-- Tabla de ventas del día -->
-<p-table [value]="todaySales" [tableStyle]="{ 'min-width': '60rem' }" *ngIf="todaySales.length > 0" >
+  <!-- Tabla de ventas del día -->
+<p-table 
+[value]="allAccountsp2p" 
+[tableStyle]="{ 'min-width': '60rem' }" 
+*ngIf="allAccountsp2p.length > 0">
   <ng-template pTemplate="header">
     <tr>
       <th>N° Orden</th>
@@ -41,10 +36,17 @@
     </tr>
   </ng-template>
 </p-table>
+
+
+
+</div>
+
+
+
 <div *ngIf="noSalesMessage" class="p-mt-3">
   <p>{{ noSalesMessage }}</p>
 </div>
-</div>
+
 
 <!-- Modal para asignar cuentas -->
 <p-dialog 
@@ -153,5 +155,3 @@
     ></button>
   </ng-template>
 </p-dialog>
-
-

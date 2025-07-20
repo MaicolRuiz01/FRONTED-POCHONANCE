@@ -7,6 +7,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { CardModule } from 'primeng/card';
 
 
 
@@ -21,16 +23,17 @@ import { CommonModule } from '@angular/common';
     ConfirmDialogModule,
     TableModule,
     ButtonModule,
-    CommonModule
+    CommonModule,
+    ProgressSpinnerModule,
+    CardModule
   ]
 })
 export class TraspasosTabComponent implements OnInit {
   traspasos: TransaccionesDTO[] = [];
+  cargando: boolean = false;
 
   constructor(
-    private traspasosService: TraspasosService,
-    private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private traspasosService: TraspasosService
   ) {}
 
   ngOnInit(): void {
@@ -38,31 +41,18 @@ export class TraspasosTabComponent implements OnInit {
   }
 
   cargarTraspasos(): void {
-    this.traspasosService.obtenerTodosLosTraspasos().subscribe(
+    this.cargando = true;
+    this.traspasosService.getTransaccionesDeHoy().subscribe(
       (data) => {
         this.traspasos = data;
+        this.cargando = false;
       },
       (error) => {
         console.error('Error al cargar los traspasos:', error);
+        this.cargando = false;
       }
     );
   }
 
-  confirmarTraspaso(traspaso: TransaccionesDTO): void {
-    this.confirmationService.confirm({
-      message: '¿Estás seguro de confirmar este traspaso?',
-      accept: () => {
-        this.traspasosService.guardarTransaccion(traspaso).subscribe(
-          () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Traspaso confirmado' });
-            this.cargarTraspasos();
-          },
-          (error) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo confirmar el traspaso' });
-            console.error('Error al guardar el traspaso:', error);
-          }
-        );
-      },
-    });
-  }
+  
 }

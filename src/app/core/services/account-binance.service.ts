@@ -35,5 +35,14 @@ export class AccountBinanceService {
   const url = `${this.apiUrl}/balance-usdt?name=${encodeURIComponent(name)}`;
   return this.http.get(url, { responseType: 'text' });
 }
-  
+getTotalBalance(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
+}
+getLatestPurchaseRate(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/purchase-rate/latest`);
+}
+
+getBalanceTotalInterno(): Observable<number> {
+  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance-interno`);
+}
 }

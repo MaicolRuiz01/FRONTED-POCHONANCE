@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
 import { TableModule } from 'primeng/table';
@@ -10,6 +10,9 @@ import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { MenuItem } from 'primeng/api';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -23,12 +26,31 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     FormsModule,
     CalendarModule,
     DropdownModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    PanelMenuModule,
+    PaginatorModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
 })
 export class AsignacionesComprasComponent implements OnInit {
+
+   items: MenuItem[] = [];
+
+  @ViewChild('compraTemplate') compraTemplate!: TemplateRef<any>;
+  @ViewChild('ventasTemplate') ventasTemplate!: TemplateRef<any>;
+  @ViewChild('p2pTemplate') p2pTemplate!: TemplateRef<any>;
+
+  ngAfterViewInit() {
+    this.items = [
+      {
+        label: 'compras por asignar',
+        items: [
+        ]
+      }
+    ];
+  }
+  
   allDeposits: BuyDollarsDto[] = [];
   filteredDeposits: BuyDollarsDto[] = [];
 
@@ -43,6 +65,11 @@ export class AsignacionesComprasComponent implements OnInit {
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
+  loading: boolean = false;
+  isMobile: boolean = false;
+
+  page = 0; // Índice de página (empieza en 0)
+  rows = 5; // Elementos por página 
 
   constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
@@ -51,9 +78,15 @@ export class AsignacionesComprasComponent implements OnInit {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
+     this.isMobile = window.innerWidth <= 768;
+  // Si quieres que detecte cambios dinámicos:
+  window.addEventListener('resize', () => {
+    this.isMobile = window.innerWidth <= 768;
+  });
   }
 
-  loadDeposits(): void {
+
+   loadDeposits(): void {
     this.loading = true;
     this.buyService.getAllEntradas().subscribe({
       next: data => {
@@ -68,6 +101,7 @@ export class AsignacionesComprasComponent implements OnInit {
       }
     });
   }
+  
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: data => this.suppliers = data,
@@ -75,23 +109,28 @@ export class AsignacionesComprasComponent implements OnInit {
     });
   }
 
+  formatDate(date: Date): string {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 19);
+}
+
+
+get paginatedDeposits() {
+  const start = this.page * this.rows;
+  const end = start + this.rows;
+  return this.filteredDeposits.slice(start, end);
+}
+
+onPageChange(event: any) {
+  this.page = event.page;
+  this.rows = event.rows;
+}
+
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
   }
 
-  applyFilters(): void {
-    this.filteredDeposits = this.allDeposits.filter(d => {
-      const dt = new Date(d.date);
-      return (!this.startDate || dt >= this.startDate)
-          && (!this.endDate   || dt <= this.endDate);
-    });
-  }
-
-  clearDateFilter(): void {
-    this.startDate = null;
-    this.endDate = null;
-    this.filteredDeposits = [...this.allDeposits];
-  }
 
   openAssignModal(deposit: BuyDollarsDto): void {
     this.selectedDeposit = deposit;
@@ -117,7 +156,7 @@ export class AsignacionesComprasComponent implements OnInit {
       tasa: this.purchaseRate,
       nameAccount: this.selectedDeposit.nameAccount,
       pesos: pesos,
-      date: new Date(this.selectedDeposit.date),
+      date: this.selectedDeposit.date,
       supplierId: this.selectedSupplierId,
       idDeposit: this.selectedDeposit.idDeposit
     };
@@ -134,4 +173,9 @@ console.log('Datos a enviar compra:', buyData);
       }
     });
   }
+
+
+
+
+  
 }

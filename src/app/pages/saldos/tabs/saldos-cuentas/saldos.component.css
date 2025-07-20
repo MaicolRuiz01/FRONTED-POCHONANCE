@@ -36,6 +36,9 @@
 }
 
 
+.info{
+  color: red;
+}
 
 .saldo-row {
   display: flex;

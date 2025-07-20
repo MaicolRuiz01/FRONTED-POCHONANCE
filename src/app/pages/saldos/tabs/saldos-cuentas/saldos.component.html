@@ -2,10 +2,13 @@
   <div class="toolbar-container">
     <p-toast></p-toast>
     <p-toolbar styleClass="mb-4">
-      <div class="saldo-card p-3 border rounded cursor-pointer" (click)="showModal()">
-        <h4>Saldo total</h4>
-        <h2 class="saldo-valor">${{ totalBalanceUsd | number:'1.2-2' }} USDT</h2>
+      <div class="saldo-card p-3 border rounded cursor-pointer">
+        <h4>Saldo Interno total</h4>
         <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
+        <p>${{totalBalanceUsd | number:'1.0-0'}} USDT</p>
+        <p style="margin-top: 5px;">
+    <strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }} COP/USDT
+  </p>
       </div>
 
       <ng-template pTemplate="left">
@@ -19,49 +22,46 @@
   </div>
 
   <div class="grid" *ngIf="accounts.length > 0">
-    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
-      <div class="card-header">
-        <span>{{ account.accountType }}</span>
-        <i class="pi pi-exclamation-circle info-icon"></i>
-      </div>
-      <div class="card-body">
-        <div *ngIf="!account.isFlipped">
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titleUSDT }}</p>
-              <p>{{ account.valueUSDT }}</p>
-            </div>
-          </div>
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titleBalance }}</p>
-              <p>{{ account.balance | number:'1.2-2' }}</p>
-            </div>
-          </div>
-
-        </div>
-        <div *ngIf="account.isFlipped">
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titleWallet }}</p>
-              <p>{{ account.valueWallet }}</p>
-            </div>
-          </div>
-          <div class="saldo-row">
-            <div class="saldo">
-              <p>{{ account.titlecorreo }}</p>
-              <p>{{ account.valuecorreo }}</p>
-            </div>
-          </div>
-        </div>
-        <p class="account-type">{{ account.accountType }}</p>
-      </div>
-      <div class="card-footer">
-        <i class="pi pi-bars"></i>
-      </div>
+  <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
+    <div class="card-header">
+      <span>{{ account.accountType }}</span>
     </div>
+    <div class="card-body">
+      <ng-container *ngIf="!account.isFlipped; else detalles">
+        <!-- Vista principal: saldos -->
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Saldo Interno (USDT)</strong></p>
+            <p>{{ account.saldoInterno | number:'1.2-2' }}</p>
+          </div>
+        </div>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Saldo Externo (USDT)</strong></p>
+            <p>{{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
+          </div>
 
+        </div>
+      </ng-container>
+      <!-- Detalles ocultos al hacer flip -->
+      <ng-template #detalles>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Correo:</strong></p>
+            <p>{{ account.correo }}</p>
+          </div>
+        </div>
+        <div class="saldo-row">
+          <div class="saldo">
+            <p><strong>Wallet:</strong></p>
+            <p>{{ account.address }}</p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
   </div>
+</div>
+
 </div>
 <!-- Modal con la tabla -->
 <p-dialog header="Historial de Tasa" [(visible)]="modalVisible" [modal]="true">
@@ -114,45 +114,52 @@
 
 <p-dialog header="Crear nueva cuenta Binance" [(visible)]="createAccountDialog" [modal]="true" [closable]="false">
 
+  <br>
   <div class="p-fluid">
     <div class="p-field">
-      <label for="name" class="color"> Nombre *</label> <br>
+      <label for="name" class="info">Nombre*</label>
       <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" required />
     </div>
-<br>
+
+    <br>
     <div class="p-field">
-      <label for="referenceAccount" class="color">Id de cuenta Binance *</label><br>
+      <label for="referenceAccount" class="info">Id de cuenta Binance*</label>
       <input id="referenceAccount" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" required />
     </div>
-<br>
+
+    <br>
     <div class="p-field">
-      <label for="correo" class="color">Correo electrónico *</label><br>
+      <label for="correo" class="info">Correo electrónico*</label>
       <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" required />
     </div>
-<br>
+
+    <br>
     <div class="p-field">
       <label for="userBinance">Usuario Binance (opcional)</label><br>
       <input id="userBinance" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
     </div>
-<br>
+
+    <br>
     <div class="p-field">
-      <label for="balance" class="color">Saldo inicial en USDT *</label><br>
+      <label for="balance" class="info">Saldo inicial en USDT*</label>
       <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" required />
     </div>
-<br>
+
+    <br>
     <div class="p-field">
-      <label for="address" class="color">Wallet (dirección USDT) *</label><br>
+      <label for="address" class="info">Wallet (dirección USDT)*</label>
       <input id="address" type="text" pInputText [(ngModel)]="newAccount.address" required />
     </div>
 
-<br>
+    <br>
     <div class="p-dialog-footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
         (click)="cancelarNuevaCuenta()"></button>
       <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuentaBinance()"></button>
     </div>
-<br>
-    <small class="p-d-block p-mt-2">* Campos obligatorios</small>
+
+    <br>
+    <small class="p-d-block p-mt-2 info" >* Campos obligatorios</small>
   </div>
   
 </p-dialog>

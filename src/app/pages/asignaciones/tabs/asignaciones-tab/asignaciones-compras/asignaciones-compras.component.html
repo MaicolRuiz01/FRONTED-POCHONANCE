@@ -2,56 +2,25 @@
     <h2>Asignar Compras</h2>
   
     <!-- FILTRO POR RANGO DE FECHAS -->
-<div class="p-grid p-align-center p-mb-3 p-g-3">
-    <!-- En xs serán 6/12 (50%), en sm 4/12 (~33%), y en md+ 4/12 (~33%) -->
-    <div class="p-col-6 p-sm-6 p-md-4">
-      <p-calendar
-        [(ngModel)]="startDate"
-        placeholder="fecha inicial"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '50%' }"
-      ></p-calendar>
-    </div>
-    <br>
-    <div class="p-col-12 p-sm-6 p-md-4">
-      <p-calendar
-        [(ngModel)]="endDate"
-        placeholder="fecha final"
-        dateFormat="yy-mm-dd"
-        (onSelect)="applyFilters()"
-        showIcon="true"
-        [style]="{ width: '50%' }"
-      ></p-calendar>
-    </div>
-    <div class="p-col-12 p-sm-6 p-md-4">
-      <button
-        pButton
-        type="button"
-        icon="pi pi-times"
-        label="Limpiar"
-        class="p-button-text p-mt-2"
-        (click)="clearDateFilter()"
-      ></button>
-    </div>
-  </div>
+
 
   <br>
-  <div *ngIf="loading" class="spinner-container">
+   <p *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
-  </div>
-  <p-table
-    [value]="filteredDeposits"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[5,10,25]"
-    [scrollable]="true"
-    scrollDirection="horizontal"
-    [tableStyle]="{ 'min-width': '10rem' }"
-    sortMode="single"
-    *ngIf="!loading"
-  >
+  </p>
+
+  <div *ngIf="!loading">
+    <p-table
+      *ngIf="!isMobile"
+      [value]="filteredDeposits"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5,10,25]"
+      [scrollable]="true"
+      scrollDirection="horizontal"
+      [tableStyle]="{ 'min-width': '10rem' }"
+      sortMode="single"
+    >
       <ng-template pTemplate="header">
         <tr>
           <th pSortableColumn="account">
@@ -84,7 +53,39 @@
       </ng-template>
     </p-table>
     
+    <!-- Versión móvil (formato tipo tarjeta) -->
+<div *ngIf="isMobile" >
+  <div *ngFor="let dep of filteredDeposits" class="card-mobile">
+    <div class="card-content">
+      <div class="card-field"><strong>Cuenta:</strong> {{ dep.nameAccount }}</div>
+      <div class="card-field"><strong>Monto:</strong> {{ dep.dollars | number:'1.0-2' }}</div>
+      <div class="card-field"><strong>Fecha:</strong> {{ dep.date | date:'short' }}</div>
+    </div>
+    <div class="card-button">
+      <button
+        pButton
+        type="button"
+        label="Asignar"
+        class="p-button-sm p-button-success"
+        (click)="openAssignModal(dep)"
+      ></button>
+    </div>
+  </div>
+
+  <p-paginator
+    [rows]="rows"
+    [totalRecords]="filteredDeposits.length"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    (onPageChange)="onPageChange($event)"
+    [style]="{ 'margin-top': '1rem' }"
     
+  ></p-paginator> 
+  
+</div>
+
+
+  </div>
+
     <p-dialog
   header="Asignar Compra"
   [(visible)]="displayModal"

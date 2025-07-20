@@ -11,7 +11,20 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 
-
+export interface DisplayAccount {
+  accountType: string;
+  saldoInterno: number;
+  saldoExterno?: number;
+  correo?: string;
+  address?: string;
+  isFlipped: boolean;
+   titleUSDT?: string;
+  valueUSDT?: string;
+  titleWallet?: string;
+  valueWallet?: string;
+  titlecorreo?: string;
+  valuecorreo?: string;
+}
 
 @Component({
   selector: 'app-saldos',
@@ -29,15 +42,18 @@ import { ButtonModule } from 'primeng/button';
   ]
 })
 export class SaldosComponent implements OnInit {
-  accounts: any[] = [];
   // Nuevo: saldo total traído desde el backend
   totalBalanceUsd: number = 0;
   totalBalanceCop: number = 0;
+  latestRate: number = 0;
+
 
   // Modales y estados
   productDialog = false;
   createAccountDialog = false;
   modalVisible = false;
+  accounts: DisplayAccount[] = [];
+
 
   // Nuevos datos de cuenta
   newAccount: AccountBinance = {
@@ -58,19 +74,27 @@ export class SaldosComponent implements OnInit {
   ngOnInit() {
     this.loadAccounts();
     this.getTotalBalance();
+    this.getLatestPurchaseRate();
+    this.getBalanceTotalInterno();
   }
 
   getTotalBalance() {
-    this.http.get<number>('http://127.0.0.1:8080/cuenta-binance/total-balance')
-       .subscribe({
-      next: (res) => {
-        this.totalBalanceCop = res;
-        const latestRate = 4500;
-        this.totalBalanceUsd = this.totalBalanceCop / latestRate;
-      },
-      error: (err) => console.error('Error obteniendo saldo total:', err)
-    });
+  this.accountService.getTotalBalance().subscribe({
+    next: (res) => {
+      this.totalBalanceCop = res;
+    },
+    error: (err) => console.error('Error obteniendo saldo total:', err)
+  });
 }
+
+  getBalanceTotalInterno() {
+    this.accountService.getBalanceTotalInterno().subscribe({
+      next: (res) => {
+        this.totalBalanceUsd = res;
+      },
+      error: (err) => console.error('Error obteniendo saldo total interno:', err) 
+  })}
+
 
   // Datos de tabla
   tableData = [
@@ -84,45 +108,49 @@ export class SaldosComponent implements OnInit {
     console.log('Detalles del item:');
   }
 
-  loadAccounts() {
+   loadAccounts() {
     this.accountService.traerCuentas().subscribe({
-      next: (res: AccountBinance[]) => {
-        this.accounts = res.map(cuenta => ({
-          accountType: cuenta.name,
-          titleUSDT: 'SALDO EN VIVO',
-          valueUSDT: `$${cuenta.balance?.toFixed(2) || '0.00'}`,
-          titleBalance: 'Balance',
-          balance: cuenta.balance,
-          titleWallet: 'Wallet',
-          valueWallet: cuenta.address || 'N/A',
-          titlecorreo: 'Correo',
-          valuecorreo: cuenta.correo,
-          isFlipped: false
+      next: (res) => {
+        // 1) Inicialmente mapeamos solo el interno y demás datos estáticos
+        this.accounts = res.map(c => ({
+          accountType: c.name,
+          saldoInterno: c.balance,
+          correo: c.correo || '–',
+          address: c.address || '–',
+          isFlipped: false,
+          saldoExterno: 0   // para tener definida la propiedad
         }));
-        this.updateBalances();
+
+        // 2) Ahora pedimos y asignamos el saldo externo, ordenando tras cada actualización
+        this.accounts.forEach(acc => {
+          this.accountService.getUSDTBalanceBinance(acc.accountType)
+            .subscribe({
+              next: live => {
+                acc.saldoExterno = parseFloat(live) || 0;
+                this.sortByExternal();   // reordena tras asignar cada uno
+              },
+              error: _ => {
+                acc.saldoExterno = 0;
+                this.sortByExternal();
+              }
+            });
+        });
       },
-      error: (err) => {
-        console.error('❌ Error al traer cuentas:', err);
-      }
+      error: err => console.error(err)
     });
   }
 
-  updateBalances() {
-    this.accounts.forEach(account => {
-      this.accountService.getUSDTBalanceBinance(account.accountType).subscribe({
-        next: (balance) => {
-          account.valueUSDT = `$${balance || '0.00'}`;
-        },
-        error: (err) => {
-          console.error('❌ Error actualizando balance:', err);
-        }
-      });
-    });
+  /** Ordena el array de cuentas de mayor a menor según 'saldoExterno' */
+  private sortByExternal() {
+    this.accounts.sort((a, b) => (b.saldoExterno || 0) - (a.saldoExterno || 0));
   }
 
-  toggleText(account: any) {
+  toggleText(account: DisplayAccount) {
     account.isFlipped = !account.isFlipped;
   }
+
+
+
 
   showModal() {
     this.modalVisible = true;
@@ -163,6 +191,8 @@ export class SaldosComponent implements OnInit {
         this.accounts.push({
           accountType: res.name,
           titleUSDT: 'Saldo USDT',
+          saldoInterno: res.balance,          // ← Aquí
+          saldoExterno: undefined, 
           valueUSDT: `$${res.balance?.toFixed(2) || '0.00'}`,
           titleWallet: 'Wallet',
           valueWallet: res.address || 'N/A',
@@ -199,5 +229,14 @@ export class SaldosComponent implements OnInit {
     });
     this.productDialog = false;
   }
+
+  getLatestPurchaseRate() {
+  this.accountService.getLatestPurchaseRate().subscribe({
+    next: (res) => {
+      this.latestRate = res;
+    },
+    error: (err) => console.error('Error obteniendo tasa de compra:', err)
+  });
+}
 
 }

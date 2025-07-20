@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { SaleP2PService, SaleP2PDto } from '../../../../../core/services/sale-p2p.service';
 import { AccountCopService, AccountCop } from '../../../../../core/services/account-cop.service';
 import { AccountBinanceService, AccountBinance } from '../../../../../core/services/account-binance.service';
@@ -14,6 +14,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de importar el módulo adecuado
 import { InputTextModule } from 'primeng/inputtext';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
 
 
 
@@ -30,53 +32,47 @@ import { InputTextModule } from 'primeng/inputtext';
     InputNumberModule,
      MultiSelectModule,
      RadioButtonModule,
-     InputTextModule 
+     InputTextModule,
+     ProgressSpinnerModule
   ],
   templateUrl: './asignaciones-ventap2p.component.html',
   styleUrls: ['./asignaciones-ventap2p.component.css']
 })
 export class AsignacionesVentap2pComponent implements OnInit {
-  todaySales: SaleP2PDto[] = [];
+  allAccountsp2p: SaleP2PDto[] = [];
   binanceAccounts: AccountBinance[] = [];
   selectedBinanceAccount: AccountBinance | null = null;
   cuentasDisponibles: AccountCop[] = [];
   selectedSale: SaleP2PDto | null = null;
-externalAmount: number = 0;
-
+  externalAmount: number = 0;
+  
   // Nuevo estado para la asignación
   isExternal: boolean = false;  // Si es externa o colombiana
   selectedAssignments: { account: AccountCop; amount: number }[] = [];
   displayAssignDialog: boolean = false;
   externalAccountName: string = '';
   noSalesMessage: string = '';
+  loading: boolean = false;
 
   constructor(
     private saleService: SaleP2PService,
     private accountBinanceService: AccountBinanceService,
     private accountCopService: AccountCopService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadBinanceAccounts();
-    this.loadCuentas();
+    this.loadAccountsp2p();
+
   }
 
-  loadBinanceAccounts(): void {
-    this.accountBinanceService.traerCuentas().subscribe({
-      next: (accounts) => {
-        this.binanceAccounts = accounts;
-      },
-      error: (err) => {
-        console.error('Error al cargar las cuentas de Binance:', err);
-      }
-    });
-  }
 
   loadCuentas(): void {
     this.accountCopService.getAll().subscribe({
       next: (accounts) => {
         this.cuentasDisponibles = accounts;
+        console.log('Cuentas COP cargadas:', this.cuentasDisponibles);
       },
       error: (err) => {
         console.error('Error al cargar las cuentas COP:', err);
@@ -84,28 +80,44 @@ externalAmount: number = 0;
     });
   }
 
-  loadTodaySales(): void {
-  this.noSalesMessage = '';  // Reiniciar mensaje
-
-  if (!this.selectedBinanceAccount) {
-    alert("Por favor selecciona una cuenta de Binance.");
-    return;
-  }
-
-  const accountName = this.selectedBinanceAccount.name;
-  this.saleService.getAllSalesToday(accountName).subscribe({
-    next: (sales) => {
-      this.todaySales = sales;
-      if (!sales || sales.length === 0) {
-        this.noSalesMessage = 'No hay ventas p2p hechas el día de hoy';
-      }
+loadAccountsp2p():void {
+  this.loading = true;
+  this.saleService.getAllSales().subscribe({
+    next: (data) => {
+      console.log('Ventas P2P cargadas:', data);
+      this.allAccountsp2p = data; // ✅ se cargan directamente
+      this.loading = false;
     },
     error: (err) => {
-      console.error('Error al cargar las ventas del día:', err);
-      this.noSalesMessage = 'Error al obtener ventas';
+      console.error('Error al cargar ventas P2P:', err);
+      this.loading = false;
     }
   });
 }
+
+  loadTodaySales(): void {
+    this.noSalesMessage = '';
+    if (!this.selectedBinanceAccount) {
+      alert("Por favor selecciona una cuenta de Binance.");
+      return;
+    }
+    this.loading = true;
+    const accountName = this.selectedBinanceAccount.name;
+    this.saleService.getAllSalesToday(accountName).subscribe({
+      next: (sales) => {
+        this.allAccountsp2p = sales;
+        if (!sales || sales.length === 0) {
+          this.noSalesMessage = 'No hay ventas p2p hechas el día de hoy';
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar las ventas del día:', err);
+        this.noSalesMessage = 'Error al obtener ventas';
+        this.loading = false;
+      }
+    });
+  }
 
 
   openAssignDialog(sale: SaleP2PDto): void {

@@ -13,6 +13,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { AssignAccount } from '../../../../../core/services/sell-dollars.service';
 import { AccountCop, AccountCopService } from '../../../../../core/services/account-cop.service'; // Assuming this is the correct import path
 import { InputNumberModule } from 'primeng/inputnumber';
+ // Assuming this is the correct import path
 
 
 @Component({
@@ -39,11 +40,8 @@ export class AsignacionesVentasComponent implements OnInit {
   filteredSales: SellDollar[] = [];
   accounts: AssignAccount[] = [];
   accountCops: AccountCop[] = [];
-
-
-
-
   loading: boolean = false;
+  isMobile: boolean = false;
 
 
   startDate: Date | null = null;
@@ -53,12 +51,21 @@ export class AsignacionesVentasComponent implements OnInit {
   displayModal = false;
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
+ 
 
-  constructor(private sellService: SellDollarsService, private supplierService: SupplierService, private accountCopService: AccountCopService ) {}
+  constructor(private sellService: SellDollarsService, private supplierService: SupplierService, private accountCopService: AccountCopService) {}
 
   ngOnInit(): void {
     this.loadSales();
     this.loadSuppliers();
+    this.loading = true;
+
+     this.isMobile = window.innerWidth <= 768;
+  // Si quieres que detecte cambios dinámicos:
+  window.addEventListener('resize', () => {
+    this.isMobile = window.innerWidth <= 768;
+  });
+    
     this.accountCopService.getAll().subscribe({
   next: (accounts) => this.accountCops = accounts,
   error: () => alert('Error cargando cuentas COP')
@@ -91,6 +98,7 @@ export class AsignacionesVentasComponent implements OnInit {
       }
     });
   }
+
 
   get totalPesos(): number {
     return (this.selected?.dollars || 0) * (this.saleRate || 0);

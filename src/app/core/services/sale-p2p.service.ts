@@ -17,8 +17,10 @@ export interface SaleP2PDto {
   dollarsUs:number;
 }
 
+
 @Injectable({
   providedIn: 'root'
+
 })
 export class SaleP2PService {
   private apiUrl = `${environment.apiUrl}/saleP2P`;
@@ -37,6 +39,11 @@ export class SaleP2PService {
   return this.http.post(url, accounts, { responseType: 'text' as 'json' });
 }
 
+  getAllSales(): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/today/all-binance`;
+    console.log('Fetching all sales from:', url);
+    return this.http.get<SaleP2PDto[]>(url);
+  }
 
 
   getAllSalesToday(account: string): Observable<SaleP2PDto[]> {
@@ -44,3 +51,4 @@ export class SaleP2PService {
     return this.http.get<SaleP2PDto[]>(url);
   }
 }
+

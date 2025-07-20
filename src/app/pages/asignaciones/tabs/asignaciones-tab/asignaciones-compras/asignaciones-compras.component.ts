@@ -12,6 +12,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -26,7 +27,8 @@ import { MenuItem } from 'primeng/api';
     CalendarModule,
     DropdownModule,
     ProgressSpinnerModule,
-    PanelMenuModule
+    PanelMenuModule,
+    PaginatorModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
@@ -63,6 +65,10 @@ export class AsignacionesComprasComponent implements OnInit {
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
   loading: boolean = false;
+  isMobile: boolean = false;
+
+  page = 0; // Índice de página (empieza en 0)
+  rows = 5; // Elementos por página 
 
   constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
@@ -70,6 +76,11 @@ export class AsignacionesComprasComponent implements OnInit {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
+     this.isMobile = window.innerWidth <= 768;
+  // Si quieres que detecte cambios dinámicos:
+  window.addEventListener('resize', () => {
+    this.isMobile = window.innerWidth <= 768;
+  });
   }
 
 
@@ -103,7 +114,16 @@ export class AsignacionesComprasComponent implements OnInit {
 }
 
 
-  
+get paginatedDeposits() {
+  const start = this.page * this.rows;
+  const end = start + this.rows;
+  return this.filteredDeposits.slice(start, end);
+}
+
+onPageChange(event: any) {
+  this.page = event.page;
+  this.rows = event.rows;
+}
 
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
@@ -151,4 +171,9 @@ console.log('Datos a enviar compra:', buyData);
       }
     });
   }
+
+
+
+
+  
 }

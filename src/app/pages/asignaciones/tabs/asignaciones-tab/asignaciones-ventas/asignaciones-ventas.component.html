@@ -6,49 +6,76 @@
   </p>
 
   <!-- 1) Tabla Responsiva de ventas no asignadas -->
-  <p-table
-    *ngIf="!loading"
-    [value]="filteredSales"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[5,10,25]"
-    [scrollable]="true"
-    scrollDirection="horizontal"
-    [tableStyle]="{ 'min-width':'100%' }"
-    sortMode="single"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="nameAccount">
-          Cuenta <p-sortIcon field="nameAccount"></p-sortIcon>
-        </th>
-        <th pSortableColumn="dollars">
-          Monto <p-sortIcon field="dollars"></p-sortIcon>
-        </th>
-        <th pSortableColumn="date">
-          Fecha <p-sortIcon field="date"></p-sortIcon>
-        </th>
-        <th>Acción</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-sale>
-      <tr>
-        <td>{{ sale.nameAccount }}</td>
-        <td>{{ sale.dollars | number:'1.0-2' }}</td>
-        <td>{{ sale.date | date:'short' }}</td>
-        <td>
-          <button
-            pButton
-            type="button"
-            icon="pi pi-pencil"
-            label="Asignar"
-            class="p-button-sm p-button-success"
-            (click)="openAssignModal(sale)"
-          ></button>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+ <p-table
+  *ngIf="!isMobile && !loading"
+  [value]="filteredSales"
+  [paginator]="true"
+  [rows]="10"
+  [rowsPerPageOptions]="[5,10,25]"
+  [scrollable]="true"
+  scrollDirection="horizontal"
+  [tableStyle]="{ 'min-width':'100%' }"
+  sortMode="single"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="nameAccount">
+        Cuenta <p-sortIcon field="nameAccount"></p-sortIcon>
+      </th>
+      <th pSortableColumn="dollars">
+        Monto <p-sortIcon field="dollars"></p-sortIcon>
+      </th>
+      <th pSortableColumn="date">
+        Fecha <p-sortIcon field="date"></p-sortIcon>
+      </th>
+      <th>Acción</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-sale>
+    <tr>
+      <td>{{ sale.nameAccount }}</td>
+      <td>{{ sale.dollars | number:'1.0-2' }}</td>
+      <td>{{ sale.date | date:'short' }}</td>
+      <td>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-pencil"
+          label="Asignar"
+          class="p-button-sm p-button-success"
+          (click)="openAssignModal(sale)">
+        </button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<!-- 📱 Vista móvil -->
+<div *ngIf="isMobile && !loading">
+  <div *ngFor="let dep of filteredSales" class="card-mobile">
+    <div class="card-content">
+      <div class="card-field"><strong>Cuenta:</strong> {{ dep.nameAccount }}</div>
+      <div class="card-field"><strong>Fecha:</strong> {{ dep.date | date: 'short' }}</div>
+      <div class="card-field"><strong>Monto:</strong> {{ dep.dollars | number:'1.0-2' }}</div>
+    </div>
+    <div class="card-button">
+      <button
+        pButton
+        type="button"
+        label="Asignar"
+        icon="pi pi-check"
+        class="p-button-success p-button-sm"
+        (click)="openAssignModal(dep)">
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
 </div>
 
 <!-- 2) Diálogo de asignación -->

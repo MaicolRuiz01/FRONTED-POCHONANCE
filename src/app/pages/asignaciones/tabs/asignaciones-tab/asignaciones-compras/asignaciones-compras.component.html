@@ -8,8 +8,10 @@
    <p *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
   </p>
-  
+
+  <div *ngIf="!loading">
     <p-table
+      *ngIf="!isMobile"
       [value]="filteredDeposits"
       [paginator]="true"
       [rows]="10"
@@ -18,7 +20,6 @@
       scrollDirection="horizontal"
       [tableStyle]="{ 'min-width': '10rem' }"
       sortMode="single"
-      *ngIf="!loading"
     >
       <ng-template pTemplate="header">
         <tr>
@@ -52,7 +53,39 @@
       </ng-template>
     </p-table>
     
+    <!-- Versión móvil (formato tipo tarjeta) -->
+<div *ngIf="isMobile" >
+  <div *ngFor="let dep of filteredDeposits" class="card-mobile">
+    <div class="card-content">
+      <div class="card-field"><strong>Cuenta:</strong> {{ dep.nameAccount }}</div>
+      <div class="card-field"><strong>Monto:</strong> {{ dep.dollars | number:'1.0-2' }}</div>
+      <div class="card-field"><strong>Fecha:</strong> {{ dep.date | date:'short' }}</div>
+    </div>
+    <div class="card-button">
+      <button
+        pButton
+        type="button"
+        label="Asignar"
+        class="p-button-sm p-button-success"
+        (click)="openAssignModal(dep)"
+      ></button>
+    </div>
+  </div>
+
+  <p-paginator
+    [rows]="rows"
+    [totalRecords]="filteredDeposits.length"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    (onPageChange)="onPageChange($event)"
+    [style]="{ 'margin-top': '1rem' }"
     
+  ></p-paginator> 
+  
+</div>
+
+
+  </div>
+
     <p-dialog
   header="Asignar Compra"
   [(visible)]="displayModal"

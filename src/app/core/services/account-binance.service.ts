@@ -13,6 +13,9 @@ export interface AccountBinance {
   userBinance: string;
   balance: number;
   address: string;
+  tipo: string;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
 @Injectable({

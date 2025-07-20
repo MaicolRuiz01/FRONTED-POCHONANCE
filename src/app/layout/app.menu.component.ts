@@ -41,7 +41,7 @@ export class AppMenuComponent implements OnInit {
                     routerLink: ['/proveedor']
                 },
                 {
-                    label: 'MOVIMIENTOS', icon: 'pi pi-fw pi-exchange',
+                    label: 'MOVIMIENTOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                     routerLink: ['/movimientos']
                 }
 

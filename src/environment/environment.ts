@@ -4,6 +4,6 @@ export const environment = {
 
   //apiUrl: 'http://localhost:8080'
 
-  apiUrl: 'https://backend-binance-resumen-production.up.railway.app'
+  //apiUrl: 'https://backend-binance-resumen-production.up.railway.app'
 
   };

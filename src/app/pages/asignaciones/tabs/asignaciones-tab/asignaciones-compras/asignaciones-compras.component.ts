@@ -65,7 +65,6 @@ export class AsignacionesComprasComponent implements OnInit {
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
-  loading: boolean = false;
   isMobile: boolean = false;
 
   page = 0; // Índice de página (empieza en 0)

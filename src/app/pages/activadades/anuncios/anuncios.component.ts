@@ -34,15 +34,18 @@ export class AnunciosComponent implements OnInit {
 
   ngOnInit(): void {
     this.cols = [
-      { field: 'precio', header: 'Precio' },
-      { field: 'moneda', header: 'Moneda' },
-      { field: 'fiat', header: 'Fiat' },
-      { field: 'minimo', header: 'Mínimo' },
-      { field: 'maximo', header: 'Máximo' },
-      { field: 'metodoPago', header: 'Método de Pago' },
-      { field: 'vendedor', header: 'Vendedor' },
-      { field: 'tipo', header: 'Tipo' }
-    ];
+  { field: 'cuenta', header: 'Cuenta' },
+  { field: 'precio', header: 'Precio' },
+  { field: 'moneda', header: 'Moneda' },
+  { field: 'fiat', header: 'Fiat' },
+  { field: 'minimo', header: 'Mínimo' },
+  { field: 'maximo', header: 'Máximo' },
+  { field: 'metodoPago', header: 'Método de Pago' },
+  { field: 'vendedor', header: 'Vendedor' },
+  { field: 'tipo', header: 'Tipo' },
+  { field: 'horaAnuncio', header: 'Fecha / Hora' }
+];
+
 
     this.carouselResponsiveOptions = [
       { breakpoint: '1024px', numVisible: 3, numScroll: 1 },
@@ -54,26 +57,45 @@ export class AnunciosComponent implements OnInit {
   }
 
   loadAnuncios() {
-    this.anunciosService.getAnuncios({
-      asset: 'USDT',
-      fiat: 'COP',
-      payTypes: ['Nequi'],
-      page: 1,
-      rows: 20
-    }).subscribe(data => {
-      this.products = data.map(anuncio => ({
-        ...anuncio,
-        showButton: false
-      }));
+  this.anunciosService.getAnuncios({
+    asset: 'USDT',
+    fiat: 'COP',
+    payTypes: ['Nequi'],
+    page: 1,
+    rows: 20
+  }).subscribe(data => {
+    // Para la tabla
+    this.products = data.map(anuncio => ({
+      ...anuncio,
+      showButton: false
+    }));
 
-      this.cards = data.map(anuncio => ({
-        name: anuncio.vendedor,
-        cop: anuncio.precio,
-        usdtAmount: '1',
-        range: `Mín: ${anuncio.minimo} - Máx: ${anuncio.maximo}`
-      }));
-    });
-  }
+    // Agrupar por cuenta
+    const agrupado = data.reduce((acc, anuncio) => {
+      if (!acc[anuncio.cuenta]) {
+        acc[anuncio.cuenta] = {
+          cuenta: anuncio.cuenta,
+          totalPrecio: 0,
+          totalMinimo: 0,
+          totalMaximo: 0
+        };
+      }
+      acc[anuncio.cuenta].totalPrecio += parseFloat(anuncio.precio);
+      acc[anuncio.cuenta].totalMinimo += parseFloat(anuncio.minimo);
+      acc[anuncio.cuenta].totalMaximo += parseFloat(anuncio.maximo);
+      return acc;
+    }, {} as Record<string, { cuenta: string; totalPrecio: number; totalMinimo: number; totalMaximo: number }>);
+
+    // Pasar a cards
+    this.cards = Object.values(agrupado).map(item => ({
+      name: item.cuenta,
+      cop: item.totalPrecio.toFixed(2),
+      usdtAmount: '1',
+      range: `Mín: ${item.totalMinimo} - Máx: ${item.totalMaximo}`
+    }));
+  });
+}
+
 
   calculatePesos(product: any) {
     const feeNumber = parseFloat(product.fee || '0');

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
 import { TableModule } from 'primeng/table';
@@ -35,7 +35,7 @@ import { MenuItem } from 'primeng/api';
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
 })
-export class AsignacionesComprasComponent implements OnInit {
+export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 
    items: MenuItem[] = [];
 
@@ -52,7 +52,7 @@ export class AsignacionesComprasComponent implements OnInit {
       }
     ];
   }
-  
+
   allDeposits: BuyDollarsDto[] = [];
   filteredDeposits: BuyDollarsDto[] = [];
 
@@ -67,6 +67,7 @@ export class AsignacionesComprasComponent implements OnInit {
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
   loading: boolean = false;
+  isMobile: boolean = false;
 
   constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
 
@@ -74,6 +75,10 @@ export class AsignacionesComprasComponent implements OnInit {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
+    this.isMobile = window.innerWidth <= 768;
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth <= 768;
+    });
   }
 
 
@@ -92,7 +97,7 @@ export class AsignacionesComprasComponent implements OnInit {
       }
     });
   }
-  
+
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: data => this.suppliers = data,
@@ -107,7 +112,7 @@ export class AsignacionesComprasComponent implements OnInit {
 }
 
 
-  
+
 
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;

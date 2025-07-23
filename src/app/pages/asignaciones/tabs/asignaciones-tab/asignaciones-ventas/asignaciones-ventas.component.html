@@ -1,13 +1,10 @@
-<!-- asignaciones-ventas.component.html -->
 <div class="card">
   <h2>Asignar Ventas No P2P</h2>
   <p *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
   </p>
-
-  <!-- 1) Tabla Responsiva de ventas no asignadas -->
   <p-table
-    *ngIf="!loading"
+    *ngIf="!isMobile && !loading"
     [value]="filteredSales"
     [paginator]="true"
     [rows]="10"
@@ -43,12 +40,33 @@
             icon="pi pi-pencil"
             label="Asignar"
             class="p-button-sm p-button-success"
-            (click)="openAssignModal(sale)"
-          ></button>
+            (click)="openAssignModal(sale)">
+          </button>
         </td>
       </tr>
     </ng-template>
   </p-table>
+
+<!-- 📱 Vista móvil -->
+  <div *ngIf="isMobile && !loading">
+    <div *ngFor="let dep of filteredSales" class="card-mobile">
+      <div class="card-content">
+        <div class="card-field"><strong>Cuenta:</strong> {{ dep.nameAccount }}</div>
+        <div class="card-field"><strong>Fecha:</strong> {{ dep.date | date: 'short' }}</div>
+        <div class="card-field"><strong>Monto:</strong> {{ dep.dollars | number:'1.0-2' }}</div>
+      </div>
+      <div class="card-button">
+        <button
+          pButton
+          type="button"
+          label="Asignar"
+          icon="pi pi-check"
+          class="p-button-success p-button-sm"
+          (click)="openAssignModal(dep)">
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 2) Diálogo de asignación -->
@@ -74,7 +92,6 @@
         class="w-full"
       />
     </div>
-
     <!-- Proveedor -->
     <div class="p-field p-col-12 p-md-6">
       <label>Proveedor</label>
@@ -86,7 +103,6 @@
         placeholder="Selecciona proveedor"
       ></p-dropdown>
     </div>
-
     <!-- Tasa y Total en Pesos -->
     <div class="p-field p-col-12 p-md-6">
       <label>Tasa de venta</label>
@@ -106,7 +122,6 @@
         class="w-full"
       />
     </div>
-
     <!-- Cuentas COP Dinámicas -->
     <div class="p-col-12 p-mt-3">
       <h3>Cuentas COP</h3>
@@ -147,7 +162,6 @@
         ></button>
       </div>
     </ng-container>
-
     <!-- Monto a Proveedor -->
     <div class="p-field p-col-12 p-md-6 p-mt-3">
       <label>Monto a proveedor</label>
@@ -159,7 +173,6 @@
       />
     </div>
   </div>
-
   <ng-template pTemplate="footer">
     <button
       pButton

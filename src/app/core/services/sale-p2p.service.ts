@@ -30,19 +30,20 @@ export class SaleP2PService {
   }
 
   assignAccounts(
-  saleId: number,
-  accounts: { amount: number, nameAccount: string, accountCop: number | null }[]
-): Observable<any> {
-  const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
-  return this.http.post(url, accounts, { responseType: 'text' as 'json' });
-}
+    saleId: number,
+    accounts: { amount: number, nameAccount: string, accountCop: number | null }[]): Observable<any> {
+    const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
+    return this.http.post(url, accounts, { responseType: 'text' as 'json' });
+  }
 
-
+  getAllSales(): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/today/all-binance`;
+    console.log('Fetching all sales from:', url);
+    return this.http.get<SaleP2PDto[]>(url);
+  }
 
   getAllSalesToday(account: string): Observable<SaleP2PDto[]> {
     const url = `${this.apiUrl}/today?account=${account}`;
     return this.http.get<SaleP2PDto[]>(url);
   }
-
-
 }

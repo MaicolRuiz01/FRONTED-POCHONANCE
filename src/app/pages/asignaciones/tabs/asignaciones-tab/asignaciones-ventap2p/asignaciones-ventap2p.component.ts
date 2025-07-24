@@ -75,11 +75,8 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.loading = true;
     this.saleService.getAllSales().subscribe({
       next: (data) => {
-        console.log('Ventas P2P cargadas:', data);
-
         this.allAccountsp2p = data; // ✅ se cargan directamente
         this.loading = false;
-        console.log('estado loading', this.loading);
       },
       error: (err) => {
         console.error('Error al cargar ventas P2P:', err);

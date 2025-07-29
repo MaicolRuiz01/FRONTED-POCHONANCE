@@ -17,6 +17,7 @@ import { ButtonModule } from 'primeng/button';
 export class CajaComponent implements OnInit {
   balances: BalanceGeneral[] = [];
   showDetailsModal = false;
+  showAdditionalInfoModal = false;
   selectedBalance: BalanceGeneral | null = null;
 
   constructor(private balanceService: BalanceGeneralService) {}
@@ -41,8 +42,15 @@ export class CajaComponent implements OnInit {
     this.showDetailsModal = true;
   }
 
+  showAdditionalInfo(): void {
+    // Implement logic to show additional information
+    this.showAdditionalInfoModal = true;
+  }
+
+
   closeModal(): void {
     this.showDetailsModal = false;
+    this.showAdditionalInfoModal = false;
     this.selectedBalance = null;
   }
 }

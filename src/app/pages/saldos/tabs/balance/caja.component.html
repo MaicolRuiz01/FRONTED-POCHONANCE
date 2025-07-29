@@ -35,9 +35,25 @@
     <p><strong>Total Ventas Generales (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency: 'USD' }}</p>
     <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency: 'USD' }}</p>
   </div>
+<br>
+  <button pButton label="Inf. adicional"  class="p-button-info" (click)="showAdditionalInfo()"></button>
+
+  <p-dialog [(visible)]="showAdditionalInfoModal" [modal]="false" header="inf adicional balance">
+    
+    <div *ngIf="selectedBalance">
+    <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
+    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'USD' }}</p>
+   
+  </div>
+
+
+
+  </p-dialog>
 
   <ng-template pTemplate="footer">
     <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
 </p-dialog>
+
+
 

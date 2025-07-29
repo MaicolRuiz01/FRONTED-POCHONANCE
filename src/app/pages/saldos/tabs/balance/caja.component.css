@@ -1,49 +1,42 @@
-.detail-blocks .detail-block {
-  color: #333;
-  font-size: 16px;
-  border-radius: 5px;
-}
-
-.p-dialog .p-button {
-  border-radius: 5px;
-}
-.detail-block {
-  background-color: #defede;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 4px;
-}
-.detail-value {
-  float: right;
-  font-weight: bold;
-}
-/* caja.component.css */
-/* Custom Style for the Card */
-.custom-card {
-  width: 250px; /* Tamaño más pequeño */
-  margin: 10px;
+/* Estilo general para ambos diálogos */
+.custom-dialog .p-dialog {
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más suave */
-  background-color: #e0f7fa; /* Azul suave para el fondo */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background-color: #e0f7fa; /* mismo azul claro */
 }
 
-.custom-card .p-card-header {
-  background-color: #0288d1; /* Un azul más fuerte para el header */
+.custom-dialog .p-dialog-header {
+  background-color: #0288d1;
   color: white;
   font-size: 1.2rem;
   text-align: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
-.balance-info {
+.custom-dialog .p-dialog-content {
+  padding: 20px;
   font-size: 1rem;
   color: #333;
+  background-color: #defede; /* Verde claro como en .detail-block */
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
-.balance-info strong {
-  color: #0288d1; /* Color azul para los textos importantes */
+.custom-dialog .p-button {
+  border-radius: 5px;
 }
 
-/* Añadir un color destacado cuando se pasa el ratón */
-.custom-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada al pasar el ratón */
+/* Opcional: mejora visual de los detalles */
+.custom-dialog .detail-block {
+  background-color: #defede;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.custom-dialog .detail-value {
+  float: right;
+  font-weight: bold;
+  color: #0288d1;
 }

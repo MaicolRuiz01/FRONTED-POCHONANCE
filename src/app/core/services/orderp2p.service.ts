@@ -50,5 +50,10 @@ export class OrderP2PService {
     return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/saleP2P/today`, { params });
   }
 
+  getUltimasOrdenesTodas(cantidad: number): Observable<OrderP2PDto[]> {
+  const params = new HttpParams().set('cantidad', cantidad.toString());
+  return this.http.get<OrderP2PDto[]>(`${this.apiUrl}/ultimas-todas`, { params });
+}
+
 
 }

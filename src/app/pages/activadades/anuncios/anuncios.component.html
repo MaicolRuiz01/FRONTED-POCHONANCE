@@ -1,13 +1,6 @@
 <!-- Carousel completamente responsivo -->
-<p-carousel
-  [value]="cards"
-  [numVisible]="getNumVisible()"
-  [numScroll]="1"
-  [circular]="true"
-  [responsiveOptions]="carouselResponsiveOptions"
-  [showIndicators]="true"
-  [showNavigators]="true"
-  class="elva-carousel">
+<p-carousel [value]="cards" [numVisible]="getNumVisible()" [numScroll]="1" [circular]="true"
+  [responsiveOptions]="carouselResponsiveOptions" [showIndicators]="true" [showNavigators]="true" class="elva-carousel">
 
   <ng-template pTemplate="item" let-card>
     <div class="carousel-item-wrapper p-2">
@@ -42,82 +35,46 @@
   <div class="col-12">
     <div class="card px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
 
-      <!-- Wrapper responsivo para la tabla -->
-      <div class="table-responsive-wrapper">
-        <p-table
-          #dt
-          [value]="products"
-          [columns]="cols"
-          [rows]="getTableRows()"
-          [paginator]="true"
-          [rowsPerPageOptions]="[5, 10, 20, 30]"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
-          [(selection)]="selectedProducts"
-          selectionMode="multiple"
-          [rowHover]="true"
-          dataKey="id"
-          [responsive]="true"
-          styleClass="p-datatable-responsive-demo">
-
-          <!-- Header responsivo -->
+      <!-- Nueva tabla para mostrar órdenes P2P -->
+      <div class="table-responsive-wrapper mt-4">
+        <p-table [value]="ultimasOrdenes" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 25]"
+          [scrollable]="true" scrollDirection="horizontal" [tableStyle]="{ 'min-width': '60rem' }" sortMode="multiple"
+          responsiveLayout="scroll" class="mt-4">
           <ng-template pTemplate="header">
             <tr>
-              <th style="width: 3rem" class="checkbox-column">
-                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              <th pSortableColumn="createTime">
+                Hora <p-sortIcon field="createTime"></p-sortIcon>
               </th>
-              <th *ngFor="let col of cols"
-                  pSortableColumn="{{col.field}}"
-                  [ngClass]="getColumnClass(col.field)">
-                <div class="column-header">
-                  <span class="column-title">{{col.header}}</span>
-                  <p-sortIcon field="{{col.field}}"></p-sortIcon>
-                </div>
+              <th pSortableColumn="nameAccount">
+                Cuenta <p-sortIcon field="nameAccount"></p-sortIcon>
+              </th>
+              <th pSortableColumn="amount">
+                Valor <p-sortIcon field="amount"></p-sortIcon>
+              </th>
+              <th pSortableColumn="unitPrice">
+                Tasa <p-sortIcon field="unitPrice"></p-sortIcon>
+              </th>
+              <th pSortableColumn="totalPrice">
+                Pesos <p-sortIcon field="totalPrice"></p-sortIcon>
+              </th>
+              <th pSortableColumn="orderStatus">
+                Estado <p-sortIcon field="orderStatus"></p-sortIcon>
               </th>
             </tr>
           </ng-template>
 
-          <!-- Body responsivo -->
-          <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+          <ng-template pTemplate="body" let-orden>
             <tr>
-              <td class="checkbox-column">
-                <p-tableCheckbox [value]="product"></p-tableCheckbox>
-              </td>
-              <td *ngFor="let col of cols" [ngClass]="getColumnClass(col.field)">
-                <!-- Campo especial fee con input y botón -->
-                <ng-container *ngIf="col.field === 'fee'; else other_fields">
-                  <div class="fee-input-group">
-                    <input
-                      pInputText
-                      type="text"
-                      [(ngModel)]="product.fee"
-                      class="fee-input"
-                      [placeholder]="'Ingrese fee'"
-                      inputmode="numeric">
-                      
-                    <button
-                      *ngIf="product.showButton"
-                      pButton
-                      type="button"
-                      class="p-button-success p-button-rounded fee-button"
-                      (click)="calculatePesos(product)"
-                      [title]="'Calcular'">
-                      <i class="pi pi-check"></i>
-                    </button>
-                  </div>
-                </ng-container>
-
-                <!-- Otros campos con etiquetas para móviles -->
-                <ng-template #other_fields>
-                  <div class="cell-content">
-                    <span class="cell-label">{{ col.header }}:</span>
-                    <span class="cell-value">{{ product[col.field] }}</span>
-                  </div>
-                </ng-template>
-              </td>
+              <td>{{ orden.createTime | date: 'shortTime' }}</td>
+              <td>{{ orden.nameAccount }}</td>
+              <td>{{ orden.amount | number: '1.0-2' }}</td>
+              <td>{{ orden.unitPrice | number: '1.0-2' }}</td>
+              <td>{{ orden.totalPrice | currency: 'COP' : 'symbol' : '1.0-0' : 'es-CO' }}</td>
+              <td>{{ orden.orderStatus }}</td>
             </tr>
           </ng-template>
         </p-table>
+
       </div>
     </div>
   </div>

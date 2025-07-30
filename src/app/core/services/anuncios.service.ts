@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface AnuncioDto {
+  cuenta: string;
   precio: string;
   moneda: string;
   fiat: string;
@@ -11,6 +12,7 @@ export interface AnuncioDto {
   metodoPago: string;
   vendedor: string;
   tipo: string;
+  horaAnuncio: string;
 }
 
 @Injectable({

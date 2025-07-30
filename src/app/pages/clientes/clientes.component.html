@@ -1,0 +1,43 @@
+<div class="contenedor-clientes">
+  <div class="header">
+    <h2>Clientes Especiales</h2>
+    <button pButton label="Nuevo Cliente" icon="pi pi-plus" class="p-button-success" (click)="abrirModal()"></button>
+  </div>
+
+  <div class="grid-clientes">
+    <div class="card" *ngFor="let cliente of clientes">
+      <h3>{{ cliente.nombre }}</h3>
+      <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
+      <p><strong>Correo:</strong> {{ cliente.correo }}</p>
+      <p><strong>Saldo:</strong> {{ cliente.saldo | currency:'COP' }}</p>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <p-dialog header="Crear Nuevo Cliente" [(visible)]="displayModal" [modal]="true" [style]="{ width: '400px' }">
+    <form class="p-fluid">
+      <div class="p-field">
+        <label>Nombre</label>
+        <input pInputText [(ngModel)]="nuevoCliente.nombre" name="nombre" />
+      </div>
+      <div class="p-field">
+        <label>Usuario</label>
+        <input pInputText [(ngModel)]="nuevoCliente.nameUser" name="nameUser" />
+      </div>
+      <div class="p-field">
+        <label>Correo</label>
+        <input pInputText [(ngModel)]="nuevoCliente.correo" name="corre" />
+      </div>
+      <div class="p-field">
+        <label>Saldo Inicial</label>
+        <p-inputNumber [(ngModel)]="nuevoCliente.saldo" name="saldo" mode="currency" currency="COP"></p-inputNumber>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayModal = false"></button>
+      <button pButton label="Guardar" icon="pi pi-check" class="p-button-success" (click)="guardarCliente()"></button>
+    </ng-template>
+  </p-dialog>
+</div>
+

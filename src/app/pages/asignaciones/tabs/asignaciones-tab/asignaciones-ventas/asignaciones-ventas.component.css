@@ -4,3 +4,6 @@
   align-items: center;
   height: 200px; /* Puedes ajustar este valor */
 }
+.special-client-row {
+  background-color: #e3f2fd !important; /* azul suave */
+}

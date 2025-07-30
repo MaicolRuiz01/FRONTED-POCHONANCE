@@ -4,6 +4,7 @@
   <button pButton label="Retiro" icon="pi pi-arrow-down" class="p-button-warning" (click)="abrirDialogRetiro()"></button>
   <button pButton label="Depósito" icon="pi pi-arrow-up" class="p-button-info" (click)="abrirDialogDeposito()"></button>
   <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help" (click)="abrirDialogTransferencia()"></button>
+  <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success" (click)="abrirDialogPago()"></button>
 </div>
 <br>
 <hr>
@@ -51,6 +52,17 @@
             [style.width.%]="100"
             [appendTo]="'body'">
         </p-dropdown>
+        <label>Caja</label>
+        <p-dropdown
+          [options]="cajas"
+          [(ngModel)]="selectedCajaId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Selecciona caja"
+          [style.width.%]="100"
+          [appendTo]="'body'">
+        </p-dropdown>
+
 
         <label>Monto</label>
         <input type="number" pInputText [(ngModel)]="montoMovimiento">
@@ -76,6 +88,17 @@
             [style]="{'width':'100%'}"
             [appendTo]="'body'">
         </p-dropdown>
+        <label>Caja</label>
+        <p-dropdown
+          [options]="cajas"
+          [(ngModel)]="selectedCajaId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Selecciona caja"
+          [style.width.%]="100"
+          [appendTo]="'body'">
+        </p-dropdown>
+
 
         <label>Monto</label>
         <input type="number" pInputText [(ngModel)]="montoMovimiento">
@@ -121,5 +144,39 @@
         <button pButton label="Cancelar" (click)="displayDialogTransferencia = false"></button>
         <button pButton label="Confirmar" class="p-button-help" (click)="registrarTransferencia()"></button>
     </p-footer>
+</p-dialog>
+
+<p-dialog header="Registrar Pago Cliente" [(visible)]="displayDialogPago" modal="true">
+  <div class="p-fluid">
+    <label>Cliente</label>
+    <p-dropdown
+      [options]="clientes"
+      [(ngModel)]="selectedClienteId"
+      optionLabel="nombre"
+      optionValue="id"
+      placeholder="Selecciona cliente"
+      [style.width.%]="100"
+      [appendTo]="'body'">
+    </p-dropdown>
+
+    <label>Cuenta COP destino</label>
+    <p-dropdown
+      [options]="cuentas"
+      [(ngModel)]="cuentaPagoId"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Selecciona cuenta COP"
+      [style.width.%]="100"
+      [appendTo]="'body'">
+    </p-dropdown>
+
+    <label>Monto (COP)</label>
+    <input type="number" pInputText [(ngModel)]="montoPago"/>
+  </div>
+
+  <p-footer>
+    <button pButton label="Cancelar" (click)="displayDialogPago = false" class="p-button-text"></button>
+    <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
+  </p-footer>
 </p-dialog>
 

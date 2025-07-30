@@ -73,5 +73,10 @@ export class MovimientoService {
     const url = `${this.apiUrl}/retiros`;
     return this.http.get<MovimientoVistaDto[]>(url);
   }
+  registrarPagoCliente(cuentaId: number, clienteId: number, monto: number) {
+  const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
+  return this.http.post<MovimientoVistaDto>(url, {});
+}
+
 
 }

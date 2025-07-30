@@ -13,7 +13,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { AssignAccount } from '../../../../../core/services/sell-dollars.service';
 import { AccountCop, AccountCopService } from '../../../../../core/services/account-cop.service'; // Assuming this is the correct import path
 import { InputNumberModule } from 'primeng/inputnumber';
-
+import { ClienteService, Cliente } from '../../../../../core/services/cliente.service';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -29,7 +30,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
     ProgressSpinnerModule,
     DropdownModule,
     InputTextModule,     // <— para <input pInputText>
-  InputNumberModule
+  InputNumberModule,
+  RadioButtonModule
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -39,6 +41,10 @@ export class AsignacionesVentasComponent implements OnInit {
   filteredSales: SellDollar[] = [];
   accounts: AssignAccount[] = [];
   accountCops: AccountCop[] = [];
+
+  isSpecialClient: boolean | null = null;
+  clientes: Cliente[] = [];
+  selectedClientId: number | null = null;
 
 
 
@@ -54,7 +60,10 @@ export class AsignacionesVentasComponent implements OnInit {
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
 
-  constructor(private sellService: SellDollarsService, private supplierService: SupplierService, private accountCopService: AccountCopService ) {}
+  constructor(private sellService: SellDollarsService, 
+    private supplierService: SupplierService, 
+    private accountCopService: AccountCopService,
+    private clienteService: ClienteService  ) {}
 
   ngOnInit(): void {
     this.loadSales();
@@ -63,6 +72,11 @@ export class AsignacionesVentasComponent implements OnInit {
   next: (accounts) => this.accountCops = accounts,
   error: () => alert('Error cargando cuentas COP')
 });
+
+  this.clienteService.listar().subscribe({
+  next: (data) => this.clientes = data,
+  error: () => alert('Error cargando clientes especiales')
+  });
   }
 
   loadSales(): void {
@@ -102,12 +116,23 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   openAssignModal(sale: SellDollar): void {
-    this.selected = sale;
-    this.saleRate = null;
-    this.displayModal = true;
-    this.selectedSupplierId = null; 
-     this.accounts = []
+  this.selected = sale;
+  this.saleRate = null;
+  this.selectedSupplierId = null;
+  this.accounts = [];
+
+  if (sale.clienteId) {
+    this.isSpecialClient = true;
+    this.selectedClientId = sale.clienteId;
+  } else {
+    this.isSpecialClient = false;
+    this.selectedClientId = null;
   }
+
+  this.displayModal = true;
+}
+
+
 
   closeModal(): void {
     this.displayModal = false;
@@ -124,18 +149,31 @@ removeAccountField(index: number): void {
 
 
   saveSale(): void {
-    if (!this.selected || !this.saleRate || !this.selectedSupplierId) {
-      alert('Faltan datos obligatorios');
-      return;
-    }
+    if (!this.selected || !this.saleRate || 
+    (this.isSpecialClient && !this.selectedClientId) ||
+    (!this.isSpecialClient && !this.selectedSupplierId)) {
+  alert('Faltan datos obligatorios');
+  return;
+}
+
     const pesos = this.selected.dollars * this.saleRate;
-    const sell: SellDollar = {
-      ...this.selected,
-      tasa: this.saleRate,
-      pesos,
-      supplier: this.selectedSupplierId,
-      accounts: this.accounts
-    };
+
+const sell: SellDollar = {
+  ...this.selected,
+  tasa: this.saleRate,
+  pesos,
+  accounts: this.accounts,
+};
+
+// Agrega solo el campo necesario según el tipo de cliente
+if (this.isSpecialClient) {
+  sell.clienteId = this.selectedClientId!;
+} else {
+  sell.supplier = this.selectedSupplierId!;
+}
+
+
+
     this.sellService.createSellDollar(sell).subscribe({
       next: () => {
         this.closeModal();
@@ -144,4 +182,12 @@ removeAccountField(index: number): void {
       error: err => alert('Error guardando la venta')
     });
   }
+
+  getClienteById(id: number | undefined): Cliente | undefined {
+  return this.clientes.find(c => c.id === id);
+}
+getRowClass(sale: SellDollar): string {
+  return sale.clienteId ? 'special-client-row' : '';
+}
+
 }

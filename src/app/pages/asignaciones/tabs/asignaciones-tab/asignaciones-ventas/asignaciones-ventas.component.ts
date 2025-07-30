@@ -50,7 +50,7 @@ export class AsignacionesVentasComponent implements OnInit {
 
 
   loading: boolean = false;
-
+  isMobile: boolean = false;
 
   startDate: Date | null = null;
   endDate: Date | null = null;
@@ -68,6 +68,12 @@ export class AsignacionesVentasComponent implements OnInit {
   ngOnInit(): void {
     this.loadSales();
     this.loadSuppliers();
+    this.loading = true;
+
+    this.isMobile = window.innerWidth <= 768;
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth <= 768;
+    });
     this.accountCopService.getAll().subscribe({
   next: (accounts) => this.accountCops = accounts,
   error: () => alert('Error cargando cuentas COP')

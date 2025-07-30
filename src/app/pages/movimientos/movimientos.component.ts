@@ -4,7 +4,11 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { CurrencyPipe } from '@angular/common';
-
+import { Caja, CajaService } from '../../core/services/caja.service';
+import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-movimientos',
@@ -13,7 +17,11 @@ import { CurrencyPipe } from '@angular/common';
     TabViewModule,
     TableModule,
     CommonModule,
-    CurrencyPipe
+    CurrencyPipe,
+    DialogModule,
+    FormsModule,
+    ButtonModule,
+    InputTextModule
   ],
   templateUrl: './movimientos.component.html',
   styleUrl: './movimientos.component.css'
@@ -24,7 +32,13 @@ export class MovimientosComponent implements OnInit {
   depositos: MovimientoVistaDto[] = [];
   transferencias: MovimientoVistaDto[] = [];
 
-  constructor(private movimientoService: MovimientoService) {}
+  cajas: Caja[] = [];
+  displayCajaDialog: boolean = false;
+  nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
+
+  constructor(private movimientoService: MovimientoService,
+    private cajaService: CajaService
+  ) {}
 
 
   ngOnInit(): void {
@@ -32,10 +46,27 @@ export class MovimientosComponent implements OnInit {
     this.movimientoService.getRetiros().subscribe(data => this.retiros = data);
     this.movimientoService.getDepositos().subscribe(data => this.depositos = data);
     this.movimientoService.getTransferencias().subscribe(data => this.transferencias = data);
-
+    this.loadCajas();
   }
   
+  loadCajas() {
+    this.cajaService.listar().subscribe(data => this.cajas = data);
+  }
 
+  guardarCaja() {
+    if (!this.nuevaCaja.name || this.nuevaCaja.saldo === undefined) return;
+
+    this.cajaService.crear(this.nuevaCaja).subscribe({
+      next: caja => {
+        this.cajas.push(caja);
+        this.displayCajaDialog = false;
+        this.nuevaCaja = { name: '', saldo: 0 };
+      },
+      error: () => alert('Error al guardar caja')
+    });
+  }
+
+  
 
   
 

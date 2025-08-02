@@ -12,6 +12,7 @@ export interface AssignAccount {
 }
 
 export interface SellDollar {
+  id: number;
   idWithdrawals: string;
   tasa: number;
   dollars: number;
@@ -21,6 +22,7 @@ export interface SellDollar {
   pesos: number;
   accounts: AssignAccount[];
   clienteId?: number;
+  nombresCuentasAsignadas?: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,4 +50,14 @@ export class SellDollarsService {
       map(([ventas, binancePay, usdtSalidas]) => [...ventas, ...binancePay, ...usdtSalidas])
     );
   }
+
+  getSellDto(): Observable<SellDollar[]> {
+    return this.http.get<SellDollar[]>(`${this.apiUrl}/listar-dto`);
+  }
+
+  updateSellDollar(id: number, sell: SellDollar): Observable<any> {
+  return this.http.put(`${this.apiUrl}/${id}`, sell);
+}
+
+
 }

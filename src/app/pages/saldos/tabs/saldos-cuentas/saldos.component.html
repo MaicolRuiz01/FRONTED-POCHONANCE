@@ -12,9 +12,9 @@
         <p>${{ balanceTotalExterno | number:'1.0-0' }} USDT</p>
     </div>
 
-    <div class="saldo-card p-3 border rounded" *ngFor="let caja of cajas">
-    <h4>{{ caja.name }}</h4>
-    <p>${{ caja.saldo | number:'1.0-0' }} COP</p>
+    <div class="saldo-card p-3 border rounded">
+    <h4>Total en Cajas</h4>
+    <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
 </div>
 
     

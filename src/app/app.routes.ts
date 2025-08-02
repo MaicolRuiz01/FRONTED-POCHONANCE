@@ -14,7 +14,7 @@ import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asi
 import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
 import { ProveedorComponent } from './pages/proveedor/proveedor.component';
 import { MovimientosComponent } from './pages/movimientos/movimientos.component';
-
+import { AsignadasComponent } from './pages/historial/container/asignadas/asignadas.component';
 
 
 export const routes: Routes = [  {
@@ -47,7 +47,8 @@ export const routes: Routes = [  {
         path: 'movimientos',
         component: MovimientosComponent
       },
-      {path: 'clientes', component: ClientesComponent}
+      {path: 'clientes', component: ClientesComponent},
+      {path: 'historial', component: AsignadasComponent}
 
   ]
 }, // Nueva ruta

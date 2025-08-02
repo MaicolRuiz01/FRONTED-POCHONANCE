@@ -44,4 +44,9 @@ getLiveBalance(): Observable<{ date: string; saldo: number }> {
     const url = `${this.apiUrl}/live`;
     return this.http.get<{ date: string; saldo: number }>(url);
 }
+
+getTotalCajas(): Observable<{ total: number }> {
+  return this.http.get<{ total: number }>(`${environment.apiUrl}/balance-general/cajas/total`);
+}
+
 }

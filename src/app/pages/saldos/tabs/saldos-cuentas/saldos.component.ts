@@ -13,6 +13,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
+import { BalanceService } from '../../../../core/services/balance.service';
 
 export interface DisplayAccount {
   accountType: string;
@@ -75,7 +76,8 @@ export class SaldosComponent implements OnInit {
     private accountService: AccountBinanceService,
     private cajaService: AccountCopService,
     private messageService: MessageService,
-    private http: HttpClient
+    private http: HttpClient,
+    private balanceService: BalanceService
     
   ) { }
 
@@ -86,6 +88,7 @@ export class SaldosComponent implements OnInit {
     this.getBalanceTotalInterno();
     this.getBalanceTotalExterno();
     this.loadCajas();
+    this.getTotalCajas();
   }
 
   getTotalBalance() {
@@ -216,4 +219,14 @@ export class SaldosComponent implements OnInit {
       error: err => console.error('Error obteniendo tasa de compra:', err)
     });
   }
+
+  totalCajasCop: number = 0;
+
+getTotalCajas() {
+  this.balanceService.getTotalCajas().subscribe({
+    next: res => this.totalCajasCop = res.total,
+    error: err => console.error('Error obteniendo total de cajas:', err)
+  });
+}
+
 }

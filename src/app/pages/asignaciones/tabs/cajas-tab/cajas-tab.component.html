@@ -1,0 +1,32 @@
+
+  <button pButton label="Agregar Caja" icon="pi pi-plus" class="p-button-success" (click)="displayCajaDialog = true"></button>
+  <br><br>
+  <p-table [value]="cajas">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Saldo</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-caja>
+      <tr>
+        <td>{{ caja.name }}</td>
+        <td>{{ caja.saldo | currency:'COP' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
+    <div class="p-fluid">
+      <label>Nombre de Caja</label>
+      <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
+
+      <label>Saldo Inicial</label>
+      <input type="number" pInputText [(ngModel)]="nuevaCaja.saldo" />
+    </div>
+
+    <p-footer>
+      <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
+      <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
+    </p-footer>
+  </p-dialog>

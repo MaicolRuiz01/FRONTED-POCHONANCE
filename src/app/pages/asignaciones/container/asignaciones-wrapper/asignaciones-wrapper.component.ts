@@ -4,6 +4,7 @@ import { CuentasTabComponent } from '../../tabs/cuentas-tab/cuentas-tab.componen
 import { CommonModule } from '@angular/common';
 import { TabViewModule } from 'primeng/tabview';
 import { TraspasosTabComponent } from '../../tabs/traspasos-tab/traspasos-tab.component';
+import { MovimientosComponent } from "../../tabs/cajas-tab/cajas-tab.component";
 
 @Component({
   selector: 'app-asignaciones-wrapper',
@@ -13,8 +14,9 @@ import { TraspasosTabComponent } from '../../tabs/traspasos-tab/traspasos-tab.co
     CuentasTabComponent,
     CommonModule,
     TabViewModule,
-    TraspasosTabComponent
-  ],
+    TraspasosTabComponent,
+    MovimientosComponent
+],
   templateUrl: './asignaciones-wrapper.component.html',
   styleUrl: './asignaciones-wrapper.component.css'
 })

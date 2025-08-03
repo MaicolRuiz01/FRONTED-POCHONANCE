@@ -1,1 +1,58 @@
-<p>buy-tap works!</p>
+<p-toast></p-toast>
+
+<p-table [value]="compras" dataKey="idDeposit" [paginator]="true" [rows]="10">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Fecha</th>
+      <th>Cuenta</th>
+      <th>Dólares</th>
+      <th>Tasa</th>
+      <th>Pesos</th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-compra>
+    <tr>
+      <td>{{ compra.date | date:'medium' }}</td>
+      <td>{{ compra.nameAccount }}</td>
+      <td>{{ compra.dollars }}</td>
+      <td>{{ compra.tasa }}</td>
+      <td>{{ compra.pesos }}</td>
+      <td>
+        <button pButton type="button" icon="pi pi-pencil" class="p-button-warning p-button-sm"
+                (click)="editCompra(compra)">Editar</button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog header="Editar compra" [(visible)]="dialogVisible" [modal]="true" [style]="{width:'400px'}">
+  <ng-container *ngIf="selectedCompra">
+    <div class="p-fluid p-formgrid">
+
+      <div class="p-field">
+        <label>Dólares</label>
+        <p>{{ selectedCompra.dollars }}</p>
+      </div>
+
+      <div class="p-field">
+        <label>Tasa</label>
+        <p-inputNumber [(ngModel)]="selectedCompra.tasa" (onInput)="recalculatePesos()" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="w-full" />
+      </div>
+
+      <div class="p-field">
+        <label>Pesos</label>
+        <p>{{ selectedCompra.pesos | number: '1.2-2' }}</p>
+      </div>
+
+    </div>
+
+    <div class="p-dialog-footer">
+      <button pButton label="Cancelar" class="p-button-text" (click)="dialogVisible=false"></button>
+      <button pButton label="Guardar" class="p-button-success" (click)="saveEdit()"></button>
+    </div>
+  </ng-container>
+</p-dialog>
+
+
+

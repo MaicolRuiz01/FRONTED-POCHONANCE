@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environment/environment';
 
 export interface BuyDollarsDto {
+  id?: number;
   dollars: number;
   tasa: number;
   nameAccount: string;
@@ -38,4 +39,14 @@ export class BuyDollarsService {
       map(([binance, spot, usdt]) => [...binance, ...spot, ...usdt])
     );
   }
+
+  getComprasRegistradas(): Observable<BuyDollarsDto[]> {
+  return this.http.get<BuyDollarsDto[]>(`${environment.apiUrl}/api/buy-dollars/listado`);
+}
+
+updateBuyDollar(id: number, dto: BuyDollarsDto): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
+}
+
+
 }

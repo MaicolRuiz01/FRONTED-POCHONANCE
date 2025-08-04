@@ -11,6 +11,7 @@ export interface BuyDollarsDto {
   nameAccount: string;
   date: Date;
   supplierId: number;
+  supplierName?: string;
   idDeposit: string;
   pesos: number;
 }

@@ -10,6 +10,7 @@ import { SupplierService } from '../../../../core/services/supplier.service';
 import { MessageService } from 'primeng/api';
 import { BuyDollarsDto, BuyDollarsService } from '../../../../core/services/buy-dollars.service';
 import { CommonModule } from '@angular/common';
+import { DropdownModule } from 'primeng/dropdown'; // ⬅️ IMPORTAR ESTO
 
 
 @Component({
@@ -24,6 +25,7 @@ import { CommonModule } from '@angular/common';
     InputTextModule,
     DialogModule,
     FormsModule,
+    DropdownModule
   ],
   templateUrl: './buy-tap.component.html',
   styleUrl: './buy-tap.component.css',
@@ -33,6 +35,7 @@ export class BuyTapComponent implements OnInit {
   compras: BuyDollarsDto[] = [];
   selectedCompra: BuyDollarsDto | null = null;
   dialogVisible = false;
+  suppliers: { id: number; name: string }[] = [];
 
   constructor(
     private buyService: BuyDollarsService,
@@ -42,6 +45,7 @@ export class BuyTapComponent implements OnInit {
 
   ngOnInit() {
     this.loadCompras();
+     this.supplierService.getAllSuppliers().subscribe(s => this.suppliers = s.map(x => ({ id: x.id, name: x.name })));
   }
 
   loadCompras() {

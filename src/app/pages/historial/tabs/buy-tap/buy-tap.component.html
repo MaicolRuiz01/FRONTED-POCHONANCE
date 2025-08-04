@@ -29,7 +29,6 @@
 <p-dialog header="Editar compra" [(visible)]="dialogVisible" [modal]="true" [style]="{width:'400px'}">
   <ng-container *ngIf="selectedCompra">
     <div class="p-fluid p-formgrid">
-
       <div class="p-field">
         <label>Dólares</label>
         <p>{{ selectedCompra.dollars }}</p>
@@ -37,14 +36,30 @@
 
       <div class="p-field">
         <label>Tasa</label>
-        <p-inputNumber [(ngModel)]="selectedCompra.tasa" (onInput)="recalculatePesos()" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="w-full" />
+        <p-inputNumber [(ngModel)]="selectedCompra.tasa"
+                       (onInput)="recalculatePesos()"
+                       mode="decimal"
+                       [minFractionDigits]="2"
+                       [maxFractionDigits]="2"
+                       inputStyleClass="w-full">
+        </p-inputNumber>
       </div>
 
       <div class="p-field">
         <label>Pesos</label>
-        <p>{{ selectedCompra.pesos | number: '1.2-2' }}</p>
+        <p>{{ selectedCompra.pesos | number:'1.2-2' }}</p>
       </div>
 
+      <div class="p-field">
+        <label>Proveedor</label>
+        <p-dropdown [options]="suppliers"
+                    optionLabel="name"
+                    optionValue="id"
+                    [(ngModel)]="selectedCompra.supplierId"
+                    [appendTo]="'body'"
+                    placeholder="Seleccione proveedor">
+        </p-dropdown>
+      </div>
     </div>
 
     <div class="p-dialog-footer">
@@ -53,6 +68,7 @@
     </div>
   </ng-container>
 </p-dialog>
+
 
 
 

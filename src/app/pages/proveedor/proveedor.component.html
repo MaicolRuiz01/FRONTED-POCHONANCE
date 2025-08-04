@@ -11,18 +11,30 @@
   </div>
 
   <!-- Contenedor de las tarjetas de proveedor -->
-  <div class="p-card-container">
-    <div *ngFor="let supplier of suppliers" class="p-col-12 p-md-4 p-lg-3">
-      <p-card header="{{ supplier?.name }}" styleClass="account-card" (click)="onSelectSupplier(supplier)">
-        <ng-template pTemplate="content">
-          <div class="account-details">
-            <p><strong>Balance: </strong>{{ supplier?.balance | currency }}</p>
-            <p><strong>Último pago: </strong>{{ supplier?.lastPaymentDate | date: 'short' }}</p>
+  <div class="p-grid p-justify-center p-card-container">
+  <div *ngFor="let supplier of suppliers" class="card-wrapper">
+    <p-card styleClass="account-card" (click)="onSelectSupplier(supplier)">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-user" style="margin-right: 8px;"></i> {{ supplier?.name }}
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+        <div class="account-details">
+          <div class="card-row">
+            <span class="label">Balance:</span>
+            <span class="value">{{ supplier?.balance | currency:'USD' }}</span>
           </div>
-        </ng-template>
-      </p-card>
-    </div>
+          <div class="card-row">
+            <span class="label">Último pago:</span>
+            <span class="value">{{ supplier?.lastPaymentDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </ng-template>
+    </p-card>
   </div>
+</div>
 
   <p-dialog header="Pagos del Proveedor" [(visible)]="showPagosDialog" [modal]="true" [style]="{width: '70vw'}"
     [closable]="true" (onHide)="showPagosDialog = false">

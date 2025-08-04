@@ -114,15 +114,6 @@ accountCops: any[] = []; // Cuentas COP que puedes asignar
   });
 }
 
-
-
-
-addAccountField() {
-  if (this.editableSale?.accounts) {
-    this.editableSale.accounts.push({ accountCop: null, amount: 0 });
-  }
-}
-
 closeEditDialog() {
   this.displayEditDialog = false;
   this.editableSale = null;
@@ -159,13 +150,6 @@ saveEdit() {
     }
   });
 }
-
-
-
-
-
-
-
 loadSuppliers(): void {
   this.supplierService.getAllSuppliers().subscribe({
     next: (data: Supplier[]) => this.suppliers = data,
@@ -173,13 +157,25 @@ loadSuppliers(): void {
   });
 }
 
-loadAccountCops(): void {
-  this.accountCopService.getAll().subscribe({
-    next: (data: AccountCop[]) => this.accountCops = data,
-    error: () => console.error('Error cargando cuentas COP')
+addAccountField() {
+  if (!this.editableSale.accounts) {
+    this.editableSale.accounts = [];
+  }
+
+  this.editableSale.accounts.push({
+    accountCop: this.accountCops.length > 0 ? this.accountCops[0].id : null,
+    amount: 0
   });
 }
 
-
+loadAccountCops(): void {
+  this.accountCopService.getAll().subscribe({
+    next: (data: AccountCop[]) => {
+      this.accountCops = data.filter(c => c.name); // filtramos nulos
+      console.log('✅ Cuentas COP cargadas:', this.accountCops);
+    },
+    error: () => console.error('❌ Error cargando cuentas COP')
+  });
+}
 
 }

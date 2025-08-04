@@ -42,3 +42,9 @@
 .p-button {
   margin: 5px;
 }
+
+.p-inputtext-sm {
+  transform: scale(0.85); /* reduce el tamaño total del calendario */
+  transform-origin: top left;
+  width: 100%; max-width: 200px;
+}

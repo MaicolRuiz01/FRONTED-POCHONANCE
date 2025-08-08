@@ -6,7 +6,6 @@ import { CajaComponent } from './pages/saldos/tabs/balance/caja.component';
 import { CompletadaComponent } from './pages/cripto/completada/completada.component';
 import { SaldosComponent } from './pages/saldos/tabs/saldos-cuentas/saldos.component';
 
-import { GastosComponent } from './pages/saldos/tabs/gastos/gastos.component';
 import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
 import { SaldosTabComponent } from './pages/saldos/container/saldos-tab.component';
 import { ClientesComponent } from './pages/clientes/clientes.component';
@@ -40,7 +39,7 @@ export const routes: Routes = [  {
     {
         path: 'cuentas/:id/ventas',
         loadComponent: () =>
-          import('./pages/asignaciones/tabs/cuentas-tab/lista-ventas/lista-ventas.component')
+          import('./pages/saldos/tabs/cuentas-tab/lista-ventas/lista-ventas.component')
             .then(m => m.ListaVentasComponent)
       },
       {

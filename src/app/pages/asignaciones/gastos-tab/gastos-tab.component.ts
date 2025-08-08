@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { GastoService, Gasto } from '../../../../core/services/gasto.service';
-import { AccountCop, AccountCopService } from '../../../../core/services/account-cop.service';
+import { GastoService, Gasto } from '../../../core/services/gasto.service';
+import { AccountCop, AccountCopService } from '../../../core/services/account-cop.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { SharedModule } from '../../../../shared/shared.module';
+import { SharedModule } from '../../../shared/shared.module';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -25,8 +25,8 @@ import { CalendarModule } from 'primeng/calendar';
     InputTextModule,
     CalendarModule
   ],
-  templateUrl: './gastos.component.html',
-  styleUrls: ['./gastos.component.css']
+  templateUrl: './gastos-tab.component.html',
+  styleUrls: ['./gastos-tab.component.css']
 })
 export class GastosComponent implements OnInit {
   gastos: Gasto[] = [];

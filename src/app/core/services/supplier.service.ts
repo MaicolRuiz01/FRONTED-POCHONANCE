@@ -14,13 +14,18 @@ export interface Supplier {
     providedIn: 'root',
   })
   export class SupplierService {
-    private readonly apiUrl = `${environment.apiUrl}/supplier`;
+    private readonly apiUrl = `${environment.apiUrl}/supplier`;  // Asegúrate de que la URL sea correcta
   
     constructor(private http: HttpClient) {}
   
     getAllSuppliers(): Observable<Supplier[]> {
       return this.http.get<Supplier[]>(this.apiUrl);
     }
+
+    createSupplier(data: any): Observable<Supplier> {
+      return this.http.post<Supplier>(`http://localhost:8080/supplier/suppliers`, data);
+    }
+
     // Obtener el Supplier con ID 1
     getSupplier(): Observable<Supplier> {
       return this.http.get<Supplier>(`${this.apiUrl}/1`);  // Asegúrate que el endpoint esté configurado correctamente

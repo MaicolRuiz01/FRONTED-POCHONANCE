@@ -24,7 +24,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 export class ClientesComponent implements OnInit {
   clientes: Cliente[] = [];
   displayModal = false;
-  nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0 };
+  nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0 , wallet: ''};
 
   constructor(private clienteService: ClienteService) {}
 
@@ -40,7 +40,7 @@ export class ClientesComponent implements OnInit {
   }
 
   abrirModal(): void {
-    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0 };
+    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0 , wallet: ''};
     this.displayModal = true;
   }
 

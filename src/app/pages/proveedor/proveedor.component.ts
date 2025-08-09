@@ -2,14 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { SupplierService, Supplier } from '../../core/services/supplier.service';
 import { PagoProveedorService } from '../../core/services/pago-proveedor.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule  } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';  
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
 import { ListaPagosComponent } from './lista-pagos/lista-pagos.component';
 import { CardModule } from 'primeng/card'; // Importa el componente ListaPagos
 import { CommonModule } from '@angular/common'; 
+import { CalendarModule } from 'primeng/calendar';
 
 @Component({
   selector: 'app-proveedor',
@@ -18,11 +20,13 @@ import { CommonModule } from '@angular/common';
     ButtonModule,
     DropdownModule,
     InputNumberModule,
+    InputTextModule,
     FormsModule,
     DialogModule,
     ListaPagosComponent,
     CardModule,
-    CommonModule   // Asegúrate de que este componente esté importado
+    CommonModule,
+    CalendarModule
   ],
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']
@@ -36,7 +40,12 @@ export class ProveedorComponent implements OnInit {
   showPaymentForm: boolean = false;
   pagos: any[] = []; // Variable para almacenar los pagos del proveedor
   showPagosDialog: boolean = false; // nuevo
+  showform: boolean = false; // nuevo
 
+
+  Supplier_name: string = '';
+  Supplier_balance: number = 0; // nuevo, balance por defecto
+  SupplierlastPaymentDate: Date = new Date(); // nuevo, fecha por defecto
 
   constructor(
     private supplierService: SupplierService,
@@ -49,12 +58,40 @@ export class ProveedorComponent implements OnInit {
     this.accountCopService.getAll().subscribe(accountCops => this.accountCops = accountCops);
   }
 
+  
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: (data) => this.suppliers = data,
       error: (err) => console.error('Error loading suppliers', err)
     });
   }
+
+  showAllSuppliers(): void {
+    this.loadSuppliers();
+  }
+
+  showFormsupplier(): void {
+    this.showform = !this.showform; // Cambia el estado del formulario  
+  }
+
+  createSupplier(data: any): void {
+  this.supplierService.createSupplier({
+    name: data.name,
+    balance: data.balance || 0, // Asigna un balance por defecto si no se proporciona
+    lastPaymentDate: new Date()
+  }).subscribe({
+    next: (supplier) => {
+      this.suppliers.push(supplier);
+      this.showform = false;
+
+      this.Supplier_name = '';
+      this.Supplier_balance = 0;
+      this.SupplierlastPaymentDate = new Date();
+    },
+    error: (err) => console.error('Error creating supplier', err)
+  }); 
+}
+
 
   // Obtener los pagos asociados al proveedor seleccionado
   loadPagosBySupplier(): void {

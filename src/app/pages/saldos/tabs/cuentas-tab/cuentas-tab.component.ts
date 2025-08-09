@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountCopService, AccountCop, AccountCopCreate } from '../../../../../../src/app/core/services/account-cop.service';
+import { AccountCopService, AccountCop, AccountCopCreate } from '../../../../core/services/account-cop.service';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
@@ -8,10 +8,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MovimientoService } from '../../../../../../src/app/core/services/movimiento.service';
+import { MovimientoService } from '../../../../core/services/movimiento.service';
 import { DropdownModule } from 'primeng/dropdown';
-import { ClienteService, Cliente } from '../../../../../../src/app/core/services/cliente.service';
-import { CajaService, Caja } from '../../../../../../src/app/core/services/caja.service';
+import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
+import { CajaService, Caja } from '../../../../core/services/caja.service';
 
 @Component({
   selector: 'app-cuentas-tab',

@@ -1,0 +1,42 @@
+ <button pButton label="Agregar Caja" icon="pi pi-plus" class="p-button-success" (click)="displayCajaDialog = true"></button>
+  <br><br>
+
+<!--cartas para cajas -->
+   <div class="p-grid p-justify-center p-card-container">
+  <div *ngFor="let caja of cajas" class="card-wrapper" >
+    <p-card styleClass="account-card" >
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <i class="pi pi-user" style="margin-right: 8px;"></i> {{ caja?.name }}
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+        <div class="account-details">
+          <div class="card-row">
+            <span class="label">Saldo:</span>
+            <span class="value">{{ caja?.saldo | currency:'USD' }}</span>
+          </div>
+          
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
+
+  <! -- cuadro de dialogo para crear una nueva caja --!>
+
+  <p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
+    <div class="p-fluid">
+      <label>Nombre de Caja</label>
+      <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
+
+      <label>Saldo Inicial</label>
+      <input type="number" pInputText [(ngModel)]="nuevaCaja.saldo" />
+    </div>
+
+     <p-footer>
+      <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
+      <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
+    </p-footer>
+  </p-dialog>

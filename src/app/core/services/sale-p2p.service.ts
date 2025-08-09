@@ -22,6 +22,8 @@ export interface SaleP2PDto {
 })
 export class SaleP2PService {
   private apiUrl = `${environment.apiUrl}/saleP2P`;
+  private apiUrlgetallsales = `http://localhost:8080/saleP2P/all`;
+
 
   constructor(private http: HttpClient) {}
 
@@ -40,6 +42,10 @@ export class SaleP2PService {
     const url = `${this.apiUrl}/today/all-binance`;
     console.log('Fetching all sales from:', url);
     return this.http.get<SaleP2PDto[]>(url);
+  }
+
+  getsalesp2p(): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(this.apiUrlgetallsales);
   }
 
   getAllSalesToday(account: string): Observable<SaleP2PDto[]> {

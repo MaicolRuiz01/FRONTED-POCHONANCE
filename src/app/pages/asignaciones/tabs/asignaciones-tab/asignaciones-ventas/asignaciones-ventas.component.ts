@@ -30,8 +30,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
     ProgressSpinnerModule,
     DropdownModule,
     InputTextModule,     // <— para <input pInputText>
-  InputNumberModule,
-  RadioButtonModule
+    InputNumberModule,
+    RadioButtonModule
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -60,10 +60,10 @@ export class AsignacionesVentasComponent implements OnInit {
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
 
-  constructor(private sellService: SellDollarsService, 
-    private supplierService: SupplierService, 
+  constructor(private sellService: SellDollarsService,
+    private supplierService: SupplierService,
     private accountCopService: AccountCopService,
-    private clienteService: ClienteService  ) {}
+    private clienteService: ClienteService) { }
 
   ngOnInit(): void {
     this.loadSales();
@@ -75,30 +75,43 @@ export class AsignacionesVentasComponent implements OnInit {
       this.isMobile = window.innerWidth <= 768;
     });
     this.accountCopService.getAll().subscribe({
-  next: (accounts) => this.accountCops = accounts,
-  error: () => alert('Error cargando cuentas COP')
-});
+      next: (accounts) => this.accountCops = accounts,
+      error: () => alert('Error cargando cuentas COP')
+    });
 
-  this.clienteService.listar().subscribe({
-  next: (data) => this.clientes = data,
-  error: () => alert('Error cargando clientes especiales')
-  });
+    this.clienteService.listar().subscribe({
+      next: (data) => this.clientes = data,
+      error: () => alert('Error cargando clientes especiales')
+    });
+
+    this.sellService.importarVentasAutomaticamente().subscribe({
+      next: () => {
+        this.loadSales();  // Ahora sí carga las ventas después de importar
+      },
+      error: err => {
+        console.error('Error al importar ventas automáticas', err);
+        alert('Error al registrar automáticamente las ventas');
+        this.loadSales();  // Igual carga las compras en caso de error
+      }
+    })
+
   }
 
   loadSales(): void {
     this.loading = true;
-    this.sellService.getAllUnregisteredSales().subscribe({
-      next: (sales) => {
-        this.allSales = sales;
+    this.sellService.getNoAsignadas().subscribe({
+      next: (data: SellDollar[]) => {
+        this.allSales = data;
         this.filteredSales = [...this.allSales];
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error cargando ventas', err);
         alert('No se pudieron cargar las ventas');
       }
     });
   }
+
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
@@ -113,7 +126,7 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   get totalPesos(): number {
-    return (this.selected?.dollars || 0) * (this.saleRate || 0);
+    return (this.selected?.dollars || 0) * (this.saleRate || 0);
   }
 
   get montoProveedor(): number {
@@ -122,21 +135,21 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   openAssignModal(sale: SellDollar): void {
-  this.selected = sale;
-  this.saleRate = null;
-  this.selectedSupplierId = null;
-  this.accounts = [];
+    this.selected = sale;
+    this.saleRate = null;
+    this.selectedSupplierId = null;
+    this.accounts = [];
 
-  if (sale.clienteId) {
-    this.isSpecialClient = true;
-    this.selectedClientId = sale.clienteId;
-  } else {
-    this.isSpecialClient = false;
-    this.selectedClientId = null;
+    if (sale.clienteId) {
+      this.isSpecialClient = true;
+      this.selectedClientId = sale.clienteId;
+    } else {
+      this.isSpecialClient = false;
+      this.selectedClientId = null;
+    }
+
+    this.displayModal = true;
   }
-
-  this.displayModal = true;
-}
 
 
 
@@ -146,37 +159,37 @@ export class AsignacionesVentasComponent implements OnInit {
     this.saleRate = null;
   }
   addAccountField(): void {
-  this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
-}
+    this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
+  }
 
-removeAccountField(index: number): void {
-  this.accounts.splice(index, 1);
-}
+  removeAccountField(index: number): void {
+    this.accounts.splice(index, 1);
+  }
 
 
   saveSale(): void {
-    if (!this.selected || !this.saleRate || 
-    (this.isSpecialClient && !this.selectedClientId) ||
-    (!this.isSpecialClient && !this.selectedSupplierId)) {
-  alert('Faltan datos obligatorios');
-  return;
-}
+    if (!this.selected || !this.saleRate ||
+      (this.isSpecialClient && !this.selectedClientId) ||
+      (!this.isSpecialClient && !this.selectedSupplierId)) {
+      alert('Faltan datos obligatorios');
+      return;
+    }
 
     const pesos = this.selected.dollars * this.saleRate;
 
-const sell: SellDollar = {
-  ...this.selected,
-  tasa: this.saleRate,
-  pesos,
-  accounts: this.accounts,
-};
+    const sell: SellDollar = {
+      ...this.selected,
+      tasa: this.saleRate,
+      pesos,
+      accounts: this.accounts,
+    };
 
-// Agrega solo el campo necesario según el tipo de cliente
-if (this.isSpecialClient) {
-  sell.clienteId = this.selectedClientId!;
-} else {
-  sell.supplier = this.selectedSupplierId!;
-}
+    // Agrega solo el campo necesario según el tipo de cliente
+    if (this.isSpecialClient) {
+      sell.clienteId = this.selectedClientId!;
+    } else {
+      sell.supplier = this.selectedSupplierId!;
+    }
 
 
 
@@ -190,10 +203,10 @@ if (this.isSpecialClient) {
   }
 
   getClienteById(id: number | undefined): Cliente | undefined {
-  return this.clientes.find(c => c.id === id);
-}
-getRowClass(sale: SellDollar): string {
-  return sale.clienteId ? 'special-client-row' : '';
-}
+    return this.clientes.find(c => c.id === id);
+  }
+  getRowClass(sale: SellDollar): string {
+    return sale.clienteId ? 'special-client-row' : '';
+  }
 
 }

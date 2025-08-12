@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos.service';
+
 
 @Component({
   selector: 'app-movimientos',
@@ -21,7 +23,7 @@ import { DialogModule } from 'primeng/dialog';
     DialogModule,
     FormsModule,
     ButtonModule,
-    InputTextModule
+    InputTextModule,
   ],
   templateUrl: './movimientos.component.html',
   styleUrl: './movimientos.component.css'
@@ -31,13 +33,16 @@ export class MovimientosComponent implements OnInit {
   retiros: MovimientoVistaDto[] = [];
   depositos: MovimientoVistaDto[] = [];
   transferencias: MovimientoVistaDto[] = [];
+  traspasos: TransaccionesDTO[] = [];
+  cargando: boolean = false;
 
   cajas: Caja[] = [];
   displayCajaDialog: boolean = false;
   nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
 
   constructor(private movimientoService: MovimientoService,
-    private cajaService: CajaService
+    private cajaService: CajaService,
+    private traspasosService: TraspasosService
   ) {}
 
 
@@ -47,6 +52,9 @@ export class MovimientosComponent implements OnInit {
     this.movimientoService.getDepositos().subscribe(data => this.depositos = data);
     this.movimientoService.getTransferencias().subscribe(data => this.transferencias = data);
     this.loadCajas();
+    this.traspasos = [];
+    this.cargando = false;
+     this.cargarTraspasos();
   }
   
   loadCajas() {
@@ -65,6 +73,21 @@ export class MovimientosComponent implements OnInit {
       error: () => alert('Error al guardar caja')
     });
   }
+
+   cargarTraspasos(): void {
+    this.cargando = true;
+    this.traspasosService.getTransaccionesDeHoy().subscribe(
+      (data) => {
+        this.traspasos = data;
+        this.cargando = false;
+      },
+      (error) => {
+        console.error('Error al cargar los traspasos:', error);
+        this.cargando = false;
+      }
+    );
+  }
+
 
   
 

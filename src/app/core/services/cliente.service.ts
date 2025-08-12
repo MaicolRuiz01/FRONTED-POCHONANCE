@@ -9,6 +9,7 @@ export interface Cliente {
     correo: String;
     nameUser: String;
     saldo: number;
+    wallet: String;
 }
 
 @Injectable({

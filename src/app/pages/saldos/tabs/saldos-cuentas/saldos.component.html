@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
 <p-toolbar styleClass="mb-4">
     <div class="saldo-card p-3 border rounded">
@@ -13,20 +14,25 @@
     </div>
 
     <div class="saldo-card p-3 border rounded">
-    <h4>Total en Cajas</h4>
-    <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
-</div>
+        <h4>Total en Cajas</h4>
+        <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
+    </div>
 
-    
     <ng-template pTemplate="left">
         <button pButton label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
     </ng-template>
 </p-toolbar>
 
 <div class="grid" *ngIf="accounts.length > 0">
-    <div *ngFor="let account of accounts" class="custom-card" (click)="toggleText(account)">
-        <div class="card-header">{{ account.accountType }}</div>
-        <div class="card-body">
+    <div *ngFor="let account of accounts" class="custom-card">
+        <div class="card-header">
+            {{ account.accountType }}
+            <button pButton icon="pi pi-trash"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    (click)="confirmDelete(account); $event.stopPropagation()">
+            </button>
+        </div>
+        <div class="card-body" (click)="toggleText(account)">
             <ng-container *ngIf="!account.isFlipped; else detalles">
                 <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>
                 <p><strong>Saldo Externo (USDT)</strong>: {{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
@@ -104,4 +110,3 @@
                 (click)="crearCuentaBinance()"></button>
     </ng-template>
 </p-dialog>
-

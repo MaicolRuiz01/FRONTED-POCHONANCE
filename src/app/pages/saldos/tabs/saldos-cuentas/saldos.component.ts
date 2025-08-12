@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AccountBinanceService, AccountBinance } from '../../../../core/services/account-binance.service';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { DialogModule } from 'primeng/dialog';
@@ -12,10 +12,12 @@ import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
-import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
+import { AccountCopService } from '../../../../core/services/account-cop.service';
 import { BalanceService } from '../../../../core/services/balance.service';
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 
 export interface DisplayAccount {
+  id?: number; // opcional para evitar error al inicializar
   accountType: string;
   saldoInterno: number;
   saldoExterno?: number;
@@ -29,7 +31,7 @@ export interface DisplayAccount {
   templateUrl: './saldos.component.html',
   standalone: true,
   styleUrls: ['./saldos.component.css'],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   imports: [
     ToastModule,
     ToolbarModule,
@@ -40,8 +42,9 @@ export interface DisplayAccount {
     ButtonModule,
     DropdownModule,
     InputTextModule,
-    InputNumberModule 
-  ]
+    InputNumberModule,
+    ConfirmDialogModule
+]
 })
 export class SaldosComponent implements OnInit {
   totalBalanceUsd = 0;
@@ -72,13 +75,15 @@ export class SaldosComponent implements OnInit {
     apiSecret: ''
   };
 
+  totalCajasCop: number = 0;
+
   constructor(
     private accountService: AccountBinanceService,
     private cajaService: AccountCopService,
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private http: HttpClient,
     private balanceService: BalanceService
-    
   ) { }
 
   ngOnInit() {
@@ -114,17 +119,18 @@ export class SaldosComponent implements OnInit {
 
   loadCajas() {
     this.cajaService.getAllCajas().subscribe({
-        next: res => {
-            this.cajas = res;
-        },
-        error: err => console.error('Error cargando cajas:', err)
+      next: res => {
+        this.cajas = res;
+      },
+      error: err => console.error('Error cargando cajas:', err)
     });
-}
+  }
 
   loadAccounts() {
     this.accountService.traerCuentas().subscribe({
       next: res => {
         this.accounts = res.map(c => ({
+          id: c.id, // aquí guardamos el id real que viene del backend
           accountType: c.name,
           saldoInterno: c.balance,
           correo: c.correo || '–',
@@ -220,13 +226,50 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  totalCajasCop: number = 0;
+  getTotalCajas() {
+    this.balanceService.getTotalCajas().subscribe({
+      next: res => this.totalCajasCop = res.total,
+      error: err => console.error('Error obteniendo total de cajas:', err)
+    });
+  }
 
-getTotalCajas() {
-  this.balanceService.getTotalCajas().subscribe({
-    next: res => this.totalCajasCop = res.total,
-    error: err => console.error('Error obteniendo total de cajas:', err)
-  });
-}
+  // NUEVO: Confirmación y eliminación
+  confirmDelete(account: DisplayAccount) {
+    this.confirmationService.confirm({
+      message: `¿Seguro que quieres eliminar la cuenta ${account.accountType}?`,
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        if (account.id) {
+          this.deleteAccount(account.id);
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se encontró el ID de la cuenta'
+          });
+        }
+      }
+    });
+  }
 
+  deleteAccount(id: number) {
+    this.accountService.deleteAccount(id).subscribe({
+      next: () => {
+        this.accounts = this.accounts.filter(a => a.id !== id);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminada',
+          detail: 'Cuenta eliminada correctamente'
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo eliminar la cuenta'
+        });
+      }
+    });
+  }
 }

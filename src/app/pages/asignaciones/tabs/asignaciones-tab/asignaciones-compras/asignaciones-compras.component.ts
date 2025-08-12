@@ -79,24 +79,35 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     window.addEventListener('resize', () => {
       this.isMobile = window.innerWidth <= 768;
     });
+    this.buyService.importarComprasAutomaticamente().subscribe({
+    next: () => {
+      this.loadDeposits();  // Ahora sí carga las compras después de importar
+    },
+    error: err => {
+      console.error('Error al importar compras automáticas', err);
+      alert('Error al registrar automáticamente las compras');
+      this.loadDeposits();  // Igual carga las compras en caso de error
+    }
+  });
   }
 
 
    loadDeposits(): void {
-    this.loading = true;
-    this.buyService.getAllEntradas().subscribe({
-      next: data => {
-        this.allDeposits = data;
-        this.filteredDeposits = [...this.allDeposits];
-        this.loading = false;
-      },
-      error: err => {
-        console.error('Error cargando depósitos', err);
-        alert('No se pudieron cargar las compras');
-        this.loading = false;
-      }
-    });
-  }
+  this.loading = true;
+  this.buyService.getComprasNoAsignadasHoy().subscribe({
+    next: data => {
+      this.allDeposits = data;
+      this.filteredDeposits = [...this.allDeposits];
+      this.loading = false;
+    },
+    error: err => {
+      console.error('Error cargando depósitos no asignados', err);
+      alert('No se pudieron cargar las compras no asignadas');
+      this.loading = false;
+    }
+  });
+}
+
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
@@ -134,30 +145,29 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   }
 
   saveAssignment(): void {
-    if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
+  if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
 
-    const pesos = this.selectedDeposit.dollars * this.purchaseRate;
+  const pesos = this.selectedDeposit.dollars * this.purchaseRate;
 
-    const buyData: BuyDollarsDto = {
-      dollars: this.selectedDeposit.dollars,
-      tasa: this.purchaseRate,
-      nameAccount: this.selectedDeposit.nameAccount,
-      pesos: pesos,
-      date: this.selectedDeposit.date,
-      supplierId: this.selectedSupplierId,
-      idDeposit: this.selectedDeposit.idDeposit
-    };
-console.log('Datos a enviar compra:', buyData);
-    this.buyService.createBuyDollar(buyData).subscribe({
-      next: () => {
-        alert('Compra asignada correctamente');
-        this.closeModal();
-        this.loadDeposits();
-      },
-      error: err => {
-        console.error('Error guardando compra', err);
-        alert('Error al guardar la compra');
-      }
-    });
-  }
+  const buyData: Partial<BuyDollarsDto> = {
+    tasa: this.purchaseRate,
+    pesos: pesos,
+    supplierId: this.selectedSupplierId
+  };
+
+  console.log('Asignando compra ID:', this.selectedDeposit.id, 'con data:', buyData);
+
+  this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
+    next: () => {
+      alert('Compra asignada correctamente');
+      this.closeModal();
+      this.loadDeposits(); // Recarga la lista con solo las no asignadas
+    },
+    error: err => {
+      console.error('Error asignando compra', err);
+      alert('Error al asignar la compra');
+    }
+  });
+}
+
 }

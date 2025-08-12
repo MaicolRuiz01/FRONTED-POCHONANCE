@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
-
 export interface AccountBinance {
   id?: number;
   name: string;
@@ -27,7 +26,7 @@ export class AccountBinanceService {
   constructor(private http: HttpClient) {}
 
   traerCuentas(): Observable<AccountBinance[]> {
-    return this.http.get<AccountBinance[]>(this.apiUrl); // Nota el array []
+    return this.http.get<AccountBinance[]>(this.apiUrl);
   }
 
   crear(account: AccountBinance): Observable<AccountBinance> {
@@ -35,20 +34,28 @@ export class AccountBinanceService {
   }
 
   getUSDTBalanceBinance(name: string): Observable<string> {
-  const url = `${this.apiUrl}/balance-usdt?name=${encodeURIComponent(name)}`;
-  return this.http.get(url, { responseType: 'text' });
-}
-getTotalBalance(): Observable<number> {
-  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
-}
-getLatestPurchaseRate(): Observable<number> {
-  return this.http.get<number>(`${environment.apiUrl}/tasa-promedio`);
-}
+    const url = `${this.apiUrl}/balance-usdt?name=${encodeURIComponent(name)}`;
+    return this.http.get(url, { responseType: 'text' });
+  }
 
-getBalanceTotalInterno(): Observable<number> {
-  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance-interno`);
-}
-getBalanceTotalExterno(): Observable<number> {
-  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/balance-total-externo`); 
-}
+  getTotalBalance(): Observable<number> {
+    return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
+  }
+
+  getLatestPurchaseRate(): Observable<number> {
+    return this.http.get<number>(`${environment.apiUrl}/tasa-promedio`);
+  }
+
+  getBalanceTotalInterno(): Observable<number> {
+    return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance-interno`);
+  }
+
+  getBalanceTotalExterno(): Observable<number> {
+    return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/balance-total-externo`);
+  }
+
+  // 🔹 NUEVO: Eliminar cuenta por ID
+  deleteAccount(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

@@ -1,8 +1,9 @@
+<div class="card">
 <div class="p-grid p-dir-col p-align-center">
   <h2 class="section-title">Proveedores</h2>
 
   <!-- Botón para abrir el formulario de pago -->
-  <div class="p-col-12 p-md-10" style="text-align: center; margin-top: 20px;">
+  <div class="p-col-12 p-md-10" style="text-align: center; margin-top: 20px; display: flex; justify-content: start; gap: 10px;">
   <p-button label="Pago Proveedor" icon="pi pi-credit-card" (click)="togglePaymentForm()"
     styleClass="p-button-raised p-button-info"></p-button>
 
@@ -120,4 +121,5 @@
   </p-dialog>
 
   <p *ngIf="suppliers.length === 0">No hay proveedores registrados.</p>
+</div>
 </div>

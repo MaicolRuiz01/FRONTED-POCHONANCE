@@ -10,6 +10,7 @@
       <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
       <p><strong>Correo:</strong> {{ cliente.correo }}</p>
       <p><strong>Saldo:</strong> {{ cliente.saldo | currency:'COP' }}</p>
+      <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
     </div>
   </div>
 
@@ -31,6 +32,10 @@
       <div class="p-field">
         <label>Saldo Inicial</label>
         <p-inputNumber [(ngModel)]="nuevoCliente.saldo" name="saldo" mode="currency" currency="COP"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>Wallet</label>
+        <input pInputText [(ngModel)]="nuevoCliente.wallet" name="wallet" />
       </div>
     </form>
 

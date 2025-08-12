@@ -3,7 +3,6 @@ import { AsignacionesTabComponent } from '../../tabs/asignaciones-tab/asignacion
 import { CuentasTabComponent } from '../../../saldos/tabs/cuentas-tab/cuentas-tab.component';
 import { CommonModule } from '@angular/common';
 import { TabViewModule } from 'primeng/tabview';
-import { TraspasosTabComponent } from '../../tabs/traspasos-tab/traspasos-tab.component';
 import { MovimientosComponent } from "../../tabs/cajas-tab/cajas-tab.component";
 import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
 
@@ -15,7 +14,6 @@ import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
     CuentasTabComponent,
     CommonModule,
     TabViewModule,
-    TraspasosTabComponent,
     MovimientosComponent,
     GastosComponent
 ],

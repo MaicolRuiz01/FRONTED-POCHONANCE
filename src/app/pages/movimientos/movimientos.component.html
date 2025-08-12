@@ -20,6 +20,7 @@
     </p-table>
   </p-tabPanel>
 
+
   <p-tabPanel header="Depósitos">
     <p-table [value]="depositos">
       <ng-template pTemplate="header">
@@ -61,5 +62,42 @@
       </ng-template>
     </p-table>
   </p-tabPanel>
+
+<p-tabPanel header="Traspasos">
+
+  <div *ngIf="traspasos.length === 0" style="text-align: center; margin-top: 2rem;">
+    <p>No hay traspasos el día de hoy.</p>
+  </div>
+
+<p-table
+    *ngIf="!cargando && traspasos.length > 0"
+    [value]="traspasos"
+    [paginator]="true"
+    [rows]="10"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Cuenta Origen</th>
+        <th>Cuenta Destino</th>
+        <th>Monto</th>
+        <th>Tipo</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-traspaso>
+      <tr>
+        <td>{{ traspaso.fecha | date:'short' }}</td>
+        <td>{{ traspaso.cuentaFrom }}</td>
+        <td>{{ traspaso.cuentaTo }}</td>
+        <td>{{ traspaso.monto | currency:'USD' }}</td>
+        <td>{{ traspaso.tipo || '-' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-tabPanel>
+
+
 </p-tabView>
 

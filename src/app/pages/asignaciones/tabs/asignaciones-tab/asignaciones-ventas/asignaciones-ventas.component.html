@@ -5,58 +5,38 @@
   </p>
 
   <!-- 1) Tabla Responsiva de ventas no asignadas -->
-<p-table
-  *ngIf="!loading"
-  [value]="filteredSales"
-  [paginator]="true"
-  [rows]="10"
-  [rowsPerPageOptions]="[5,10,25]"
-  [scrollable]="true"
-  scrollDirection="horizontal"
-  [tableStyle]="{ 'min-width':'100%' }"
-  sortMode="single"
->
-  <ng-template pTemplate="header">
-    <tr>
-      <th>Cuenta</th>
-      <th>Monto</th>
-      <th>Fecha</th>
-      <th>Cliente</th>
-      <th>Acción</th>
-    </tr>
-  </ng-template>
+  <p-table *ngIf="!loading" [value]="filteredSales" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,25]"
+    [scrollable]="true" scrollDirection="horizontal" [tableStyle]="{ 'min-width':'100%' }" sortMode="single">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Cuenta</th>
+        <th>Monto</th>
+        <th>Fecha</th>
+        <th>Cliente</th>
+        <th>Acción</th>
+      </tr>
+    </ng-template>
 
-  <ng-template pTemplate="body" let-sale>
-    <tr [ngClass]="{ 'special-client-row': sale.clienteId }">
-      <td>{{ sale.nameAccount }}</td>
-      <td>{{ sale.dollars | number:'1.0-2' }}</td>
-      <td>{{ sale.date | date:'short' }}</td>
-      <td>{{ getClienteById(sale.clienteId)?.nombre || '---' }}</td>
-      <td>
-        <button
-          pButton
-          type="button"
-          icon="pi pi-pencil"
-          label="Asignar"
-          class="p-button-sm p-button-success"
-          (click)="openAssignModal(sale)"
-        ></button>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+    <ng-template pTemplate="body" let-sale>
+      <tr [ngClass]="{ 'special-client-row': sale.clienteId }">
+        <td>{{ sale.nameAccount }}</td>
+        <td>{{ sale.dollars | number:'1.0-2' }}</td>
+        <td>{{ sale.date | date:'short' }}</td>
+        <td>{{ getClienteById(sale.clienteId)?.nombre || '---' }}</td>
+        <td>
+          <button pButton type="button" icon="pi pi-pencil" label="Asignar" class="p-button-sm p-button-success"
+            (click)="openAssignModal(sale)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 
 
 </div>
 
 <!-- 2) Diálogo de asignación -->
-<p-dialog
-  header="Asignar Venta"
-  [(visible)]="displayModal"
-  [modal]="true"
-  [style]="{ width: '90vw', 'max-width': '600px' }"
-  (onHide)="closeModal()"
->
+<p-dialog header="Asignar Venta" [(visible)]="displayModal" [modal]="true"
+  [style]="{ width: '90vw', 'max-width': '600px' }" (onHide)="closeModal()">
   <div *ngIf="selected" class="p-fluid p-formgrid p-grid">
     <!-- Pregunta si es cliente especial -->
     <div class="p-col-12">
@@ -81,17 +61,12 @@
     <ng-container *ngIf="isSpecialClient">
       <div class="p-field p-col-12">
         <label>Selecciona Cliente</label>
-        <p-dropdown
-          [options]="clientes"
-          [(ngModel)]="selectedClientId"
-          optionValue="id"
-          optionLabel="nombre"
-          placeholder="Selecciona cliente"
-        ></p-dropdown>
+        <p-dropdown [options]="clientes" [(ngModel)]="selectedClientId" optionValue="id" optionLabel="nombre"
+          placeholder="Selecciona cliente"></p-dropdown>
       </div>
       <div class="p-field p-col-12 p-md-6">
         <label>Tasa</label>
-        <p-inputNumber [(ngModel)]="saleRate" mode="decimal" [min]="0" class="w-full"></p-inputNumber>
+        <input type="number" pInputText [(ngModel)]="saleRate" inputmode="numeric" />
       </div>
       <div class="p-field p-col-12 p-md-6">
         <label>Total en pesos</label>
@@ -103,18 +78,13 @@
     <ng-container *ngIf="!isSpecialClient">
       <div class="p-field p-col-12 p-md-6">
         <label>Proveedor</label>
-        <p-dropdown
-          [options]="suppliers"
-          [(ngModel)]="selectedSupplierId"
-          optionValue="id"
-          optionLabel="name"
-          placeholder="Selecciona proveedor"
-        ></p-dropdown>
+        <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplierId" optionValue="id" optionLabel="name"
+          placeholder="Selecciona proveedor"></p-dropdown>
       </div>
 
       <div class="p-field p-col-12 p-md-6">
         <label>Tasa</label>
-        <p-inputNumber [(ngModel)]="saleRate" mode="decimal" [min]="0" class="w-full"></p-inputNumber>
+        <input type="number" pInputText [(ngModel)]="saleRate" inputmode="numeric" />
       </div>
 
       <div class="p-field p-col-12 p-md-6">
@@ -124,23 +94,21 @@
 
       <div class="p-col-12 p-mt-3">
         <h3>Cuentas COP</h3>
-        <button pButton icon="pi pi-plus" label="Agregar cuenta" class="p-button-sm" (click)="addAccountField()"></button>
+        <button pButton icon="pi pi-plus" label="Agregar cuenta" class="p-button-sm"
+          (click)="addAccountField()"></button>
       </div>
       <ng-container *ngFor="let acc of accounts; let i = index">
         <div class="p-field p-col-12 p-md-5">
-          <p-dropdown
-            [options]="accountCops"
-            [(ngModel)]="accounts[i].accountCop"
-            optionValue="id"
-            optionLabel="name"
-            placeholder="Cuenta COP"
-          ></p-dropdown>
+          <p-dropdown [options]="accountCops" [(ngModel)]="accounts[i].accountCop" optionValue="id" optionLabel="name"
+            placeholder="Cuenta COP"></p-dropdown>
         </div>
         <div class="p-field p-col-12 p-md-5">
-          <p-inputNumber [(ngModel)]="accounts[i].amount" mode="currency" currency="COP" [min]="0" class="w-full"></p-inputNumber>
+          <p-inputNumber [(ngModel)]="accounts[i].amount" mode="currency" currency="COP" [min]="0"
+            class="w-full"></p-inputNumber>
         </div>
         <div class="p-field p-col-12 p-md-2 p-d-flex p-ai-center">
-          <button pButton icon="pi pi-trash" class="p-button-danger p-button-text" (click)="removeAccountField(i)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-danger p-button-text"
+            (click)="removeAccountField(i)"></button>
         </div>
       </ng-container>
 
@@ -154,14 +122,7 @@
   <!-- Footer -->
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="closeModal()"></button>
-    <button
-      pButton
-      label="Guardar"
-      icon="pi pi-check"
-      class="p-button-success"
-      (click)="saveSale()"
-      [disabled]="!saleRate || (isSpecialClient && !selectedClientId) || (!isSpecialClient && !selectedSupplierId)"
-    ></button>
+    <button pButton label="Guardar" icon="pi pi-check" class="p-button-success" (click)="saveSale()"
+      [disabled]="!saleRate || (isSpecialClient && !selectedClientId) || (!isSpecialClient && !selectedSupplierId)"></button>
   </ng-template>
 </p-dialog>
-

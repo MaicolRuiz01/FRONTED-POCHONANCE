@@ -44,7 +44,7 @@ export interface DisplayAccount {
     InputTextModule,
     InputNumberModule,
     ConfirmDialogModule
-]
+  ]
 })
 export class SaldosComponent implements OnInit {
   totalBalanceUsd = 0;
@@ -272,4 +272,22 @@ export class SaldosComponent implements OnInit {
       }
     });
   }
+  
+  editarCuenta(account: DisplayAccount) {
+    // Pasar los datos de la cuenta seleccionada al formulario para editarlos
+    this.newAccount = {
+      name: account.accountType,
+      referenceAccount: '', // Aquí pones el valor real si lo tienes
+      correo: account.correo || '',
+      userBinance: '', // idem, si tienes el valor
+      balance: account.saldoInterno,
+      address: account.address || '',
+      tipo: '', // asigna según corresponda
+      apiKey: '',
+      apiSecret: ''
+    };
+
+    this.createAccountDialog = true; // abre el modal para editar
+  }
+
 }

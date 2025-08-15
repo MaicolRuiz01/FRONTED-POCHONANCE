@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SupplierService, Supplier } from '../../core/services/supplier.service';
-import { PagoProveedorService } from '../../core/services/pago-proveedor.service';
-import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
+import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
+import { PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
+import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { FormsModule  } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';  
 import { DropdownModule } from 'primeng/dropdown';

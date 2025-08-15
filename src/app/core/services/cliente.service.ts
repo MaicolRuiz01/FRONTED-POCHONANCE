@@ -10,6 +10,7 @@ export interface Cliente {
     nameUser: String;
     saldo: number;
     wallet: String;
+    clientesaldo: number;
 }
 
 @Injectable({

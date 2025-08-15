@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ClienteService, Cliente } from '../../core/services/cliente.service';
+import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';

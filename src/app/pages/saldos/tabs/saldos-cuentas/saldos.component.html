@@ -43,16 +43,31 @@
     </div>
 
     <!-- Contenido clickable -->
-    <div class="card-body" (click)="toggleText(account)">
-      <ng-container *ngIf="!account.isFlipped; else detalles">
-        <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>
-        <p><strong>Saldo Externo (USDT)</strong>: {{ (account.saldoExterno ?? 0) | number:'1.2-2' }}</p>
-      </ng-container>
-      <ng-template #detalles>
-        <p><strong>Correo:</strong> {{ account.correo }}</p>
-        <p><strong>Wallet:</strong> {{ account.address }}</p>
-      </ng-template>
-    </div>
+<div class="card-body" (click)="toggleText(account)">
+  <ng-container *ngIf="!account.isFlipped; else detalles">
+    <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>
+    
+    <!-- Botón que consulta saldo externo -->
+    <button pButton 
+            label="Ver Saldo Externo" 
+            icon="pi pi-search" 
+            class="p-button-info p-button-sm"
+            (click)="consultarSaldoExterno(account, $event)">
+    </button>
+
+    <!-- Se muestra solo si ya se consultó -->
+    <p *ngIf="account.saldoExterno !== undefined">
+      <strong>Saldo Externo (USDT)</strong>: {{ account.saldoExterno | number:'1.2-2' }}
+    </p>
+  </ng-container>
+
+  <ng-template #detalles>
+    <p><strong>Correo:</strong> {{ account.correo }}</p>
+    <p><strong>Wallet:</strong> {{ account.address }}</p>
+  </ng-template>
+</div>
+
+
 
   </div>
 </div>

@@ -17,7 +17,7 @@ import { BalanceService } from '../../../../core/services/balance.service';
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 
 export interface DisplayAccount {
-  id?: number; // opcional para evitar error al inicializar
+  id?: number;
   accountType: string;
   saldoInterno: number;
   saldoExterno?: number;
@@ -130,35 +130,34 @@ export class SaldosComponent implements OnInit {
     this.accountService.traerCuentas().subscribe({
       next: res => {
         this.accounts = res.map(c => ({
-          id: c.id, // aquí guardamos el id real que viene del backend
+          id: c.id,
           accountType: c.name,
           saldoInterno: c.balance,
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
-          saldoExterno: 0
+          saldoExterno: undefined // se consultará solo con botón
         }));
-
-        this.accounts.forEach(acc => {
-          this.accountService.getUSDTBalanceBinance(acc.accountType)
-            .subscribe({
-              next: live => {
-                acc.saldoExterno = parseFloat(live) || 0;
-                this.sortByExternal();
-              },
-              error: _ => {
-                acc.saldoExterno = 0;
-                this.sortByExternal();
-              }
-            });
-        });
       },
       error: err => console.error(err)
     });
   }
 
-  private sortByExternal() {
-    this.accounts.sort((a, b) => (b.saldoExterno || 0) - (a.saldoExterno || 0));
+  consultarSaldoExterno(account: DisplayAccount, event: Event) {
+    event.stopPropagation(); // evita que se voltee la card
+    this.accountService.getUSDTBalanceBinance(account.accountType)
+      .subscribe({
+        next: saldo => {
+          account.saldoExterno = parseFloat(saldo) || 0;
+        },
+        error: _ => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `No se pudo obtener el saldo externo de ${account.accountType}`
+          });
+        }
+      });
   }
 
   toggleText(account: DisplayAccount) {
@@ -233,7 +232,6 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  // NUEVO: Confirmación y eliminación
   confirmDelete(account: DisplayAccount) {
     this.confirmationService.confirm({
       message: `¿Seguro que quieres eliminar la cuenta ${account.accountType}?`,
@@ -274,20 +272,18 @@ export class SaldosComponent implements OnInit {
   }
   
   editarCuenta(account: DisplayAccount) {
-    // Pasar los datos de la cuenta seleccionada al formulario para editarlos
     this.newAccount = {
       name: account.accountType,
-      referenceAccount: '', // Aquí pones el valor real si lo tienes
+      referenceAccount: '',
       correo: account.correo || '',
-      userBinance: '', // idem, si tienes el valor
+      userBinance: '',
       balance: account.saldoInterno,
       address: account.address || '',
-      tipo: '', // asigna según corresponda
+      tipo: '',
       apiKey: '',
       apiSecret: ''
     };
-
-    this.createAccountDialog = true; // abre el modal para editar
+    this.createAccountDialog = true;
   }
 
 }

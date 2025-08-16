@@ -15,6 +15,10 @@ export interface BalanceGeneral {
   utilidadP2P: number;
   totalVentasGeneralesDelDia: number;
   utilidadVentasGenerales: number;
+  clientesSaldo: number;
+  saldoCajas: number;
+  comisionTrust: number;
+
 }
 
 @Injectable({
@@ -28,4 +32,13 @@ export class BalanceGeneralService {
   listar(): Observable<BalanceGeneral[]> {
     return this.http.get<BalanceGeneral[]>(`${this.apiUrl}/hoy`);
   }
+
+totalCaja(): Observable<Record<string, number>> {
+  return this.http.get<Record<string, number>>(`${this.apiUrl}/cajas/total`);
+}
+
+totalClientes(): Observable<number> {
+  return this.http.get<number>(`${this.apiUrl}/clientes/total`);
+}
+
 }

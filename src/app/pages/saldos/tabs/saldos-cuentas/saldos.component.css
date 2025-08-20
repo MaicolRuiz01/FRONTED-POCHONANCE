@@ -228,3 +228,9 @@ body {
   width: 6rem;
   height: 6rem;
 }
+
+.button-container {
+  display: flex;
+  justify-content: flex-end; /* derecha */
+  margin-bottom: 0.5rem;     /* separación del contenido */
+}

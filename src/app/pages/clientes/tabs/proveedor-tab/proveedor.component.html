@@ -10,6 +10,18 @@
     <p-button label="Crear Proveedor" icon="pi pi-plus" (click)="showFormsupplier()"
       styleClass="p-button-raised p-button-info"></p-button>
   </div>
+<br>
+
+<div class="total-container">  
+<p-card styleClass="total-card">
+    <ng-template pTemplate="content">
+      <div class="total-content">
+        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+        <strong>Total de proveedores:</strong> {{ totalProveedores | currency:'USD' }}
+      </div>
+    </ng-template>
+</p-card>
+</div>
 
   <!-- Contenedor de las tarjetas de proveedor -->
   <div class="p-grid p-justify-center p-card-container">

@@ -85,3 +85,19 @@ button.p-button-success {
 .botones-container button {
     min-width: 160px;
 }
+
+.total-container{
+  width: auto !important;
+  display: inline-block !important;
+  background: #e3f2fd;
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 1px 1px;
+}
+
+
+.total-content {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}

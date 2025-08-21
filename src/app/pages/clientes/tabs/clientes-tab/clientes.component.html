@@ -4,6 +4,21 @@
     <button pButton label="Nuevo Cliente" icon="pi pi-plus" class="p-button-success" (click)="abrirModal()"></button>
   </div>
 
+  <br>
+
+<div class="total-container">  
+<p-card styleClass="total-card">
+    <ng-template pTemplate="content">
+      <div class="total-content">
+        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+        <strong>Total de Clientes:</strong> {{ totalClientes | currency:'USD' }}
+      </div>
+    </ng-template>
+</p-card>
+</div>
+<br>
+<br>
+  <!-- Grid de clientes -->
   <div class="grid-clientes">
     <div class="card" *ngFor="let cliente of clientes">
       <h3>{{ cliente.nombre }}</h3>

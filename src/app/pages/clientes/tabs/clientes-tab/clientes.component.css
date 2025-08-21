@@ -22,3 +22,12 @@
   background-color: #fafafa;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+.total-container{
+  width: auto !important;
+  display: inline-block !important;
+  background: #e3f2fd;
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 1px 1px;
+}

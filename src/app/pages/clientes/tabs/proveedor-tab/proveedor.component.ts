@@ -59,11 +59,16 @@ export class ProveedorComponent implements OnInit {
   }
 
   
+
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: (data) => this.suppliers = data,
       error: (err) => console.error('Error loading suppliers', err)
     });
+  }
+
+  get totalProveedores(): number {
+    return this.suppliers.reduce((acc, supplier) => acc + (supplier.balance ?? 0), 0);
   }
 
   showAllSuppliers(): void {

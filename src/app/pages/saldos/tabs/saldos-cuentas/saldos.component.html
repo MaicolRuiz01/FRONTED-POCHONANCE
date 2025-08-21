@@ -79,68 +79,77 @@
 
 
 
-<p-dialog header="Crear nueva cuenta Binance"
-    [(visible)]="createAccountDialog"
-    [modal]="true"
-    [style]="{ width: '500px' }"
-    [baseZIndex]="1100">
+<p-dialog 
+  [header]="editMode ? 'Editar cuenta Binance' : 'Crear nueva cuenta Binance'"
+  [(visible)]="createAccountDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [baseZIndex]="1100">
 
-    <div class="p-fluid">
-        <div class="p-field">
-            <label for="name">Nombre*</label>
-            <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
-        </div>
+  <div class="p-fluid">
+      <div class="p-field">
+          <label for="name">Nombre*</label>
+          <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
+      </div>
 
-        <div class="p-field">
-            <label for="reference">Id de cuenta Binance*</label>
-            <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
-        </div>
+      <div class="p-field">
+          <label for="reference">Id de cuenta Binance*</label>
+          <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
+      </div>
 
-        <div class="p-field">
-            <label for="correo">Correo electrónico*</label>
-            <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
-        </div>
+      <div class="p-field">
+          <label for="correo">Correo electrónico*</label>
+          <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
+      </div>
 
-        <div class="p-field">
-            <label for="user">Usuario Binance</label>
-            <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
-        </div>
+      <div class="p-field">
+          <label for="user">Usuario Binance</label>
+          <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
+      </div>
 
-        <div class="p-field">
-            <label for="balance">Saldo inicial en USDT*</label>
-            <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" />
-        </div>
+      <div class="p-field">
+          <label for="balance">Saldo inicial en USDT*</label>
+          <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" />
+      </div>
 
-        <div class="p-field">
-            <label for="wallet">Wallet (dirección USDT)*</label>
-            <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
-        </div>
+      <div class="p-field">
+          <label for="wallet">Wallet (dirección USDT)*</label>
+          <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
+      </div>
 
-        <div class="p-field">
-            <label>Tipo de cuenta*</label>
-            <p-dropdown [options]="tiposCuenta"
-                        [(ngModel)]="newAccount.tipo"
-                        placeholder="Seleccione tipo"
-                        [showClear]="true"
-                        [appendTo]="'body'">
-            </p-dropdown>
-        </div>
+      <div class="p-field">
+          <label>Tipo de cuenta*</label>
+          <p-dropdown [options]="tiposCuenta"
+                      [(ngModel)]="newAccount.tipo"
+                      placeholder="Seleccione tipo"
+                      [showClear]="true"
+                      [appendTo]="'body'">
+          </p-dropdown>
+      </div>
 
-        <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
-            <label>API Key*</label>
-            <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
-        </div>
+      <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
+          <label>API Key*</label>
+          <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
+      </div>
 
-        <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
-            <label>API Secret*</label>
-            <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
-        </div>
-    </div>
+      <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
+          <label>API Secret*</label>
+          <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
+      </div>
+  </div>
 
-    <ng-template pTemplate="footer">
-        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
-                (click)="cancelarNuevaCuenta()"></button>
-        <button pButton label="Crear" icon="pi pi-check" class="p-button-success"
-                (click)="crearCuentaBinance()"></button>
-    </ng-template>
+  <ng-template pTemplate="footer">
+      <button pButton 
+              label="Cancelar" 
+              icon="pi pi-times" 
+              class="p-button-text"
+              (click)="cancelarNuevaCuenta()"></button>
+
+      <!-- Aquí cambiamos dinámicamente -->
+      <button pButton 
+              [label]="editMode ? 'Actualizar' : 'Crear'" 
+              icon="pi pi-check" 
+              class="p-button-success"
+              (click)="guardarCuenta()"></button>
+  </ng-template>
 </p-dialog>

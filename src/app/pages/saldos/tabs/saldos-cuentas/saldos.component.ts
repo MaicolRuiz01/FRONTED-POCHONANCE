@@ -57,6 +57,10 @@ export class SaldosComponent implements OnInit {
   modalVisible = false;
   cajas: { id: number, name: string, saldo: number }[] = [];
 
+  // NUEVO: modo edición y referencia al ID seleccionado
+  editMode = false;
+  selectedAccountId: number | null = null;
+
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'TRUST', value: 'TRUST' }
@@ -65,6 +69,8 @@ export class SaldosComponent implements OnInit {
   accounts: DisplayAccount[] = [];
 
   newAccount: AccountBinance = {
+    // incluye id opcional si tu interfaz lo tiene en el service
+    // id: undefined,
     name: '',
     referenceAccount: '',
     correo: '',
@@ -97,6 +103,7 @@ export class SaldosComponent implements OnInit {
     this.getTotalCajas();
   }
 
+  // ---------- Totales ----------
   getTotalBalance() {
     this.accountService.getTotalBalance().subscribe({
       next: res => this.totalBalanceCop = res,
@@ -118,6 +125,7 @@ export class SaldosComponent implements OnInit {
     });
   }
 
+  // ---------- Cajas ----------
   loadCajas() {
     this.cajaService.getAllCajas().subscribe({
       next: res => {
@@ -127,6 +135,14 @@ export class SaldosComponent implements OnInit {
     });
   }
 
+  getTotalCajas() {
+    this.balanceService.getTotalCajas().subscribe({
+      next: res => this.totalCajasCop = res.total,
+      error: err => console.error('Error obteniendo total de cajas:', err)
+    });
+  }
+
+  // ---------- Cuentas ----------
   loadAccounts() {
     this.accountService.traerCuentas().subscribe({
       next: res => {
@@ -165,18 +181,11 @@ export class SaldosComponent implements OnInit {
     account.isFlipped = !account.isFlipped;
   }
 
+  // ---------- Crear / Editar ----------
   openNew() {
-    this.newAccount = {
-      name: '',
-      referenceAccount: '',
-      correo: '',
-      userBinance: '',
-      balance: 0,
-      address: '',
-      tipo: '',
-      apiKey: '',
-      apiSecret: ''
-    };
+    this.resetForm();
+    this.editMode = false;
+    this.selectedAccountId = null;
     this.createAccountDialog = true;
   }
 
@@ -184,6 +193,7 @@ export class SaldosComponent implements OnInit {
     this.createAccountDialog = false;
   }
 
+  // Mantengo tu método original de creación (lo usa guardarCuenta cuando no está en modo edición)
   crearCuentaBinance() {
     if (!this.newAccount.name || !this.newAccount.referenceAccount || !this.newAccount.tipo) {
       this.messageService.add({
@@ -219,20 +229,99 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  getLatestPurchaseRate() {
-    this.accountService.getLatestPurchaseRate().subscribe({
-      next: res => this.latestRate = res,
-      error: err => console.error('Error obteniendo tasa de compra:', err)
+  // NUEVO: método único para guardar (crea o actualiza según editMode)
+  guardarCuenta() {
+    // Validaciones comunes
+    if (!this.newAccount.name || !this.newAccount.referenceAccount || !this.newAccount.tipo) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Faltan datos',
+        detail: 'Completa todos los campos obligatorios'
+      });
+      return;
+    }
+
+    if (this.newAccount.tipo === 'TRUST') {
+      this.newAccount.apiKey = null!;
+      this.newAccount.apiSecret = null!;
+    }
+
+    if (this.editMode && this.selectedAccountId != null) {
+      // UPDATE (PUT)
+      // Aseguramos que el payload lleve el id si tu interfaz lo contempla
+      (this.newAccount as any).id = this.selectedAccountId;
+
+      this.accountService.updateAccount(this.selectedAccountId, this.newAccount).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Actualizada',
+            detail: 'Cuenta actualizada correctamente'
+          });
+          this.createAccountDialog = false;
+          this.loadAccounts();
+          this.resetForm();
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se pudo actualizar la cuenta'
+          });
+        }
+      });
+    } else {
+      // CREATE (POST)
+      this.crearCuentaBinance();
+    }
+  }
+
+  // Carga el formulario con datos completos para edición
+  editarCuenta(account: DisplayAccount) {
+    if (!account.id) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se encontró el ID de la cuenta'
+      });
+      return;
+    }
+
+    this.editMode = true;
+    this.selectedAccountId = account.id;
+    this.createAccountDialog = true; // abre primero; luego rellena
+
+    // Trae la cuenta completa desde el backend para no pisar campos con null
+    this.accountService.getById(account.id).subscribe({
+      next: (full: AccountBinance) => {
+        this.newAccount = {
+          // si tu interfaz tiene id?: number, lo mantenemos en memoria
+          ...(full as any)
+        };
+      },
+      error: () => {
+        // Fallback: al menos setea lo visible
+        this.newAccount = {
+          name: account.accountType,
+          referenceAccount: '', // desconocido en la card
+          correo: account.correo && account.correo !== '–' ? account.correo : '',
+          userBinance: '',
+          balance: account.saldoInterno,
+          address: account.address && account.address !== '–' ? account.address : '',
+          tipo: '',
+          apiKey: '',
+          apiSecret: ''
+        };
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Advertencia',
+          detail: 'No se pudieron cargar todos los datos; revisa los campos antes de guardar.'
+        });
+      }
     });
   }
 
-  getTotalCajas() {
-    this.balanceService.getTotalCajas().subscribe({
-      next: res => this.totalCajasCop = res.total,
-      error: err => console.error('Error obteniendo total de cajas:', err)
-    });
-  }
-
+  // ---------- Eliminar ----------
   confirmDelete(account: DisplayAccount) {
     this.confirmationService.confirm({
       message: `¿Seguro que quieres eliminar la cuenta ${account.accountType}?`,
@@ -271,20 +360,26 @@ export class SaldosComponent implements OnInit {
       }
     });
   }
-  
-  editarCuenta(account: DisplayAccount) {
+
+  // ---------- Util ----------
+  private resetForm() {
     this.newAccount = {
-      name: account.accountType,
+      name: '',
       referenceAccount: '',
-      correo: account.correo || '',
+      correo: '',
       userBinance: '',
-      balance: account.saldoInterno,
-      address: account.address || '',
+      balance: 0,
+      address: '',
       tipo: '',
       apiKey: '',
       apiSecret: ''
     };
-    this.createAccountDialog = true;
   }
 
+  getLatestPurchaseRate() {
+    this.accountService.getLatestPurchaseRate().subscribe({
+      next: res => this.latestRate = res,
+      error: err => console.error('Error obteniendo tasa de compra:', err)
+    });
+  }
 }

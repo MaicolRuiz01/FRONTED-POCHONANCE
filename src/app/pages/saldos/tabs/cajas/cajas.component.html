@@ -8,7 +8,7 @@
     <ng-template pTemplate="content">
       <div class="total-content">
         <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total Cajas:</strong> {{ totalCajas | currency:'USD' }}
+        <strong>Total Cajas:</strong> {{ totalCajas | currency:'COP' }}
       </div>
     </ng-template>
 </p-card>
@@ -29,7 +29,7 @@
         <div class="account-details">
           <div class="card-row">
             <span class="label">Saldo:</span>
-            <span class="value">{{ caja?.saldo | currency:'USD' }}</span>
+            <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
           </div>
           
         </div>

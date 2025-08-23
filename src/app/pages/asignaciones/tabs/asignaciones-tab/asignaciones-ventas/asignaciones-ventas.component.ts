@@ -150,9 +150,6 @@ export class AsignacionesVentasComponent implements OnInit {
 
     this.displayModal = true;
   }
-
-
-
   closeModal(): void {
     this.displayModal = false;
     this.selected = null;
@@ -167,40 +164,51 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
 
-  saveSale(): void {
+  // src/app/pages/asignaciones/tabs/asignaciones-tab/asignaciones-ventas/asignaciones-ventas.component.ts
+
+// ... (código existente)
+
+saveSale(): void {
     if (!this.selected || !this.saleRate ||
-      (this.isSpecialClient && !this.selectedClientId) ||
-      (!this.isSpecialClient && !this.selectedSupplierId)) {
-      alert('Faltan datos obligatorios');
-      return;
+        (this.isSpecialClient && !this.selectedClientId) ||
+        (!this.isSpecialClient && !this.selectedSupplierId)) {
+        alert('Faltan datos obligatorios');
+        return;
     }
 
     const pesos = this.selected.dollars * this.saleRate;
 
-    const sell: SellDollar = {
-      ...this.selected,
-      tasa: this.saleRate,
-      pesos,
-      accounts: this.accounts,
+    // ✅ CORRECCIÓN: Creamos un objeto limpio con solo los datos a asignar.
+    const assignDto: Partial<SellDollar> = {
+        tasa: this.saleRate,
+        pesos: pesos,
+        dollars: this.selected.dollars,
+        accounts: this.accounts,
     };
 
-    // Agrega solo el campo necesario según el tipo de cliente
+    // ✅ CORRECCIÓN: Asigna el cliente o el proveedor de forma segura.
     if (this.isSpecialClient) {
-      sell.clienteId = this.selectedClientId!;
+        // Asignamos el ID si existe, de lo contrario es undefined.
+        assignDto.clienteId = this.selectedClientId ?? undefined;
     } else {
-      sell.supplier = this.selectedSupplierId!;
+        // Asignamos el ID si existe, de lo contrario es undefined.
+        assignDto.supplier = this.selectedSupplierId ?? undefined;
     }
 
-
-
-    this.sellService.createSellDollar(sell).subscribe({
-      next: () => {
-        this.closeModal();
-        this.loadSales();
-      },
-      error: err => alert('Error guardando la venta')
+    // ✅ Llama al servicio con el objeto corregido
+    this.sellService.asignarVenta(this.selected.id!, assignDto).subscribe({
+        next: () => {
+            alert('Venta asignada con éxito');
+            this.closeModal();
+            this.loadSales();
+        },
+        error: (err) => {
+            console.error('Error al asignar venta', err);
+            alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+        }
     });
-  }
+}
+  
 
   getClienteById(id: number | undefined): Cliente | undefined {
     return this.clientes.find(c => c.id === id);

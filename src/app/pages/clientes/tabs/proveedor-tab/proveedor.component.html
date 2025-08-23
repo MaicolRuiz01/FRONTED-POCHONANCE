@@ -17,7 +17,7 @@
     <ng-template pTemplate="content">
       <div class="total-content">
         <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total de proveedores:</strong> {{ totalProveedores | currency:'USD' }}
+        <strong>Total de proveedores:</strong> {{ totalProveedores | currency:'COP' }}
       </div>
     </ng-template>
 </p-card>
@@ -37,7 +37,7 @@
         <div class="account-details">
           <div class="card-row">
             <span class="label">Balance:</span>
-            <span class="value">{{ supplier?.balance | currency:'USD' }}</span>
+            <span class="value">{{ supplier?.balance | currency:'COP' }}</span>
           </div>
           <div class="card-row">
             <span class="label">Último pago:</span>
@@ -76,7 +76,7 @@
 
         <div class="p-col-12 p-md-6">
           <label for="amount">Monto:</label>
-          <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="USD" [min]="0" [prefix]="'$'"
+          <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="COP" [min]="0" [prefix]="'$'"
             [showButtons]="true" placeholder="Monto a pagar" inputMode="decimal"> </p-inputNumber>
         </div>
 
@@ -103,7 +103,7 @@
         <br>
         <div class="p-col-12 p-md-6">
           <label for="balance" class="p-d-block p-mb-2">Balance inicial</label>
-          <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" mode="decimal" currency="USD" [min]="0"
+          <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" mode="decimal" currency="COP" [min]="0"
             [prefix]="'$'" [showButtons]="true" placeholder="Ej: 1000" class="decimal"></p-inputNumber>
         </div>
 

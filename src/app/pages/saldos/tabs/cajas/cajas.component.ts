@@ -42,6 +42,9 @@ ngOnInit(): void {
     this.cajaService.listar().subscribe(data => this.cajas = data);
   }
 
+get totalCajas(): number {
+  return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
+}
 
   guardarCaja() {
     if (!this.nuevaCaja.name || this.nuevaCaja.saldo === undefined) return;

@@ -11,7 +11,7 @@ import { ButtonModule } from 'primeng/button';
   imports: [DialogModule
 , CommonModule, TableModule, ButtonModule, CurrencyPipe
   ],
-  templateUrl: './caja.component.html',
+  templateUrl:'./caja.component.html',
   styleUrls: ['./caja.component.css'],
 })
 export class CajaComponent implements OnInit {
@@ -19,6 +19,11 @@ export class CajaComponent implements OnInit {
   showDetailsModal = false;
   showAdditionalInfoModal = false;
   selectedBalance: BalanceGeneral | null = null;
+
+
+totalCajaObj: Record<string, number> = {};
+totalCajaArr: { nombre: string; monto: number }[] = [];
+totalClientes: number = 0;
 
   constructor(private balanceService: BalanceGeneralService) {}
 
@@ -42,11 +47,33 @@ export class CajaComponent implements OnInit {
     this.showDetailsModal = true;
   }
 
-  showAdditionalInfo(): void {
-    // Implement logic to show additional information
-    this.showAdditionalInfoModal = true;
-  }
+showAdditionalInfo(): void {
+  // Llamada a totalCaja
+  this.balanceService.totalCaja().subscribe({
+    next: (data) => {
+      this.totalCajaObj = data || {};
+      this.totalCajaArr = Object.entries(this.totalCajaObj).map(([nombre, monto]) => ({
+        nombre,
+        monto: Number(monto ?? 0)
+      }));
+    },
+    error: (err) => {
+      console.error('Error cargando total caja', err);
+    },
+  });
 
+  // Llamada a totalClientes
+  this.balanceService.totalClientes().subscribe({
+    next: (total) => {
+      this.totalClientes = total;
+      this.showAdditionalInfoModal = true; // Abrimos modal cuando llega el dato
+    },
+    error: (err) => {
+      console.error('Error cargando total clientes', err);
+      this.showAdditionalInfoModal = true;
+    },
+  });
+}
 
   closeModal(): void {
     this.showDetailsModal = false;

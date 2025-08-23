@@ -73,3 +73,12 @@
 .card-row .value {
   color: #222;
 }
+
+.total-container{
+  width: auto !important;
+  display: inline-block !important;
+  background: #e3f2fd;
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 1px 1px;
+}

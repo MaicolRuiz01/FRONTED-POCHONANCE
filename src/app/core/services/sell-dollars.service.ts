@@ -35,7 +35,7 @@ export class SellDollarsService {
   //service de tron
   private readonly apiUsdtSalidas = `${environment.apiUrl}/api/usdt-salidas`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createSellDollar(sell: SellDollar): Observable<any> {
     return this.http.post<any>(this.apiUrl, sell);
@@ -56,23 +56,20 @@ export class SellDollarsService {
   }
 
   updateSellDollar(id: number, sell: SellDollar): Observable<any> {
-  return this.http.put(`${this.apiUrl}/${id}`, sell);
+    return this.http.put(`${this.apiUrl}/${id}`, sell);
   }
 
   importarVentasAutomaticamente(): Observable<void> {
-  return this.http.post<void>(`${this.apiUrl}/importar-automatico`, {});
+    return this.http.post<void>(`${this.apiUrl}/importar-automatico`, {});
   }
 
   // obtiene las ventas que ya están guardadas en DB y NO asignadas (día actual)
-getNoAsignadas(): Observable<SellDollar[]> {
-  return this.http.get<SellDollar[]>(`${this.apiUrl}/no-asignadas`);
-}
+  getNoAsignadas(): Observable<SellDollar[]> {
+    return this.http.get<SellDollar[]>(`${this.apiUrl}/no-asignadas`);
+  }
 
-// asigna una venta ya existente
-asignarVenta(id: number, dto: Partial<SellDollar>): Observable<any> {
-  return this.http.put<any>(`${this.apiUrl}/asignar/${id}`, dto);
-}
-
-
-
+  // asigna una venta ya existente
+  asignarVenta(id: number, dto: Partial<SellDollar>): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/asignar/${id}`, dto);
+  }
 }

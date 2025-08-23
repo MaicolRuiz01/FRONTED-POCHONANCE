@@ -33,6 +33,15 @@ export class AccountBinanceService {
     return this.http.post<AccountBinance>(this.apiUrl, account);
   }
 
+  updateAccount(id: number, account: AccountBinance): Observable<AccountBinance> {
+    return this.http.put<AccountBinance>(`${this.apiUrl}/${id}`, account);
+  }
+
+  // 🔹 nuevo método para buscar cuenta por id
+  getById(id: number): Observable<AccountBinance> {
+    return this.http.get<AccountBinance>(`${this.apiUrl}/${id}`);
+  }
+
   getUSDTBalanceBinance(name: string): Observable<string> {
     const url = `${this.apiUrl}/balance-usdt?name=${encodeURIComponent(name)}`;
     return this.http.get(url, { responseType: 'text' });
@@ -54,7 +63,6 @@ export class AccountBinanceService {
     return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/balance-total-externo`);
   }
 
-  // 🔹 NUEVO: Eliminar cuenta por ID
   deleteAccount(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

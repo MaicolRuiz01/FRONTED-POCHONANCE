@@ -8,10 +8,9 @@ import { SaldosComponent } from './pages/saldos/tabs/saldos-cuentas/saldos.compo
 
 import { TabAsignacionComponent } from './pages/cuentas/asignacion/tab-asignacion/tab-asignacion.component';
 import { SaldosTabComponent } from './pages/saldos/container/saldos-tab.component';
-import { ClientesComponent } from './pages/clientes/clientes.component';
+import { ClientesComponentW } from './pages/clientes/container/clientes-wrapper.component';
 import { AsignacionesWrapperComponent } from './pages/asignaciones/container/asignaciones-wrapper/asignaciones-wrapper.component';
 import { ActivadestabComponent } from './pages/activadades/activadestab/activadestab.component';
-import { ProveedorComponent } from './pages/proveedor/proveedor.component';
 import { MovimientosComponent } from './pages/movimientos/movimientos.component';
 import { AsignadasComponent } from './pages/historial/container/asignadas/asignadas.component';
 
@@ -34,7 +33,7 @@ export const routes: Routes = [  {
       path: 'saldos',
       component: SaldosTabComponent
     },
-    {path: 'proveedor', component: ProveedorComponent},
+    
     {path:'cuentas/asignacion', component:TabAsignacionComponent},
     {
         path: 'cuentas/:id/ventas',
@@ -46,7 +45,7 @@ export const routes: Routes = [  {
         path: 'movimientos',
         component: MovimientosComponent
       },
-      {path: 'clientes', component: ClientesComponent},
+      {path: 'clientes', component: ClientesComponentW},
       {path: 'historial', component: AsignadasComponent}
 
   ]

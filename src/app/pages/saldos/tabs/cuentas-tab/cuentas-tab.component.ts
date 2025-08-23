@@ -36,6 +36,7 @@ export class CuentasTabComponent implements OnInit {
   cajas: Caja[] = [];
 selectedCajaId?: number;
 
+
   selectedCuentaOrigenId?: number;
 selectedCuentaDestinoId?: number;
 montoMovimiento?: number;
@@ -67,6 +68,11 @@ montoPago?: number;
   }
   goToVentas(accountId: number) {
   this.router.navigate(['/cuentas', accountId, 'ventas']);
+}
+
+
+get totalCuentas(): number {
+  return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
 }
 
   loadCuentas() {

@@ -5,8 +5,21 @@
   <button pButton label="Depósito" icon="pi pi-arrow-up" class="p-button-info" (click)="abrirDialogDeposito()"></button>
   <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help" (click)="abrirDialogTransferencia()"></button>
   <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success" (click)="abrirDialogPago()"></button>
+
+
+<div class="total-container">  
+<p-card styleClass="total-card">
+    <ng-template pTemplate="content">
+      <div class="total-content">
+        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+        <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
+      </div>
+    </ng-template>
+</p-card>
+</div>
 </div>
 <br>
+
 <hr>
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
@@ -14,7 +27,7 @@
     <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card" (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
-          <p><strong>Balance: </strong>{{ account.balance | currency }}</p>
+          <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
         </div>
       </ng-template>
     </p-card>

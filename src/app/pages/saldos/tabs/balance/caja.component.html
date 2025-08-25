@@ -26,15 +26,15 @@
 <p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
   <div *ngIf="selectedBalance">
     <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'USD' }}</p>
+    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}</p>
     <p><strong>Tasa Promedio del Día:</strong> {{ selectedBalance.tasaPromedioDelDia }}</p>
     <p><strong>Tasa Venta del Día:</strong> {{ selectedBalance.tasaVentaDelDia }}</p>
     <p><strong>Total P2P (USD):</strong> {{ selectedBalance.totalP2PdelDia | currency: 'USD' }}</p>
-    <p><strong>Comisiones P2P (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency: 'USD' }}</p>
-    <p><strong>4x1000 de P2P:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency: 'USD' }}</p>
-    <p><strong>Utilidad P2P:</strong> {{ selectedBalance.utilidadP2P | currency: 'USD' }}</p>
+    <p><strong>Comisiones P2P (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency: 'COP' }}</p>
+    <p><strong>4x1000 de P2P:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency: 'COP' }}</p>
+    <p><strong>Utilidad P2P:</strong> {{ selectedBalance.utilidadP2P | currency: 'COP' }}</p>
     <p><strong>Total Ventas Generales (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency: 'USD' }}</p>
-    <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency: 'USD' }}</p>
+    <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency: 'COP' }}</p>
   </div>
 <br>
   <button pButton label="Inf. adicional"  class="p-button-info" (click)="showAdditionalInfo()"></button>

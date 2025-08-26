@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
@@ -30,7 +30,7 @@ export interface MovimientoVistaDto {
 export class MovimientoService {
   private apiUrl = `${environment.apiUrl}/movimiento`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createMovimiento(movimiento: MovimientoDto): Observable<MovimientoDto> {
     return this.http.post<MovimientoDto>(this.apiUrl, movimiento);
@@ -46,18 +46,18 @@ export class MovimientoService {
   }
 
   registrarRetiro(idCuentaOrigen: number, monto: number) {
-  const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&monto=${monto}`;
-  return this.http.post(url, {});
-}
+    const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&monto=${monto}`;
+    return this.http.post(url, {});
+  }
 
   registrarDeposito(idCuentaDestino: number, monto: number) {
-  const url = `${this.apiUrl}/deposito?cuentaId=${idCuentaDestino}&monto=${monto}`;
-  return this.http.post(url, {});
+    const url = `${this.apiUrl}/deposito?cuentaId=${idCuentaDestino}&monto=${monto}`;
+    return this.http.post(url, {});
   }
 
   registrarTransferencia(idCuentaOrigen: number, idCuentaDestino: number, monto: number) {
-  const url = `${this.apiUrl}/transferencia?origenId=${idCuentaOrigen}&destinoId=${idCuentaDestino}&monto=${monto}`;
-  return this.http.post(url, {});
+    const url = `${this.apiUrl}/transferencia?origenId=${idCuentaOrigen}&destinoId=${idCuentaDestino}&monto=${monto}`;
+    return this.http.post(url, {});
   }
 
   getTransferencias(): Observable<MovimientoVistaDto[]> {
@@ -74,9 +74,26 @@ export class MovimientoService {
     return this.http.get<MovimientoVistaDto[]>(url);
   }
   registrarPagoCliente(cuentaId: number, clienteId: number, monto: number) {
-  const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
-  return this.http.post<MovimientoVistaDto>(url, {});
-}
+    const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
+    return this.http.post<MovimientoVistaDto>(url, {});
+  }
+  registrarPagoProveedor(cuentaId: number | null, cajaId: number | null, proveedorId: number, monto: number): Observable<any> {
+
+    // Mejora el envío de parámetros para manejar los valores nulos correctamente.
+    let params = new HttpParams()
+      .set('monto', monto.toString())
+      .set('proveedor', proveedorId.toString());
+
+    if (cuentaId !== null) {
+      params = params.set('cuentaId', cuentaId.toString());
+    }
+
+    if (cajaId !== null) {
+      params = params.set('caja', cajaId.toString());
+    }
+
+    return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params: params });
+  }
 
 
 }

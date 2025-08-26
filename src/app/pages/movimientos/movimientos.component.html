@@ -1,4 +1,5 @@
 <p-tabView>
+  <!-- 🔹 Retiros -->
   <p-tabPanel header="Retiros">
     <p-table [value]="retiros">
       <ng-template pTemplate="header">
@@ -7,6 +8,7 @@
           <th>Monto</th>
           <th>Cuenta Origen</th>
           <th>Caja</th>
+          <th>Acciones</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row>
@@ -15,12 +17,15 @@
           <td>{{ row.monto | currency:'USD' }}</td>
           <td>{{ row.cuentaOrigen }}</td>
           <td>{{ row.caja }}</td>
+          <td>
+            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'RETIRO')"></button>
+          </td>
         </tr>
       </ng-template>
     </p-table>
   </p-tabPanel>
 
-
+  <!-- 🔹 Depósitos -->
   <p-tabPanel header="Depósitos">
     <p-table [value]="depositos">
       <ng-template pTemplate="header">
@@ -29,6 +34,7 @@
           <th>Monto</th>
           <th>Cuenta Destino</th>
           <th>Caja</th>
+          <th>Acciones</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row>
@@ -37,11 +43,15 @@
           <td>{{ row.monto | currency:'USD' }}</td>
           <td>{{ row.cuentaDestino }}</td>
           <td>{{ row.caja }}</td>
+          <td>
+            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'DEPOSITO')"></button>
+          </td>
         </tr>
       </ng-template>
     </p-table>
   </p-tabPanel>
 
+  <!-- 🔹 Transferencias -->
   <p-tabPanel header="Transferencias">
     <p-table [value]="transferencias">
       <ng-template pTemplate="header">
@@ -50,6 +60,7 @@
           <th>Monto</th>
           <th>Cuenta Origen</th>
           <th>Cuenta Destino</th>
+          <th>Acciones</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row>
@@ -57,47 +68,75 @@
           <td>{{ row.fecha | date:'short' }}</td>
           <td>{{ row.monto | currency:'USD' }}</td>
           <td>{{ row.cuentaOrigen }}</td>
-            <td>{{ row.cuentaDestino }}</td>
+          <td>{{ row.cuentaDestino }}</td>
+          <td>
+            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'TRANSFERENCIA')"></button>
+          </td>
         </tr>
       </ng-template>
     </p-table>
   </p-tabPanel>
 
-<p-tabPanel header="Traspasos">
+  <!-- 🔹 Traspasos -->
+  <p-tabPanel header="Traspasos">
+    <div *ngIf="traspasos.length === 0" style="text-align: center; margin-top: 2rem;">
+      <p>No hay traspasos el día de hoy.</p>
+    </div>
 
-  <div *ngIf="traspasos.length === 0" style="text-align: center; margin-top: 2rem;">
-    <p>No hay traspasos el día de hoy.</p>
-  </div>
+    <p-table
+      *ngIf="!cargando && traspasos.length > 0"
+      [value]="traspasos"
+      [paginator]="true"
+      [rows]="10"
+      [responsiveLayout]="'scroll'">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Cuenta Origen</th>
+          <th>Cuenta Destino</th>
+          <th>Monto</th>
+          <th>Tipo</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
 
-<p-table
-    *ngIf="!cargando && traspasos.length > 0"
-    [value]="traspasos"
-    [paginator]="true"
-    [rows]="10"
-    [responsiveLayout]="'scroll'"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Fecha</th>
-        <th>Cuenta Origen</th>
-        <th>Cuenta Destino</th>
-        <th>Monto</th>
-        <th>Tipo</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-traspaso>
-      <tr>
-        <td>{{ traspaso.fecha | date:'short' }}</td>
-        <td>{{ traspaso.cuentaFrom }}</td>
-        <td>{{ traspaso.cuentaTo }}</td>
-        <td>{{ traspaso.monto | currency:'USD' }}</td>
-        <td>{{ traspaso.tipo || '-' }}</td>
-      </tr>
-    </ng-template>
-  </p-table>
-</p-tabPanel>
-
-
+      <ng-template pTemplate="body" let-traspaso>
+        <tr>
+          <td>{{ traspaso.fecha | date:'short' }}</td>
+          <td>{{ traspaso.cuentaFrom }}</td>
+          <td>{{ traspaso.cuentaTo }}</td>
+          <td>{{ traspaso.monto | currency:'USD' }}</td>
+          <td>{{ traspaso.tipo || '-' }}</td>
+          <td>
+            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(traspaso, 'TRASPASO')"></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
 </p-tabView>
 
+<!-- 🔹 Modal de edición (compartido por todos los tabs) -->
+<p-dialog header="Editar Movimiento" [(visible)]="mostrarDialogo" [modal]="true" [style]="{width: '400px'}">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="monto">Monto</label>
+      <input id="monto" type="number" pInputText [(ngModel)]="movimientoEditando.monto" />
+    </div>
+
+    <div class="p-field" *ngIf="movimientoEditando.tipo === 'RETIRO' || movimientoEditando.tipo === 'DEPOSITO'">
+      <label for="caja">Caja</label>
+      <input id="caja" type="text" pInputText [(ngModel)]="movimientoEditando.caja" />
+    </div>
+
+    <div class="p-field" *ngIf="movimientoEditando.tipo === 'TRANSFERENCIA' || movimientoEditando.tipo === 'TRASPASO'">
+      <label for="cuentaDestino">Cuenta Destino</label>
+      <input id="cuentaDestino" type="text" pInputText [(ngModel)]="movimientoEditando.cuentaDestino" />
+    </div>
+  </div>
+
+  <p-footer>
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cerrarDialogo()"></button>
+    <button pButton label="Guardar" icon="pi pi-check" (click)="guardarEdicion()"></button>
+  </p-footer>
+</p-dialog>

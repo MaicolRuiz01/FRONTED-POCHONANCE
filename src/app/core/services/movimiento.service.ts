@@ -3,10 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
-
 export interface MovimientoDto {
   id: number;
-  tipo: string; // 'retiro', 'deposito', 'transferencia'
+  tipo: string; // 'retiro', 'deposito', 'transferencia', 'pago'
   monto: number;
   cuentaFromId: number;
   cuentaToId?: number; // Solo para transferencias
@@ -16,6 +15,7 @@ export interface MovimientoDto {
 }
 
 export interface MovimientoVistaDto {
+  id?: number; // 🔹 importante para poder editar
   tipo: string;
   fecha: Date;
   monto: number;
@@ -69,6 +69,7 @@ export class MovimientoService {
     const url = `${this.apiUrl}/depositos`;
     return this.http.get<MovimientoVistaDto[]>(url);
   }
+
   getRetiros(): Observable<MovimientoVistaDto[]> {
     const url = `${this.apiUrl}/retiros`;
     return this.http.get<MovimientoVistaDto[]>(url);

@@ -88,6 +88,46 @@ export class MovimientosComponent implements OnInit {
     );
   }
 
+  mostrarDialogo: boolean = false;
+movimientoEditando: any = {}; // puede ser MovimientoVistaDto o TransaccionesDTO
+tipoEditando: string = '';
+
+abrirDialogo(movimiento: any, tipo: string) {
+  this.movimientoEditando = { ...movimiento, tipo }; // clonar y guardar tipo
+  this.tipoEditando = tipo;
+  this.mostrarDialogo = true;
+}
+
+cerrarDialogo() {
+  this.mostrarDialogo = false;
+  this.movimientoEditando = {};
+  this.tipoEditando = '';
+}
+
+guardarEdicion() {
+  if (!this.movimientoEditando.id) return;
+
+  this.movimientoService.actualizarMovimiento(this.movimientoEditando.id, this.movimientoEditando).subscribe({
+    next: (movimientoActualizado) => {
+      const lista = this.obtenerListaPorTipo(this.tipoEditando);
+      const index = lista.findIndex((m: any) => m.id === movimientoActualizado.id);
+      if (index > -1) lista[index] = movimientoActualizado;
+
+      this.cerrarDialogo();
+    },
+    error: () => alert('Error al actualizar el movimiento')
+  });
+}
+
+private obtenerListaPorTipo(tipo: string) {
+  switch (tipo) {
+    case 'RETIRO': return this.retiros;
+    case 'DEPOSITO': return this.depositos;
+    case 'TRANSFERENCIA': return this.transferencias;
+    case 'TRASPASO': return this.traspasos;
+    default: return [];
+  }
+}
 
   
 

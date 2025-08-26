@@ -59,35 +59,47 @@
 
   <!-- Dialog de formulario de pago -->
   <p-dialog header="Formulario de Pago" [(visible)]="showPaymentForm" [modal]="true" [closable]="false"
-    [style]="{width: '400px'}">
-    <div class="p-fluid">
-      <div class="p-grid">
-        <div class="p-col-12 p-md-6">
-          <label for="accountCop">Cuenta COP:</label>
-          <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop" optionLabel="name"
-            placeholder="Seleccione Cuenta COP"></p-dropdown>
-        </div>
+  [style]="{width: '400px'}">
+  <div class="p-fluid">
+    <div class="p-grid">
+      <div class="p-col-12 p-md-12">
+        <label for="paymentMethod">Fuente de Pago:</label>
+        <p-dropdown [options]="['Cuenta Bancaria', 'Caja']" [(ngModel)]="paymentMethod"
+          placeholder="Seleccione la fuente"></p-dropdown>
+      </div>
 
-        <div class="p-col-12 p-md-6">
-          <label for="supplier">Proveedor:</label>
-          <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier" optionLabel="name"
-            placeholder="Seleccione Proveedor"></p-dropdown>
-        </div>
+      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cuenta Bancaria'">
+        <label for="accountCop">Cuenta COP:</label>
+        <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop" optionLabel="name"
+          placeholder="Seleccione Cuenta COP"></p-dropdown>
+      </div>
 
-        <div class="p-col-12 p-md-6">
-          <label for="amount">Monto:</label>
-          <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="USD" [min]="0" [prefix]="'$'"
-            [showButtons]="true" placeholder="Monto a pagar" inputMode="decimal"> </p-inputNumber>
-        </div>
+      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Caja'">
+        <label for="caja">Caja:</label>
+        <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja" optionLabel="name" placeholder="Seleccione Caja">
+        </p-dropdown>
+      </div>
 
-        <div class="p-col-12" style="text-align: right; margin-top: 20px;">
-          <button pButton type="button" label="Realizar Pago" icon="pi pi-check" (click)="makePayment()"></button>
-          <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-secondary"
-            (click)="togglePaymentForm()"></button>
-        </div>
+      <div class="p-col-12 p-md-6">
+        <label for="supplier">Proveedor:</label>
+        <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier" optionLabel="name"
+          placeholder="Seleccione Proveedor"></p-dropdown>
+      </div>
+
+      <div class="p-col-12 p-md-6">
+        <label for="amount">Monto:</label>
+        <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="USD" [min]="0" [prefix]="'$'"
+          [showButtons]="true" placeholder="Monto a pagar" inputMode="decimal"> </p-inputNumber>
+      </div>
+
+      <div class="p-col-12" style="text-align: right; margin-top: 20px;">
+        <button pButton type="button" label="Realizar Pago" icon="pi pi-check" (click)="makePayment()"></button>
+        <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-secondary"
+          (click)="togglePaymentForm()"></button>
       </div>
     </div>
-  </p-dialog>
+  </div>
+</p-dialog>
 
   <!-- Dialog de formulario para crear proveedor -->
   <p-dialog header="Formulario de Proveedor" [(visible)]="showform" [modal]="true" [closable]="false"

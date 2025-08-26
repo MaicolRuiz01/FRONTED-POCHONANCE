@@ -12,6 +12,8 @@ import { ListaPagosComponent } from './lista-pagos/lista-pagos.component';
 import { CardModule } from 'primeng/card'; // Importa el componente ListaPagos
 import { CommonModule } from '@angular/common'; 
 import { CalendarModule } from 'primeng/calendar';
+import { CajaService, Caja } from '../../../../core/services/caja.service'; // ✅ Necesitas este servicio para cargar la caja
+import { MovimientoService } from '../../../../core/services/movimiento.service';
 
 @Component({
   selector: 'app-proveedor',
@@ -47,15 +49,22 @@ export class ProveedorComponent implements OnInit {
   Supplier_balance: number = 0; // nuevo, balance por defecto
   SupplierlastPaymentDate: Date = new Date(); // nuevo, fecha por defecto
 
+  cajas: any[] = [];
+  selectedCaja: any | null = null;
+  paymentMethod: string = 'Cuenta Bancaria';
+
   constructor(
     private supplierService: SupplierService,
     private accountCopService: AccountCopService,
-    private paymentService: PagoProveedorService
+    private paymentService: PagoProveedorService,
+    private cajaService: CajaService,
+    private movimientoService: MovimientoService
   ) {}
 
   ngOnInit(): void {
     this.loadSuppliers();
     this.accountCopService.getAll().subscribe(accountCops => this.accountCops = accountCops);
+    this.cajaService.listar().subscribe(cajas => this.cajas = cajas);
   }
 
   
@@ -111,18 +120,36 @@ export class ProveedorComponent implements OnInit {
 
   // Llamar al servicio para realizar el pago
   makePayment(): void {
-    const accountCopId = Number(this.selectedAccountCop?.id ?? 0);
     const supplierId = Number(this.selectedSupplier?.id ?? 0);
-
-    if (accountCopId === 0 || supplierId === 0) {
-      console.error('Cuenta o proveedor no seleccionados');
+    if (supplierId === 0) {
+      console.error('Proveedor no seleccionado');
       return;
     }
 
-    this.paymentService.makePayment(accountCopId, supplierId, this.amount)
+    let cuentaId: number | null = null;
+    let cajaId: number | null = null;
+
+    if (this.paymentMethod === 'Cuenta Bancaria') {
+      cuentaId = Number(this.selectedAccountCop?.id ?? 0);
+      if (cuentaId === 0) {
+        console.error('Cuenta COP no seleccionada');
+        return;
+      }
+    } else if (this.paymentMethod === 'Caja') {
+      cajaId = Number(this.selectedCaja?.id ?? 0);
+      if (cajaId === 0) {
+        console.error('Caja no seleccionada');
+        return;
+      }
+    }
+
+    // ✅ Llamar al servicio con los parámetros correctos
+    this.movimientoService.registrarPagoProveedor(cuentaId, cajaId, supplierId, this.amount)
       .subscribe(
         response => {
           console.log('Pago realizado exitosamente', response);
+          this.loadSuppliers();
+          this.togglePaymentForm();
         },
         error => {
           console.error('Error realizando el pago:', error);
@@ -130,9 +157,16 @@ export class ProveedorComponent implements OnInit {
       );
   }
 
-  // Toggle para mostrar/ocultar el formulario de pago
   togglePaymentForm(): void {
     this.showPaymentForm = !this.showPaymentForm;
+    // ✅ Restablecer los valores al cerrar el formulario
+    if (!this.showPaymentForm) {
+      this.selectedAccountCop = null;
+      this.selectedCaja = null;
+      this.selectedSupplier = null;
+      this.amount = 0;
+      this.paymentMethod = 'Cuenta Bancaria';
+    }
   }
 
   onSelectSupplier(supplier: Supplier): void {

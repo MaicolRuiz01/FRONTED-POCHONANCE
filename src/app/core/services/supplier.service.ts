@@ -23,7 +23,7 @@ export interface Supplier {
     }
 
     createSupplier(data: any): Observable<Supplier> {
-      return this.http.post<Supplier>(`http://localhost:8080/supplier/suppliers`, data);
+      return this.http.post<Supplier>(`${this.apiUrl}/suppliers`, data);
     }
 
     // Obtener el Supplier con ID 1

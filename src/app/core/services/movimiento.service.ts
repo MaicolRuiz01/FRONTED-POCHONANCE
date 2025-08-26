@@ -3,10 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
-
 export interface MovimientoDto {
   id: number;
-  tipo: string; // 'retiro', 'deposito', 'transferencia'
+  tipo: string; // 'retiro', 'deposito', 'transferencia', 'pago'
   monto: number;
   cuentaFromId: number;
   cuentaToId?: number; // Solo para transferencias
@@ -16,6 +15,7 @@ export interface MovimientoDto {
 }
 
 export interface MovimientoVistaDto {
+  id?: number; // 🔹 importante para poder editar
   tipo: string;
   fecha: Date;
   monto: number;
@@ -46,18 +46,23 @@ export class MovimientoService {
   }
 
   registrarRetiro(idCuentaOrigen: number, monto: number) {
-  const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&monto=${monto}`;
-  return this.http.post(url, {});
-}
+    const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&monto=${monto}`;
+    return this.http.post(url, {});
+  }
 
   registrarDeposito(idCuentaDestino: number, monto: number) {
-  const url = `${this.apiUrl}/deposito?cuentaId=${idCuentaDestino}&monto=${monto}`;
-  return this.http.post(url, {});
+    const url = `${this.apiUrl}/deposito?cuentaId=${idCuentaDestino}&monto=${monto}`;
+    return this.http.post(url, {});
   }
 
   registrarTransferencia(idCuentaOrigen: number, idCuentaDestino: number, monto: number) {
-  const url = `${this.apiUrl}/transferencia?origenId=${idCuentaOrigen}&destinoId=${idCuentaDestino}&monto=${monto}`;
-  return this.http.post(url, {});
+    const url = `${this.apiUrl}/transferencia?origenId=${idCuentaOrigen}&destinoId=${idCuentaDestino}&monto=${monto}`;
+    return this.http.post(url, {});
+  }
+
+  registrarPagoCliente(cuentaId: number, clienteId: number, monto: number) {
+    const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
+    return this.http.post<MovimientoVistaDto>(url, {});
   }
 
   getTransferencias(): Observable<MovimientoVistaDto[]> {
@@ -69,14 +74,14 @@ export class MovimientoService {
     const url = `${this.apiUrl}/depositos`;
     return this.http.get<MovimientoVistaDto[]>(url);
   }
+
   getRetiros(): Observable<MovimientoVistaDto[]> {
     const url = `${this.apiUrl}/retiros`;
     return this.http.get<MovimientoVistaDto[]>(url);
   }
-  registrarPagoCliente(cuentaId: number, clienteId: number, monto: number) {
-  const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
-  return this.http.post<MovimientoVistaDto>(url, {});
-}
 
-
+  // 🔹 Nuevo método para actualizar un movimiento
+  actualizarMovimiento(id: number, movimiento: Partial<MovimientoDto | MovimientoVistaDto>): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, movimiento);
+  }
 }

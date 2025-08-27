@@ -104,7 +104,7 @@ cerrarDialogo() {
   this.tipoEditando = '';
 }
 
-/* guardarEdicion() {
+guardarEdicion() {
   if (!this.movimientoEditando.id) return;
 
   this.movimientoService.actualizarMovimiento(this.movimientoEditando.id, this.movimientoEditando).subscribe({
@@ -117,7 +117,7 @@ cerrarDialogo() {
     },
     error: () => alert('Error al actualizar el movimiento')
   });
-} */
+}
 
 private obtenerListaPorTipo(tipo: string) {
   switch (tipo) {
@@ -128,9 +128,4 @@ private obtenerListaPorTipo(tipo: string) {
     default: return [];
   }
 }
-
-  
-
-  
-
 }

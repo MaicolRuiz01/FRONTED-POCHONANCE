@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
+import { Cliente, ClienteService } from '../../../../../core/services/cliente.service';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
@@ -13,7 +14,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AccordionModule } from 'primeng/accordion';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
-
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -29,15 +30,15 @@ import { MenuItem } from 'primeng/api';
     DropdownModule,
     ProgressSpinnerModule,
     AccordionModule,
-    PanelMenuModule
-
+    PanelMenuModule,
+    RadioButtonModule
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
 })
 export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 
-   items: MenuItem[] = [];
+  items: MenuItem[] = [];
 
   @ViewChild('compraTemplate') compraTemplate!: TemplateRef<any>;
   @ViewChild('ventasTemplate') ventasTemplate!: TemplateRef<any>;
@@ -47,8 +48,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     this.items = [
       {
         label: 'compras por asignar',
-        items: [
-        ]
+        items: []
       }
     ];
   }
@@ -66,48 +66,58 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
+  clientes: Cliente[] = [];
+  selectedClienteId: number | null = null;
+
+  // 🔹 propiedad que faltaba
+  assignmentType: 'proveedor' | 'cliente' | null = null;
+
   loading: boolean = false;
   isMobile: boolean = false;
 
-  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
+  constructor(
+    private buyService: BuyDollarsService,
+    private supplierService: SupplierService,
+    private clienteService: ClienteService
+  ) {}
 
   ngOnInit(): void {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
+    this.loadClientes();
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener('resize', () => {
       this.isMobile = window.innerWidth <= 768;
     });
+
     this.buyService.importarComprasAutomaticamente().subscribe({
-    next: () => {
-      this.loadDeposits();  // Ahora sí carga las compras después de importar
-    },
-    error: err => {
-      console.error('Error al importar compras automáticas', err);
-      alert('Error al registrar automáticamente las compras');
-      this.loadDeposits();  // Igual carga las compras en caso de error
-    }
-  });
+      next: () => {
+        this.loadDeposits();
+      },
+      error: err => {
+        console.error('Error al importar compras automáticas', err);
+        alert('Error al registrar automáticamente las compras');
+        this.loadDeposits();
+      }
+    });
   }
 
-
-   loadDeposits(): void {
-  this.loading = true;
-  this.buyService.getComprasNoAsignadasHoy().subscribe({
-    next: data => {
-      this.allDeposits = data;
-      this.filteredDeposits = [...this.allDeposits];
-      this.loading = false;
-    },
-    error: err => {
-      console.error('Error cargando depósitos no asignados', err);
-      alert('No se pudieron cargar las compras no asignadas');
-      this.loading = false;
-    }
-  });
-}
-
+  loadDeposits(): void {
+    this.loading = true;
+    this.buyService.getComprasNoAsignadasHoy().subscribe({
+      next: data => {
+        this.allDeposits = data;
+        this.filteredDeposits = [...this.allDeposits];
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Error cargando depósitos no asignados', err);
+        alert('No se pudieron cargar las compras no asignadas');
+        this.loading = false;
+      }
+    });
+  }
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
@@ -116,26 +126,31 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     });
   }
 
+  loadClientes(): void {
+    this.clienteService.listar().subscribe({
+      next: data => this.clientes = data,
+      error: err => console.error('Error cargando clientes', err)
+    });
+  }
+
   formatDate(date: Date): string {
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().slice(0, 19);
-}
-
-
-
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 19);
+  }
 
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
   }
-
 
   openAssignModal(deposit: BuyDollarsDto): void {
     this.selectedDeposit = deposit;
     this.purchaseRate = null;
     this.isRateInvalid = false;
     this.displayModal = true;
+    this.assignmentType = null; // 🔹 reiniciar selección
     this.selectedSupplierId = null;
+    this.selectedClienteId = null;
   }
 
   closeModal(): void {
@@ -145,29 +160,36 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   }
 
   saveAssignment(): void {
-  if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
+    if (!this.selectedDeposit || !this.purchaseRate) return;
 
-  const pesos = this.selectedDeposit.dollars * this.purchaseRate;
+    const pesos = this.selectedDeposit.dollars * this.purchaseRate;
 
-  const buyData: Partial<BuyDollarsDto> = {
-    tasa: this.purchaseRate,
-    pesos: pesos,
-    supplierId: this.selectedSupplierId
-  };
+    const buyData: Partial<BuyDollarsDto> = {
+      tasa: this.purchaseRate,
+      pesos: pesos
+    };
 
-  console.log('Asignando compra ID:', this.selectedDeposit.id, 'con data:', buyData);
-
-  this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
-    next: () => {
-      alert('Compra asignada correctamente');
-      this.closeModal();
-      this.loadDeposits(); // Recarga la lista con solo las no asignadas
-    },
-    error: err => {
-      console.error('Error asignando compra', err);
-      alert('Error al asignar la compra');
+    if (this.assignmentType === 'proveedor' && this.selectedSupplierId) {
+      buyData.supplierId = this.selectedSupplierId;
+    } else if (this.assignmentType === 'cliente' && this.selectedClienteId) {
+      buyData.clienteId = this.selectedClienteId;
+    } else {
+      alert('Debe seleccionar un proveedor o cliente antes de guardar');
+      return;
     }
-  });
-}
 
+    console.log('Asignando compra ID:', this.selectedDeposit.id, 'con data:', buyData);
+
+    this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
+      next: () => {
+        alert('Compra asignada correctamente');
+        this.closeModal();
+        this.loadDeposits();
+      },
+      error: err => {
+        console.error('Error asignando compra', err);
+        alert('Error al asignar la compra');
+      }
+    });
+  }
 }

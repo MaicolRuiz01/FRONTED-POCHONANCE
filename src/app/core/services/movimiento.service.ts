@@ -21,7 +21,7 @@ export interface MovimientoVistaDto {
   monto: number;
   cuentaOrigen?: string;
   cuentaDestino?: string;
-  caja?: string;
+  caja?: number;
 }
 
 @Injectable({
@@ -99,6 +99,10 @@ export class MovimientoService {
     }
 
     return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params: params });
+  }
+
+  actualizarMovimiento(id: number, movimiento: Partial<MovimientoDto>): Observable<MovimientoDto> {
+    return this.http.put<MovimientoDto>(`${this.apiUrl}/${id}`, movimiento);
   }
 
 

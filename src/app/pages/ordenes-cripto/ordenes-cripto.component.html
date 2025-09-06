@@ -1,0 +1,100 @@
+<div class="toolbar">
+  <h2>Órdenes Spot</h2>
+
+  <div class="actions">
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="filtroGlobal"
+        placeholder="Buscar en tabla..."
+        (input)="onGlobalFilter($event)"
+      />
+    </span>
+
+    <input
+      pInputText
+      type="text"
+      [(ngModel)]="filtroCuenta"
+      placeholder="Cuenta (opcional)"
+      class="ml-8"
+    />
+    <button
+      pButton
+      label="Filtrar cuenta"
+      icon="pi pi-filter"
+      class="p-button-info ml-4"
+      (click)="buscarPorCuenta()"
+    ></button>
+
+    <button
+      pButton
+      label="Re-importar (2º plano)"
+      icon="pi pi-refresh"
+      class="p-button-primary ml-4"
+      (click)="refrescar()"
+      [disabled]="importing"
+    ></button>
+
+    <span class="importing" *ngIf="importing">
+      <p-progressSpinner strokeWidth="6" styleClass="mini-spinner"></p-progressSpinner>
+      <span>Sincronizando…</span>
+    </span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <p-table
+    #dt
+    [value]="ordenes"
+    [paginator]="true"
+    [rows]="25"
+    [rowsPerPageOptions]="[10,25,50,100]"
+    [loading]="loadingTable"
+    [globalFilterFields]="['cuenta','simbolo','lado','estado']"
+    [filterDelay]="0"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} órdenes"
+    sortMode="multiple"
+    responsiveLayout="scroll"
+    dataKey="idOrden"
+    [tableStyle]="{ 'min-width': '980px' }"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha"></p-sortIcon></th>
+        <th pSortableColumn="cuenta">Cuenta <p-sortIcon field="cuenta"></p-sortIcon></th>
+        <th pSortableColumn="simbolo">Símbolo <p-sortIcon field="simbolo"></p-sortIcon></th>
+        <th>Lado</th>
+        <th pSortableColumn="precio">Precio</th>
+        <th pSortableColumn="cantidadBase">Base</th>
+        <th pSortableColumn="cantidadQuote">Quote</th>
+        <th pSortableColumn="comisionUsdt" class="hide-sm">Comisión (USDT)</th>
+        <th class="hide-sm">Id Orden</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.fecha | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+        <td>{{ row.cuenta }}</td>
+        <td>{{ row.simbolo }}</td>
+        <td><p-tag [value]="row.lado" [severity]="tagSeverity(row.lado)"></p-tag></td>
+        <td>{{ row.precio | number:'1.6-8' }}</td>
+        <td>{{ row.cantidadBase | number:'1.6-8' }}</td>
+        <td>{{ row.cantidadQuote | number:'1.2-8' }}</td>
+        <td class="hide-sm">{{ row.comisionUsdt | number:'1.4-8' }}</td>
+        <td class="hide-sm">{{ row.idOrden }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="empty">
+          {{ loadingTable ? 'Cargando...' : 'Sin datos' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

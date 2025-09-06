@@ -10,8 +10,10 @@ export interface BuyDollarsDto {
   tasa: number;
   nameAccount: string;
   date: Date;
-  supplierId: number;
+  supplierId?: number;
   supplierName?: string;
+  clienteId?: number;
+  clienteName?: string;
   idDeposit: string;
   pesos: number;
 }

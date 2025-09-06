@@ -131,9 +131,4 @@ private obtenerListaPorTipo(tipo: string) {
     default: return [];
   }
 }
-
-  
-
-  
-
 }

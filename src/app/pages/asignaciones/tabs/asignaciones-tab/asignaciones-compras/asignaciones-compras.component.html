@@ -1,136 +1,71 @@
 <div class="card">
-    <h2>Asignar Compras</h2>
+  <h2>Asignar Compras</h2>
 
-    <!-- FILTRO POR RANGO DE FECHAS -->
+  <!-- FILTRO POR RANGO DE FECHAS -->
 
 
   <br>
-   <div *ngIf="loading" class="spinner-container">
+  <div *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
-   </div>
-
-    <p-table
-      [value]="filteredDeposits"
-      [paginator]="true"
-      [rows]="10"
-      [rowsPerPageOptions]="[5,10,25]"
-      [scrollable]="true"
-      scrollDirection="horizontal"
-      [tableStyle]="{ 'min-width': '10rem' }"
-      sortMode="single"
-      *ngIf="!isMobile"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="account">
-            Cuenta <p-sortIcon field="account"></p-sortIcon>
-          </th>
-          <th pSortableColumn="amount">
-            Monto <p-sortIcon field="amount"></p-sortIcon>
-          </th>
-          <th pSortableColumn="date">
-            Fecha <p-sortIcon field="date"></p-sortIcon>
-          </th>
-          <th>Acción</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-dep>
-        <tr>
-          <td>{{ dep.nameAccount }}</td>
-          <td>{{ dep.dollars | number:'1.0-2' }}</td>
-          <td>{{ dep.date | date:'short' }}</td>
-          <td>
-            <button
-              pButton
-              type="button"
-              label="Asignar"
-              class="p-button-sm p-button-success"
-              (click)="openAssignModal(dep)"
-            ></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-
-  <div *ngIf="isMobile" >
-    <div *ngFor="let dep of filteredDeposits" class="card-mobile">
-      <div class="card-content">
-        <div class="card-field"><strong>Cuenta:</strong> {{ dep.nameAccount }}</div>
-        <div class="card-field"><strong>Monto:</strong> {{ dep.dollars | number:'1.0-2' }}</div>
-        <div class="card-field"><strong>Fecha:</strong> {{ dep.date | date:'short' }}</div>
-      </div>
-      <div class="card-button">
-        <button
-          pButton
-          type="button"
-          label="Asignar"
-          class="p-button-sm p-button-success"
-          (click)="openAssignModal(dep)"
-        ></button>
-      </div>
-    </div>
-</div>
-    <p-dialog
-  header="Asignar Compra"
-  [(visible)]="displayModal"
-  [modal]="true"
-  [style]="{ width: '400px' }"
-  (onHide)="closeModal()"
->
-  <div *ngIf="selectedDeposit" class="p-fluid">
-    <div class="p-field" style="margin-bottom: 1rem;">
-      <label><strong>Cuenta:</strong> {{ selectedDeposit.nameAccount }}</label>
-    </div>
-
-    <div class="p-field" style="margin-bottom: 1rem;">
-      <label><strong>Monto:</strong> {{ selectedDeposit.dollars | number:'1.0-2' }}</label>
-    </div>
-
-    <div class="p-field" style="margin-bottom: 1rem;">
-      <label for="rateInput"><strong>Tasa de compra</strong></label>
-      <input
-        id="rateInput"
-        type="number"
-        pInputText
-        [(ngModel)]="purchaseRate"
-        [ngClass]="{ 'p-invalid': isRateInvalid }"
-        placeholder="Ingrese tasa"
-        style="width:100%"
-        inputmode="numeric"
-        (ngModelChange)="validateRate()"
-      />
-      <small *ngIf="isRateInvalid" class="p-error">
-        La tasa debe ser mayor o igual a 3500
-      </small>
-    </div>
-
-    <div class="p-field" style="margin-bottom: 1rem;">
-      <label for="supplierSelect"><strong>Proveedor</strong></label>
-      <p-dropdown
-        id="supplierSelect"
-        [options]="suppliers"
-        optionLabel="name"
-        optionValue="id"
-        placeholder="Selecciona proveedor"
-        [(ngModel)]="selectedSupplierId"
-        [style.width.%]="100"
-        [appendTo]="'body'"
-      ></p-dropdown>
-    </div>
   </div>
 
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
-    <button
-      pButton
-      type="button"
-      label="Guardar"
-      (click)="saveAssignment()"
-      [disabled]="!purchaseRate || isRateInvalid || !selectedSupplierId"
-    ></button>
-  </ng-template>
-</p-dialog>
-  
+  <app-mi-table [columns]="columns" [data]="filteredDeposits" *ngIf="!isMobile">
+    <ng-template #actionTemplate let-dep>
+      <p-button icon="pi pi-check-square" title="Asignar" styleClass="p-button-rounded p-button-sm"
+        (click)="openAssignModal(dep)">
+      </p-button>
+
+    </ng-template>
+  </app-mi-table>
+
+  <div *ngIf="isMobile">
+    <app-card-list [data]="filteredDeposits" [columns]="[
+        { label: 'Cuenta', field: 'nameAccount' },
+        { label: 'Monto', field: 'dollars' },
+        { label: 'Fecha', field: 'date' }
+      ]">
 
 
+      <ng-template #cardActionTemplate let-dep>
+        <button pButton type="button" label="Asignar" class="p-button-sm p-button-success"
+          (click)="openAssignModal(dep)">
+        </button>
+      </ng-template>
+    </app-card-list>
+  </div>
 
+  <p-dialog header="Asignar Compra" [(visible)]="displayModal" [modal]="true" [style]="{ width: '400px' }"
+    (onHide)="closeModal()">
+    <div *ngIf="selectedDeposit" class="p-fluid">
+      <div class="p-field" style="margin-bottom: 1rem;">
+        <label><strong>Cuenta:</strong> {{ selectedDeposit.nameAccount }}</label>
+      </div>
+
+      <div class="p-field" style="margin-bottom: 1rem;">
+        <label><strong>Monto:</strong> {{ selectedDeposit.dollars | number:'1.0-2' }}</label>
+      </div>
+
+      <div class="p-field" style="margin-bottom: 1rem;">
+        <label for="rateInput"><strong>Tasa de compra</strong></label>
+        <input id="rateInput" type="number" pInputText [(ngModel)]="purchaseRate"
+          [ngClass]="{ 'p-invalid': isRateInvalid }" placeholder="Ingrese tasa" style="width:100%" inputmode="numeric"
+          (ngModelChange)="validateRate()" />
+        <small *ngIf="isRateInvalid" class="p-error">
+          La tasa debe ser mayor o igual a 3500
+        </small>
+      </div>
+
+      <div class="p-field" style="margin-bottom: 1rem;">
+        <label for="supplierSelect"><strong>Proveedor</strong></label>
+        <p-dropdown id="supplierSelect" [options]="suppliers" optionLabel="name" optionValue="id"
+          placeholder="Selecciona proveedor" [(ngModel)]="selectedSupplierId" [style.width.%]="100"
+          [appendTo]="'body'"></p-dropdown>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
+      <button pButton type="button" label="Guardar" (click)="saveAssignment()"
+        [disabled]="!purchaseRate || isRateInvalid || !selectedSupplierId"></button>
+    </ng-template>
+  </p-dialog>

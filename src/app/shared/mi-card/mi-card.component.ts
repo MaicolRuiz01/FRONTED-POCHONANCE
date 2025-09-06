@@ -1,28 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
-
+import { Component, Input, ContentChild, TemplateRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-mi-card',
+  selector: 'app-card-list',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './mi-card.component.html',
   styleUrls: ['./mi-card.component.css']
 })
-export class MiCardComponent implements OnInit {
-  @Input() cuentaId!: number;  // ID de la cuenta (recibido desde otro componente)
-  cuenta: any = {};  // Datos de la cuenta
+export class CardListComponent {
+  @Input() data: any[] = [];
+  @Input() columns: { label: string, field: string }[] = [];
 
-  constructor() {}
-
-  ngOnInit() {
-
-  }
-
-  /* cargarDatos() {
-    if (this.cuentaId) {
-      this.cuentasService.obtenerCuenta(this.cuentaId).subscribe(data => {
-        this.cuenta = data;
-      }, error => {
-        console.error('Error al obtener datos de la cuenta:', error);
-      });
-    }
-  } */
+  @ContentChild('cardActionTemplate') cardActionTemplate!: TemplateRef<any>;
 }

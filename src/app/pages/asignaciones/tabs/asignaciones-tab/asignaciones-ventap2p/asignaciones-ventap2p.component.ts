@@ -14,8 +14,12 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de importar el módulo adecuado
 import { InputTextModule } from 'primeng/inputtext';
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
 
+
+import {ProgressSpinnerModule} from 'primeng/progressspinner';
+import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
+import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
+import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
 
 
 @Component({
@@ -32,7 +36,9 @@ import {ProgressSpinnerModule} from 'primeng/progressspinner';
     MultiSelectModule,
     RadioButtonModule,
     InputTextModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    MiTableComponent,
+    CardListComponent
   ],
   templateUrl: './asignaciones-ventap2p.component.html',
   styleUrls: ['./asignaciones-ventap2p.component.css']
@@ -55,6 +61,16 @@ export class AsignacionesVentap2pComponent implements OnInit {
   loading: boolean = false;
   isMobile: boolean = false;
   selectedAccounts: AccountCop[] = [];
+
+
+  //componnete reutilizable de la tabla
+  columns: TableColumn[] = [
+    { campo: 'id', columna: 'N° de orden' },
+    { campo: 'date', columna: 'Fecha' },
+    { campo: 'dollarsUs', columna: 'Dolares' },
+    { campo: 'pesosCop', columna: 'Pesos COP' },
+    { campo: 'commission', columna: 'Comision' }
+  ];
 
   constructor(
     private saleService: SaleP2PService,

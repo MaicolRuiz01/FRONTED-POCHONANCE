@@ -2,16 +2,8 @@
   <h2>Ventas No Registradas</h2>
   <p-progressSpinner *ngIf="loading"></p-progressSpinner>
 
-  <p-table
-    *ngIf="!loading"
-    [value]="sales"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[5,10,20]"
-    [rowHover]="true"
-    (onRowSelect)="onRowClick($event.data)"
-    selectionMode="single"
-  >
+  <p-table *ngIf="!loading" [value]="sales" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,20]"
+    [rowHover]="true" (onRowSelect)="onRowClick($event.data)" selectionMode="single">
     <ng-template pTemplate="body" let-sale let-columns="columns">
       <tr [ngClass]="rowClass(sale)">
         <th>Cuenta</th>
@@ -38,7 +30,8 @@
   </p-table>
 </div>
 
-<p-dialog header="Detalle de Venta" [(visible)]="displayDetail" modal="true" [style]="{width: '500px'}" (onHide)="closeDetail()">
+<p-dialog header="Detalle de Venta" [(visible)]="displayDetail" modal="true" [style]="{width: '500px'}"
+  (onHide)="closeDetail()">
   <ng-container *ngIf="selectedSale">
     <p><strong>ID Withdrawal:</strong> {{ selectedSale.idWithdrawals }}</p>
     <p><strong>Cuenta:</strong> {{ selectedSale.nameAccount }}</p>
@@ -58,61 +51,55 @@
 
 <!-- ... resto de tu tabla y detalle igual ... -->
 
-<p-dialog header="Editar Venta" [(visible)]="displayEditDialog" modal="true" [style]="{width: '600px'}" (onHide)="closeEditDialog()">
+<p-dialog header="Editar Venta" [(visible)]="displayEditDialog" modal="true" [style]="{width: '600px'}"
+  (onHide)="closeEditDialog()">
   <form *ngIf="editableSale">
-    <div>
-      <label>Tasa</label>
-      <p-inputNumber [(ngModel)]="editableSale.tasa" name="tasa" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
-    </div>
-    <div>
-      <label>Dólares</label>
-      <p-inputNumber [(ngModel)]="editableSale.dollars" name="dollars" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
-    </div>
-    <div>
-      <label>Pesos</label>
-      <p-inputNumber [(ngModel)]="editableSale.pesos" name="pesos" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" readonly></p-inputNumber>
-    </div>
-    <div>
-      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="true" label="Cliente Especial"></p-radioButton>
-      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="false" label="Proveedor"></p-radioButton>
+
+    <div class="field">
+      <label class="font-bold">Tasa:</label><br>
+      <p-inputNumber [(ngModel)]="editableSale.tasa" name="tasa" mode="decimal" [minFractionDigits]="2"
+        [maxFractionDigits]="2"></p-inputNumber>
     </div>
 
+    <div class="field">
+      <label class="font-bold">Dólares:</label><br>
+      <p-inputNumber [(ngModel)]="editableSale.dollars" name="dollars" mode="decimal" [minFractionDigits]="2"
+        [maxFractionDigits]="2"></p-inputNumber>
+    </div>
+
+    <div class="field">
+      <label class="font-bold">Pesos:</label><br>
+        <div class="readonly-box">
+          {{ editableSale?.pesos | number:'1.2-2' }}
+      </div>
+    </div>
+
+    <div>
+      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="true" label="Cliente Especial"></p-radioButton>
+      <br>
+      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="false" label="Proveedor"></p-radioButton>
+    </div>
+    <br>
     <ng-container *ngIf="isSpecialClient">
-      <p-dropdown [(ngModel)]="editableSale.clienteId"
-                  [options]="clientes"
-                  optionLabel="nombre"
-                  optionValue="id"
-                  name="clienteId"
-                  placeholder="Seleccione cliente">
+      <p-dropdown [(ngModel)]="editableSale.clienteId" [options]="clientes" optionLabel="nombre" optionValue="id"
+        name="clienteId" placeholder="Seleccione cliente">
       </p-dropdown>
     </ng-container>
 
     <ng-container *ngIf="!isSpecialClient">
-      <p-dropdown [(ngModel)]="editableSale.supplier"
-                  [options]="suppliers"
-                  optionLabel="name"
-                  optionValue="id"
-                  name="supplierId"
-                  placeholder="Seleccione proveedor">
+      <p-dropdown [(ngModel)]="editableSale.supplier" [options]="suppliers" optionLabel="name" optionValue="id"
+        name="supplierId" placeholder="Seleccione proveedor">
       </p-dropdown>
 
       <div *ngFor="let acc of editableSale.accounts; let i = index" class="p-field p-grid">
         <div class="p-col-6">
-          <p-dropdown [(ngModel)]="editableSale.accounts[i].accountCop"
-                      [options]="accountCops"
-                      optionValue="id"
-                      optionLabel="name"
-                      [name]="'accCop' + i"
-                      placeholder="Seleccione cuenta COP">
+          <p-dropdown [(ngModel)]="editableSale.accounts[i].accountCop" [options]="accountCops" optionValue="id"
+            optionLabel="name" [name]="'accCop' + i" placeholder="Seleccione cuenta COP">
           </p-dropdown>
         </div>
         <div class="p-col-6">
-          <p-inputNumber [(ngModel)]="editableSale.accounts[i].amount"
-                         [name]="'amt' + i"
-                         mode="decimal"
-                         [minFractionDigits]="2"
-                         [maxFractionDigits]="2"
-                         inputStyleClass="w-full">
+          <p-inputNumber [(ngModel)]="editableSale.accounts[i].amount" [name]="'amt' + i" mode="decimal"
+            [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="w-full">
           </p-inputNumber>
         </div>
       </div>
@@ -125,4 +112,3 @@
     <button pButton label="Guardar" (click)="saveEdit()" class="p-button-success"></button>
   </ng-template>
 </p-dialog>
-

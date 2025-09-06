@@ -11,6 +11,9 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 
+import { TableColumn } from '../../../shared/mi-table/mi-table.component';
+import { MiTableComponent } from '../../../shared/mi-table/mi-table.component';
+
 @Component({
   selector: 'app-gastos',
   standalone: true,
@@ -23,7 +26,8 @@ import { CalendarModule } from 'primeng/calendar';
     DialogModule,
     ButtonModule,
     InputTextModule,
-    CalendarModule
+    CalendarModule,
+    MiTableComponent
   ],
   templateUrl: './gastos-tab.component.html',
   styleUrls: ['./gastos-tab.component.css']
@@ -39,6 +43,12 @@ export class GastosComponent implements OnInit {
   tipoPago: 'cuenta' | 'caja' = 'cuenta';
   cuentaSeleccionadaId?: number;
   cajaSeleccionadaId?: number;
+
+  columns: TableColumn[] = [
+    { campo: 'fecha', columna: 'Fecha' },
+    { campo: 'descripcion', columna: 'Descripción' },
+    { campo: 'monto', columna: 'Monto' }
+  ];
 
   constructor(
     private gastoService: GastoService,

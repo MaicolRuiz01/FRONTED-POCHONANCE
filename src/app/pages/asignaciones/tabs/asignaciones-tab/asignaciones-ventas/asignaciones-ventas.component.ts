@@ -16,6 +16,10 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ClienteService, Cliente } from '../../../../../core/services/cliente.service';
 import { RadioButtonModule } from 'primeng/radiobutton';
 
+import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
+import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
+import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+
 @Component({
   selector: 'app-asignaciones-ventas',
   standalone: true,
@@ -31,7 +35,9 @@ import { RadioButtonModule } from 'primeng/radiobutton';
     DropdownModule,
     InputTextModule,     // <— para <input pInputText>
     InputNumberModule,
-    RadioButtonModule
+    RadioButtonModule,
+    CardListComponent,
+    MiTableComponent
   ],
   templateUrl: './asignaciones-ventas.component.html',
   styleUrls: ['./asignaciones-ventas.component.css']
@@ -46,9 +52,6 @@ export class AsignacionesVentasComponent implements OnInit {
   clientes: Cliente[] = [];
   selectedClientId: number | null = null;
 
-
-
-
   loading: boolean = false;
   isMobile: boolean = false;
 
@@ -59,6 +62,14 @@ export class AsignacionesVentasComponent implements OnInit {
   displayModal = false;
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
+
+  //campo es el nombre de donde tomo el dato y columna como quiero que se muestre
+  columns: TableColumn[] = [
+    { campo: 'nameAccount', columna: 'Cuenta' },
+    { campo: 'dollars', columna: 'Monto' },
+    { campo: 'date', columna: 'Fecha' },
+    { campo: 'getClienteById(sale.clienteId)?.nombre ?? "----"', columna: 'Cliente' }
+  ];
 
   constructor(private sellService: SellDollarsService,
     private supplierService: SupplierService,
@@ -74,6 +85,7 @@ export class AsignacionesVentasComponent implements OnInit {
     window.addEventListener('resize', () => {
       this.isMobile = window.innerWidth <= 768;
     });
+
     this.accountCopService.getAll().subscribe({
       next: (accounts) => this.accountCops = accounts,
       error: () => alert('Error cargando cuentas COP')

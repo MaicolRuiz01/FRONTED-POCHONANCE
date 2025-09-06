@@ -1,27 +1,17 @@
-<p-table [value]="balances">
-  <ng-template pTemplate="header">
-    <tr>
-      <th>Fecha</th>
-      <th>Saldo</th>
-      <th>Acciones</th>
-    </tr>
+ <app-mi-table
+  [columns]="columns"
+  [data]="balances"
+  >
+  <ng-template #actionTemplate let-balance>
+    <p-button 
+  icon="pi pi-info" 
+  title="Ver Detalles"
+  styleClass="p-button-rounded p-button-sm" 
+  (click)="showDetails(balance)">
+</p-button>
+
   </ng-template>
-  <ng-template pTemplate="body" let-balance>
-    <tr>
-      
-      <td>{{ balance.date }}</td>
-      <td>{{ balance.saldo | currency: 'USD' }}</td>
-      <td>
-        <button
-          pButton
-          icon="pi pi-eye"
-          class="p-button-warning p-button-rounded"
-          (click)="showDetails(balance)"
-        ></button>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+</app-mi-table>
 
 <p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
   <div *ngIf="selectedBalance">

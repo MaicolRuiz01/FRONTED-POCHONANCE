@@ -12,7 +12,6 @@ import { AsignacionesVentap2pComponent } from './asignaciones-ventap2p/asignacio
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
 
-
 @Component({
   selector: 'app-asignaciones-tab',
   standalone: true,

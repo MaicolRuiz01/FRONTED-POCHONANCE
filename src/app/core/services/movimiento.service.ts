@@ -36,6 +36,11 @@ export class MovimientoService {
     return this.http.post<MovimientoDto>(this.apiUrl, movimiento);
   }
 
+  actualizarMovimiento(id: number, movimiento: MovimientoDto): Observable<MovimientoVistaDto> {
+  const url = `${this.apiUrl}/${id}`;
+  return this.http.put<MovimientoVistaDto>(url, movimiento);
+}
+
   getMovimientosByCuenta(cuentaId: number): Observable<MovimientoDto[]> {
     const url = `${this.apiUrl}/cuenta/${cuentaId}`;
     return this.http.get<MovimientoDto[]>(url);

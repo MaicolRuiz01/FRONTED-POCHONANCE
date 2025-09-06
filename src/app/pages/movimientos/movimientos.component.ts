@@ -51,6 +51,7 @@ export class MovimientosComponent implements OnInit {
     this.movimientoService.getRetiros().subscribe(data => this.retiros = data);
     this.movimientoService.getDepositos().subscribe(data => this.depositos = data);
     this.movimientoService.getTransferencias().subscribe(data => this.transferencias = data);
+    this.movimientoService.getRetiros().subscribe(data => this.retiros = data);
     this.loadCajas();
     this.traspasos = [];
     this.cargando = false;
@@ -108,11 +109,13 @@ guardarEdicion() {
   if (!this.movimientoEditando.id) return;
 
   this.movimientoService.actualizarMovimiento(this.movimientoEditando.id, this.movimientoEditando).subscribe({
+   
     next: (movimientoActualizado) => {
-      const lista = this.obtenerListaPorTipo(this.tipoEditando);
+     console.log(this.movimientoEditando, "editando");  
+     const lista = this.obtenerListaPorTipo(this.tipoEditando);
       const index = lista.findIndex((m: any) => m.id === movimientoActualizado.id);
       if (index > -1) lista[index] = movimientoActualizado;
-
+    
       this.cerrarDialogo();
     },
     error: () => alert('Error al actualizar el movimiento')

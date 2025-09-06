@@ -17,11 +17,13 @@
         <h4>Total en Cajas</h4>
         <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
     </div>
-
+<br>
     <ng-template pTemplate="left">
-        <button pButton label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+        <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
     </ng-template>
 </p-toolbar>
+
+<br><br>
 
 <div class="grid" *ngIf="accounts.length > 0">
   <div *ngFor="let account of accounts" 
@@ -88,37 +90,38 @@
 
   <div class="p-fluid">
       <div class="p-field">
-          <label for="name">Nombre*</label>
+          <label for="name">Nombre* :</label>
+          <br>
           <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
       </div>
-
+<br>
       <div class="p-field">
-          <label for="reference">Id de cuenta Binance*</label>
+          <label for="reference">Id de cuenta Binance* :</label>
           <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
       </div>
-
+<br>
       <div class="p-field">
-          <label for="correo">Correo electrónico*</label>
+          <label for="correo">Correo electrónico* :</label>
           <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
       </div>
-
+<br>
       <div class="p-field">
-          <label for="user">Usuario Binance</label>
+          <label for="user">Usuario Binance :</label>
           <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
       </div>
-
+<br>
       <div class="p-field">
-          <label for="balance">Saldo inicial en USDT*</label>
+          <label for="balance">Saldo inicial en USDT* :</label>
           <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" />
       </div>
-
+<br>
       <div class="p-field">
-          <label for="wallet">Wallet (dirección USDT)*</label>
+          <label for="wallet">Wallet (dirección USDT)* :</label>
           <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
       </div>
-
+<br>
       <div class="p-field">
-          <label>Tipo de cuenta*</label>
+          <label>Tipo de cuenta* :</label>
           <p-dropdown [options]="tiposCuenta"
                       [(ngModel)]="newAccount.tipo"
                       placeholder="Seleccione tipo"
@@ -126,12 +129,12 @@
                       [appendTo]="'body'">
           </p-dropdown>
       </div>
-
+<br>
       <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
           <label>API Key*</label>
           <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
       </div>
-
+<br>
       <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
           <label>API Secret*</label>
           <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
@@ -142,7 +145,7 @@
       <button pButton 
               label="Cancelar" 
               icon="pi pi-times" 
-              class="p-button-text"
+              class="p-button-danger"
               (click)="cancelarNuevaCuenta()"></button>
 
       <!-- Aquí cambiamos dinámicamente -->

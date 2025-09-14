@@ -1,8 +1,12 @@
 import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
+<<<<<<< HEAD
 import { Cliente, ClienteService } from '../../../../../core/services/cliente.service';
 import { TableModule } from 'primeng/table';
+=======
+import { Table, TableModule } from 'primeng/table';
+>>>>>>> 6bb55f4 (añadiendo componentes reutilizables)
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -14,7 +18,15 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AccordionModule } from 'primeng/accordion';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
+<<<<<<< HEAD
 import { RadioButtonModule } from 'primeng/radiobutton';
+=======
+
+import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
+import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
+import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+
+>>>>>>> 6bb55f4 (añadiendo componentes reutilizables)
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -31,7 +43,12 @@ import { RadioButtonModule } from 'primeng/radiobutton';
     ProgressSpinnerModule,
     AccordionModule,
     PanelMenuModule,
+<<<<<<< HEAD
     RadioButtonModule
+=======
+    MiTableComponent,
+    CardListComponent
+>>>>>>> 6bb55f4 (añadiendo componentes reutilizables)
   ],
   templateUrl: './asignaciones-compras.component.html',
   styleUrls: ['./asignaciones-compras.component.css']
@@ -75,11 +92,22 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   loading: boolean = false;
   isMobile: boolean = false;
 
+<<<<<<< HEAD
   constructor(
     private buyService: BuyDollarsService,
     private supplierService: SupplierService,
     private clienteService: ClienteService
   ) {}
+=======
+//intento de crear tabla a partir del componente MiTabla
+columns: TableColumn[] = [
+  { campo: 'nameAccount', columna: 'Cuenta' },
+  { campo: 'dollars', columna: 'Monto' },
+  { campo: 'date', columna: 'Fecha' },
+];
+
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
+>>>>>>> 6bb55f4 (añadiendo componentes reutilizables)
 
   ngOnInit(): void {
     this.loading = true;
@@ -134,10 +162,17 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   }
 
   formatDate(date: Date): string {
+<<<<<<< HEAD
     const offset = date.getTimezoneOffset();
     const localDate = new Date(date.getTime() - offset * 60 * 1000);
     return localDate.toISOString().slice(0, 19);
   }
+=======
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 19);
+}
+>>>>>>> 6bb55f4 (añadiendo componentes reutilizables)
 
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;

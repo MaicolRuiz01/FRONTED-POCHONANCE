@@ -11,23 +11,8 @@
 }
 
 
-.add-button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-
-.ui-button-success {
-  background-color: #5cb85c; /* Color verde típico de botones 'success' */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 16px;
-  text-shadow: none; /* Quitar sombras de texto para una apariencia más limpia */
-}
-
-.ui-button-success:hover {
-  background-color: #4cae4c; /* Un verde ligeramente más oscuro para el hover */
+.p-button.p-button-success.p-button-rounded {
+  background: #28a745 !important; /* A common shade of green */
+  border-color: #28a745 !important;
+  color: white; /* Make sure the text color is still visible */
 }

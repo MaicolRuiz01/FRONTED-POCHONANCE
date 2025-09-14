@@ -1,0 +1,20 @@
+<p-table [value]="data" stripedRows [tableStyle]="{'min-width': '50rem'}" styleClass="custom-table">
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of columns">{{ col.columna }}</th>
+      <th>Acción</th> <!-- Columna fija -->
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      <td *ngFor="let col of columns">{{ row[col.campo] }}</td>
+      <td>
+        <!-- aquí pintamos lo que envíe el padre -->
+        <ng-container 
+                      *ngTemplateOutlet="actionTemplate; context: {$implicit: row}">
+        </ng-container>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

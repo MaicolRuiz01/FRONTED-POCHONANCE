@@ -1,6 +1,14 @@
+<div class="ng-container">
+  <h1>Cajas</h1>
+</div>
 
-  <button pButton label="Agregar Caja" icon="pi pi-plus" class="p-button-success" (click)="displayCajaDialog = true"></button>
-  <br><br>
+  <p-button 
+  icon="pi pi-plus" 
+  title="Agregar Caja"
+  styleClass="p-button-success p-button-rounded p-button-sm" 
+  (click)="displayCajaDialog = true"
+></p-button>
+<br><br>
   <p-table [value]="cajas">
     <ng-template pTemplate="header">
       <tr>

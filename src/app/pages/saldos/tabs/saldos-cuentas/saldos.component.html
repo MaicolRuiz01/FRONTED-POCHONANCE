@@ -21,6 +21,16 @@
     <ng-template pTemplate="left">
         <button pButton label="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
     </ng-template>
+    <ng-template pTemplate="right">
+    <button
+      pButton
+      label="Sincronizar saldos"
+      icon="pi pi-sync"
+      class="p-button-info"
+      [loading]="syncingAll"
+      (click)="syncAllBalances()">
+    </button>
+  </ng-template>
 </p-toolbar>
 
 <div class="grid" *ngIf="accounts.length > 0">

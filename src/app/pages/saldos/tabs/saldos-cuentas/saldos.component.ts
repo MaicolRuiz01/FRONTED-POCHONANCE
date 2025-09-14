@@ -15,6 +15,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { AccountCopService } from '../../../../core/services/account-cop.service';
 import { BalanceService } from '../../../../core/services/balance.service';
 import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { finalize } from 'rxjs/operators';
 
 
 export interface DisplayAccount {
@@ -63,7 +64,8 @@ export class SaldosComponent implements OnInit {
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
-    { label: 'TRUST', value: 'TRUST' }
+    { label: 'TRUST', value: 'TRUST' },
+    {label: 'SOLANA', value: 'SOLANA' }
   ];
 
   accounts: DisplayAccount[] = [];
@@ -83,6 +85,7 @@ export class SaldosComponent implements OnInit {
   };
 
   totalCajasCop: number = 0;
+  syncingAll = false; 
 
   constructor(
     private accountService: AccountBinanceService,
@@ -381,5 +384,31 @@ export class SaldosComponent implements OnInit {
       next: res => this.latestRate = res,
       error: err => console.error('Error obteniendo tasa de compra:', err)
     });
+  }
+
+  syncAllBalances() {
+    this.syncingAll = true;
+    this.accountService.syncAllInternal()
+      .pipe(finalize(() => (this.syncingAll = false)))
+      .subscribe({
+        next: _ => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sincronizado',
+            detail: 'Saldos internos actualizados desde el exchange.'
+          });
+          // refresca tarjetas y totales
+          this.loadAccounts();
+          this.getBalanceTotalInterno();
+          this.getTotalBalance();
+        },
+        error: _ => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'No se pudieron sincronizar los saldos.'
+          });
+        }
+      });
   }
 }

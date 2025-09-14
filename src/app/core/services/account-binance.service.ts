@@ -66,4 +66,7 @@ export class AccountBinanceService {
   deleteAccount(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+  syncAllInternal(): Observable<string> {
+    return this.http.post(`${this.apiUrl}/sync-internal/all`, {}, { responseType: 'text' });
+  }
 }

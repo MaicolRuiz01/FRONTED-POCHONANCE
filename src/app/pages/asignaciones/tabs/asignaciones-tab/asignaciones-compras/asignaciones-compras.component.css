@@ -40,3 +40,13 @@
     display: true; /* Muestra la paginación en la vista móvil */
   }
 }
+
+:host ::ng-deep .p-button.p-button-sm.p-button-rounded {
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0;
+  font-size: 0.75rem; /* tamaño del ícono */
+  display: flex;
+  border-radius: 15px;
+  background-color: green;
+}

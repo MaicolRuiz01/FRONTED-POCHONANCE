@@ -17,7 +17,6 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { RatingModule } from 'primeng/rating';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DialogModule } from 'primeng/dialog';
-import { MiCardComponent } from './mi-card/mi-card.component';
 import { CalendarModule } from 'primeng/calendar';
 import { HttpClientModule } from '@angular/common/http';
 import { Accordion, AccordionModule } from 'primeng/accordion';
@@ -29,8 +28,6 @@ import { CarouselModule } from 'primeng/carousel';
 
 @NgModule({
   declarations: [  // ✅ Agregar aquí
-    MiCardComponent,
-
   ],
   imports: [
 
@@ -57,7 +54,6 @@ import { CarouselModule } from 'primeng/carousel';
     MenuModule,
     CarouselModule
 
-
   ],
   exports: [
     CommonModule,
@@ -77,12 +73,10 @@ import { CarouselModule } from 'primeng/carousel';
     DialogModule,
     ReactiveFormsModule,
     CalendarModule,
-    MiCardComponent,
     AccordionModule,
     TabViewModule,
     MenuModule,
     CarouselModule
-
   ]
 })
 export class SharedModule {}

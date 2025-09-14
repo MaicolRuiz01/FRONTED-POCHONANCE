@@ -1,17 +1,16 @@
-<div class="custom-card">
-    <div class="card-header">
-        <span class="user-text">{{ cuenta.usuario || 'Usuario no encontrado' }}</span>
-        <span class="cuotas-text">cupos: {{ cuenta.cupos || 'N/A' }}</span>
+<div class="cards-container">
+  <div class="card" *ngFor="let item of data">
+    <div class="card-content">
+      <div class="card-field" *ngFor="let col of columns">
+        <strong>{{ col.label }}:</strong> {{ item[col.field] }}
+      </div>
     </div>
 
-    <div class="card-body">
-        <h3>Saldo Actual</h3>
-        <h1>${{ cuenta.saldo | number:'1.0-0' }}</h1>
-        <p class="account-type">{{ cuenta.banco || 'Banco desconocido' }}</p>
+    <div class="card-actions">
+      <ng-container *ngIf="cardActionTemplate">
+        <ng-container *ngTemplateOutlet="cardActionTemplate; context: {$implicit: item}">
+        </ng-container>
+      </ng-container>
     </div>
-
-    <div class="card-footer">
-        <i class="pi pi-bars"></i>
-    </div>
+  </div>
 </div>
-

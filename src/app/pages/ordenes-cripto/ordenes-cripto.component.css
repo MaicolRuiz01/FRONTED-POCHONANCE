@@ -22,15 +22,13 @@
   align-items: center;
   gap: .5rem;
 }
-.mini-spinner ::ng-deep .p-progress-spinner {
-  width: 20px !important;
-  height: 20px !important;
-}
+
 
 .table-wrap {
   width: 100%;
   overflow-x: auto; /* fallback extra */
 }
+
 
 /* En móviles oculta columnas menos críticas */
 @media (max-width: 768px) {

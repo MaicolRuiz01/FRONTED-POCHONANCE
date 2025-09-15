@@ -4,63 +4,33 @@
   <div class="actions">
     <span class="p-input-icon-left">
       <i class="pi pi-search"></i>
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="filtroGlobal"
-        placeholder="Buscar en tabla..."
-        (input)="onGlobalFilter($event)"
-      />
+      <input pInputText type="text" [(ngModel)]="filtroGlobal" placeholder="Buscar en tabla..."
+        (input)="onGlobalFilter($event)" />
     </span>
 
-    <input
-      pInputText
-      type="text"
-      [(ngModel)]="filtroCuenta"
-      placeholder="Cuenta (opcional)"
-      class="ml-8"
-    />
-    <button
-      pButton
-      label="Filtrar cuenta"
-      icon="pi pi-filter"
-      class="p-button-info ml-4"
-      (click)="buscarPorCuenta()"
-    ></button>
+    <input pInputText type="text" [(ngModel)]="filtroCuenta" placeholder="Cuenta (opcional)" class="ml-8" />
+    <button pButton title="Filtrar cuenta" icon="pi pi-filter" class="p-button-info ml-4"
+      (click)="buscarPorCuenta()"></button>
 
-    <button
-      pButton
-      label="Re-importar (2º plano)"
-      icon="pi pi-refresh"
-      class="p-button-primary ml-4"
-      (click)="refrescar()"
-      [disabled]="importing"
-    ></button>
+    <button pButton label="Re-importar (2º plano)" icon="pi pi-refresh" class="p-button-primary ml-4"
+      (click)="refrescar()" [disabled]="importing"></button>
 
     <span class="importing" *ngIf="importing">
-      <p-progressSpinner strokeWidth="6" styleClass="mini-spinner"></p-progressSpinner>
-      <span>Sincronizando…</span>
+      <br>
+      <div class=".p-progress-spinner">
+        <br>
+        <p-progressSpinner strokeWidth="6" [style]="{ width: '50px', height: '50px' }" />
+      </div>
+      <span class="bold">Sincronizando…</span>
     </span>
   </div>
 </div>
 
-<div class="table-wrap">
-  <p-table
-    #dt
-    [value]="ordenes"
-    [paginator]="true"
-    [rows]="25"
-    [rowsPerPageOptions]="[10,25,50,100]"
-    [loading]="loadingTable"
-    [globalFilterFields]="['cuenta','simbolo','lado','estado']"
-    [filterDelay]="0"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} órdenes"
-    sortMode="multiple"
-    responsiveLayout="scroll"
-    dataKey="idOrden"
-    [tableStyle]="{ 'min-width': '980px' }"
-  >
+<div class="table-wrap" *ngIf="!importing">
+  <p-table #dt [value]="ordenes" [paginator]="true" [rows]="25" [rowsPerPageOptions]="[10,25,50,100]"
+    [loading]="loadingTable" [globalFilterFields]="['cuenta','simbolo','lado','estado']" [filterDelay]="0"
+    [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} órdenes"
+    sortMode="multiple" responsiveLayout="scroll" dataKey="idOrden" [tableStyle]="{ 'min-width': '980px' }">
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha"></p-sortIcon></th>

@@ -34,7 +34,10 @@
 </p-toolbar>
 
 <br><br>
-
+<div *ngIf="loading" class="spinner-container">
+<p-progressSpinner></p-progressSpinner>
+</div>
+<p *ngIf="loading">Cargando cuentas...</p>
 <div class="grid" *ngIf="accounts.length > 0">
   <div *ngFor="let account of accounts" 
        class="custom-card" 

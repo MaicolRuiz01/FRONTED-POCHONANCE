@@ -16,6 +16,7 @@ import { AccountCopService } from '../../../../core/services/account-cop.service
 import { BalanceService } from '../../../../core/services/balance.service';
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { finalize } from 'rxjs/operators';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 
 export interface DisplayAccount {
@@ -45,7 +46,8 @@ export interface DisplayAccount {
     DropdownModule,
     InputTextModule,
     InputNumberModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    ProgressSpinnerModule
   ]
 })
 export class SaldosComponent implements OnInit {
@@ -61,6 +63,7 @@ export class SaldosComponent implements OnInit {
   // NUEVO: modo edición y referencia al ID seleccionado
   editMode = false;
   selectedAccountId: number | null = null;
+  loading: boolean = true;
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
@@ -133,6 +136,7 @@ export class SaldosComponent implements OnInit {
     this.cajaService.getAllCajas().subscribe({
       next: res => {
         this.cajas = res;
+        this.loading = false; // Oculta el spinner cuando los datos están cargados
       },
       error: err => console.error('Error cargando cajas:', err)
     });

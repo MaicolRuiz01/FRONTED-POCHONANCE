@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../../core/services/buy-dollars.service';
 import { Supplier, SupplierService } from '../../../../../core/services/supplier.service';
 import { Table, TableModule } from 'primeng/table';
@@ -42,7 +42,7 @@ import { CardListComponent } from '../../../../../shared/mi-card/mi-card.compone
 })
 export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 
-   items: MenuItem[] = [];
+  items: MenuItem[] = [];
 
   @ViewChild('compraTemplate') compraTemplate!: TemplateRef<any>;
   @ViewChild('ventasTemplate') ventasTemplate!: TemplateRef<any>;
@@ -74,14 +74,14 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   loading: boolean = false;
   isMobile: boolean = false;
 
-//intento de crear tabla a partir del componente MiTabla
-columns: TableColumn[] = [
-  { campo: 'nameAccount', columna: 'Cuenta' },
-  { campo: 'dollars', columna: 'Monto' },
-  { campo: 'date', columna: 'Fecha' },
-];
+  //intento de crear tabla a partir del componente MiTabla
+  columns: TableColumn[] = [
+    { campo: 'nameAccount', columna: 'Cuenta' },
+    { campo: 'amount', columna: 'Monto' },
+    { campo: 'date', columna: 'Fecha' },
+  ];
 
-  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) {}
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) { }
 
   ngOnInit(): void {
     this.loading = true;
@@ -92,33 +92,33 @@ columns: TableColumn[] = [
       this.isMobile = window.innerWidth <= 768;
     });
     this.buyService.importarComprasAutomaticamente().subscribe({
-    next: () => {
-      this.loadDeposits();  // Ahora sí carga las compras después de importar
-    },
-    error: err => {
-      console.error('Error al importar compras automáticas', err);
-      alert('Error al registrar automáticamente las compras');
-      this.loadDeposits();  // Igual carga las compras en caso de error
-    }
-  });
+      next: () => {
+        this.loadDeposits();  // Ahora sí carga las compras después de importar
+      },
+      error: err => {
+        console.error('Error al importar compras automáticas', err);
+        alert('Error al registrar automáticamente las compras');
+        this.loadDeposits();  // Igual carga las compras en caso de error
+      }
+    });
   }
 
 
-   loadDeposits(): void {
-  this.loading = true;
-  this.buyService.getComprasNoAsignadasHoy().subscribe({
-    next: data => {
-      this.allDeposits = data;
-      this.filteredDeposits = [...this.allDeposits];
-      this.loading = false;
-    },
-    error: err => {
-      console.error('Error cargando depósitos no asignados', err);
-      alert('No se pudieron cargar las compras no asignadas');
-      this.loading = false;
-    }
-  });
-}
+  loadDeposits(): void {
+    this.loading = true;
+    this.buyService.getComprasNoAsignadasHoy().subscribe({
+      next: data => {
+        this.allDeposits = data;
+        this.filteredDeposits = [...this.allDeposits];
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Error cargando depósitos no asignados', err);
+        alert('No se pudieron cargar las compras no asignadas');
+        this.loading = false;
+      }
+    });
+  }
 
 
   loadSuppliers(): void {
@@ -129,10 +129,10 @@ columns: TableColumn[] = [
   }
 
   formatDate(date: Date): string {
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().slice(0, 19);
-}
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 19);
+  }
 
   validateRate(): void {
     this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
@@ -153,30 +153,34 @@ columns: TableColumn[] = [
     this.purchaseRate = null;
   }
 
-  saveAssignment(): void {
+  // asignaciones-compras.component.ts
+saveAssignment(): void {
   if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
 
-  const pesos = this.selectedDeposit.dollars * this.purchaseRate;
+  const pesos = this.selectedDeposit.amount * this.purchaseRate;
 
   const buyData: Partial<BuyDollarsDto> = {
     tasa: this.purchaseRate,
-    pesos: pesos,
-    supplierId: this.selectedSupplierId
+    pesos,
+    supplierId: this.selectedSupplierId,   // por si el back usa supplierId
+    // 👇 añade también "supplier" por si el back usa ese nombre
+    // @ts-ignore
+    supplier: this.selectedSupplierId
   };
 
-  console.log('Asignando compra ID:', this.selectedDeposit.id, 'con data:', buyData);
-
   this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
-    next: () => {
-      alert('Compra asignada correctamente');
-      this.closeModal();
-      this.loadDeposits(); // Recarga la lista con solo las no asignadas
-    },
-    error: err => {
-      console.error('Error asignando compra', err);
-      alert('Error al asignar la compra');
-    }
-  });
+  next: () => {
+    alert('Compra asignada correctamente');
+    this.closeModal();
+    this.loadDeposits();
+  },
+  error: err => {
+    console.error('Error asignando compra', err);
+    alert('Error al asignar la compra');
+  }
+});
+
 }
+
 
 }

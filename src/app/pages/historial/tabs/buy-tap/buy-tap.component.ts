@@ -61,8 +61,8 @@ export class BuyTapComponent implements OnInit {
   }
 
   recalculatePesos() {
-    if (this.selectedCompra?.dollars != null && this.selectedCompra?.tasa != null) {
-      this.selectedCompra.pesos = this.selectedCompra.dollars * this.selectedCompra.tasa;
+    if (this.selectedCompra?.amount!= null && this.selectedCompra?.tasa != null) {
+      this.selectedCompra.pesos = this.selectedCompra.amount* this.selectedCompra.tasa;
     }
   }
 

@@ -6,7 +6,7 @@ import { environment } from '../../../environment/environment';
 
 export interface BuyDollarsDto {
   id?: number;
-  dollars: number;
+  amount: number;
   tasa: number;
   nameAccount: string;
   date: Date;

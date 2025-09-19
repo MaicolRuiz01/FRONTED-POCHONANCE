@@ -4,6 +4,15 @@
     <button pButton label="Nuevo Cliente" icon="pi pi-plus" class="p-button-success" (click)="abrirModal()"></button>
   </div>
 
+<div>
+  <button pButton 
+          label="Pagar a Cliente" 
+          icon="pi pi-credit-card" 
+          class="p-button-danger" 
+          (click)="abrirModalPago()">
+  </button>
+</div>
+
   <br>
 
 <div class="total-container">  
@@ -54,10 +63,80 @@
       </div>
     </form>
 
+
+
+
     <ng-template pTemplate="footer">
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayModal = false"></button>
       <button pButton label="Guardar" icon="pi pi-check" class="p-button-success" (click)="guardarCliente()"></button>
     </ng-template>
   </p-dialog>
+<p-dialog header="Pago entre Clientes" 
+           [(visible)]="displayPagoModal" 
+           [modal]="true" 
+           [style]="{ width: '400px' }">
+  <form class="p-fluid">
+    <!-- Cliente Origen -->
+    <div class="p-field">
+      <label>Cliente Origen</label>
+      <p-dropdown 
+        [options]="clientes" 
+        [(ngModel)]="pago.origenId" 
+        name="origen" 
+        optionLabel="nombre" 
+        optionValue="id" 
+        placeholder="Seleccione cliente origen">
+      </p-dropdown>
+    </div>
+
+    <!-- Cliente Destino -->
+    <div class="p-field">
+      <label>Cliente Destino</label>
+      <p-dropdown 
+        [options]="clientes" 
+        [(ngModel)]="pago.destinoId" 
+        name="destino" 
+        optionLabel="nombre" 
+        optionValue="id" 
+        placeholder="Seleccione cliente destino">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto -->
+    <div class="p-field">
+      <label>Monto</label>
+      <p-inputNumber 
+        [(ngModel)]="pago.monto" 
+        name="monto" 
+        mode="currency" 
+        currency="COP" 
+        [min]="0">
+      </p-inputNumber>
+    </div>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pago.nota" name="nota" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="displayPagoModal = false">
+    </button>
+    <button pButton 
+            label="Confirmar Pago" 
+            icon="pi pi-check" 
+            class="p-button-success" 
+            (click)="confirmarPago()"
+            [disabled]="!pago.origenId || !pago.destinoId || !pago.monto">
+    </button>
+  </ng-template>
+</p-dialog>
+
 </div>
 

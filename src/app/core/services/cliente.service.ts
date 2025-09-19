@@ -5,18 +5,16 @@ import { environment } from '../../../environment/environment';
 
 export interface Cliente {
     id: number;
-    nombre:String;
+    nombre: String;
     correo: String;
     nameUser: String;
     saldo: number;
     wallet: String;
-
 }
 
 @Injectable({
   providedIn: 'root',
 })
-
 export class ClienteService {
   private readonly apiUrl = `${environment.apiUrl}/cliente`;
 
@@ -40,5 +38,10 @@ export class ClienteService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // ✅ nuevo método para el pago entre clientes
+  transferir(pago: { origenId: number; destinoId: number; monto: number; nota?: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/transferir`, pago);
   }
 }

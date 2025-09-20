@@ -70,6 +70,16 @@
           title="Consultar Saldo Externo"
           (click)="consultarSaldoExterno(account, $event)">
   </button>
+  <button pButton
+          icon="pi pi-refresh"
+          severity="warning"
+          variant="outlined"
+          [raised]="true"
+          size="small"
+          [loading]="account.syncing"
+          title="Sincronizar saldos internos"
+          (click)="syncInternalAccount(account, $event)">
+  </button>
   </div>
    <ng-container *ngIf="!account.isFlipped; else detalles"> 
     <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>

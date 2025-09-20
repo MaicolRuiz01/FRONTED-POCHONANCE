@@ -66,6 +66,7 @@ export class AsignacionesVentasComponent implements OnInit {
   //campo es el nombre de donde tomo el dato y columna como quiero que se muestre
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
+    { campo: 'cryptoSymbol', columna: 'Cripto' }, 
     { campo: 'dollars', columna: 'Monto' },
     { campo: 'date', columna: 'Fecha' },
     { campo: 'getClienteById(sale.clienteId)?.nombre ?? "----"', columna: 'Cliente' }

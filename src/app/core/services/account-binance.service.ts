@@ -69,4 +69,8 @@ export class AccountBinanceService {
   syncAllInternal(): Observable<string> {
     return this.http.post(`${this.apiUrl}/sync-internal/all`, {}, { responseType: 'text' });
   }
+  syncInternalByName(name: string): Observable<Record<string, number>> {
+    const url = `${this.apiUrl}/sync-internal?name=${encodeURIComponent(name)}`;
+    return this.http.post<Record<string, number>>(url, {});
+  }
 }

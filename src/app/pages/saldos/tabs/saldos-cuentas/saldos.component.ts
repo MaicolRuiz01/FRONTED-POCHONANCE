@@ -27,6 +27,7 @@ export interface DisplayAccount {
   correo?: string;
   address?: string;
   isFlipped: boolean;
+  syncing: boolean;
 }
 
 @Component({
@@ -160,7 +161,8 @@ export class SaldosComponent implements OnInit {
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
-          saldoExterno: undefined // se consultará solo con botón
+          saldoExterno: undefined, // se consultará solo con botón
+          syncing: false 
         }));
       },
       error: err => console.error(err)
@@ -415,4 +417,36 @@ export class SaldosComponent implements OnInit {
         }
       });
   }
+  syncInternalAccount(account: DisplayAccount, event: Event) {
+  event.stopPropagation();             // evita voltear la card al hacer click
+  account.syncing = true;
+
+  this.accountService.syncInternalByName(account.accountType)
+    .pipe(finalize(() => account.syncing = false))
+    .subscribe({
+      next: (snapshot) => {
+        // Mensaje con resumen del snapshot
+        const resumen = Object.entries(snapshot)
+          .map(([k, v]) => `${k}: ${(v ?? 0).toFixed(2)}`)
+          .join(', ');
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sincronizado',
+          detail: resumen || `Saldos actualizados para ${account.accountType}`
+        });
+
+        // refresca tarjetas y totales internos
+        this.loadAccounts();
+        this.getBalanceTotalInterno();
+        this.getTotalBalance();
+      },
+      error: _ => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `No se pudo sincronizar ${account.accountType}`
+        });
+      }
+    });
+}
 }

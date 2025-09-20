@@ -19,6 +19,7 @@
   <div *ngIf="isMobile">
     <app-card-list [data]="filteredSales" [columns]="[
         { label: 'Cuenta', field: 'nameAccount' },
+        { label: 'Cripto', field: 'cryptoSymbol' },
         { label: 'Monto', field: 'dollars' },
         { label: 'Cliente', field: 'getClienteById(sale.clienteId)?.nombre' },
         { label: 'Fecha', field: 'date' }

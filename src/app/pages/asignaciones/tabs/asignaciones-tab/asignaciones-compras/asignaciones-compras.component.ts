@@ -77,6 +77,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   //intento de crear tabla a partir del componente MiTabla
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
+    { campo: 'cryptoSymbol', columna: 'Cripto' }, 
     { campo: 'amount', columna: 'Monto' },
     { campo: 'date', columna: 'Fecha' },
   ];

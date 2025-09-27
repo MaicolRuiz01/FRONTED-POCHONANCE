@@ -33,19 +33,19 @@
     
     <div *ngIf="selectedBalance && totalCajaArr">
     <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'USD' }}</p>
+    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}</p>
     <div *ngIf="totalCajaArr.length > 0">
     <h4>Total por Caja</h4>
     <ul>
       <li *ngFor="let caja of totalCajaArr">
-        {{ caja.nombre }}: {{ caja.monto | currency:'USD' }}
+        {{ caja.nombre }}: {{ caja.monto | currency:'COP' }}
       </li>
     </ul>
   </div>
 
   <div>
     <h4>Total Clientes</h4>
-    <p>{{ totalClientes | currency:'USD' }}</p>
+    <p>{{ totalClientes | currency:'COP' }}</p>
   </div>
   </div>
 

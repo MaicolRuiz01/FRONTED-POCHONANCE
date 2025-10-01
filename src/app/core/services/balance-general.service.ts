@@ -20,7 +20,7 @@ export interface BalanceGeneral {
   comisionTrust: number;
   saldoCuentasBinance: number;
   proveedores: number;
-  cuentasCop: number
+  cuentasCop: number;
 }
 
 @Injectable({

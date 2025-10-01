@@ -1,24 +1,25 @@
 <div class="button-container">
-  <button pButton title="Agregar Caja" icon="pi pi-plus" class="p-button-success p-button-sm p-button-rounded" (click)="displayCajaDialog = true"></button>
+  <button pButton title="Agregar Caja" icon="pi pi-plus" class="p-button-success p-button-sm p-button-rounded"
+    (click)="displayCajaDialog = true"></button>
 </div>
 <br>
- 
-<div class="total-container">  
-<p-card styleClass="total-card">
+
+<div class="total-container">
+  <p-card styleClass="total-card">
     <ng-template pTemplate="content">
       <div class="total-content">
         <i class="pi pi-calculator" style="margin-right: 6px;"></i>
         <strong>Total Cajas:</strong> {{ totalCajas | currency:'COP' }}
       </div>
     </ng-template>
-</p-card>
+  </p-card>
 </div>
 <br><br>
 
 <!--cartas para cajas -->
-   <div class="p-grid p-justify-center p-card-container">
-  <div *ngFor="let caja of cajas" class="card-wrapper" >
-    <p-card styleClass="account-card" >
+<div class="p-grid p-justify-center p-card-container">
+  <div *ngFor="let caja of cajas" class="card-wrapper">
+    <p-card styleClass="account-card">
       <ng-template pTemplate="header">
         <div class="card-header">
           <i class="pi pi-user" style="margin-right: 8px;"></i> {{ caja?.name }}
@@ -31,14 +32,14 @@
             <span class="label">Saldo:</span>
             <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
           </div>
-          
+
         </div>
       </ng-template>
     </p-card>
   </div>
 </div>
 
-  <! -- cuadro de dialogo para crear una nueva caja --!>
+<! -- cuadro de dialogo para crear una nueva caja --!>
 
   <p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
     <div class="p-fluid">
@@ -46,10 +47,11 @@
       <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
 
       <label>Saldo Inicial</label>
-      <input type="number" pInputText [(ngModel)]="nuevaCaja.saldo" />
+      <p-inputNumber [(ngModel)]="nuevaCaja.saldo" name="saldoInicial" mode="currency" currency="COP" [min]="0">
+      </p-inputNumber>
     </div>
 
-     <p-footer>
+    <p-footer>
       <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
       <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
     </p-footer>

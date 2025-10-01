@@ -40,7 +40,6 @@
       <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
       <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
       <p><strong>Cuentas Colombianas:</strong> {{ (selectedBalance?.cuentasCop ?? 0) | currency:'COP'  }}</p>
-      <pre>{{ selectedBalance | json }}</pre>
 
       <div *ngIf="totalCajaArr.length > 0">
         <h4>Total por Caja</h4>

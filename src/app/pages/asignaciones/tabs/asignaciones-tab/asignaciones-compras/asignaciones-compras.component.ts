@@ -175,11 +175,16 @@ saveAssignment(): void {
     this.closeModal();
     this.loadDeposits();
   },
-  error: err => {
+  error: (err) => {
+    // El backend devuelve un string con e.getMessage() (400)
+    const msg = (typeof err.error === 'string' && err.error.trim().length)
+      ? err.error
+      : (err.error?.message || err.statusText || 'Error desconocido');
     console.error('Error asignando compra', err);
-    alert('Error al asignar la compra');
+    alert('Error al asignar la compra: ' + msg);
   }
 });
+
 
 }
 

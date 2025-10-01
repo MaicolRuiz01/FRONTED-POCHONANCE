@@ -30,6 +30,7 @@ export class CajaComponent implements OnInit {
   columns: TableColumn[] = [
     { campo: 'date', columna: 'Fecha' },
     { campo: 'saldo', columna: 'Saldo' },
+    { campo: 'saldoCuentasBinance', columna: 'Cuentas Binance (COP)' }
   ];
 
   constructor(private balanceService: BalanceGeneralService) { }

@@ -10,13 +10,14 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card'; 
 import { CommonModule } from '@angular/common';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-cajas-tab',
   standalone: true,
   imports: [FormsModule, ButtonModule, 
             InputTextModule, DialogModule, TabViewModule, 
-            TableModule, CurrencyPipe, CardModule, CommonModule],
+            TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule],
   templateUrl: './cajas.component.html',
   styleUrl: './cajas.component.css'
 })

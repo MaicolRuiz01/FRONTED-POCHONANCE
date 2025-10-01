@@ -1,22 +1,26 @@
 <!-- Botón para abrir el formulario de creación de cuenta -->
 <div class="botones-container">
-  <button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success" (click)="showCreateDialog()"></button>
-  <button pButton label="Retiro" icon="pi pi-arrow-down" class="p-button-warning" (click)="abrirDialogRetiro()"></button>
+  <button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success"
+    (click)="showCreateDialog()"></button>
+  <button pButton label="Retiro" icon="pi pi-arrow-down" class="p-button-warning"
+    (click)="abrirDialogRetiro()"></button>
   <button pButton label="Depósito" icon="pi pi-arrow-up" class="p-button-info" (click)="abrirDialogDeposito()"></button>
-  <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help" (click)="abrirDialogTransferencia()"></button>
-  <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success" (click)="abrirDialogPago()"></button>
+  <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help"
+    (click)="abrirDialogTransferencia()"></button>
+  <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success"
+    (click)="abrirDialogPago()"></button>
 
 
-<div class="total-container">  
-<p-card styleClass="total-card">
-    <ng-template pTemplate="content">
-      <div class="total-content">
-        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
-      </div>
-    </ng-template>
-</p-card>
-</div>
+  <div class="total-container">
+    <p-card styleClass="total-card">
+      <ng-template pTemplate="content">
+        <div class="total-content">
+          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+          <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
 </div>
 <br>
 
@@ -24,7 +28,8 @@
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card" (click)="goToVentas(account.id!)">
+    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card"
+      (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
           <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
@@ -43,7 +48,13 @@
     </div>
     <div class="p-col-12 p-md-6">
       <label for="balance">Balance</label>
-      <input id="balance" pInputText type="number" [(ngModel)]="newAccount.balance" />
+  <p-inputNumber
+    [(ngModel)]="newAccount.balance"
+    name="balance"
+    mode="currency"
+    currency="COP"
+    [min]="0">
+  </p-inputNumber>
     </div>
   </div>
 
@@ -54,137 +65,92 @@
 </p-dialog>
 <!-- RETIRO -->
 <p-dialog header="Registrar Retiro" [(visible)]="displayDialogRetiro" [modal]="true">
-    <div class="p-fluid">
-        <label>Cuenta Origen</label>
-        <p-dropdown 
-            [options]="cuentas" 
-            [(ngModel)]="selectedCuentaOrigenId" 
-            optionLabel="name" 
-            optionValue="id" 
-            placeholder="Selecciona la Cuenta Origen" 
-            [style.width.%]="100"
-            [appendTo]="'body'">
-        </p-dropdown>
-        <label>Caja</label>
-        <p-dropdown
-          [options]="cajas"
-          [(ngModel)]="selectedCajaId"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Selecciona caja"
-          [style.width.%]="100"
-          [appendTo]="'body'">
-        </p-dropdown>
+  <div class="p-fluid">
+    <label>Cuenta Origen</label>
+    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona la Cuenta Origen" [style.width.%]="100" [appendTo]="'body'">
+    </p-dropdown>
+    <label>Caja</label>
+    <p-dropdown [options]="cajas" [(ngModel)]="selectedCajaId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona caja" [style.width.%]="100" [appendTo]="'body'">
+    </p-dropdown>
 
+    <label>Monto</label>
+    <p-inputNumber [(ngModel)]="montoMovimiento" name="montoMovimiento" mode="currency" currency="COP" [min]="0">
+    </p-inputNumber>
+  </div>
 
-        <label>Monto</label>
-        <input type="number" pInputText [(ngModel)]="montoMovimiento">
-    </div>
-
-    <p-footer>
-        <button pButton label="Cancelar" (click)="displayDialogRetiro = false"></button>
-        <button pButton label="Confirmar" class="p-button-danger" (click)="registrarRetiro()"></button>
-    </p-footer>
+  <p-footer>
+    <button pButton label="Cancelar" (click)="displayDialogRetiro = false"></button>
+    <button pButton label="Confirmar" class="p-button-danger" (click)="registrarRetiro()"></button>
+  </p-footer>
 </p-dialog>
 
 
 <!-- DEPÓSITO -->
 <p-dialog header="Registrar Depósito" [(visible)]="displayDialogDeposito" [modal]="true">
-    <div class="p-fluid">
-        <label>Cuenta Destino</label>
-        <p-dropdown 
-            [options]="cuentas" 
-            [(ngModel)]="selectedCuentaDestinoId" 
-            optionLabel="name" 
-            optionValue="id" 
-            placeholder="Selecciona la Cuenta Destino" 
-            [style]="{'width':'100%'}"
-            [appendTo]="'body'">
-        </p-dropdown>
-        <label>Caja</label>
-        <p-dropdown
-          [options]="cajas"
-          [(ngModel)]="selectedCajaId"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Selecciona caja"
-          [style.width.%]="100"
-          [appendTo]="'body'">
-        </p-dropdown>
+  <div class="p-fluid">
+    <label>Cuenta Destino</label>
+    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona la Cuenta Destino" [style]="{'width':'100%'}" [appendTo]="'body'">
+    </p-dropdown>
+    <label>Caja</label>
+    <p-dropdown [options]="cajas" [(ngModel)]="selectedCajaId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona caja" [style.width.%]="100" [appendTo]="'body'">
+    </p-dropdown>
 
 
-        <label>Monto</label>
-        <input type="number" pInputText [(ngModel)]="montoMovimiento">
-    </div>
+    <label>Monto</label>
+    <p-inputNumber [(ngModel)]="montoMovimiento" name="montoMovimiento" mode="currency" currency="COP" [min]="0">
+    </p-inputNumber>
+  </div>
 
-    <p-footer>
-        <button pButton label="Cancelar" (click)="displayDialogDeposito = false"></button>
-        <button pButton label="Confirmar" class="p-button-primary" (click)="registrarDeposito()"></button>
-    </p-footer>
+  <p-footer>
+    <button pButton label="Cancelar" (click)="displayDialogDeposito = false"></button>
+    <button pButton label="Confirmar" class="p-button-primary" (click)="registrarDeposito()"></button>
+  </p-footer>
 </p-dialog>
 
 
 <!-- TRANSFERENCIA -->
 <p-dialog header="Registrar Transferencia" [(visible)]="displayDialogTransferencia" [modal]="true">
-    <div class="p-fluid">
-        <label>Cuenta Origen</label>
-        <p-dropdown 
-            [options]="cuentas" 
-            [(ngModel)]="selectedCuentaOrigenId" 
-            optionLabel="name" 
-            optionValue="id" 
-            placeholder="Selecciona la Cuenta Origen"
-            [style]="{'width':'100%'}"
-            [appendTo]="'body'">
-        </p-dropdown>
+  <div class="p-fluid">
+    <label>Cuenta Origen</label>
+    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona la Cuenta Origen" [style]="{'width':'100%'}" [appendTo]="'body'">
+    </p-dropdown>
 
-        <label>Cuenta Destino</label>
-        <p-dropdown 
-            [options]="cuentas" 
-            [(ngModel)]="selectedCuentaDestinoId" 
-            optionLabel="name" 
-            optionValue="id" 
-            placeholder="Selecciona la Cuenta Destino"
-            [style]="{'width':'100%'}"
-            [appendTo]="'body'">
-        </p-dropdown>
+    <label>Cuenta Destino</label>
+    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona la Cuenta Destino" [style]="{'width':'100%'}" [appendTo]="'body'">
+    </p-dropdown>
 
-        <label>Monto</label>
-        <input type="number" pInputText [(ngModel)]="montoMovimiento">
-    </div>
+    <label>Monto</label>
+    <p-inputNumber [(ngModel)]="montoMovimiento" name="montoMovimiento" mode="currency" currency="COP" [min]="0">
+    </p-inputNumber>
+  </div>
 
-    <p-footer>
-        <button pButton label="Cancelar" (click)="displayDialogTransferencia = false"></button>
-        <button pButton label="Confirmar" class="p-button-help" (click)="registrarTransferencia()"></button>
-    </p-footer>
+  <p-footer>
+    <button pButton label="Cancelar" (click)="displayDialogTransferencia = false"></button>
+    <button pButton label="Confirmar" class="p-button-help" (click)="registrarTransferencia()"></button>
+  </p-footer>
 </p-dialog>
 
 <p-dialog header="Registrar Pago Cliente" [(visible)]="displayDialogPago" modal="true">
   <div class="p-fluid">
     <label>Cliente</label>
-    <p-dropdown
-      [options]="clientes"
-      [(ngModel)]="selectedClienteId"
-      optionLabel="nombre"
-      optionValue="id"
-      placeholder="Selecciona cliente"
-      [style.width.%]="100"
-      [appendTo]="'body'">
+    <p-dropdown [options]="clientes" [(ngModel)]="selectedClienteId" optionLabel="nombre" optionValue="id"
+      placeholder="Selecciona cliente" [style.width.%]="100" [appendTo]="'body'">
     </p-dropdown>
 
     <label>Cuenta COP destino</label>
-    <p-dropdown
-      [options]="cuentas"
-      [(ngModel)]="cuentaPagoId"
-      optionLabel="name"
-      optionValue="id"
-      placeholder="Selecciona cuenta COP"
-      [style.width.%]="100"
-      [appendTo]="'body'">
+    <p-dropdown [options]="cuentas" [(ngModel)]="cuentaPagoId" optionLabel="name" optionValue="id"
+      placeholder="Selecciona cuenta COP" [style.width.%]="100" [appendTo]="'body'">
     </p-dropdown>
 
     <label>Monto (COP)</label>
-    <input type="number" pInputText [(ngModel)]="montoPago"/>
+    <p-inputNumber [(ngModel)]="montoPago" name="montoPago" mode="currency" currency="COP" [min]="0">
+    </p-inputNumber>
   </div>
 
   <p-footer>
@@ -192,4 +158,3 @@
     <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
   </p-footer>
 </p-dialog>
-

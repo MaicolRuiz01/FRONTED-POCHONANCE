@@ -1,68 +1,64 @@
- <app-mi-table
-  [columns]="columns"
-  [data]="balances"
-  >
+<app-mi-table [columns]="columns" [data]="balances">
   <ng-template #actionTemplate let-balance>
-    <p-button 
-  icon="pi pi-info" 
-  title="Ver Detalles"
-  styleClass="p-button-rounded p-button-sm" 
-  (click)="showDetails(balance)">
-</p-button>
-
+    <p-button icon="pi pi-info" title="Ver Detalles" styleClass="p-button-rounded p-button-sm"
+      (click)="showDetails(balance)">
+    </p-button>
   </ng-template>
 </app-mi-table>
 
+<!-- Dialogo 1: Detalle -->
 <p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
-  <div *ngIf="selectedBalance">
-    <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}</p>
-    <p><strong>Tasa Promedio del Día:</strong> {{ selectedBalance.tasaPromedioDelDia }}</p>
-    <p><strong>Tasa Venta del Día:</strong> {{ selectedBalance.tasaVentaDelDia }}</p>
-    <p><strong>Total P2P (USD):</strong> {{ selectedBalance.totalP2PdelDia | currency: 'COP' }}</p>
-    <p><strong>Comisiones P2P (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency: 'COP' }}</p>
-    <p><strong>4x1000 de P2P:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency: 'COP' }}</p>
-    <p><strong>Utilidad P2P:</strong> {{ selectedBalance.utilidadP2P | currency: 'COP' }}</p>
-    <p><strong>Total Ventas Generales (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency: 'COP' }}</p>
-    <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency: 'COP' }}</p>
-    
-  </div>
-<br>
-  <button pButton label="Inf. adicional"  class="p-button-info" (click)="showAdditionalInfo()"></button>
-
-  <p-dialog [(visible)]="showAdditionalInfoModal" [modal]="false" header="inf adicional balance">
-    
-    <div *ngIf="selectedBalance && totalCajaArr">
-    <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-    <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}</p>
-    <p><strong>Saldo de Cuentas Binance: </strong> {{selectedBalance.saldoCuentasBinance}} </p>
-    <p><strong>Saldo Proveedores: </strong>{{selectedBalance.proveedores}}</p>
-    <p><strong>Cuentas Colombianas: </strong>{{selectedBalance.cuentasCop}}</p>
-    <div *ngIf="totalCajaArr.length > 0">
-    <h4>Total por Caja</h4>
-    <ul>
-      <li *ngFor="let caja of totalCajaArr">
-        {{ caja.nombre }}: {{ caja.monto | currency:'USD' }}
-      </li>
-    </ul>
-  </div>
-
-  <div>
-    <h4>Total Clientes</h4>
-    <p>{{ totalClientes | currency:'USD' }}</p>
-  </div>
-  </div>
-
-  
-
-
-
-  </p-dialog>
+  <ng-template pTemplate="content">
+    <div *ngIf="selectedBalance">
+      <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
+      <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency:'COP' }}</p>
+      <p><strong>Tasa Promedio del Día:</strong> {{ selectedBalance.tasaPromedioDelDia }}</p>
+      <p><strong>Tasa Venta del Día:</strong> {{ selectedBalance.tasaVentaDelDia }}</p>
+      <p><strong>Total P2P (USD):</strong> {{ selectedBalance.totalP2PdelDia | currency:'COP' }}</p>
+      <p><strong>Comisiones P2P (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency:'COP' }}</p>
+      <p><strong>4x1000 de P2P:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency:'COP' }}</p>
+      <p><strong>Utilidad P2P:</strong> {{ selectedBalance.utilidadP2P | currency:'COP' }}</p>
+      <p><strong>Total Ventas Generales (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency:'COP' }}</p>
+      <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency:'COP' }}</p>
+    </div>
+    <button pButton label="Inf. adicional" class="p-button-info mt-3" (click)="showAdditionalInfo()"></button>
+  </ng-template>
 
   <ng-template pTemplate="footer">
     <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
 </p-dialog>
 
+<!-- Dialogo 2: Info adicional -->
+<p-dialog [(visible)]="showAdditionalInfoModal" [modal]="true" header="Inf. adicional balance">
+  <ng-template pTemplate="content">
+    <div *ngIf="selectedBalance">
+      <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
+      <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency:'COP' }}</p>
 
+      <!-- Estas 3 propiedades deben existir en BalanceGeneral si las vas a mostrar -->
+      <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
+      <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
+      <p><strong>Cuentas Colombianas:</strong> {{ (selectedBalance?.cuentasCop ?? 0) | currency:'COP'  }}</p>
+      <pre>{{ selectedBalance | json }}</pre>
 
+      <div *ngIf="totalCajaArr.length > 0">
+        <h4>Total por Caja</h4>
+        <ul>
+          <li *ngFor="let caja of totalCajaArr">
+            {{ caja.nombre }}: {{ caja.monto | currency:'COP' }}
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Total Clientes</h4>
+        <p>{{ totalClientes | currency:'COP' }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cerrar" (click)="showAdditionalInfoModal = false" class="p-button-danger"></button>
+  </ng-template>
+</p-dialog>

@@ -29,8 +29,7 @@ export class CajaComponent implements OnInit {
 
   columns: TableColumn[] = [
     { campo: 'date', columna: 'Fecha' },
-    { campo: 'saldo', columna: 'Saldo' },
-    { campo: 'saldoCuentasBinance', columna: 'Cuentas Binance (COP)' }
+    { campo: 'saldo', columna: 'Saldo' }
   ];
 
   constructor(private balanceService: BalanceGeneralService) { }
@@ -50,10 +49,13 @@ export class CajaComponent implements OnInit {
     });
   }
 
-  showDetails(balance: BalanceGeneral): void {
-    this.selectedBalance = balance;
-    this.showDetailsModal = true;
-  }
+  showDetails(row: BalanceGeneral): void {
+  // Buscar el registro completo en this.balances por id
+  const full = this.balances.find(b => b.id === row.id);
+  this.selectedBalance = full ?? row; // usa el completo si lo encuentra
+  this.showDetailsModal = true;
+}
+
 
   showAdditionalInfo(): void {
     // Llamada a totalCaja

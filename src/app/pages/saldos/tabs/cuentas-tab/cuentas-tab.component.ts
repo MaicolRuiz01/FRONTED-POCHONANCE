@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
 import { DropdownModule } from 'primeng/dropdown';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 
@@ -23,7 +24,8 @@ import { CajaService, Caja } from '../../../../core/services/caja.service';
     InputTextModule, 
     CardModule, 
     CommonModule,
-    DropdownModule
+    DropdownModule,
+    InputNumberModule
    ],
   templateUrl: './cuentas-tab.component.html',
   styleUrls: ['./cuentas-tab.component.css']

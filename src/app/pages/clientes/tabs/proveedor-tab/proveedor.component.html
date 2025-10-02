@@ -49,12 +49,12 @@
   </div>
 </div>
 
-  <p-dialog header="Pagos del Proveedor" [(visible)]="showPagosDialog" [modal]="true" [style]="{width: '70vw'}"
-    [closable]="true" (onHide)="showPagosDialog = false">
+  <p-dialog header="Movimientos del Proveedor" [(visible)]="showPagosDialog" [modal]="true" [style]="{width: '70vw'}"
+  [closable]="true" (onHide)="showPagosDialog = false">
 
-    <app-lista-pagos [pagos]="pagos"></app-lista-pagos>
+  <app-lista-pagos [pagos]="movimientos"></app-lista-pagos>
 
-  </p-dialog>
+</p-dialog>
 
 
   <!-- Dialog de formulario de pago -->

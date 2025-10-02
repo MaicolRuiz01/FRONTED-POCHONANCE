@@ -2,7 +2,18 @@
   [columns]="columns"
   [data]="balances"
   >
+  
+  <ng-template pTemplate="content">
+      <div class="total-content">
+        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+        <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
+      </div>
+    </ng-template>
+
   <ng-template #actionTemplate let-balance>
+
+    
+
     <p-button 
   icon="pi pi-info" 
   title="Ver Detalles"

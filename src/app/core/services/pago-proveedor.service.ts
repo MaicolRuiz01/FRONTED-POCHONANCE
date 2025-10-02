@@ -3,10 +3,22 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
+
+export interface Movimiento {
+  id: number;
+  tipo: 'INGRESO' | 'EGRESO';
+  monto: number;
+  fecha: Date;
+  descripcion: string;
+  proveedorId?: number;
+  // Añade aquí otros campos relevantes como 'proveedorId' o 'cuentaId'
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class PagoProveedorService {
+  
 
   private apiUrl = `${environment.apiUrl}/pago-proveedor`;
 
@@ -21,4 +33,10 @@ export class PagoProveedorService {
     const url = `${this.apiUrl}/por-supplier/${supplierId}`;
     return this.http.get<any[]>(url);  // Retorna los pagos asociados a ese proveedor
   }
+
+  getMovimientosBySupplier(supplierId: number): Observable<Movimiento[]> {
+    const url = `${this.apiUrl}/por-supplier/${supplierId}`;
+    return this.http.get<Movimiento[]>(url);
+  }
+
 }

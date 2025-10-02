@@ -29,7 +29,7 @@
 <br>
   <!-- Grid de clientes -->
   <div class="grid-clientes">
-    <div class="card" *ngFor="let cliente of clientes">
+    <div class="card" *ngFor="let cliente of clientes" (click)="selectedCliente = cliente; showMovimientosDialog = true">
       <h3>{{ cliente.nombre }}</h3>
       <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
       <p><strong>Correo:</strong> {{ cliente.correo }}</p>
@@ -38,7 +38,36 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal de Movimientos del Cliente -->
+<p-dialog header="Movimientos del Cliente: {{ selectedCliente?.nombre }}" 
+          [(visible)]="showMovimientosDialog" 
+          [modal]="true" 
+          [style]="{width: '80vw'}"
+          [closable]="true" 
+          (onHide)="showMovimientosDialog = false">
+
+    <p-table [value]="clienteMovimientos">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Monto (USD)</th>
+                <th>Monto (COP)</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-movimiento>
+            <tr>
+                <td>{{ movimiento.fecha | date: 'short' }}</td>
+                <td>{{ movimiento.tipo }}</td>
+                <td>{{ movimiento.montoUsd | currency:'USD' }}</td>
+                <td>{{ movimiento.montoCop | currency:'COP' }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+</p-dialog>
+
+  <!-- Modal crear cliente -->
   <p-dialog header="Crear Nuevo Cliente" [(visible)]="displayModal" [modal]="true" [style]="{ width: '400px' }">
     <form class="p-fluid">
       <div class="p-field">
@@ -71,6 +100,8 @@
       <button pButton label="Guardar" icon="pi pi-check" class="p-button-success" (click)="guardarCliente()"></button>
     </ng-template>
   </p-dialog>
+
+  <!-- Modal de Pago entre Clientes -->
 <p-dialog header="Pago entre Clientes" 
            [(visible)]="displayPagoModal" 
            [modal]="true" 
@@ -87,8 +118,24 @@
         optionValue="id" 
         placeholder="Seleccione cliente origen">
       </p-dropdown>
-    </div>
+      <br>
+      <label>Tasa de Cliente Origen</label>
+      <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen" mode="currency" currency="COP"></p-inputNumber>
+       </div>
+       <br>
 
+       <!-- Monto a pagar cliente origen-->
+    <div class="p-field">
+      <label>Monto a Pagar de cliente Origen</label>
+      <p-inputNumber 
+        [(ngModel)]="pago.monto" 
+        name="monto" 
+        mode="currency" 
+        currency="COP" 
+        [min]="0">
+      </p-inputNumber>
+    </div>
+ <br>
     <!-- Cliente Destino -->
     <div class="p-field">
       <label>Cliente Destino</label>
@@ -100,20 +147,12 @@
         optionValue="id" 
         placeholder="Seleccione cliente destino">
       </p-dropdown>
+      <br>
+      <label>Tasa de Cliente Destino</label>
+      <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino" mode="currency" currency="COP"></p-inputNumber>
+      <br>
     </div>
-
-    <!-- Monto -->
-    <div class="p-field">
-      <label>Monto</label>
-      <p-inputNumber 
-        [(ngModel)]="pago.monto" 
-        name="monto" 
-        mode="currency" 
-        currency="COP" 
-        [min]="0">
-      </p-inputNumber>
-    </div>
-
+<br>
     <!-- Nota -->
     <div class="p-field">
       <label>Nota (opcional)</label>

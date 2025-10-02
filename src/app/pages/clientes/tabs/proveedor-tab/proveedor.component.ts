@@ -44,6 +44,7 @@ export class ProveedorComponent implements OnInit {
   showPagosDialog: boolean = false; // nuevo
   showform: boolean = false; // nuevo
 
+  movimientos: any[] = [];
 
   Supplier_name: string = '';
   Supplier_balance: number = 0; // nuevo, balance por defecto
@@ -108,12 +109,15 @@ export class ProveedorComponent implements OnInit {
 
 
   // Obtener los pagos asociados al proveedor seleccionado
-  loadPagosBySupplier(): void {
+  loadMovimientosBySupplier(): void {
     if (this.selectedSupplier) {
       const supplierId = this.selectedSupplier.id;
-      this.paymentService.getPagosBySupplier(supplierId).subscribe({
-        next: (data) => this.pagos = data,
-        error: (err) => console.error('Error loading payments', err)
+       console.log('Cargando movimientos para el proveedor ID:', supplierId);
+       console.log('Proveedor seleccionado:', this.movimientos);
+      this.paymentService.getMovimientosBySupplier(supplierId).subscribe({
+        next: (data) => this.movimientos = data,
+        error: (err) => console.error('Error cargando movimientos', err)
+        
       });
     }
   }
@@ -169,10 +173,10 @@ export class ProveedorComponent implements OnInit {
     }
   }
 
-  onSelectSupplier(supplier: Supplier): void {
-  this.selectedSupplier = supplier;
-  this.loadPagosBySupplier();
-  this.showPagosDialog = true; // abre el dialog al seleccionar proveedor
-}
+onSelectSupplier(supplier: Supplier): void {
+    this.selectedSupplier = supplier;
+    this.loadMovimientosBySupplier(); // ✅ Ahora llama al nuevo método
+    this.showPagosDialog = true;
+  }
 
 }

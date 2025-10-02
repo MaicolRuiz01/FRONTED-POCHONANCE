@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 
 import { TableColumn } from '../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../shared/mi-table/mi-table.component';
+import { AccountCop } from '../../../../core/services/account-cop.service';
 
 @Component({
   selector: 'app-caja',
@@ -26,6 +27,12 @@ export class CajaComponent implements OnInit {
   totalCajaObj: Record<string, number> = {};
   totalCajaArr: { nombre: string; monto: number }[] = [];
   totalClientes: number = 0;
+
+  cuentas: AccountCop[] = [];
+
+  get totalCuentas(): number {
+  return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
+}
 
   columns: TableColumn[] = [
     { campo: 'date', columna: 'Fecha' },

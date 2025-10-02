@@ -9,6 +9,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CardModule } from 'primeng/card';
 import { ButtonProps } from 'primeng/splitbutton';
 import { DropdownModule } from 'primeng/dropdown';
+import { TableModule } from 'primeng/table'; 
+
 
 @Component({
   selector: 'app-clientes',
@@ -21,7 +23,9 @@ import { DropdownModule } from 'primeng/dropdown';
     FormsModule,
     InputNumberModule,
     CardModule,
-    DropdownModule
+    DropdownModule,
+    InputTextModule,
+    TableModule
   ],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css']
@@ -32,6 +36,14 @@ export class ClientesComponent implements OnInit {
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0 , wallet: ''};
 
   displayPagoModal = false;
+
+  tasaOrigen: number = 0; // Nueva propiedad para la tasa del cliente origen
+  tasaDestino: number = 0; // Nueva propiedad para la tasa del cliente destino
+
+  showMovimientosDialog: boolean = false;
+  selectedCliente: Cliente | null = null;
+  clienteMovimientos: any[] = [];
+
 
   // estado simple para evitar doble submit (opcional)
   loadingPago = false;
@@ -111,6 +123,15 @@ export class ClientesComponent implements OnInit {
       alert('El cliente origen no tiene suficiente saldo');
       return;
     }
+     if (!this.tasaOrigen || this.tasaOrigen <= 0) {
+    alert('Debe ingresar una Tasa de Cliente Origen válida.');
+    return;
+  }
+  if (!this.tasaDestino || this.tasaDestino <= 0) {
+    alert('Debe ingresar una Tasa de Cliente Destino válida.');
+    return;
+  }
+
 
     // ✅ llamada al backend (ya habilitada)
     this.loadingPago = true;
@@ -118,7 +139,9 @@ export class ClientesComponent implements OnInit {
       origenId: origen.id!,
       destinoId: destino.id!,
       monto: this.pago.monto!,
-      nota: this.pago.nota || ''
+      nota: this.pago.nota || '',
+      //tasaOrigen: this.tasaOrigen,
+      //tasaDestino: this.tasaDestino
     }).subscribe({
       next: () => {
         alert('Pago realizado con éxito');
@@ -133,4 +156,23 @@ export class ClientesComponent implements OnInit {
       }
     });
   }
+
+  onSelectCliente(cliente: Cliente): void {
+  this.selectedCliente = cliente;
+  this.clienteMovimientos = []; // Limpiar lista anterior
+
+  if (cliente.id) {
+    this.clienteService.historial(cliente.id).subscribe({
+      next: (data) => {
+        this.clienteMovimientos = data; // Almacenar la lista de movimientos
+      },
+      error: (err) => {
+        console.error('Error al cargar historial de movimientos', err);
+        // Opcional: mostrar una alerta de error al usuario
+      }
+    });
+  }
+
+  this.showMovimientosDialog = true; // Mostrar el diálogo inmediatamente después de la llamada
+}
 }

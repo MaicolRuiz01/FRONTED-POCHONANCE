@@ -49,6 +49,9 @@ export class CajaComponent implements OnInit {
     this.balanceService.listar().subscribe({
       next: (data) => {
         this.balances = data;
+        this.balances = this.balances.sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+});
       },
       error: (err) => {
         console.error('Error cargando balances', err);

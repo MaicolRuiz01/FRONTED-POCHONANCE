@@ -46,8 +46,16 @@ export class SupplierService {
   }
 
   
-  transferirClienteProveedor(data: { clientId: number; supplierId: number; amount: number }): Observable<any> {
-    const params = `clientId=${data.clientId}&supplierId=${data.supplierId}&amount=${data.amount}`;
-    return this.http.post(`${this.apiUrl}/transfer/client-to-supplier?${params}`, {});
-  }
+  transferirClienteProveedor(data: { clientId: number, supplierId: number, amount: number }) {
+  const params = new URLSearchParams({
+    clientId: data.clientId.toString(),
+    supplierId: data.supplierId.toString(),
+    amount: data.amount.toString()
+  });
+
+  return this.http.post(`${this.apiUrl}/supplier/transfer/client-to-supplier?${params.toString()}`, null, {
+    responseType: 'text'
+  });
+}
+
 }

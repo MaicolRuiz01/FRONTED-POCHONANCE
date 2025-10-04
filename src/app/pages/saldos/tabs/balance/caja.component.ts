@@ -4,6 +4,8 @@ import { DialogModule } from 'primeng/dialog';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+
 
 import { TableColumn } from '../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../shared/mi-table/mi-table.component';
@@ -13,7 +15,7 @@ import { AccountCop } from '../../../../core/services/account-cop.service';
   selector: 'app-caja',
   standalone: true,
   imports: [DialogModule
-    , CommonModule, TableModule, ButtonModule, CurrencyPipe, MiTableComponent
+    , CommonModule, TableModule, ButtonModule, CurrencyPipe, MiTableComponent, CardModule
   ],
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css'],

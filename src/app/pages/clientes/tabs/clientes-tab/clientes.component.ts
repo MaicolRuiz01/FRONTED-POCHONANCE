@@ -7,10 +7,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CardModule } from 'primeng/card';
-import { ButtonProps } from 'primeng/splitbutton';
 import { DropdownModule } from 'primeng/dropdown';
-import { TableModule } from 'primeng/table'; 
-
+import { TableModule } from 'primeng/table';
+import { SupplierService } from '../../../../core/services/supplier.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-clientes',
@@ -24,34 +24,53 @@ import { TableModule } from 'primeng/table';
     InputNumberModule,
     CardModule,
     DropdownModule,
-    InputTextModule,
     TableModule
   ],
   templateUrl: './clientes.component.html',
-  styleUrls: ['./clientes.component.css']
+  styleUrls: ['./clientes.component.css'],
+  providers: [MessageService]
 })
 export class ClientesComponent implements OnInit {
+
   clientes: Cliente[] = [];
+  proveedores: any[] = [];
   displayModal = false;
-  nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0 , wallet: ''};
+  nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
 
   displayPagoModal = false;
+  displayTransferModal = false;
 
-  tasaOrigen: number = 0; // Nueva propiedad para la tasa del cliente origen
-  tasaDestino: number = 0; // Nueva propiedad para la tasa del cliente destino
+  tasaOrigen: number = 0;
+  tasaDestino: number = 0;
 
   showMovimientosDialog: boolean = false;
   selectedCliente: Cliente | null = null;
   clienteMovimientos: any[] = [];
 
+  transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
+    clientId: null,
+    supplierId: null,
+    amount: null
+  };
 
-  // estado simple para evitar doble submit (opcional)
+  pago: { origenId: number | null, destinoId: number | null, monto: number | null, nota?: string } = {
+    origenId: null,
+    destinoId: null,
+    monto: null,
+    nota: ''
+  };
+
   loadingPago = false;
 
-  constructor(private clienteService: ClienteService) {}
+  constructor(
+    private clienteService: ClienteService,
+    private supplierService: SupplierService,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.cargarClientes();
+    this.cargarProveedores();
   }
 
   cargarClientes(): void {
@@ -61,12 +80,20 @@ export class ClientesComponent implements OnInit {
     });
   }
 
+  cargarProveedores(): void {
+  this.supplierService.getAllSuppliers().subscribe({
+    next: data => this.proveedores = data,
+    error: () => alert('Error al cargar los proveedores')
+  });
+}
+
+
   get totalClientes(): number {
     return this.clientes.reduce((acc, cliente) => acc + (cliente.saldo ?? 0), 0);
   }
 
   abrirModal(): void {
-    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0 , wallet: ''};
+    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
     this.displayModal = true;
   }
 
@@ -80,24 +107,9 @@ export class ClientesComponent implements OnInit {
     });
   }
 
-  pagarCliente(cliente: Cliente, monto: number): void {
-    if (monto <= 0 || monto > (cliente.saldo ?? 0)) {
-      alert('Monto inválido');
-      return;
-    }
-  }
-
-  pago: { origenId: number | null, destinoId: number | null, monto: number | null, nota?: string } = {
-    origenId: null,
-    destinoId: null,
-    monto: null,
-    nota: ''
-  };
-
   abrirModalPago(): void {
     this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
     this.displayPagoModal = true;
-    console.log("Modal de pago abierto");
   }
 
   confirmarPago(): void {
@@ -123,31 +135,28 @@ export class ClientesComponent implements OnInit {
       alert('El cliente origen no tiene suficiente saldo');
       return;
     }
-     if (!this.tasaOrigen || this.tasaOrigen <= 0) {
-    alert('Debe ingresar una Tasa de Cliente Origen válida.');
-    return;
-  }
-  if (!this.tasaDestino || this.tasaDestino <= 0) {
-    alert('Debe ingresar una Tasa de Cliente Destino válida.');
-    return;
-  }
 
+    if (!this.tasaOrigen || this.tasaOrigen <= 0) {
+      alert('Debe ingresar una Tasa de Cliente Origen válida.');
+      return;
+    }
+    if (!this.tasaDestino || this.tasaDestino <= 0) {
+      alert('Debe ingresar una Tasa de Cliente Destino válida.');
+      return;
+    }
 
-    // ✅ llamada al backend (ya habilitada)
     this.loadingPago = true;
     this.clienteService.transferir({
       origenId: origen.id!,
       destinoId: destino.id!,
       monto: this.pago.monto!,
-      nota: this.pago.nota || '',
-      //tasaOrigen: this.tasaOrigen,
-      //tasaDestino: this.tasaDestino
+      nota: this.pago.nota || ''
     }).subscribe({
       next: () => {
         alert('Pago realizado con éxito');
         this.displayPagoModal = false;
         this.loadingPago = false;
-        this.cargarClientes(); // recargar lista/saldos
+        this.cargarClientes();
       },
       error: (err) => {
         this.loadingPago = false;
@@ -157,22 +166,46 @@ export class ClientesComponent implements OnInit {
     });
   }
 
-  onSelectCliente(cliente: Cliente): void {
-  this.selectedCliente = cliente;
-  this.clienteMovimientos = []; // Limpiar lista anterior
-
-  if (cliente.id) {
-    this.clienteService.historial(cliente.id).subscribe({
-      next: (data) => {
-        this.clienteMovimientos = data; // Almacenar la lista de movimientos
-      },
-      error: (err) => {
-        console.error('Error al cargar historial de movimientos', err);
-        // Opcional: mostrar una alerta de error al usuario
-      }
-    });
+  abrirModalTransferencia(): void {
+    this.transferencia = { clientId: null, supplierId: null, amount: null };
+    this.displayTransferModal = true;
   }
 
-  this.showMovimientosDialog = true; // Mostrar el diálogo inmediatamente después de la llamada
+  confirmarTransferencia(): void {
+  if (!this.transferencia.clientId || !this.transferencia.supplierId || !this.transferencia.amount) {
+    alert('Debe completar todos los campos');
+    return;
+  }
+
+  this.supplierService.transferirClienteProveedor({
+    clientId: this.transferencia.clientId!,
+    supplierId: this.transferencia.supplierId!,
+    amount: this.transferencia.amount!
+  }).subscribe({
+    next: () => {
+      alert('Transferencia realizada con éxito');
+      this.displayTransferModal = false;
+      this.cargarClientes();
+    },
+    error: (err) => {
+      const msg = typeof err?.error === 'string' ? err.error : 'Error al procesar la transferencia';
+      alert(msg);
+    }
+  });
 }
+
+
+  onSelectCliente(cliente: Cliente): void {
+    this.selectedCliente = cliente;
+    this.clienteMovimientos = [];
+
+    if (cliente.id) {
+      this.clienteService.historial(cliente.id).subscribe({
+        next: (data) => this.clienteMovimientos = data,
+        error: (err) => console.error('Error al cargar historial de movimientos', err)
+      });
+    }
+
+    this.showMovimientosDialog = true;
+  }
 }

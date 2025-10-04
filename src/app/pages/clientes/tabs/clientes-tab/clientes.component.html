@@ -4,14 +4,84 @@
     <button pButton label="Nuevo Cliente" icon="pi pi-plus" class="p-button-success" (click)="abrirModal()"></button>
   </div>
 
-<div>
+<div class="botones-acciones">
   <button pButton 
           label="Pagar a Cliente" 
           icon="pi pi-credit-card" 
           class="p-button-danger" 
           (click)="abrirModalPago()">
   </button>
+
+  <button pButton 
+          label="Transferir a Proveedor" 
+          icon="pi pi-exchange" 
+          class="p-button-info" 
+          (click)="abrirModalTransferencia()">
+  </button>
 </div>
+
+<!-- Modal para Transferencia Cliente → Proveedor -->
+<p-dialog header="Transferencia Cliente a Proveedor" 
+           [(visible)]="displayTransferModal" 
+           [modal]="true" 
+           [style]="{ width: '400px' }">
+  <form class="p-fluid">
+    <!-- Cliente Origen -->
+    <div class="p-field">
+      <label>Cliente Origen</label>
+      <p-dropdown 
+        [options]="clientes" 
+        [(ngModel)]="transferencia.clientId" 
+        name="clientId" 
+        optionLabel="nombre" 
+        optionValue="id" 
+        placeholder="Seleccione cliente origen">
+      </p-dropdown>
+    </div>
+
+    <!-- Proveedor Destino -->
+    <div class="p-field">
+      <label>Proveedor Destino</label>
+      <p-dropdown 
+        [options]="proveedores" 
+        [(ngModel)]="transferencia.supplierId" 
+        name="supplierId" 
+        optionLabel="name" 
+        optionValue="id" 
+        placeholder="Seleccione proveedor destino">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto -->
+    <div class="p-field">
+      <label>Monto a Transferir</label>
+      <p-inputNumber 
+        [(ngModel)]="transferencia.amount" 
+        name="amount" 
+        mode="currency" 
+        currency="COP" 
+        [min]="0">
+      </p-inputNumber>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="displayTransferModal = false">
+    </button>
+    <button pButton 
+            label="Confirmar Transferencia" 
+            icon="pi pi-check" 
+            class="p-button-success" 
+            (click)="confirmarTransferencia()"
+            [disabled]="!transferencia.clientId || !transferencia.supplierId || !transferencia.amount">
+    </button>
+  </ng-template>
+</p-dialog>
+
 
   <br>
 

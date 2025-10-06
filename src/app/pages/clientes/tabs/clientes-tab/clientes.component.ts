@@ -190,6 +190,7 @@ export class ClientesComponent implements OnInit {
     error: (err) => {
       const msg = typeof err?.error === 'string' ? err.error : 'Error al procesar la transferencia';
       alert(msg);
+      console.log(err);
     }
   });
 }

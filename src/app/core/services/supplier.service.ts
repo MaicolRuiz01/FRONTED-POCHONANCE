@@ -46,8 +46,13 @@ export class SupplierService {
   }
 
   
-  transferirClienteProveedor(data: { clientId: number; supplierId: number; amount: number }): Observable<any> {
-    const params = `clientId=${data.clientId}&supplierId=${data.supplierId}&amount=${data.amount}`;
-    return this.http.post(`${this.apiUrl}/transfer/client-to-supplier?${params}`, {});
-  }
+ transferirClienteProveedor(data: { clientId: number; supplierId: number; amount: number }): Observable<string> {
+  const params = `clientId=${data.clientId}&supplierId=${data.supplierId}&amount=${data.amount}`;
+  return this.http.post(
+    `${this.apiUrl}/transfer/client-to-supplier?${params}`,
+    {}, // cuerpo vacío
+    { responseType: 'text' }  // 👈 aquí va
+  );
+}
+
 }

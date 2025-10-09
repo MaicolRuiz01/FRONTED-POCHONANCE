@@ -62,6 +62,7 @@ export class AsignacionesVentasComponent implements OnInit {
   displayModal = false;
   saleRate: number | null = null;
   selectedSupplierId: number | null = null;
+  isSolanaSale: boolean = false;
 
   //campo es el nombre de donde tomo el dato y columna como quiero que se muestre
   columns: TableColumn[] = [
@@ -148,21 +149,30 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   openAssignModal(sale: SellDollar): void {
-    this.selected = sale;
-    this.saleRate = null;
+  this.selected = sale;
+  this.saleRate = null;
+  this.selectedSupplierId = null;
+  this.accounts = [];
+
+  const tipo = (sale.tipoCuenta || '').toUpperCase();
+  this.isSolanaSale = (tipo === 'SOLANA' || tipo === 'PHANTOM');
+
+  if (this.isSolanaSale) {
+    this.isSpecialClient = null;
+    this.selectedClientId = null;
     this.selectedSupplierId = null;
-    this.accounts = [];
-
-    if (sale.clienteId) {
-      this.isSpecialClient = true;
-      this.selectedClientId = sale.clienteId;
-    } else {
-      this.isSpecialClient = false;
-      this.selectedClientId = null;
+    if (this.accounts.length === 0) {
+      this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
     }
-
-    this.displayModal = true;
+  } else {
+    // comportamiento anterior
+    this.isSpecialClient = !!sale.clienteId;
+    this.selectedClientId = sale.clienteId ?? null;
   }
+
+  this.displayModal = true;
+}
+
   closeModal(): void {
     this.displayModal = false;
     this.selected = null;
@@ -229,5 +239,50 @@ saveSale(): void {
   getRowClass(sale: SellDollar): string {
     return sale.clienteId ? 'special-client-row' : '';
   }
+  saveSaleSolana(): void {
+  if (!this.selected || this.accounts.length === 0) {
+    alert('Debe agregar al menos una cuenta COP con monto');
+    return;
+  }
+
+  // Validar que todas las cuentas tengan cuenta COP y monto
+  const invalid = this.accounts.some(acc => !acc.accountCop || !acc.amount || acc.amount <= 0);
+  if (invalid) {
+    alert('Todas las cuentas deben tener una cuenta COP seleccionada y un monto mayor a 0');
+    return;
+  }
+
+  // Llamar al servicio con solo las cuentas (sin tasa, sin proveedor)
+  this.sellService.asignarVentaSolana(this.selected.id!, this.accounts).subscribe({
+    next: () => {
+      alert('Venta Solana asignada con éxito');
+      this.closeModal();
+      this.loadSales();
+    },
+    error: (err) => {
+      console.error('Error al asignar venta Solana', err);
+      alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+    }
+  });
+}
+// src/.../asignaciones-ventas.component.ts (dentro de la clase)
+
+onAccountAmountChange(): void {
+  // Normaliza montos y evita NaN
+  this.accounts = this.accounts.map(a => ({
+    ...a,
+    amount: Math.max(0, Number(a.amount || 0))
+  }));
+}
+
+get totalPesosSolana(): number {
+  return this.accounts.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+}
+
+calcularTasaSolana(): number {
+  const usd = this.selected?.dollars ?? 0;
+  return usd > 0 ? this.totalPesosSolana / usd : 0;
+}
+
 
 }

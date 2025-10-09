@@ -23,6 +23,8 @@ export interface SellDollar {
   accounts: AssignAccount[];
   clienteId?: number;
   nombresCuentasAsignadas?: string[];
+  tipoCuenta?: string;
+  cryptoSymbol?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -72,4 +74,8 @@ export class SellDollarsService {
   asignarVenta(id: number, dto: Partial<SellDollar>): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/asignar/${id}`, dto);
   }
+  // En sell-dollars.service.ts
+asignarVentaSolana(id: number, accounts: AssignAccount[]): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/asignar-solana/${id}`, { accounts });
+}
 }

@@ -1,13 +1,33 @@
 <app-mi-table [columns]="columns" [data]="balances">
+<<<<<<< HEAD
   <ng-template #actionTemplate let-balance>
     <p-button icon="pi pi-search" title="Ver Detalles" [rounded]="true" [text]="true" [raised]="true" severity="success"
       (click)="showDetails(balance)">
     </p-button>
+=======
+
+  <ng-template pTemplate="content">
+    <div class="total-content">
+      <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+      <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
+    </div>
+  </ng-template>
+
+  <ng-template #actionTemplate let-balance>
+
+
+
+    <p-button icon="pi pi-info" title="Ver Detalles" styleClass="p-button-rounded p-button-sm"
+      (click)="showDetails(balance)">
+    </p-button>
+
+>>>>>>> 82ac92ccba59fa90d64ae95ec6bee79c4d63c342
   </ng-template>
 </app-mi-table>
 
 <!-- Dialogo 1: Detalle -->
 <p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
+<<<<<<< HEAD
   <ng-template pTemplate="content">
     <div *ngIf="selectedBalance">
       <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
@@ -28,11 +48,92 @@
       </div>
     </div>
   </ng-template>
+=======
+  <div *ngIf="selectedBalance">
+    <!-- Fecha y Saldo -->
+    <div class="p-col-12 p-md-6">
+      <p-card>
+        <strong>📅 Fecha:</strong> {{ selectedBalance.date }} <br>
+        <strong>💰 Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}
+      </p-card>
+    </div>
+
+    <!-- Tasas -->
+    <div class="p-col-12 p-md-6">
+      <p-card>
+        <strong>📊 Tasa Promedio:</strong> {{ selectedBalance.tasaPromedioDelDia }} <br>
+        <strong>🏷️ Tasa Venta:</strong> {{ selectedBalance.tasaVentaDelDia }}
+      </p-card>
+    </div>
+
+    <!-- P2P -->
+    <div class="p-col-12 p-md-6">
+      <p-card>
+        <h4>P2P</h4>
+        <p><strong>Total (USD):</strong> {{ selectedBalance.totalP2PdelDia | currency: 'USD' }}</p>
+        <p><strong>Comisiones (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency: 'COP' }}</p>
+        <p><strong>4x1000:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency: 'COP' }}</p>
+        <p><strong>Utilidad:</strong> {{ selectedBalance.utilidadP2P | currency: 'COP' }}</p>
+      </p-card>
+    </div>
+
+    <!-- Ventas Generales -->
+    <div class="p-col-12 p-md-6">
+      <p-card>
+        <h4>Ventas Generales</h4>
+        <p><strong>Total (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency: 'USD' }}</p>
+        <p><strong>Utilidad (COP):</strong> {{ selectedBalance.utilidadVentasGenerales | currency: 'COP' }}</p>
+      </p-card>
+    </div>
+  </div>
+  <br>
+  <button pButton label="Inf. adicional" class="p-button-info" (click)="showAdditionalInfo()"></button>
+
+  <!-- Modal de Información Adicional -->
+
+  <p-dialog [(visible)]="showAdditionalInfoModal" [modal]="false" header="inf adicional balance">
+
+    <div *ngIf="selectedBalance && totalCajaArr">
+
+      <div>
+        <p-card>
+          <strong>📅 Fecha:</strong> {{ selectedBalance.date }} <br>
+          <strong>💰 Saldo:</strong> {{ selectedBalance.saldo | currency: 'COP' }}
+        </p-card>
+      </div>
+
+
+      <div *ngIf="totalCajaArr.length > 0">
+
+        
+        <p-card>
+          <h4>Total por Caja</h4>
+          <ul>
+            <li *ngFor="let caja of totalCajaArr">
+              {{ caja.nombre }}: {{ caja.monto | currency:'USD' }}
+            </li>
+          </ul>
+        </p-card>
+      </div>
+
+      <div>
+        <p-card>
+          <h4>Total Clientes</h4>
+          <p>{{ totalClientes | currency:'USD' }}</p>
+        </p-card>
+      </div>
+    </div>
+
+
+
+  </p-dialog>
+>>>>>>> 82ac92ccba59fa90d64ae95ec6bee79c4d63c342
 
   <ng-template pTemplate="footer">
     <button pButton label="Inf. adicional" class="p-button-info mt-3" (click)="showAdditionalInfo()"></button>
     <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
+<<<<<<< HEAD
 </p-dialog>
 
 <!-- Dialogo 2: Info adicional -->
@@ -54,3 +155,6 @@
     <button pButton label="Cerrar" (click)="showAdditionalInfoModal = false" class="p-button-danger"></button>
   </ng-template>
 </p-dialog>
+=======
+</p-dialog>
+>>>>>>> 82ac92ccba59fa90d64ae95ec6bee79c4d63c342

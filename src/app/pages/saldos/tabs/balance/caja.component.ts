@@ -4,15 +4,18 @@ import { DialogModule } from 'primeng/dialog';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+
 
 import { TableColumn } from '../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../shared/mi-table/mi-table.component';
+import { AccountCop } from '../../../../core/services/account-cop.service';
 
 @Component({
   selector: 'app-caja',
   standalone: true,
   imports: [DialogModule
-    , CommonModule, TableModule, ButtonModule, CurrencyPipe, MiTableComponent
+    , CommonModule, TableModule, ButtonModule, CurrencyPipe, MiTableComponent, CardModule
   ],
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css'],
@@ -26,6 +29,12 @@ export class CajaComponent implements OnInit {
   totalCajaObj: Record<string, number> = {};
   totalCajaArr: { nombre: string; monto: number }[] = [];
   totalClientes: number = 0;
+
+  cuentas: AccountCop[] = [];
+
+  get totalCuentas(): number {
+  return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
+}
 
   columns: TableColumn[] = [
     { campo: 'date', columna: 'Fecha' },
@@ -42,6 +51,9 @@ export class CajaComponent implements OnInit {
     this.balanceService.listar().subscribe({
       next: (data) => {
         this.balances = data;
+        this.balances = this.balances.sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+});
       },
       error: (err) => {
         console.error('Error cargando balances', err);

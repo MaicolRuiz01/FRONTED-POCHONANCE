@@ -31,3 +31,10 @@
   border-radius: 8px;
   padding: 1px 1px;
 }
+
+.botones-acciones {
+  display: flex;
+  flex-wrap: wrap; /* Permite que se acomoden uno debajo del otro si no caben */
+  gap: 0.5rem; /* Espacio entre botones */
+}
+

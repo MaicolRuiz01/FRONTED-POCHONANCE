@@ -44,4 +44,9 @@ export class ClienteService {
   transferir(pago: { origenId: number; destinoId: number; monto: number; nota?: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/transferir`, pago);
   }
+
+  // ✅ nuevo método para obtener el historial de transacciones de un cliente
+  historial(clienteId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${clienteId}/historial-transacciones`);
+  }
 }

@@ -37,10 +37,7 @@ export class AppMenuComponent implements OnInit {
                     routerLink: ['/historial']
                 
                   },
-                  {
-                    label: 'CRIPTOS', icon: 'pi pi-fw pi-bitcoin',
-                    routerLink: ['/ordenes-cripto']
-                  },
+                  
                   {
                     label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
                     routerLink: ['/actividades']

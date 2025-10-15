@@ -64,8 +64,12 @@
     <div class="p-grid">
       <div class="p-col-12 p-md-12">
         <label for="paymentMethod">Fuente de Pago:</label>
-        <p-dropdown [options]="['Cuenta Bancaria', 'Caja']" [(ngModel)]="paymentMethod"
-          placeholder="Seleccione la fuente"></p-dropdown>
+        <p-dropdown 
+  [options]="paymentOptions"
+  [(ngModel)]="paymentMethod"
+  placeholder="Seleccione la fuente">
+</p-dropdown>
+
       </div>
 
       <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cuenta Bancaria'">
@@ -79,6 +83,18 @@
         <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja" optionLabel="name" placeholder="Seleccione Caja">
         </p-dropdown>
       </div>
+
+      <!-- 🔹 Selección de proveedor origen (solo si el método es Proveedor) -->
+<div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Proveedor'">
+  <label for="proveedorOrigen">Proveedor Origen:</label>
+  <p-dropdown 
+    [options]="suppliers" 
+    [(ngModel)]="selectedProveedorOrigen" 
+    optionLabel="name" 
+    placeholder="Seleccione Proveedor Origen">
+  </p-dropdown>
+</div>
+
 
       <div class="p-col-12 p-md-6">
         <label for="supplier">Proveedor:</label>

@@ -102,12 +102,41 @@
   </div>
 </div>
 
+<p-dialog 
+ [header]="'Seleccionar Tipo de Cuenta'"
+ [(visible)]="selectAccountTypeDialog"
+ [modal]="true"
+ [style]="{ width: '400px' }"
+ [baseZIndex]="1100"
+ [closable]="false"
+ [draggable]="false"
+ [resizable]="false">
 
+ <div class="p-fluid p-text-center">
+<p>¿Qué tipo de cuenta Binance deseas crear?</p>
+<p-dropdown 
+[options]="tiposCuenta"
+[(ngModel)]="selectedAccountType"
+placeholder="Seleccione tipo"
+[showClear]="true"
+[appendTo]="'body'">
+</p-dropdown>
+</div>
+
+<ng-template pTemplate="footer">
+<button pButton 
+              label="Continuar" 
+              icon="pi pi-angle-right" 
+              class="p-button-success"
+              (click)="openCreateAccountDialog()"
+              [disabled]="!selectedAccountType"></button>
+  </ng-template>
+</p-dialog>
 
 <p-dialog 
   [header]="editMode ? 'Editar cuenta Binance' : 'Crear nueva cuenta Binance'"
   [(visible)]="createAccountDialog"
-  [modal]="true"
+  [modal]="false"
   [style]="{ width: '500px' }"
   [baseZIndex]="1100">
 

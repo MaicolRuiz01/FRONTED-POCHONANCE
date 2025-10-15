@@ -65,7 +65,9 @@ export class SaldosComponent implements OnInit {
   editMode = false;
   selectedAccountId: number | null = null;
   loading: boolean = true;
-
+  selectAccountTypeDialog: boolean = false; // Controla el nuevo dialog de selección
+  selectedAccountType: string | null = null; // Almacena el tipo de cuenta seleccionado temporalmente
+  
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'TRUST', value: 'TRUST' },
@@ -202,6 +204,12 @@ export class SaldosComponent implements OnInit {
     this.createAccountDialog = false;
   }
 
+  openCreateAccountDialog() {
+    this.resetForm();
+    this.editMode = false;
+    this.selectedAccountId = null;
+    this.selectAccountTypeDialog = true; // abre el diálogo de selección
+  }
   // Mantengo tu método original de creación (lo usa guardarCuenta cuando no está en modo edición)
   crearCuentaBinance() {
     if (!this.newAccount.name || !this.newAccount.referenceAccount || !this.newAccount.tipo) {

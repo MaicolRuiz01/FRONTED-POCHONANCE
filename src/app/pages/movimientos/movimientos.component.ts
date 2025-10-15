@@ -10,6 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos.service';
+import { OrdenesCriptoComponent } from './criptos/cripto-tab/ordenes-cripto.component';
+import { CompletadaComponent } from './criptos/listadocripto/completada.component';
 
 
 @Component({
@@ -24,6 +26,8 @@ import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos
     FormsModule,
     ButtonModule,
     InputTextModule,
+    OrdenesCriptoComponent,
+    CompletadaComponent
   ],
   templateUrl: './movimientos.component.html',
   styleUrl: './movimientos.component.css'

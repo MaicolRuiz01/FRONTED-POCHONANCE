@@ -46,6 +46,7 @@ export interface PagoProveedorDTO {
   styleUrls: ['./proveedor.component.css']
 })
 export class ProveedorComponent implements OnInit {
+  Math = Math;
   suppliers: Supplier[] = [];
   accountCops: AccountCop[] = [];
   selectedAccountCop: AccountCop | null = null;

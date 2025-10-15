@@ -2,16 +2,16 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// PrimeNG
+// PrimeNG OrdenesCriptoService, OrdenSpotDTO   AccountBinanceService, AccountBinance
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-import { OrdenesCriptoService, OrdenSpotDTO } from '../../core/services/ordenes-cripto.service';
-import { AccountBinanceService, AccountBinance } from '../../core/services/account-binance.service';
-import { finalize, of } from 'rxjs';
+import { OrdenesCriptoService,OrdenSpotDTO } from '../../../../core/services/ordenes-cripto.service';
+import { AccountBinance,AccountBinanceService } from '../../../../core/services/account-binance.service';
+import { finalize} from 'rxjs';
 
 @Component({
   selector: 'app-ordenes-cripto',

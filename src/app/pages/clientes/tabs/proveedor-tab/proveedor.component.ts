@@ -15,6 +15,18 @@ import { CalendarModule } from 'primeng/calendar';
 import { CajaService, Caja } from '../../../../core/services/caja.service'; // ✅ Necesitas este servicio para cargar la caja
 import { MovimientoService } from '../../../../core/services/movimiento.service';
 
+
+export interface PagoProveedorDTO {
+    id: number;
+    amount: number;
+    date: Date; // O string, dependiendo de cómo lo serialice Java
+    accountOriginName: string;
+    accountDestinyName: string;
+    type: 'INGRESO' | 'EGRESO';
+}
+
+
+
 @Component({
   selector: 'app-proveedor',
   standalone: true,
@@ -34,6 +46,7 @@ import { MovimientoService } from '../../../../core/services/movimiento.service'
   styleUrls: ['./proveedor.component.css']
 })
 export class ProveedorComponent implements OnInit {
+  Math = Math;
   suppliers: Supplier[] = [];
   accountCops: AccountCop[] = [];
   selectedAccountCop: AccountCop | null = null;
@@ -114,6 +127,7 @@ export class ProveedorComponent implements OnInit {
   loadMovimientosBySupplier(): void {
     if (this.selectedSupplier) {
       const supplierId = this.selectedSupplier.id;
+      
        console.log('Cargando movimientos para el proveedor ID:', supplierId);
        console.log('Proveedor seleccionado:', this.movimientos);
       this.paymentService.getMovimientosBySupplier(supplierId).subscribe({

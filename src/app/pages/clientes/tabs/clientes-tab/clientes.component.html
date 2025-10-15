@@ -4,138 +4,108 @@
     <button pButton label="Nuevo Cliente" icon="pi pi-plus" class="p-button-success" (click)="abrirModal()"></button>
   </div>
 
-<div class="botones-acciones">
-  <button pButton 
-          label="Pagar a Cliente" 
-          icon="pi pi-credit-card" 
-          class="p-button-danger" 
-          (click)="abrirModalPago()">
-  </button>
-
-  <button pButton 
-          label="Transferir a Proveedor" 
-          icon="pi pi-exchange" 
-          class="p-button-info" 
-          (click)="abrirModalTransferencia()">
-  </button>
-</div>
-
-<!-- Modal para Transferencia Cliente → Proveedor -->
-<p-dialog header="Transferencia Cliente a Proveedor" 
-           [(visible)]="displayTransferModal" 
-           [modal]="true" 
-           [style]="{ width: '400px' }">
-  <form class="p-fluid">
-    <!-- Cliente Origen -->
-    <div class="p-field">
-      <label>Cliente Origen</label>
-      <p-dropdown 
-        [options]="clientes" 
-        [(ngModel)]="transferencia.clientId" 
-        name="clientId" 
-        optionLabel="nombre" 
-        optionValue="id" 
-        placeholder="Seleccione cliente origen">
-      </p-dropdown>
-    </div>
-
-    <!-- Proveedor Destino -->
-    <div class="p-field">
-      <label>Proveedor Destino</label>
-      <p-dropdown 
-        [options]="proveedores" 
-        [(ngModel)]="transferencia.supplierId" 
-        name="supplierId" 
-        optionLabel="name" 
-        optionValue="id" 
-        placeholder="Seleccione proveedor destino">
-      </p-dropdown>
-    </div>
-
-    <!-- Monto -->
-    <div class="p-field">
-      <label>Monto a Transferir</label>
-      <p-inputNumber 
-        [(ngModel)]="transferencia.amount" 
-        name="amount" 
-        mode="currency" 
-        currency="COP" 
-        [min]="0">
-      </p-inputNumber>
-    </div>
-  </form>
-
-  <ng-template pTemplate="footer">
-    <button pButton 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            class="p-button-text" 
-            (click)="displayTransferModal = false">
+  <div class="botones-acciones">
+    <button pButton label="Pagar a Cliente" icon="pi pi-credit-card" class="p-button-danger" (click)="abrirModalPago()">
     </button>
-    <button pButton 
-            label="Confirmar Transferencia" 
-            icon="pi pi-check" 
-            class="p-button-success" 
-            (click)="confirmarTransferencia()"
-            [disabled]="!transferencia.clientId || !transferencia.supplierId || !transferencia.amount">
+
+    <button pButton label="Transferir a Proveedor" icon="pi pi-exchange" class="p-button-info"
+      (click)="abrirModalTransferencia()">
     </button>
-  </ng-template>
-</p-dialog>
+  </div>
+
+  <!-- Modal para Transferencia Cliente → Proveedor -->
+  <p-dialog header="Transferencia Cliente a Proveedor" [(visible)]="displayTransferModal" [modal]="true"
+    [style]="{ width: '400px' }">
+    <form class="p-fluid">
+      <!-- Cliente Origen -->
+      <div class="p-field">
+        <label>Cliente Origen</label>
+        <p-dropdown [options]="clientes" [(ngModel)]="transferencia.clientId" name="clientId" optionLabel="nombre"
+          optionValue="id" placeholder="Seleccione cliente origen">
+        </p-dropdown>
+      </div>
+
+      <!-- Proveedor Destino -->
+      <div class="p-field">
+        <label>Proveedor Destino</label>
+        <p-dropdown [options]="proveedores" [(ngModel)]="transferencia.supplierId" name="supplierId" optionLabel="name"
+          optionValue="id" placeholder="Seleccione proveedor destino">
+        </p-dropdown>
+      </div>
+
+      <!-- Monto -->
+      <div class="p-field">
+        <label>Monto a Transferir</label>
+        <p-inputNumber [(ngModel)]="transferencia.amount" name="amount" mode="currency" currency="COP" [min]="0">
+        </p-inputNumber>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayTransferModal = false">
+      </button>
+      <button pButton label="Confirmar Transferencia" icon="pi pi-check" class="p-button-success"
+        (click)="confirmarTransferencia()"
+        [disabled]="!transferencia.clientId || !transferencia.supplierId || !transferencia.amount">
+      </button>
+    </ng-template>
+  </p-dialog>
 
 
   <br>
 
-<div class="total-container">  
-<p-card styleClass="total-card">
-    <ng-template pTemplate="content">
-      <div class="total-content">
-        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total de Clientes:</strong> {{ totalClientes | currency:'COP' }}
-      </div>
-    </ng-template>
-</p-card>
-</div>
-<br>
-<br>
+  <div class="total-container">
+    <p-card styleClass="total-card">
+      <ng-template pTemplate="content">
+        <div class="total-content">
+          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+          <strong>Total de Clientes:</strong> {{ totalClientes | currency:'COP' }}
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+  <br>
+  <br>
   <!-- Grid de clientes -->
   <div class="grid-clientes">
-    <div class="card" *ngFor="let cliente of clientes" (click)="selectedCliente = cliente; showMovimientosDialog = true">
+    <div class="card" *ngFor="let cliente of clientes"
+      (click)="selectedCliente = cliente; showMovimientosDialog = true">
       <h3>{{ cliente.nombre }}</h3>
       <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
       <p><strong>Correo:</strong> {{ cliente.correo }}</p>
-      <p><strong>Saldo:</strong> {{ cliente.saldo | currency:'COP' }}</p>
+      <p>
+        <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
+        {{ Math.abs(cliente.saldo) | currency:'COP' }}
+      </p>
+
       <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
     </div>
   </div>
 
   <!-- Modal de Movimientos del Cliente -->
-<p-dialog header="Movimientos del Cliente: {{ selectedCliente?.nombre }}" 
-          [(visible)]="showMovimientosDialog" 
-          [modal]="true" 
-          [style]="{width: '80vw'}"
-          [closable]="true" 
-          (onHide)="showMovimientosDialog = false">
+  <p-dialog header="Movimientos del Cliente: {{ selectedCliente?.nombre }}" [(visible)]="showMovimientosDialog"
+    [modal]="true" [style]="{width: '80vw'}" [closable]="true" (onHide)="showMovimientosDialog = false">
 
     <p-table [value]="clienteMovimientos">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Monto (USD)</th>
-                <th>Monto (COP)</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-movimiento>
-            <tr>
-                <td>{{ movimiento.fecha | date: 'short' }}</td>
-                <td>{{ movimiento.tipo }}</td>
-                <td>{{ movimiento.montoUsd | currency:'USD' }}</td>
-                <td>{{ movimiento.montoCop | currency:'COP' }}</td>
-            </tr>
-        </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Monto (USD)</th>
+          <th>Monto (COP)</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-movimiento>
+        <tr>
+          <td>{{ movimiento.fecha | date: 'short' }}</td>
+          <td>{{ movimiento.tipo }}</td>
+          <td>{{ movimiento.montoUsd | currency:'USD' }}</td>
+          <td>{{ movimiento.montoCop | currency:'COP' }}</td>
+        </tr>
+      </ng-template>
     </p-table>
 
-</p-dialog>
+  </p-dialog>
 
   <!-- Modal crear cliente -->
   <p-dialog header="Crear Nuevo Cliente" [(visible)]="displayModal" [modal]="true" [style]="{ width: '400px' }">
@@ -172,80 +142,53 @@
   </p-dialog>
 
   <!-- Modal de Pago entre Clientes -->
-<p-dialog header="Pago entre Clientes" 
-           [(visible)]="displayPagoModal" 
-           [modal]="true" 
-           [style]="{ width: '400px' }">
-  <form class="p-fluid">
-    <!-- Cliente Origen -->
-    <div class="p-field">
-      <label>Cliente Origen</label>
-      <p-dropdown 
-        [options]="clientes" 
-        [(ngModel)]="pago.origenId" 
-        name="origen" 
-        optionLabel="nombre" 
-        optionValue="id" 
-        placeholder="Seleccione cliente origen">
-      </p-dropdown>
+  <p-dialog header="Pago entre Clientes" [(visible)]="displayPagoModal" [modal]="true" [style]="{ width: '400px' }">
+    <form class="p-fluid">
+      <!-- Cliente Origen -->
+      <div class="p-field">
+        <label>Cliente Origen</label>
+        <p-dropdown [options]="clientes" [(ngModel)]="pago.origenId" name="origen" optionLabel="nombre" optionValue="id"
+          placeholder="Seleccione cliente origen">
+        </p-dropdown>
+        <br>
+        <label>Tasa de Cliente Origen</label>
+        <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen" mode="currency" currency="COP"></p-inputNumber>
+      </div>
       <br>
-      <label>Tasa de Cliente Origen</label>
-      <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen" mode="currency" currency="COP"></p-inputNumber>
-       </div>
-       <br>
 
-       <!-- Monto a pagar cliente origen-->
-    <div class="p-field">
-      <label>Monto a Pagar de cliente Origen</label>
-      <p-inputNumber 
-        [(ngModel)]="pago.monto" 
-        name="monto" 
-        mode="currency" 
-        currency="COP" 
-        [min]="0">
-      </p-inputNumber>
-    </div>
- <br>
-    <!-- Cliente Destino -->
-    <div class="p-field">
-      <label>Cliente Destino</label>
-      <p-dropdown 
-        [options]="clientes" 
-        [(ngModel)]="pago.destinoId" 
-        name="destino" 
-        optionLabel="nombre" 
-        optionValue="id" 
-        placeholder="Seleccione cliente destino">
-      </p-dropdown>
+      <!-- Monto a pagar cliente origen-->
+      <div class="p-field">
+        <label>Monto a Pagar de cliente Origen</label>
+        <p-inputNumber [(ngModel)]="pago.monto" name="monto" mode="currency" currency="COP" [min]="0">
+        </p-inputNumber>
+      </div>
       <br>
-      <label>Tasa de Cliente Destino</label>
-      <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino" mode="currency" currency="COP"></p-inputNumber>
+      <!-- Cliente Destino -->
+      <div class="p-field">
+        <label>Cliente Destino</label>
+        <p-dropdown [options]="clientes" [(ngModel)]="pago.destinoId" name="destino" optionLabel="nombre"
+          optionValue="id" placeholder="Seleccione cliente destino">
+        </p-dropdown>
+        <br>
+        <label>Tasa de Cliente Destino</label>
+        <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino" mode="currency" currency="COP"></p-inputNumber>
+        <br>
+      </div>
       <br>
-    </div>
-<br>
-    <!-- Nota -->
-    <div class="p-field">
-      <label>Nota (opcional)</label>
-      <input pInputText [(ngModel)]="pago.nota" name="nota" />
-    </div>
-  </form>
+      <!-- Nota -->
+      <div class="p-field">
+        <label>Nota (opcional)</label>
+        <input pInputText [(ngModel)]="pago.nota" name="nota" />
+      </div>
+    </form>
 
-  <ng-template pTemplate="footer">
-    <button pButton 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            class="p-button-text" 
-            (click)="displayPagoModal = false">
-    </button>
-    <button pButton 
-            label="Confirmar Pago" 
-            icon="pi pi-check" 
-            class="p-button-success" 
-            (click)="confirmarPago()"
-            [disabled]="!pago.origenId || !pago.destinoId || !pago.monto">
-    </button>
-  </ng-template>
-</p-dialog>
+    <ng-template pTemplate="footer">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayPagoModal = false">
+      </button>
+      <button pButton label="Confirmar Pago" icon="pi pi-check" class="p-button-success" (click)="confirmarPago()"
+        [disabled]="!pago.origenId || !pago.destinoId || !pago.monto">
+      </button>
+    </ng-template>
+  </p-dialog>
 
 </div>
-

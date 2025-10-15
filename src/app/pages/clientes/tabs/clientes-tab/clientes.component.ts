@@ -31,7 +31,7 @@ import { MessageService } from 'primeng/api';
   providers: [MessageService]
 })
 export class ClientesComponent implements OnInit {
-
+  Math = Math;
   clientes: Cliente[] = [];
   proveedores: any[] = [];
   displayModal = false;

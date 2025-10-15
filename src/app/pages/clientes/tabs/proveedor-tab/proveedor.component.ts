@@ -43,6 +43,7 @@ export class ProveedorComponent implements OnInit {
   pagos: any[] = []; // Variable para almacenar los pagos del proveedor
   showPagosDialog: boolean = false; // nuevo
   showform: boolean = false; // nuevo
+  selectedProveedorOrigen: Supplier | null = null;
 
   movimientos: any[] = [];
 
@@ -53,6 +54,7 @@ export class ProveedorComponent implements OnInit {
   cajas: any[] = [];
   selectedCaja: any | null = null;
   paymentMethod: string = 'Cuenta Bancaria';
+  paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor'];
 
   constructor(
     private supplierService: SupplierService,
@@ -124,42 +126,54 @@ export class ProveedorComponent implements OnInit {
 
   // Llamar al servicio para realizar el pago
   makePayment(): void {
-    const supplierId = Number(this.selectedSupplier?.id ?? 0);
-    if (supplierId === 0) {
-      console.error('Proveedor no seleccionado');
+  const proveedorDestinoId = Number(this.selectedSupplier?.id ?? 0);
+  if (proveedorDestinoId === 0) {
+    console.error('Proveedor destino no seleccionado');
+    return;
+  }
+
+  let cuentaId: number | null = null;
+  let cajaId: number | null = null;
+  let proveedorOrigenId: number | null = null;
+
+  if (this.paymentMethod === 'Cuenta Bancaria') {
+    cuentaId = Number(this.selectedAccountCop?.id ?? 0);
+    if (cuentaId === 0) {
+      console.error('Cuenta COP no seleccionada');
       return;
     }
-
-    let cuentaId: number | null = null;
-    let cajaId: number | null = null;
-
-    if (this.paymentMethod === 'Cuenta Bancaria') {
-      cuentaId = Number(this.selectedAccountCop?.id ?? 0);
-      if (cuentaId === 0) {
-        console.error('Cuenta COP no seleccionada');
-        return;
-      }
-    } else if (this.paymentMethod === 'Caja') {
-      cajaId = Number(this.selectedCaja?.id ?? 0);
-      if (cajaId === 0) {
-        console.error('Caja no seleccionada');
-        return;
-      }
+  } 
+  else if (this.paymentMethod === 'Caja') {
+    cajaId = Number(this.selectedCaja?.id ?? 0);
+    if (cajaId === 0) {
+      console.error('Caja no seleccionada');
+      return;
     }
-
-    // ✅ Llamar al servicio con los parámetros correctos
-    this.movimientoService.registrarPagoProveedor(cuentaId, cajaId, supplierId, this.amount)
-      .subscribe(
-        response => {
-          console.log('Pago realizado exitosamente', response);
-          this.loadSuppliers();
-          this.togglePaymentForm();
-        },
-        error => {
-          console.error('Error realizando el pago:', error);
-        }
-      );
   }
+  else if (this.paymentMethod === 'Proveedor') {
+    proveedorOrigenId = Number(this.selectedProveedorOrigen?.id ?? 0);
+    if (proveedorOrigenId === 0) {
+      console.error('Proveedor origen no seleccionado');
+      return;
+    }
+  }
+
+  this.movimientoService.registrarPagoProveedor(
+    cuentaId,
+    cajaId,
+    proveedorOrigenId,
+    proveedorDestinoId,
+    this.amount
+  ).subscribe({
+    next: (response) => {
+      console.log('✅ Pago realizado exitosamente', response);
+      this.loadSuppliers();
+      this.togglePaymentForm();
+    },
+    error: (err) => console.error('❌ Error realizando el pago:', err)
+  });
+}
+
 
   togglePaymentForm(): void {
     this.showPaymentForm = !this.showPaymentForm;

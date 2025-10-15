@@ -12,6 +12,7 @@ export interface MovimientoDto {
   fecha: Date;
   descripcion?: string;
   caja?: number;
+  
 }
 
 export interface MovimientoVistaDto {
@@ -83,23 +84,25 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
     const url = `${this.apiUrl}/pago?cuentaId=${cuentaId}&clienteId=${clienteId}&monto=${monto}`;
     return this.http.post<MovimientoVistaDto>(url, {});
   }
-  registrarPagoProveedor(cuentaId: number | null, cajaId: number | null, proveedorId: number, monto: number): Observable<any> {
+  registrarPagoProveedor(
+  cuentaId: number | null,
+  cajaId: number | null,
+  proveedorOrigenId: number | null,
+  proveedorDestinoId: number,
+  monto: number
+): Observable<any> {
 
-    // Mejora el envío de parámetros para manejar los valores nulos correctamente.
-    let params = new HttpParams()
-      .set('monto', monto.toString())
-      .set('proveedor', proveedorId.toString());
+  let params = new HttpParams()
+    .set('monto', monto.toString())
+    .set('proveedor', proveedorDestinoId.toString());
 
-    if (cuentaId !== null) {
-      params = params.set('cuentaId', cuentaId.toString());
-    }
+  if (cuentaId !== null) params = params.set('cuentaId', cuentaId.toString());
+  if (cajaId !== null) params = params.set('caja', cajaId.toString());
+  if (proveedorOrigenId !== null) params = params.set('proveedorOrigen', proveedorOrigenId.toString());
 
-    if (cajaId !== null) {
-      params = params.set('caja', cajaId.toString());
-    }
+  return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params });
+}
 
-    return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params: params });
-  }
 
   actualizarMovimiento(id: number, movimiento: Partial<MovimientoDto>): Observable<MovimientoDto> {
     return this.http.put<MovimientoDto>(`${this.apiUrl}/${id}`, movimiento);

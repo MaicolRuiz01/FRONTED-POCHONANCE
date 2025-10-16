@@ -89,7 +89,8 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   cajaId: number | null,
   proveedorOrigenId: number | null,
   proveedorDestinoId: number,
-  monto: number
+  monto: number,
+  clienteId?: number | null
 ): Observable<any> {
 
   let params = new HttpParams()
@@ -99,7 +100,7 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   if (cuentaId !== null) params = params.set('cuentaId', cuentaId.toString());
   if (cajaId !== null) params = params.set('caja', cajaId.toString());
   if (proveedorOrigenId !== null) params = params.set('proveedorOrigen', proveedorOrigenId.toString());
-
+  if (clienteId) params = params.set('clienteId', clienteId.toString());
   return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params });
 }
 
@@ -108,5 +109,9 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
     return this.http.put<MovimientoDto>(`${this.apiUrl}/${id}`, movimiento);
   }
 
+  getMovimientosPorCliente(clienteId: number): Observable<MovimientoVistaDto[]> {
+  const url = `${this.apiUrl}/cliente/${clienteId}`;
+  return this.http.get<MovimientoVistaDto[]>(url);
+}
 
 }

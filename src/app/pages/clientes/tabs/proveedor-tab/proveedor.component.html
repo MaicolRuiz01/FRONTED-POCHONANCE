@@ -84,6 +84,17 @@
         </p-dropdown>
       </div>
 
+      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cliente'">
+  <label for="cliente">Cliente:</label>
+  <p-dropdown 
+    [options]="clientes" 
+    [(ngModel)]="selectedCliente" 
+    optionLabel="nombre" 
+    placeholder="Seleccione Cliente">
+  </p-dropdown>
+</div>
+
+
       <!-- 🔹 Selección de proveedor origen (solo si el método es Proveedor) -->
 <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Proveedor'">
   <label for="proveedorOrigen">Proveedor Origen:</label>

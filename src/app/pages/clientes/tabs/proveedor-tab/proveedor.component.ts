@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
 import { CajaService, Caja } from '../../../../core/services/caja.service'; // ✅ Necesitas este servicio para cargar la caja
 import { MovimientoService } from '../../../../core/services/movimiento.service';
-
+import { ClienteService } from '../../../../core/services/cliente.service';
 
 export interface PagoProveedorDTO {
     id: number;
@@ -67,20 +67,24 @@ export class ProveedorComponent implements OnInit {
   cajas: any[] = [];
   selectedCaja: any | null = null;
   paymentMethod: string = 'Cuenta Bancaria';
-  paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor'];
+  paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor','Cliente'];
+  selectedCliente: any | null = null;
+clientes: any[] = [];
 
   constructor(
     private supplierService: SupplierService,
     private accountCopService: AccountCopService,
     private paymentService: PagoProveedorService,
     private cajaService: CajaService,
-    private movimientoService: MovimientoService
+    private movimientoService: MovimientoService,
+    private clienteService: ClienteService
   ) {}
 
   ngOnInit(): void {
     this.loadSuppliers();
     this.accountCopService.getAll().subscribe(accountCops => this.accountCops = accountCops);
     this.cajaService.listar().subscribe(cajas => this.cajas = cajas);
+    this.clienteService.listar().subscribe(clientes => this.clientes = clientes);
   }
 
   
@@ -149,27 +153,20 @@ export class ProveedorComponent implements OnInit {
   let cuentaId: number | null = null;
   let cajaId: number | null = null;
   let proveedorOrigenId: number | null = null;
+  let clienteId: number | null = null;
 
   if (this.paymentMethod === 'Cuenta Bancaria') {
     cuentaId = Number(this.selectedAccountCop?.id ?? 0);
-    if (cuentaId === 0) {
-      console.error('Cuenta COP no seleccionada');
-      return;
-    }
-  } 
-  else if (this.paymentMethod === 'Caja') {
+    if (cuentaId === 0) return console.error('Cuenta COP no seleccionada');
+  } else if (this.paymentMethod === 'Caja') {
     cajaId = Number(this.selectedCaja?.id ?? 0);
-    if (cajaId === 0) {
-      console.error('Caja no seleccionada');
-      return;
-    }
-  }
-  else if (this.paymentMethod === 'Proveedor') {
+    if (cajaId === 0) return console.error('Caja no seleccionada');
+  } else if (this.paymentMethod === 'Proveedor') {
     proveedorOrigenId = Number(this.selectedProveedorOrigen?.id ?? 0);
-    if (proveedorOrigenId === 0) {
-      console.error('Proveedor origen no seleccionado');
-      return;
-    }
+    if (proveedorOrigenId === 0) return console.error('Proveedor origen no seleccionado');
+  } else if (this.paymentMethod === 'Cliente') {
+    clienteId = Number(this.selectedCliente?.id ?? 0);
+    if (clienteId === 0) return console.error('Cliente no seleccionado');
   }
 
   this.movimientoService.registrarPagoProveedor(
@@ -177,7 +174,8 @@ export class ProveedorComponent implements OnInit {
     cajaId,
     proveedorOrigenId,
     proveedorDestinoId,
-    this.amount
+    this.amount,
+    clienteId // 🔹 aquí pasas el cliente si existe
   ).subscribe({
     next: (response) => {
       console.log('✅ Pago realizado exitosamente', response);
@@ -187,6 +185,7 @@ export class ProveedorComponent implements OnInit {
     error: (err) => console.error('❌ Error realizando el pago:', err)
   });
 }
+
 
 
   togglePaymentForm(): void {

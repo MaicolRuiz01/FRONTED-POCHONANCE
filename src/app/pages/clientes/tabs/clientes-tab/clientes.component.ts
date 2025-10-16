@@ -11,6 +11,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { SupplierService } from '../../../../core/services/supplier.service';
 import { MessageService } from 'primeng/api';
+import { MovimientoService } from '../../../../core/services/movimiento.service';
 
 @Component({
   selector: 'app-clientes',
@@ -34,6 +35,7 @@ export class ClientesComponent implements OnInit {
   Math = Math;
   clientes: Cliente[] = [];
   proveedores: any[] = [];
+  movimientos: any[] = [];
   displayModal = false;
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
 
@@ -65,6 +67,7 @@ export class ClientesComponent implements OnInit {
   constructor(
     private clienteService: ClienteService,
     private supplierService: SupplierService,
+    private movimientoService: MovimientoService,
     private messageService: MessageService
   ) {}
 
@@ -197,16 +200,17 @@ export class ClientesComponent implements OnInit {
 
 
   onSelectCliente(cliente: Cliente): void {
-    this.selectedCliente = cliente;
-    this.clienteMovimientos = [];
+  this.selectedCliente = cliente;
+  this.clienteMovimientos = [];
 
-    if (cliente.id) {
-      this.clienteService.historial(cliente.id).subscribe({
-        next: (data) => this.clienteMovimientos = data,
-        error: (err) => console.error('Error al cargar historial de movimientos', err)
-      });
-    }
-
-    this.showMovimientosDialog = true;
+  if (cliente.id) {
+    this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
+      next: (data) => this.clienteMovimientos = data,
+      error: (err) => console.error('Error al cargar historial de movimientos', err)
+    });
   }
+
+  this.showMovimientosDialog = true;
+}
+
 }

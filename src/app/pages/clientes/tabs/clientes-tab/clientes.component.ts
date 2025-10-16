@@ -205,12 +205,18 @@ export class ClientesComponent implements OnInit {
 
   if (cliente.id) {
     this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
-      next: (data) => this.clienteMovimientos = data,
+      next: (data) => {
+        // 🔹 Ordenar del más reciente al más antiguo
+        this.clienteMovimientos = [...data].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
       error: (err) => console.error('Error al cargar historial de movimientos', err)
     });
   }
 
   this.showMovimientosDialog = true;
 }
+
 
 }

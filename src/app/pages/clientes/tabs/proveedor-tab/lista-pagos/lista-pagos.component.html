@@ -1,4 +1,9 @@
-<p-table [value]="pagos" [rows]="5" paginator="true" [responsive]="true">
+<p-table 
+  [value]="pagosOrdenados" 
+  scrollable="true" 
+  scrollHeight="400px"
+  [responsive]="true">
+
   <ng-template pTemplate="header">
     <tr>
       <th>Tipo</th>

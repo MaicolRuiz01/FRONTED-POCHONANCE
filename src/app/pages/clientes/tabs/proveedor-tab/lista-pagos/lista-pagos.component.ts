@@ -10,5 +10,12 @@ import { CommonModule } from '@angular/common';
 })
 export class ListaPagosComponent {
   @Input() pagos: any[] = []; 
+  pagosOrdenados: any[] = [];
+
+  ngOnChanges() {
+    this.pagosOrdenados = [...this.pagos].sort(
+      (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+    );
+  }
 
 }

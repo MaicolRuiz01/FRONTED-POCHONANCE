@@ -27,6 +27,7 @@ export interface SellDollar {
   cryptoSymbol?: string;
 }
 
+
 @Injectable({ providedIn: 'root' })
 export class SellDollarsService {
   private readonly apiUrl = `${environment.apiUrl}/api/sell-dollars`;

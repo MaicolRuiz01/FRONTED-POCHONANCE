@@ -49,6 +49,9 @@ export class ClientesComponent implements OnInit {
   selectedCliente: Cliente | null = null;
   clienteMovimientos: any[] = [];
 
+  displayEditModal = false;
+  editCliente: Cliente | null = null;
+
   transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
     clientId: null,
     supplierId: null,
@@ -89,6 +92,38 @@ export class ClientesComponent implements OnInit {
     error: () => alert('Error al cargar los proveedores')
   });
 }
+  abrirModalEditar(cliente: Cliente): void {
+    // clona para no tocar el card hasta guardar
+    this.editCliente = { ...cliente };
+    this.displayEditModal = true;
+  }
+
+  guardarEdicion(): void {
+    if (!this.editCliente) return;
+
+    // Validaciones mínimas
+    if (!this.editCliente.nombre || !this.editCliente.correo) {
+      alert('Nombre y correo son obligatorios');
+      return;
+    }
+
+    this.clienteService.actualizar(this.editCliente).subscribe({
+      next: (resp) => {
+        this.displayEditModal = false;
+        this.editCliente = null;
+        this.cargarClientes(); // refresca listado
+      },
+      error: (err) => {
+        console.error('Error al actualizar cliente', err);
+        alert('No se pudo actualizar el cliente');
+      }
+    });
+  }
+  
+  cancelarEdicion(): void {
+    this.displayEditModal = false;
+    this.editCliente = null;
+  }
 
 
   get totalClientes(): number {

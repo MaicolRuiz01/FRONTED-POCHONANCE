@@ -68,20 +68,25 @@
   <br>
   <!-- Grid de clientes -->
   <div class="grid-clientes">
-    <div class="card" *ngFor="let cliente of clientes"
-     (click)="onSelectCliente(cliente)">
+  <div class="card" *ngFor="let cliente of clientes"
+       (click)="onSelectCliente(cliente)">
 
-      <h3>{{ cliente.nombre }}</h3>
-      <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
-      <p><strong>Correo:</strong> {{ cliente.correo }}</p>
-      <p>
-        <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
-        {{ Math.abs(cliente.saldo) | currency:'COP' }}
-      </p>
+    <h3>{{ cliente.nombre }}</h3>
+    <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
+    <p><strong>Correo:</strong> {{ cliente.correo }}</p>
+    <p>
+      <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
+      {{ Math.abs(cliente.saldo) | currency:'COP' }}
+    </p>
+    <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
 
-      <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
+    <div class="acciones-card">
+      <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"
+              (click)="$event.stopPropagation(); abrirModalEditar(cliente)"></button>
     </div>
   </div>
+</div>
+
 
   <!-- Modal de Movimientos del Cliente -->
   <p-dialog header="Movimientos del Cliente: {{ selectedCliente?.nombre }}"
@@ -140,7 +145,7 @@
       </div>
       <div class="p-field">
         <label>Correo</label>
-        <input pInputText [(ngModel)]="nuevoCliente.correo" name="corre" />
+        <input pInputText [(ngModel)]="nuevoCliente.correo" name="correo" />
       </div>
       <div class="p-field">
         <label>Saldo Inicial</label>
@@ -212,3 +217,55 @@
   </p-dialog>
 
 </div>
+
+<p-dialog header="Editar Cliente"
+          [(visible)]="displayEditModal"
+          [modal]="true"
+          [style]="{ width: '420px' }"
+          (onHide)="cancelarEdicion()">
+
+  <form class="p-fluid" *ngIf="editCliente">
+    <div class="p-field">
+      <label>Nombre</label>
+      <input pInputText [(ngModel)]="editCliente.nombre" name="edit_nombre" />
+    </div>
+
+    <div class="p-field">
+      <label>Usuario</label>
+      <input pInputText [(ngModel)]="editCliente.nameUser" name="edit_nameUser" />
+    </div>
+
+    <div class="p-field">
+      <label>Correo</label>
+      <input pInputText [(ngModel)]="editCliente.correo" name="edit_correo" />
+    </div>
+
+    <div class="p-field">
+      <label>Wallet</label>
+      <input pInputText [(ngModel)]="editCliente.wallet" name="edit_wallet" />
+    </div>
+
+    <!-- Si quieres permitir tocar el saldo manualmente, deja este bloque.
+         Si NO, quítalo para que el saldo solo cambie por procesos. -->
+    <div class="p-field">
+      <label>Saldo</label>
+      <p-inputNumber [(ngModel)]="editCliente.saldo" name="edit_saldo"
+                     mode="currency" currency="COP"></p-inputNumber>
+    </div>
+
+    <!-- Si manejas binanceId/accountId -->
+    <!--
+    <div class="p-field">
+      <label>Binance ID</label>
+      <input pInputText [(ngModel)]="editCliente.binanceId" name="edit_binanceId" />
+    </div>
+    -->
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+            (click)="cancelarEdicion()"></button>
+    <button pButton label="Guardar" icon="pi pi-check" class="p-button-success"
+            (click)="guardarEdicion()" [disabled]="!editCliente?.nombre || !editCliente?.correo"></button>
+  </ng-template>
+</p-dialog>

@@ -99,26 +99,27 @@ export class ClientesComponent implements OnInit {
   }
 
   guardarEdicion(): void {
-    if (!this.editCliente) return;
+  if (!this.editCliente) return;
 
-    // Validaciones mínimas
-    if (!this.editCliente.nombre || !this.editCliente.correo) {
-      alert('Nombre y correo son obligatorios');
-      return;
-    }
-
-    this.clienteService.actualizar(this.editCliente).subscribe({
-      next: (resp) => {
-        this.displayEditModal = false;
-        this.editCliente = null;
-        this.cargarClientes(); // refresca listado
-      },
-      error: (err) => {
-        console.error('Error al actualizar cliente', err);
-        alert('No se pudo actualizar el cliente');
-      }
-    });
+  // Solo exigir Nombre (correo opcional)
+  if (!this.editCliente.nombre?.trim()) {
+    alert('El nombre es obligatorio');
+    return;
   }
+
+  this.clienteService.actualizar(this.editCliente).subscribe({
+    next: () => {
+      this.displayEditModal = false;
+      this.editCliente = null;
+      this.cargarClientes();
+    },
+    error: (err) => {
+      console.error('Error al actualizar cliente', err);
+      alert('No se pudo actualizar el cliente');
+    }
+  });
+}
+
   
   cancelarEdicion(): void {
     this.displayEditModal = false;

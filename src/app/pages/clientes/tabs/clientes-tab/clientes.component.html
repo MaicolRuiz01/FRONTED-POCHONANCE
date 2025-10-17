@@ -265,7 +265,11 @@
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
             (click)="cancelarEdicion()"></button>
-    <button pButton label="Guardar" icon="pi pi-check" class="p-button-success"
-            (click)="guardarEdicion()" [disabled]="!editCliente?.nombre || !editCliente?.correo"></button>
+    <!-- footer del modal de edición -->
+<button pButton label="Guardar" icon="pi pi-check" class="p-button-success"
+        (click)="guardarEdicion()"
+        [disabled]="!editCliente?.nombre">
+</button>
+
   </ng-template>
 </p-dialog>

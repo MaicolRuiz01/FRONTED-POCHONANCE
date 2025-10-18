@@ -7,6 +7,7 @@ import { AccountCopService } from '../../../../../core/services/account-cop.serv
 import { CardModule } from 'primeng/card';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { environment } from '../../../../../../environment/environment';
 
 @Component({
   selector: 'app-lista-ventas',
@@ -16,7 +17,8 @@ import { ButtonModule } from 'primeng/button';
   styleUrls: ['./lista-ventas.component.css']
 })
 export class ListaVentasComponent implements OnInit {
-  ventas: SaleP2PDto[] = [];
+  ventas: any[] = [];
+  apiUrl: string = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,6 +36,6 @@ export class ListaVentasComponent implements OnInit {
     }
   }
    goBack(): void {
-    this.router.navigate(['/asignaciones']); // Navegar a la página de cuentas
+    this.router.navigate(['/saldos']); // Navegar a la página de saldos
   }
 }

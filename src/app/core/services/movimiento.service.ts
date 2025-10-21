@@ -15,6 +15,15 @@ export interface MovimientoDto {
   
 }
 
+export interface PagoClienteAClienteDto {
+  clienteOrigenId: number;
+  clienteDestinoId: number;
+  usdt: number;
+  tasaOrigen: number;
+  tasaDestino: number;
+  nota?: string;
+}
+
 export interface MovimientoVistaDto {
   id?: number; // 🔹 importante para poder editar
   tipo: string;
@@ -118,6 +127,9 @@ getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
   return this.http.get<MovimientoVistaDto[]>(
     `${this.apiUrl}/pagos-cuenta/${cuentaId}`
   );
+}
+pagoClienteACliente(dto: PagoClienteAClienteDto): Observable<any> {
+  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente`, dto);
 }
 
 

@@ -42,8 +42,8 @@ export class ClientesComponent implements OnInit {
   displayPagoModal = false;
   displayTransferModal = false;
 
-  tasaOrigen: number = 0;
-  tasaDestino: number = 0;
+  tasaOrigen = 0;
+  tasaDestino = 0;
 
   showMovimientosDialog: boolean = false;
   selectedCliente: Cliente | null = null;
@@ -51,6 +51,7 @@ export class ClientesComponent implements OnInit {
 
   displayEditModal = false;
   editCliente: Cliente | null = null;
+  
 
   transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
     clientId: null,
@@ -67,6 +68,15 @@ export class ClientesComponent implements OnInit {
 
   loadingPago = false;
 
+  pagoUsdt: number | null = null;
+
+
+  get pesosOrigen(): number {
+    return (this.pagoUsdt ?? 0) * (this.tasaOrigen ?? 0);
+  }
+  get pesosDestino(): number {
+    return (this.pagoUsdt ?? 0) * (this.tasaDestino ?? 0);
+  }
   constructor(
     private clienteService: ClienteService,
     private supplierService: SupplierService,
@@ -148,6 +158,9 @@ export class ClientesComponent implements OnInit {
 
   abrirModalPago(): void {
     this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
+    this.pagoUsdt = null;
+    this.tasaOrigen = 0;
+    this.tasaDestino = 0;
     this.displayPagoModal = true;
   }
 
@@ -155,52 +168,34 @@ export class ClientesComponent implements OnInit {
     const origen = this.clientes.find(c => c.id === this.pago.origenId);
     const destino = this.clientes.find(c => c.id === this.pago.destinoId);
 
-    if (!origen || !destino) {
-      alert('Debe seleccionar ambos clientes');
-      return;
-    }
+    if (!origen || !destino) { alert('Debe seleccionar ambos clientes'); return; }
+    if (origen.id === destino.id) { alert('El origen y destino no pueden ser el mismo'); return; }
+    if (!this.pagoUsdt || this.pagoUsdt <= 0) { alert('Ingrese el monto en USDT'); return; }
+    if (!this.tasaOrigen || this.tasaOrigen <= 0) { alert('Tasa de Origen inválida'); return; }
+    if (!this.tasaDestino || this.tasaDestino <= 0) { alert('Tasa de Destino inválida'); return; }
 
-    if (origen.id === destino.id) {
-      alert('El cliente origen y destino no pueden ser el mismo');
-      return;
-    }
-
-    if (!this.pago.monto || this.pago.monto <= 0) {
-      alert('El monto debe ser mayor a 0');
-      return;
-    }
-
-    if ((origen.saldo ?? 0) < this.pago.monto) {
-      alert('El cliente origen no tiene suficiente saldo');
-      return;
-    }
-
-    if (!this.tasaOrigen || this.tasaOrigen <= 0) {
-      alert('Debe ingresar una Tasa de Cliente Origen válida.');
-      return;
-    }
-    if (!this.tasaDestino || this.tasaDestino <= 0) {
-      alert('Debe ingresar una Tasa de Cliente Destino válida.');
-      return;
-    }
+    
 
     this.loadingPago = true;
-    this.clienteService.transferir({
-      origenId: origen.id!,
-      destinoId: destino.id!,
-      monto: this.pago.monto!,
+    this.movimientoService.pagoClienteACliente({
+      clienteOrigenId: origen.id!,
+      clienteDestinoId: destino.id!,
+      usdt: this.pagoUsdt!,
+      tasaOrigen: this.tasaOrigen!,
+      tasaDestino: this.tasaDestino!,
       nota: this.pago.nota || ''
     }).subscribe({
       next: () => {
-        alert('Pago realizado con éxito');
+        alert('Pago C2C realizado con éxito');
         this.displayPagoModal = false;
         this.loadingPago = false;
         this.cargarClientes();
       },
       error: (err) => {
         this.loadingPago = false;
-        const msg = typeof err?.error === 'string' ? err.error : 'Error al procesar el pago';
+        const msg = err?.error?.message || 'Error al procesar el pago C2C';
         alert(msg);
+        console.error(err);
       }
     });
   }

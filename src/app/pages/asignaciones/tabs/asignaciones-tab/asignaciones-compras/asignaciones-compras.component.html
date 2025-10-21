@@ -56,11 +56,46 @@
       </div>
 
       <div class="p-field" style="margin-bottom: 1rem;">
-        <label for="supplierSelect"><strong>Proveedor</strong></label>
-        <p-dropdown id="supplierSelect" [options]="suppliers" optionLabel="name" optionValue="id"
-          placeholder="Selecciona proveedor" [(ngModel)]="selectedSupplierId" [style.width.%]="100"
-          [appendTo]="'body'"></p-dropdown>
-      </div>
+  <label><strong>Asignar a:</strong></label>
+  <p-dropdown 
+    [options]="[
+      { label: 'Proveedor', value: 'proveedor' },
+      { label: 'Cliente', value: 'cliente' }
+    ]" 
+    [(ngModel)]="assignType"
+    placeholder="Seleccionar tipo"
+    [style.width.%]="100"
+    [appendTo]="'body'">
+  </p-dropdown>
+</div>
+
+<!-- Dropdown dinámico -->
+<div *ngIf="assignType === 'proveedor'" class="p-field" style="margin-bottom: 1rem;">
+  <label><strong>Proveedor</strong></label>
+  <p-dropdown 
+    [options]="suppliers" 
+    optionLabel="name" 
+    optionValue="id"
+    placeholder="Selecciona proveedor"
+    [(ngModel)]="selectedSupplierId"
+    [style.width.%]="100"
+    [appendTo]="'body'">
+  </p-dropdown>
+</div>
+
+<div *ngIf="assignType === 'cliente'" class="p-field" style="margin-bottom: 1rem;">
+  <label><strong>Cliente</strong></label>
+  <p-dropdown 
+    [options]="clientes" 
+    optionLabel="nombre" 
+    optionValue="id"
+    placeholder="Selecciona cliente"
+    [(ngModel)]="selectedClienteId"
+    [style.width.%]="100"
+    [appendTo]="'body'">
+  </p-dropdown>
+</div>
+
     </div>
 
     <ng-template pTemplate="footer">

@@ -18,6 +18,8 @@ export type AccountCopCreate = Omit<AccountCop, 'id'>;
 })
 export class AccountCopService {
    private apiUrl = `${environment.apiUrl}/cuenta-cop`;
+   private Url2 = `${environment.apiUrl}/movimiento`;
+
 
   constructor(private http: HttpClient) {}
 
@@ -33,7 +35,7 @@ export class AccountCopService {
   }
 
   getSalesByAccountCopId(accountCopId: number): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/${accountCopId}/sales`;
+    const url = `${this.apiUrl}/pagos-cuenta/${accountCopId}`;
     return this.http.get<SaleP2PDto[]>(url);
   }
   getTotalBalance(): Observable<number> {

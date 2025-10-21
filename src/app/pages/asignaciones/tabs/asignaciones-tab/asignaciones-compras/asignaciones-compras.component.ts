@@ -17,6 +17,7 @@ import { MenuItem } from 'primeng/api';
 import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+import { Cliente, ClienteService } from '../../../../../core/services/cliente.service';
 
 
 @Component({
@@ -74,6 +75,10 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   loading: boolean = false;
   isMobile: boolean = false;
 
+  clientes: Cliente[] = [];
+selectedClienteId: number | null = null;
+assignType: 'proveedor' | 'cliente' = 'proveedor';
+
   //intento de crear tabla a partir del componente MiTabla
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
@@ -82,12 +87,14 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     { campo: 'date', columna: 'Fecha' },
   ];
 
-  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService) { }
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService, private clienteService: ClienteService) { }
 
   ngOnInit(): void {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
+    this.loadClientes();
+
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener('resize', () => {
       this.isMobile = window.innerWidth <= 768;
@@ -120,6 +127,14 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  loadClientes(): void {
+  this.clienteService.listar().subscribe({
+    next: data => this.clientes = data,
+    error: err => console.error('Error cargando clientes', err)
+  });
+}
+
 
 
   loadSuppliers(): void {
@@ -154,39 +169,40 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     this.purchaseRate = null;
   }
 
-  // asignaciones-compras.component.ts
 saveAssignment(): void {
-  if (!this.selectedDeposit || !this.purchaseRate || !this.selectedSupplierId) return;
+  if (!this.selectedDeposit || !this.purchaseRate) return;
 
   const pesos = this.selectedDeposit.amount * this.purchaseRate;
-
   const buyData: Partial<BuyDollarsDto> = {
     tasa: this.purchaseRate,
-    pesos,
-    supplierId: this.selectedSupplierId,   // por si el back usa supplierId
-    // 👇 añade también "supplier" por si el back usa ese nombre
-    // @ts-ignore
-    supplier: this.selectedSupplierId
+    pesos
   };
 
-  this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
-  next: () => {
-    alert('Compra asignada correctamente');
-    this.closeModal();
-    this.loadDeposits();
-  },
-  error: (err) => {
-    // El backend devuelve un string con e.getMessage() (400)
-    const msg = (typeof err.error === 'string' && err.error.trim().length)
-      ? err.error
-      : (err.error?.message || err.statusText || 'Error desconocido');
-    console.error('Error asignando compra', err);
-    alert('Error al asignar la compra: ' + msg);
+  if (this.assignType === 'proveedor' && this.selectedSupplierId) {
+    buyData.supplierId = this.selectedSupplierId;
+  } else if (this.assignType === 'cliente' && this.selectedClienteId) {
+    buyData.clienteId = this.selectedClienteId;
+  } else {
+    alert('Selecciona un proveedor o un cliente válido');
+    return;
   }
-});
 
-
+  this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
+    next: () => {
+      alert('Compra asignada correctamente');
+      this.closeModal();
+      this.loadDeposits();
+    },
+    error: (err) => {
+      const msg = (typeof err.error === 'string' && err.error.trim().length)
+        ? err.error
+        : (err.error?.message || err.statusText || 'Error desconocido');
+      console.error('Error asignando compra', err);
+      alert('Error al asignar la compra: ' + msg);
+    }
+  });
 }
+
 
 
 }

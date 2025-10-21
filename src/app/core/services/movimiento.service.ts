@@ -114,4 +114,11 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   return this.http.get<MovimientoVistaDto[]>(url);
 }
 
+getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
+  return this.http.get<MovimientoVistaDto[]>(
+    `${this.apiUrl}/pagos-cuenta/${cuentaId}`
+  );
+}
+
+
 }

@@ -1,6 +1,7 @@
 <div class="button-container">
-  <button pButton title="Agregar Caja" icon="pi pi-plus" class="p-button-success p-button-sm p-button-rounded"
-    (click)="displayCajaDialog = true"></button>
+  <button pButton title="Agregar Caja" icon="pi pi-plus"
+          class="p-button-success p-button-sm p-button-rounded"
+          (click)="displayCajaDialog = true"></button>
 </div>
 <br>
 
@@ -16,13 +17,13 @@
 </div>
 <br><br>
 
-<!--cartas para cajas -->
+<!-- Cartas de cajas -->
 <div class="p-grid p-justify-center p-card-container">
   <div *ngFor="let caja of cajas" class="card-wrapper">
-    <p-card styleClass="account-card">
+    <p-card styleClass="account-card" (click)="verMovimientos(caja)">
       <ng-template pTemplate="header">
         <div class="card-header">
-          <i class="pi pi-user" style="margin-right: 8px;"></i> {{ caja?.name }}
+          <i class="pi pi-briefcase" style="margin-right: 8px;"></i> {{ caja?.name }}
         </div>
       </ng-template>
 
@@ -32,27 +33,73 @@
             <span class="label">Saldo:</span>
             <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
           </div>
-
         </div>
       </ng-template>
     </p-card>
   </div>
 </div>
 
-<! -- cuadro de dialogo para crear una nueva caja --!>
+<!-- Dialog: crear caja -->
+<p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
+  <div class="p-fluid">
+    <label>Nombre de Caja</label>
+    <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
 
-  <p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
-    <div class="p-fluid">
-      <label>Nombre de Caja</label>
-      <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
+    <label>Saldo Inicial</label>
+    <p-inputNumber [(ngModel)]="nuevaCaja.saldo" name="saldoInicial"
+                   mode="currency" currency="COP" [min]="0"></p-inputNumber>
+  </div>
 
-      <label>Saldo Inicial</label>
-      <p-inputNumber [(ngModel)]="nuevaCaja.saldo" name="saldoInicial" mode="currency" currency="COP" [min]="0">
-      </p-inputNumber>
-    </div>
+  <p-footer>
+    <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
+    <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
+  </p-footer>
+</p-dialog>
 
-    <p-footer>
-      <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
-      <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
-    </p-footer>
-  </p-dialog>
+<!-- Dialog: movimientos por caja -->
+<p-dialog header="Movimientos de Caja: {{ cajaSeleccionada?.name }}"
+          [(visible)]="showMovsDialog"
+          [modal]="true"
+          [style]="{ width: '80vw' }"
+          [closable]="true">
+
+  <ng-container *ngIf="!loadingMovs; else loadingTpl">
+    <p-table [value]="movimientosCaja" scrollable="true" scrollHeight="420px" [responsive]="true">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Monto (COP)</th>
+          <th>Cuenta Origen</th>
+          <th>Cuenta Destino</th>
+          <th>Caja</th>
+          <th>Cliente</th>
+          <th>Proveedor</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-mov>
+        <tr>
+          <td>{{ mov.fecha | date:'short' }}</td>
+          <td>{{ mov.tipo }}</td>
+          <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+          <td>{{ mov.cuentaOrigen || '-' }}</td>
+          <td>{{ mov.cuentaDestino || '-' }}</td>
+          <td>{{ mov.caja || '-' }}</td>
+          <td>{{ mov.pagoCliente || '-' }}</td>
+          <td>{{ mov.pagoProveedor || '-' }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="p-text-center">Sin movimientos para esta caja.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <div class="p-3">Cargando movimientos...</div>
+  </ng-template>
+</p-dialog>

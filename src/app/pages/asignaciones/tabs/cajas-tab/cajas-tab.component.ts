@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 
+
 @Component({
   selector: 'app-cajas-tab',
   standalone: true,
@@ -28,6 +29,7 @@ import { DialogModule } from 'primeng/dialog';
 })
 export class MovimientosComponent implements OnInit {
   loading: boolean = true;
+  loadingCajas = false;
   retiros: MovimientoVistaDto[] = [];
   depositos: MovimientoVistaDto[] = [];
   transferencias: MovimientoVistaDto[] = [];
@@ -35,6 +37,11 @@ export class MovimientosComponent implements OnInit {
   cajas: Caja[] = [];
   displayCajaDialog: boolean = false;
   nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
+
+  showMovsDialog = false;
+  cajaSeleccionada: Caja | null = null;
+  movimientosCaja: any[] = [];
+  loadingMovs = false;
 
   constructor(private movimientoService: MovimientoService,
     private cajaService: CajaService
@@ -47,6 +54,10 @@ export class MovimientosComponent implements OnInit {
     this.movimientoService.getDepositos().subscribe(data => this.depositos = data);
     this.movimientoService.getTransferencias().subscribe(data => this.transferencias = data);
     this.loadCajas();
+  }
+  abrirCrearCaja(): void {
+    this.nuevaCaja = { name: '', saldo: 0 };
+    this.displayCajaDialog = true;
   }
   
   loadCajas() {
@@ -65,7 +76,24 @@ export class MovimientosComponent implements OnInit {
       error: () => alert('Error al guardar caja')
     });
   }
+// Al hacer clic en una caja, abrimos modal y cargamos sus movimientos
+  verMovimientos(caja: Caja): void {
+    this.cajaSeleccionada = caja;
+    this.movimientosCaja = [];
+    this.loadingMovs = true;
+    this.showMovsDialog = true;
 
+    this.movimientoService.getMovimientosPorCaja(caja.id!).subscribe({
+      next: (data) => {
+        // ordenar por fecha desc si hace falta
+        this.movimientosCaja = [...data].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: (e) => console.error('Error al cargar movimientos de caja', e),
+      complete: () => this.loadingMovs = false
+    });
+  }
   
 
   

@@ -2,40 +2,43 @@ import { Component, OnInit } from '@angular/core';
 import { Caja, CajaService } from '../../../../core/services/caja.service';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
 import { FormsModule } from '@angular/forms';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
-import { CardModule } from 'primeng/card'; 
-import { CommonModule } from '@angular/common';
+import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-cajas-tab',
   standalone: true,
-  imports: [FormsModule, ButtonModule, 
-            InputTextModule, DialogModule, TabViewModule, 
-            TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule],
+  imports: [
+    FormsModule, ButtonModule, InputTextModule, DialogModule, TabViewModule,
+    TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule
+  ],
   templateUrl: './cajas.component.html',
-  styleUrl: './cajas.component.css'
+  styleUrls: ['./cajas.component.css']   // 👈 corregido (plural)
 })
-
-
-
-export class CajasComponent {
+export class CajasComponent implements OnInit {
 
   cajas: Caja[] = [];
-    displayCajaDialog: boolean = false;
-    nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
+  displayCajaDialog = false;
+  nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
 
-    constructor(private movimientoService: MovimientoService,
-       private cajaService: CajaService
-     ) {}
+  // 🔹 NUEVO: estado para ver movimientos de una caja
+  showMovsDialog = false;
+  cajaSeleccionada: Caja | null = null;
+  movimientosCaja: any[] = [];
+  loadingMovs = false;
 
-ngOnInit(): void {
+  constructor(
+    private movimientoService: MovimientoService,
+    private cajaService: CajaService
+  ) {}
 
+  ngOnInit(): void {
     this.loadCajas();
   }
 
@@ -43,9 +46,9 @@ ngOnInit(): void {
     this.cajaService.listar().subscribe(data => this.cajas = data);
   }
 
-get totalCajas(): number {
-  return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
-}
+  get totalCajas(): number {
+    return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
+  }
 
   guardarCaja() {
     if (!this.nuevaCaja.name || this.nuevaCaja.saldo === undefined) return;
@@ -60,4 +63,23 @@ get totalCajas(): number {
     });
   }
 
+  // 🔹 NUEVO: abrir modal y cargar movimientos por caja
+  verMovimientos(caja: Caja) {
+    if (!caja?.id) return;
+    this.cajaSeleccionada = caja;
+    this.movimientosCaja = [];
+    this.loadingMovs = true;
+    this.showMovsDialog = true;
+
+    this.movimientoService.getMovimientosPorCaja(caja.id).subscribe({
+      next: data => {
+        // ordenar más reciente primero (por si el backend no lo hace)
+        this.movimientosCaja = [...data].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: e => console.error('Error al cargar movimientos de caja', e),
+      complete: () => this.loadingMovs = false
+    });
+  }
 }

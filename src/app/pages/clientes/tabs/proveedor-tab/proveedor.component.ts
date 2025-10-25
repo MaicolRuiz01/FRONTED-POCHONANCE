@@ -9,17 +9,20 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { ListaPagosComponent } from './lista-pagos/lista-pagos.component';
-import { CardModule } from 'primeng/card'; // Importa el componente ListaPagos
+import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common'; 
 import { CalendarModule } from 'primeng/calendar';
-import { CajaService, Caja } from '../../../../core/services/caja.service'; // ✅ Necesitas este servicio para cargar la caja
+import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
 import { ClienteService } from '../../../../core/services/cliente.service';
+import { TabViewModule } from 'primeng/tabview';
+import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
+import { TableModule } from 'primeng/table';
 
 export interface PagoProveedorDTO {
     id: number;
     amount: number;
-    date: Date; // O string, dependiendo de cómo lo serialice Java
+    date: Date;
     accountOriginName: string;
     accountDestinyName: string;
     type: 'INGRESO' | 'EGRESO';
@@ -40,7 +43,9 @@ export interface PagoProveedorDTO {
     ListaPagosComponent,
     CardModule,
     CommonModule,
-    CalendarModule
+    CalendarModule,
+    TabViewModule,
+    TableModule 
   ],
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']
@@ -69,6 +74,9 @@ export class ProveedorComponent implements OnInit {
   paymentMethod: string = 'Cuenta Bancaria';
   paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor','Cliente'];
   selectedCliente: any | null = null;
+  comprasProveedor: BuyDollarsDto[] = [];   
+  loadingMovs = false;                      
+  loadingCompras = false; 
 clientes: any[] = [];
 
   constructor(
@@ -77,7 +85,8 @@ clientes: any[] = [];
     private paymentService: PagoProveedorService,
     private cajaService: CajaService,
     private movimientoService: MovimientoService,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private buyDollarsService: BuyDollarsService
   ) {}
 
   ngOnInit(): void {
@@ -201,9 +210,34 @@ clientes: any[] = [];
   }
 
 onSelectSupplier(supplier: Supplier): void {
-    this.selectedSupplier = supplier;
-    this.loadMovimientosBySupplier(); // ✅ Ahora llama al nuevo método
-    this.showPagosDialog = true;
-  }
+  this.selectedSupplier = supplier;
+  this.movimientos = [];
+  this.comprasProveedor = [];
+  this.showPagosDialog = true;
+
+  if (!supplier?.id) return;
+
+  // Movimientos
+  this.loadingMovs = true;
+  this.paymentService.getMovimientosBySupplier(supplier.id).subscribe({
+    next: data => this.movimientos = data,
+    error: err => console.error('Error cargando movimientos', err),
+    complete: () => this.loadingMovs = false
+  });
+
+  // Compras (BuyDollars)
+  this.loadingCompras = true;
+  this.buyDollarsService.getComprasPorProveedor(supplier.id).subscribe({
+    next: compras => {
+      // Si el backend ya viene ordenado, esto es opcional:
+      this.comprasProveedor = [...compras].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    },
+    error: err => console.error('Error cargando compras proveedor', err),
+    complete: () => this.loadingCompras = false
+  });
+}
+
 
 }

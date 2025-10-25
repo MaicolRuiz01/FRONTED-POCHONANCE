@@ -50,4 +50,5 @@ export class ClienteService {
   historial(clienteId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${clienteId}/historial-transacciones`);
   }
+  
 }

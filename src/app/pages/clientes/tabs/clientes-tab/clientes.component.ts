@@ -12,6 +12,9 @@ import { TableModule } from 'primeng/table';
 import { SupplierService } from '../../../../core/services/supplier.service';
 import { MessageService } from 'primeng/api';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { TabViewModule } from 'primeng/tabview';
+import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
+
 
 @Component({
   selector: 'app-clientes',
@@ -25,6 +28,7 @@ import { MovimientoService } from '../../../../core/services/movimiento.service'
     InputNumberModule,
     CardModule,
     DropdownModule,
+    TabViewModule,
     TableModule
   ],
   templateUrl: './clientes.component.html',
@@ -38,6 +42,7 @@ export class ClientesComponent implements OnInit {
   movimientos: any[] = [];
   displayModal = false;
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
+  comprasCliente: BuyDollarsDto[] = [];
 
   displayPagoModal = false;
   displayTransferModal = false;
@@ -81,7 +86,8 @@ export class ClientesComponent implements OnInit {
     private clienteService: ClienteService,
     private supplierService: SupplierService,
     private movimientoService: MovimientoService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private buyDollarsService: BuyDollarsService, 
   ) {}
 
   ngOnInit(): void {
@@ -233,21 +239,37 @@ export class ClientesComponent implements OnInit {
   onSelectCliente(cliente: Cliente): void {
   this.selectedCliente = cliente;
   this.clienteMovimientos = [];
+  this.comprasCliente = [];
 
-  if (cliente.id) {
-    this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
-      next: (data) => {
-        // 🔹 Ordenar del más reciente al más antiguo
-        this.clienteMovimientos = [...data].sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
-      },
-      error: (err) => console.error('Error al cargar historial de movimientos', err)
-    });
+  if (!cliente.id) {
+    this.showMovimientosDialog = true;
+    return;
   }
+
+  // Movimientos (ya lo tenías)
+  this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
+    next: (data) => {
+      this.clienteMovimientos = [...data].sort(
+        (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+      );
+    },
+    error: (err) => console.error('Error al cargar historial de movimientos', err),
+  });
+
+  // 👇 Compras asignadas al cliente
+  this.buyDollarsService.getComprasPorCliente(cliente.id).subscribe({
+    next: (compras) => {
+      // Si necesitas orden, el backend ya lo puede traer desc; si no:
+      this.comprasCliente = [...compras].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    },
+    error: (err) => console.error('Error al cargar compras del cliente', err),
+  });
 
   this.showMovimientosDialog = true;
 }
+
 
 
 }

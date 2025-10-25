@@ -131,6 +131,12 @@ getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
 pagoClienteACliente(dto: PagoClienteAClienteDto): Observable<any> {
   return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente`, dto);
 }
+getMovimientosPorCaja(cajaId: number) {
+  return this.http.get<any[]>(
+    `${environment.apiUrl}/movimiento/caja/${cajaId}`
+  );
+}
+
 
 
 }

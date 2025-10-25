@@ -63,5 +63,18 @@ asignarCompra(id: number, dto: Partial<BuyDollarsDto>): Observable<any> {
 importarComprasAutomaticamente(): Observable<void> {
   return this.http.post<void>(`${this.apiUrl}/importar-automatico`, {});
 }
+// buy-dollars.service.ts
+getComprasPorCliente(clienteId: number): Observable<BuyDollarsDto[]> {
+  return this.http.get<BuyDollarsDto[]>(
+    `${this.apiUrl}/cliente/${clienteId}`
+  );
+}
+getComprasPorProveedor(supplierId: number): Observable<BuyDollarsDto[]> {
+  return this.http.get<BuyDollarsDto[]>(
+    `${environment.apiUrl}/supplier/${supplierId}/compras`
+  );
+}
+
+
 
 }

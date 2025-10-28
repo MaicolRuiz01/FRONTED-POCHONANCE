@@ -43,6 +43,7 @@ export class ClientesComponent implements OnInit {
   displayModal = false;
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
   comprasCliente: BuyDollarsDto[] = [];
+  displayPagoCPModal = false;
 
   displayPagoModal = false;
   displayTransferModal = false;
@@ -269,6 +270,74 @@ export class ClientesComponent implements OnInit {
 
   this.showMovimientosDialog = true;
 }
+
+pagoCP = {
+    clienteId: null as number | null,
+    proveedorId: null as number | null,
+    usdt: null as number | null,
+    tasaCliente: null as number | null,
+    tasaProveedor: null as number | null,
+    nota: '' as string
+  };
+
+  // 🔢 calculados
+  get pesosClienteCP(): number {
+    const u = this.pagoCP.usdt ?? 0;
+    const t = this.pagoCP.tasaCliente ?? 0;
+    return u * t;
+  }
+  get pesosProveedorCP(): number {
+    const u = this.pagoCP.usdt ?? 0;
+    const t = this.pagoCP.tasaProveedor ?? 0;
+    return u * t;
+  }
+
+  // 🟢 abrir modal
+  abrirModalPagoClienteProveedor(): void {
+    this.pagoCP = {
+      clienteId: null,
+      proveedorId: null,
+      usdt: null,
+      tasaCliente: null,
+      tasaProveedor: null,
+      nota: ''
+    };
+    this.displayPagoCPModal = true;
+  }
+
+  // ✅ confirmar pago
+  confirmarPagoClienteProveedor(): void {
+    const { clienteId, proveedorId, usdt, tasaCliente, tasaProveedor } = this.pagoCP;
+
+    if (!clienteId || !proveedorId) { alert('Seleccione cliente y proveedor'); return; }
+    if (!usdt || usdt <= 0) { alert('Ingrese monto USDT > 0'); return; }
+    if (!tasaCliente || tasaCliente <= 0) { alert('Tasa cliente inválida'); return; }
+    if (!tasaProveedor || tasaProveedor <= 0) { alert('Tasa proveedor inválida'); return; }
+
+    this.loadingPago = true;
+
+    this.movimientoService.pagoClienteAProveedor({
+      clienteOrigenId: clienteId,
+      proveedorDestinoId: proveedorId,
+      usdt: usdt,
+      tasaCliente: tasaCliente,
+      tasaProveedor: tasaProveedor,
+      nota: this.pagoCP.nota || ''
+    }).subscribe({
+      next: () => {
+        alert('Pago Cliente → Proveedor realizado con éxito');
+        this.displayPagoCPModal = false;
+        this.loadingPago = false;
+        this.cargarClientes(); // refresca saldos
+      },
+      error: (err) => {
+        this.loadingPago = false;
+        const msg = err?.error?.message || 'Error al procesar el pago Cliente → Proveedor';
+        alert(msg);
+        console.error(err);
+      }
+    });
+  }
 
 
 

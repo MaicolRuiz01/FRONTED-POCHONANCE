@@ -33,6 +33,14 @@ export interface MovimientoVistaDto {
   cuentaDestino?: string;
   caja?: number;
 }
+export interface PagoClienteAProveedorDto {
+  clienteOrigenId: number;
+  proveedorDestinoId: number;
+  usdt: number;
+  tasaCliente: number;    // COP/USDT del cliente
+  tasaProveedor: number;  // COP/USDT del proveedor
+  nota?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -137,6 +145,7 @@ getMovimientosPorCaja(cajaId: number) {
   );
 }
 
-
-
+pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pago-cliente-a-proveedor`, dto);
+  }
 }

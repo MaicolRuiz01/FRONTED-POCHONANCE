@@ -9,8 +9,11 @@
     </button>
 
     <button pButton label="Transferir a Proveedor" icon="pi pi-exchange" class="p-button-info"
-      (click)="abrirModalTransferencia()">
+      (click)="abrirModalTransferencia()" disabled>
     </button>
+
+    <button pButton label="Pagar a Proveedor (USDT)" icon="pi pi-send"
+          class="p-button-success" (click)="abrirModalPagoClienteProveedor()"></button>
   </div>
 
   <!-- Modal para Transferencia Cliente → Proveedor -->
@@ -325,5 +328,75 @@
         [disabled]="!editCliente?.nombre">
 </button>
 
+  </ng-template>
+</p-dialog>
+<p-dialog header="Pago en USDT: Cliente → Proveedor"
+          [(visible)]="displayPagoCPModal" [modal]="true" [style]="{ width: '460px' }">
+
+  <form class="p-fluid">
+    <!-- Cliente Origen -->
+    <div class="p-field">
+      <label>Cliente Origen</label>
+      <p-dropdown [options]="clientes"
+                  [(ngModel)]="pagoCP.clienteId" name="cp_cliente"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente"></p-dropdown>
+    </div>
+
+    <!-- Proveedor Destino -->
+    <div class="p-field">
+      <label>Proveedor Destino</label>
+      <p-dropdown [options]="proveedores"
+                  [(ngModel)]="pagoCP.proveedorId" name="cp_proveedor"
+                  optionLabel="name" optionValue="id"
+                  placeholder="Seleccione proveedor"></p-dropdown>
+    </div>
+
+    <!-- Monto USDT -->
+    <div class="p-field">
+      <label>Monto (USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.usdt" name="cp_usdt"
+                     mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
+    </div>
+
+    <!-- Tasa Cliente (COP/USDT) + COP -->
+    <div class="p-field">
+      <label>Tasa Cliente (COP/USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.tasaCliente" name="cp_tasaCliente"
+                     mode="currency" currency="COP"></p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (cliente)</label>
+      <input pInputText [value]="pesosClienteCP | currency:'COP'" readonly />
+    </div>
+
+    <!-- Tasa Proveedor (COP/USDT) + COP -->
+    <div class="p-field">
+      <label>Tasa Proveedor (COP/USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.tasaProveedor" name="cp_tasaProveedor"
+                     mode="currency" currency="COP"></p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (proveedor)</label>
+      <input pInputText [value]="pesosProveedorCP | currency:'COP'" readonly />
+    </div>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pagoCP.nota" name="cp_nota" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times"
+            class="p-button-text"
+            (click)="displayPagoCPModal = false"></button>
+
+    <button pButton label="Confirmar Pago" icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarPagoClienteProveedor()"
+            [disabled]="!pagoCP.clienteId || !pagoCP.proveedorId || !pagoCP.usdt || !pagoCP.tasaCliente || !pagoCP.tasaProveedor">
+    </button>
   </ng-template>
 </p-dialog>

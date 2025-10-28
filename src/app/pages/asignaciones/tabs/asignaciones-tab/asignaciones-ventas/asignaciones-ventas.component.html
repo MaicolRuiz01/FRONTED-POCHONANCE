@@ -152,8 +152,18 @@
       <ng-container *ngIf="isSpecialClient">
         <div class="p-field p-col-12">
           <label>Selecciona Cliente</label>
-          <p-dropdown [options]="clientes" [(ngModel)]="selectedClientId" optionValue="id" optionLabel="nombre"
-            placeholder="Selecciona cliente"></p-dropdown>
+          <p-dropdown
+  [options]="clientes"
+  [(ngModel)]="selectedClientId"
+  optionValue="id"
+  optionLabel="nombre"
+  placeholder="Selecciona cliente"
+
+  [appendTo]="'body'"
+  [scrollHeight]="'260px'"
+  [filter]="true"
+></p-dropdown>
+
         </div>
         <div class="p-field p-col-12 p-md-6">
           <label>Tasa</label>

@@ -81,7 +81,7 @@
       <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
       {{ Math.abs(cliente.saldo) | currency:'COP' }}
     </p>
-    <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
+    <!-- <p><strong>Wallet:</strong> {{ cliente.wallet }}</p> -->
 
     <div class="acciones-card">
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"

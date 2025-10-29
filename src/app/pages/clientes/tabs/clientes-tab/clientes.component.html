@@ -232,7 +232,7 @@
     <!-- Monto en USDT -->
     <div class="p-field">
       <label>Monto (USDT)</label>
-      <p-inputNumber [(ngModel)]="pagoUsdt" name="pagoUsdt" mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
+      <p-inputNumber [(ngModel)]="pagoUsdt" name="pagoUsdt" mode="currency" [min]="0" [showButtons]="true" currency="USD"></p-inputNumber>
     </div>
 
     <!-- Tasa Origen (COP/USDT) y COP calculado -->

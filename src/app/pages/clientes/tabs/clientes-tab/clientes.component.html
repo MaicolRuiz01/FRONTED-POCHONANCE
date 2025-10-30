@@ -172,6 +172,45 @@
         </ng-template>
       </p-table>
     </p-tabPanel>
+    <!-- TAB 3: Ventas -->
+<p-tabPanel header="Ventas">
+  <p-table
+    [value]="ventasCliente"
+    scrollable="true"
+    scrollHeight="400px"
+    [responsive]="true">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Monto (Crypto)</th>
+        <th>Símbolo</th>
+        <th>Tasa</th>
+        <th>PESOS (COP)</th>
+        <th>Cuenta</th>
+        <th>Id Retiro</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-venta>
+      <tr>
+        <td>{{ venta.date | date:'short' }}</td>
+        <td>{{ venta.dollars }}</td>
+        <td>{{ venta.cryptoSymbol || '-' }}</td>
+        <td>{{ venta.tasa | number:'1.2-2' }}</td>
+        <td>{{ venta.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+        <td>{{ venta.nameAccount || '-' }}</td>
+        <td>{{ venta.idWithdrawals || '-' }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="p-text-center">Sin ventas asignadas a este cliente.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-tabPanel>
+
 
   </p-tabView>
 </p-dialog>

@@ -14,7 +14,7 @@ import { MessageService } from 'primeng/api';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
 import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
-
+import { SellDollar,SellDollarsService } from '../../../../core/services/sell-dollars.service';
 
 @Component({
   selector: 'app-clientes',
@@ -57,6 +57,7 @@ export class ClientesComponent implements OnInit {
 
   displayEditModal = false;
   editCliente: Cliente | null = null;
+  ventasCliente: SellDollar[] = [];
   
 
   transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
@@ -89,6 +90,7 @@ export class ClientesComponent implements OnInit {
     private movimientoService: MovimientoService,
     private messageService: MessageService,
     private buyDollarsService: BuyDollarsService, 
+    private sellDollarsService: SellDollarsService
   ) {}
 
   ngOnInit(): void {
@@ -241,6 +243,7 @@ export class ClientesComponent implements OnInit {
   this.selectedCliente = cliente;
   this.clienteMovimientos = [];
   this.comprasCliente = [];
+  this.ventasCliente = [];
 
   if (!cliente.id) {
     this.showMovimientosDialog = true;
@@ -267,6 +270,16 @@ export class ClientesComponent implements OnInit {
     },
     error: (err) => console.error('Error al cargar compras del cliente', err),
   });
+
+  this.sellDollarsService.getVentasPorCliente(cliente.id).subscribe({
+      next: (ventas) => {
+        // por si el backend no viene ordenado
+        this.ventasCliente = [...ventas].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      },
+      error: (err) => console.error('Error al cargar ventas del cliente', err),
+    });
 
   this.showMovimientosDialog = true;
 }

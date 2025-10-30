@@ -200,13 +200,13 @@
         <br>
         <div class="p-col-12 p-md-6">
           <label for="name">Nombre :</label>
-          <input id="nombre" [(ngModel)]="Supplier_name" placeholder="Ingrese el nombre">
+          <input pInputText id="nombre" [(ngModel)]="Supplier_name" placeholder="Ingrese el nombre">
         </div>
 
         <br>
         <div class="p-col-12 p-md-6">
           <label for="balance" class="p-d-block p-mb-2">Balance inicial</label>
-          <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" mode="decimal" currency="COP" [min]="0"
+          <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" mode="decimal" currency="COP"
             [prefix]="'$'" [showButtons]="true" placeholder="Ej: 1000" class="decimal"></p-inputNumber>
         </div>
 

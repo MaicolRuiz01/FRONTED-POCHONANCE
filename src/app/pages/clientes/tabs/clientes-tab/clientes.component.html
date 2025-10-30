@@ -96,19 +96,23 @@
   header="Cliente: {{ selectedCliente?.nombre }}"
   [(visible)]="showMovimientosDialog"
   [modal]="true"
-  [style]="{ width: '85vw' }"
+  position="top"
+  [style]="{ width: '95vw' }"
+  styleClass="dialog-full-vert"
   [closable]="true"
   (onHide)="showMovimientosDialog = false">
 
-  <p-tabView>
+  <p-tabView styleClass="tabview-fill">
 
     <!-- TAB 1: Movimientos -->
     <p-tabPanel header="Movimientos">
       <p-table
         [value]="clienteMovimientos"
         scrollable="true"
-        scrollHeight="400px"
-        [responsive]="true">
+        scrollHeight="flex"
+        [responsive]="true"
+        styleClass="fill-table"
+        [style]="{ height: '100%' }">
         <ng-template pTemplate="header">
           <tr>
             <th>Fecha</th>
@@ -141,8 +145,10 @@
       <p-table
         [value]="comprasCliente"
         scrollable="true"
-        scrollHeight="400px"
-        [responsive]="true">
+        scrollHeight="flex"
+        [responsive]="true"
+        styleClass="fill-table"
+        [style]="{ height: '100%' }">
         <ng-template pTemplate="header">
           <tr>
             <th>Fecha</th>

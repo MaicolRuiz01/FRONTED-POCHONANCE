@@ -67,6 +67,6 @@ export class ListaVentasComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/asignaciones']);
+    this.router.navigate(['/saldos'], { queryParams: { tab: 'cuentas-cop' } });
   }
 }

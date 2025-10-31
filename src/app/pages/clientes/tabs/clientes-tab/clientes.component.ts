@@ -15,6 +15,7 @@ import { MovimientoService } from '../../../../core/services/movimiento.service'
 import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
 import { SellDollar,SellDollarsService } from '../../../../core/services/sell-dollars.service';
+import { SelectButtonModule } from 'primeng/selectbutton';
 
 @Component({
   selector: 'app-clientes',
@@ -29,7 +30,8 @@ import { SellDollar,SellDollarsService } from '../../../../core/services/sell-do
     CardModule,
     DropdownModule,
     TabViewModule,
-    TableModule
+    TableModule,
+    SelectButtonModule
   ],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css'],
@@ -58,6 +60,11 @@ export class ClientesComponent implements OnInit {
   displayEditModal = false;
   editCliente: Cliente | null = null;
   ventasCliente: SellDollar[] = [];
+  // modo de pago: 'USDT' o 'COP'
+paymentMode: 'USDT' | 'COP' = 'USDT';
+
+// Monto COP cuando el modo es COP
+pagoCop: number | null = null;
   
 
   transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
@@ -166,26 +173,30 @@ export class ClientesComponent implements OnInit {
   }
 
   abrirModalPago(): void {
-    this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
-    this.pagoUsdt = null;
-    this.tasaOrigen = 0;
-    this.tasaDestino = 0;
-    this.displayPagoModal = true;
-  }
+  this.paymentMode = 'USDT';
+  this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
+  this.pagoUsdt = null;
+  this.pagoCop = null;
+  this.tasaOrigen = 0;
+  this.tasaDestino = 0;
+  this.displayPagoModal = true;
+}
+
 
   confirmarPago(): void {
-    const origen = this.clientes.find(c => c.id === this.pago.origenId);
-    const destino = this.clientes.find(c => c.id === this.pago.destinoId);
+  const origen  = this.clientes.find(c => c.id === this.pago.origenId);
+  const destino = this.clientes.find(c => c.id === this.pago.destinoId);
+  if (!origen || !destino) { alert('Debe seleccionar ambos clientes'); return; }
+  if (origen.id === destino.id) { alert('El origen y destino no pueden ser el mismo'); return; }
 
-    if (!origen || !destino) { alert('Debe seleccionar ambos clientes'); return; }
-    if (origen.id === destino.id) { alert('El origen y destino no pueden ser el mismo'); return; }
-    if (!this.pagoUsdt || this.pagoUsdt <= 0) { alert('Ingrese el monto en USDT'); return; }
-    if (!this.tasaOrigen || this.tasaOrigen <= 0) { alert('Tasa de Origen inválida'); return; }
-    if (!this.tasaDestino || this.tasaDestino <= 0) { alert('Tasa de Destino inválida'); return; }
+  this.loadingPago = true;
 
-    
+  if (this.paymentMode === 'USDT') {
+    // Validaciones USDT
+    if (!this.pagoUsdt || this.pagoUsdt <= 0) { alert('Ingrese el monto en USDT'); this.loadingPago = false; return; }
+    if (!this.tasaOrigen || this.tasaOrigen <= 0) { alert('Tasa de Origen inválida'); this.loadingPago = false; return; }
+    if (!this.tasaDestino || this.tasaDestino <= 0) { alert('Tasa de Destino inválida'); this.loadingPago = false; return; }
 
-    this.loadingPago = true;
     this.movimientoService.pagoClienteACliente({
       clienteOrigenId: origen.id!,
       clienteDestinoId: destino.id!,
@@ -195,19 +206,42 @@ export class ClientesComponent implements OnInit {
       nota: this.pago.nota || ''
     }).subscribe({
       next: () => {
-        alert('Pago C2C realizado con éxito');
+        alert('Pago C2C (USDT) realizado con éxito');
         this.displayPagoModal = false;
         this.loadingPago = false;
         this.cargarClientes();
       },
       error: (err) => {
         this.loadingPago = false;
-        const msg = err?.error?.message || 'Error al procesar el pago C2C';
+        const msg = err?.error?.message || 'Error al procesar el pago C2C (USDT)';
         alert(msg);
         console.error(err);
       }
     });
+
+  } else {
+    // Modo COP
+    if (!this.pagoCop || this.pagoCop <= 0) { alert('Ingrese el monto en COP'); this.loadingPago = false; return; }
+
+    this.movimientoService
+      .pagoClienteAClienteCop(origen.id!, destino.id!, this.pagoCop!)
+      .subscribe({
+        next: () => {
+          alert('Pago C2C (COP) realizado con éxito');
+          this.displayPagoModal = false;
+          this.loadingPago = false;
+          this.cargarClientes();
+        },
+        error: (err) => {
+          this.loadingPago = false;
+          const msg = err?.error?.message || 'Error al procesar el pago C2C (COP)';
+          alert(msg);
+          console.error(err);
+        }
+      });
   }
+}
+
 
   abrirModalTransferencia(): void {
     this.transferencia = { clientId: null, supplierId: null, amount: null };
@@ -317,6 +351,19 @@ pagoCP = {
     };
     this.displayPagoCPModal = true;
   }
+  get puedeConfirmarPago(): boolean {
+  const origenOk  = !!this.pago.origenId;
+  const destinoOk = !!this.pago.destinoId;
+  if (!origenOk || !destinoOk) return false;
+
+  if (this.paymentMode === 'USDT') {
+    return !!this.pagoUsdt && this.pagoUsdt! > 0 &&
+           !!this.tasaOrigen && this.tasaOrigen! > 0 &&
+           !!this.tasaDestino && this.tasaDestino! > 0;
+  } else {
+    return !!this.pagoCop && this.pagoCop! > 0;
+  }
+}
 
   // ✅ confirmar pago
   confirmarPagoClienteProveedor(): void {
@@ -351,7 +398,4 @@ pagoCP = {
       }
     });
   }
-
-
-
 }

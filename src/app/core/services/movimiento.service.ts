@@ -148,4 +148,13 @@ getMovimientosPorCaja(cajaId: number) {
 pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/pago-cliente-a-proveedor`, dto);
   }
+  
+  pagoClienteAClienteCop(clienteOrigenId: number, clienteDestinoId: number, montoCop: number): Observable<any> {
+  const params = new HttpParams()
+    .set('clienteOrigenId', clienteOrigenId)
+    .set('clienteDestinoId', clienteDestinoId)
+    .set('montoCop', montoCop);
+  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente-cop`, {}, { params });
+}
+
 }

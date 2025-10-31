@@ -259,63 +259,93 @@
   </p-dialog>
 
   <!-- Modal de Pago entre Clientes -->
-  <p-dialog header="Pago entre Clientes" [(visible)]="displayPagoModal" [modal]="true" [style]="{ width: '420px' }">
+  <p-dialog header="Pago entre Clientes" [(visible)]="displayPagoModal" [modal]="true" [style]="{ width: '460px' }">
   <form class="p-fluid">
+
+    <!-- Modo de pago -->
+    <div class="p-field">
+      <label>Tipo de pago</label>
+      <p-selectButton
+        [options]="[{label:'USDT', value:'USDT'},{label:'COP', value:'COP'}]"
+        [(ngModel)]="paymentMode"
+        name="paymentMode">
+      </p-selectButton>
+    </div>
+
     <!-- Origen -->
     <div class="p-field">
       <label>Cliente Origen</label>
-      <p-dropdown [options]="clientes" [(ngModel)]="pago.origenId" name="origen" optionLabel="nombre" optionValue="id"
-                  placeholder="Seleccione cliente origen"></p-dropdown>
-    </div>
-
-    <!-- Monto en USDT -->
-    <div class="p-field">
-      <label>Monto (USDT)</label>
-      <p-inputNumber [(ngModel)]="pagoUsdt" name="pagoUsdt" mode="currency" [min]="0" [showButtons]="true" currency="USD"></p-inputNumber>
-    </div>
-
-    <!-- Tasa Origen (COP/USDT) y COP calculado -->
-    <div class="p-field">
-      <label>Tasa Cliente Origen (COP/USDT)</label>
-      <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen" mode="currency" currency="COP"></p-inputNumber>
-    </div>
-    <div class="p-field">
-      <label>COP que paga Origen</label>
-      <input pInputText [value]="pesosOrigen | currency:'COP'" readonly />
+      <p-dropdown [options]="clientes" [(ngModel)]="pago.origenId" name="origen"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente origen">
+      </p-dropdown>
     </div>
 
     <!-- Destino -->
     <div class="p-field">
       <label>Cliente Destino</label>
-      <p-dropdown [options]="clientes" [(ngModel)]="pago.destinoId" name="destino" optionLabel="nombre" optionValue="id"
-                  placeholder="Seleccione cliente destino"></p-dropdown>
+      <p-dropdown [options]="clientes" [(ngModel)]="pago.destinoId" name="destino"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente destino">
+      </p-dropdown>
     </div>
 
-    <!-- Tasa Destino (COP/USDT) y COP calculado -->
-    <div class="p-field">
-      <label>Tasa Cliente Destino (COP/USDT)</label>
-      <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino" mode="currency" currency="COP"></p-inputNumber>
-    </div>
-    <div class="p-field">
-      <label>COP que recibe Destino</label>
-      <input pInputText [value]="pesosDestino | currency:'COP'" readonly />
-    </div>
+    <!-- ======== MODO USDT ======== -->
+    <ng-container *ngIf="paymentMode === 'USDT'">
+      <div class="p-field">
+        <label>Monto (USDT)</label>
+        <p-inputNumber [(ngModel)]="pagoUsdt" name="pagoUsdt"
+                       mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
+      </div>
+
+      <div class="p-field">
+        <label>Tasa Cliente Origen (COP/USDT)</label>
+        <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen"
+                       mode="currency" currency="COP"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>COP que paga Origen</label>
+        <input pInputText [value]="pesosOrigen | currency:'COP'" readonly />
+      </div>
+
+      <div class="p-field">
+        <label>Tasa Cliente Destino (COP/USDT)</label>
+        <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino"
+                       mode="currency" currency="COP"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>COP que recibe Destino</label>
+        <input pInputText [value]="pesosDestino | currency:'COP'" readonly />
+      </div>
+    </ng-container>
+
+    <!-- ======== MODO COP ======== -->
+    <ng-container *ngIf="paymentMode === 'COP'">
+      <div class="p-field">
+        <label>Monto (COP)</label>
+        <p-inputNumber [(ngModel)]="pagoCop" name="pagoCop"
+                       mode="currency" currency="COP" [min]="0" [showButtons]="true"></p-inputNumber>
+      </div>
+    </ng-container>
 
     <!-- Nota -->
     <div class="p-field">
       <label>Nota (opcional)</label>
       <input pInputText [(ngModel)]="pago.nota" name="nota" />
     </div>
+
   </form>
 
   <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayPagoModal = false"></button>
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+            (click)="displayPagoModal = false"></button>
     <button pButton label="Confirmar Pago" icon="pi pi-check" class="p-button-success"
             (click)="confirmarPago()"
-            [disabled]="!pago.origenId || !pago.destinoId || !pagoUsdt || !tasaOrigen || !tasaDestino">
+            [disabled]="!puedeConfirmarPago">
     </button>
   </ng-template>
 </p-dialog>
+
 
 
 </div>

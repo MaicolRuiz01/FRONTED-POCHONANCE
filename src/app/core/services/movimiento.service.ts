@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
+import { Movimiento } from './pago-proveedor.service';
 
 export interface MovimientoDto {
   id: number;
@@ -113,5 +114,10 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   const url = `${this.apiUrl}/cliente/${clienteId}`;
   return this.http.get<MovimientoVistaDto[]>(url);
 }
+
+  eliminarMovimiento(movimiento: Movimiento): Observable<void> {
+    const url = `${this.apiUrl}/eliminar/${movimiento.id}`;
+    return this.http.delete<void>(url);
+  }
 
 }

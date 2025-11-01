@@ -18,8 +18,6 @@ export type AccountCopCreate = Omit<AccountCop, 'id'>;
 })
 export class AccountCopService {
    private apiUrl = `${environment.apiUrl}/cuenta-cop`;
-   private Url2 = `${environment.apiUrl}/movimiento`;
-
 
   constructor(private http: HttpClient) {}
 

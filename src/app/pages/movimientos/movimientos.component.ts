@@ -12,6 +12,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos.service';
 import { OrdenesCriptoComponent } from './criptos/cripto-tab/ordenes-cripto.component';
 import { CompletadaComponent } from './criptos/listadocripto/completada.component';
+import { Movimiento } from '../../core/services/pago-proveedor.service';
 
 
 @Component({
@@ -134,5 +135,17 @@ private obtenerListaPorTipo(tipo: string) {
     case 'TRASPASO': return this.traspasos;
     default: return [];
   }
+}
+
+eliminarMovimiento(movimiento: Movimiento) {
+  if (!confirm('¿Estás seguro de que deseas eliminar este movimiento?')) return;
+  this.movimientoService.eliminarMovimiento(movimiento).subscribe({
+    next: () => {
+      this.retiros = this.retiros.filter(m => m.id !== movimiento.id);
+      this.depositos = this.depositos.filter(m => m.id !== movimiento.id);
+      this.traspasos = this.traspasos.filter(m => m.idtransaccion !== movimiento.idtransaccion);
+    },
+    error: () => alert('Error al eliminar el movimiento')
+  });
 }
 }

@@ -19,6 +19,7 @@
           <td>{{ row.caja }}</td>
           <td>
             <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'RETIRO')"></button>
+            <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(row)"></button>
           </td>
         </tr>
       </ng-template>

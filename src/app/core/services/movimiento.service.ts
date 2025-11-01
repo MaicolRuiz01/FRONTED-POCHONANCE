@@ -16,6 +16,15 @@ export interface MovimientoDto {
   
 }
 
+export interface PagoClienteAClienteDto {
+  clienteOrigenId: number;
+  clienteDestinoId: number;
+  usdt: number;
+  tasaOrigen: number;
+  tasaDestino: number;
+  nota?: string;
+}
+
 export interface MovimientoVistaDto {
   id?: number; // 🔹 importante para poder editar
   tipo: string;
@@ -24,6 +33,14 @@ export interface MovimientoVistaDto {
   cuentaOrigen?: string;
   cuentaDestino?: string;
   caja?: number;
+}
+export interface PagoClienteAProveedorDto {
+  clienteOrigenId: number;
+  proveedorDestinoId: number;
+  usdt: number;
+  tasaCliente: number;    // COP/USDT del cliente
+  tasaProveedor: number;  // COP/USDT del proveedor
+  nota?: string;
 }
 
 @Injectable({
@@ -113,6 +130,33 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   getMovimientosPorCliente(clienteId: number): Observable<MovimientoVistaDto[]> {
   const url = `${this.apiUrl}/cliente/${clienteId}`;
   return this.http.get<MovimientoVistaDto[]>(url);
+}
+
+getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
+  return this.http.get<MovimientoVistaDto[]>(
+    `${this.apiUrl}/pagos-cuenta/${cuentaId}`
+  );
+}
+pagoClienteACliente(dto: PagoClienteAClienteDto): Observable<any> {
+  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente`, dto);
+}
+getMovimientosPorCaja(cajaId: number) {
+  return this.http.get<any[]>(
+    `${environment.apiUrl}/movimiento/caja/${cajaId}`
+  );
+}
+
+pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pago-cliente-a-proveedor`, dto);
+  }
+  
+  pagoClienteAClienteCop(clienteOrigenId: number, clienteDestinoId: number, montoCop: number): Observable<any> {
+  const params = new HttpParams()
+    .set('clienteOrigenId', clienteOrigenId)
+    .set('clienteDestinoId', clienteDestinoId)
+    .set('montoCop', montoCop);
+  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente-cop`, {}, { params });
+}
 }
 
   eliminarMovimiento(movimiento: Movimiento): Observable<void> {

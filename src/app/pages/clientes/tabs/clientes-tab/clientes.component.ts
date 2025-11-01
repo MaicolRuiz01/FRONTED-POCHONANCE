@@ -12,6 +12,10 @@ import { TableModule } from 'primeng/table';
 import { SupplierService } from '../../../../core/services/supplier.service';
 import { MessageService } from 'primeng/api';
 import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { TabViewModule } from 'primeng/tabview';
+import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
+import { SellDollar,SellDollarsService } from '../../../../core/services/sell-dollars.service';
+import { SelectButtonModule } from 'primeng/selectbutton';
 
 @Component({
   selector: 'app-clientes',
@@ -25,7 +29,9 @@ import { MovimientoService } from '../../../../core/services/movimiento.service'
     InputNumberModule,
     CardModule,
     DropdownModule,
-    TableModule
+    TabViewModule,
+    TableModule,
+    SelectButtonModule
   ],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css'],
@@ -38,12 +44,14 @@ export class ClientesComponent implements OnInit {
   movimientos: any[] = [];
   displayModal = false;
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
+  comprasCliente: BuyDollarsDto[] = [];
+  displayPagoCPModal = false;
 
   displayPagoModal = false;
   displayTransferModal = false;
 
-  tasaOrigen: number = 0;
-  tasaDestino: number = 0;
+  tasaOrigen = 0;
+  tasaDestino = 0;
 
   showMovimientosDialog: boolean = false;
   selectedCliente: Cliente | null = null;
@@ -51,6 +59,13 @@ export class ClientesComponent implements OnInit {
 
   displayEditModal = false;
   editCliente: Cliente | null = null;
+  ventasCliente: SellDollar[] = [];
+  // modo de pago: 'USDT' o 'COP'
+paymentMode: 'USDT' | 'COP' = 'USDT';
+
+// Monto COP cuando el modo es COP
+pagoCop: number | null = null;
+  
 
   transferencia: { clientId: number | null, supplierId: number | null, amount: number | null } = {
     clientId: null,
@@ -67,11 +82,22 @@ export class ClientesComponent implements OnInit {
 
   loadingPago = false;
 
+  pagoUsdt: number | null = null;
+
+
+  get pesosOrigen(): number {
+    return (this.pagoUsdt ?? 0) * (this.tasaOrigen ?? 0);
+  }
+  get pesosDestino(): number {
+    return (this.pagoUsdt ?? 0) * (this.tasaDestino ?? 0);
+  }
   constructor(
     private clienteService: ClienteService,
     private supplierService: SupplierService,
     private movimientoService: MovimientoService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private buyDollarsService: BuyDollarsService, 
+    private sellDollarsService: SellDollarsService
   ) {}
 
   ngOnInit(): void {
@@ -147,63 +173,75 @@ export class ClientesComponent implements OnInit {
   }
 
   abrirModalPago(): void {
-    this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
-    this.displayPagoModal = true;
-  }
+  this.paymentMode = 'USDT';
+  this.pago = { origenId: null, destinoId: null, monto: null, nota: '' };
+  this.pagoUsdt = null;
+  this.pagoCop = null;
+  this.tasaOrigen = 0;
+  this.tasaDestino = 0;
+  this.displayPagoModal = true;
+}
+
 
   confirmarPago(): void {
-    const origen = this.clientes.find(c => c.id === this.pago.origenId);
-    const destino = this.clientes.find(c => c.id === this.pago.destinoId);
+  const origen  = this.clientes.find(c => c.id === this.pago.origenId);
+  const destino = this.clientes.find(c => c.id === this.pago.destinoId);
+  if (!origen || !destino) { alert('Debe seleccionar ambos clientes'); return; }
+  if (origen.id === destino.id) { alert('El origen y destino no pueden ser el mismo'); return; }
 
-    if (!origen || !destino) {
-      alert('Debe seleccionar ambos clientes');
-      return;
-    }
+  this.loadingPago = true;
 
-    if (origen.id === destino.id) {
-      alert('El cliente origen y destino no pueden ser el mismo');
-      return;
-    }
+  if (this.paymentMode === 'USDT') {
+    // Validaciones USDT
+    if (!this.pagoUsdt || this.pagoUsdt <= 0) { alert('Ingrese el monto en USDT'); this.loadingPago = false; return; }
+    if (!this.tasaOrigen || this.tasaOrigen <= 0) { alert('Tasa de Origen inválida'); this.loadingPago = false; return; }
+    if (!this.tasaDestino || this.tasaDestino <= 0) { alert('Tasa de Destino inválida'); this.loadingPago = false; return; }
 
-    if (!this.pago.monto || this.pago.monto <= 0) {
-      alert('El monto debe ser mayor a 0');
-      return;
-    }
-
-    if ((origen.saldo ?? 0) < this.pago.monto) {
-      alert('El cliente origen no tiene suficiente saldo');
-      return;
-    }
-
-    if (!this.tasaOrigen || this.tasaOrigen <= 0) {
-      alert('Debe ingresar una Tasa de Cliente Origen válida.');
-      return;
-    }
-    if (!this.tasaDestino || this.tasaDestino <= 0) {
-      alert('Debe ingresar una Tasa de Cliente Destino válida.');
-      return;
-    }
-
-    this.loadingPago = true;
-    this.clienteService.transferir({
-      origenId: origen.id!,
-      destinoId: destino.id!,
-      monto: this.pago.monto!,
+    this.movimientoService.pagoClienteACliente({
+      clienteOrigenId: origen.id!,
+      clienteDestinoId: destino.id!,
+      usdt: this.pagoUsdt!,
+      tasaOrigen: this.tasaOrigen!,
+      tasaDestino: this.tasaDestino!,
       nota: this.pago.nota || ''
     }).subscribe({
       next: () => {
-        alert('Pago realizado con éxito');
+        alert('Pago C2C (USDT) realizado con éxito');
         this.displayPagoModal = false;
         this.loadingPago = false;
         this.cargarClientes();
       },
       error: (err) => {
         this.loadingPago = false;
-        const msg = typeof err?.error === 'string' ? err.error : 'Error al procesar el pago';
+        const msg = err?.error?.message || 'Error al procesar el pago C2C (USDT)';
         alert(msg);
+        console.error(err);
       }
     });
+
+  } else {
+    // Modo COP
+    if (!this.pagoCop || this.pagoCop <= 0) { alert('Ingrese el monto en COP'); this.loadingPago = false; return; }
+
+    this.movimientoService
+      .pagoClienteAClienteCop(origen.id!, destino.id!, this.pagoCop!)
+      .subscribe({
+        next: () => {
+          alert('Pago C2C (COP) realizado con éxito');
+          this.displayPagoModal = false;
+          this.loadingPago = false;
+          this.cargarClientes();
+        },
+        error: (err) => {
+          this.loadingPago = false;
+          const msg = err?.error?.message || 'Error al procesar el pago C2C (COP)';
+          alert(msg);
+          console.error(err);
+        }
+      });
   }
+}
+
 
   abrirModalTransferencia(): void {
     this.transferencia = { clientId: null, supplierId: null, amount: null };
@@ -238,21 +276,126 @@ export class ClientesComponent implements OnInit {
   onSelectCliente(cliente: Cliente): void {
   this.selectedCliente = cliente;
   this.clienteMovimientos = [];
+  this.comprasCliente = [];
+  this.ventasCliente = [];
 
-  if (cliente.id) {
-    this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
-      next: (data) => {
-        // 🔹 Ordenar del más reciente al más antiguo
-        this.clienteMovimientos = [...data].sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  if (!cliente.id) {
+    this.showMovimientosDialog = true;
+    return;
+  }
+
+  // Movimientos (ya lo tenías)
+  this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
+    next: (data) => {
+      this.clienteMovimientos = [...data].sort(
+        (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+      );
+    },
+    error: (err) => console.error('Error al cargar historial de movimientos', err),
+  });
+
+  // 👇 Compras asignadas al cliente
+  this.buyDollarsService.getComprasPorCliente(cliente.id).subscribe({
+    next: (compras) => {
+      // Si necesitas orden, el backend ya lo puede traer desc; si no:
+      this.comprasCliente = [...compras].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    },
+    error: (err) => console.error('Error al cargar compras del cliente', err),
+  });
+
+  this.sellDollarsService.getVentasPorCliente(cliente.id).subscribe({
+      next: (ventas) => {
+        // por si el backend no viene ordenado
+        this.ventasCliente = [...ventas].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
       },
-      error: (err) => console.error('Error al cargar historial de movimientos', err)
+      error: (err) => console.error('Error al cargar ventas del cliente', err),
     });
-  }
 
   this.showMovimientosDialog = true;
 }
 
+pagoCP = {
+    clienteId: null as number | null,
+    proveedorId: null as number | null,
+    usdt: null as number | null,
+    tasaCliente: null as number | null,
+    tasaProveedor: null as number | null,
+    nota: '' as string
+  };
 
+  // 🔢 calculados
+  get pesosClienteCP(): number {
+    const u = this.pagoCP.usdt ?? 0;
+    const t = this.pagoCP.tasaCliente ?? 0;
+    return u * t;
+  }
+  get pesosProveedorCP(): number {
+    const u = this.pagoCP.usdt ?? 0;
+    const t = this.pagoCP.tasaProveedor ?? 0;
+    return u * t;
+  }
+
+  // 🟢 abrir modal
+  abrirModalPagoClienteProveedor(): void {
+    this.pagoCP = {
+      clienteId: null,
+      proveedorId: null,
+      usdt: null,
+      tasaCliente: null,
+      tasaProveedor: null,
+      nota: ''
+    };
+    this.displayPagoCPModal = true;
+  }
+  get puedeConfirmarPago(): boolean {
+  const origenOk  = !!this.pago.origenId;
+  const destinoOk = !!this.pago.destinoId;
+  if (!origenOk || !destinoOk) return false;
+
+  if (this.paymentMode === 'USDT') {
+    return !!this.pagoUsdt && this.pagoUsdt! > 0 &&
+           !!this.tasaOrigen && this.tasaOrigen! > 0 &&
+           !!this.tasaDestino && this.tasaDestino! > 0;
+  } else {
+    return !!this.pagoCop && this.pagoCop! > 0;
+  }
+}
+
+  // ✅ confirmar pago
+  confirmarPagoClienteProveedor(): void {
+    const { clienteId, proveedorId, usdt, tasaCliente, tasaProveedor } = this.pagoCP;
+
+    if (!clienteId || !proveedorId) { alert('Seleccione cliente y proveedor'); return; }
+    if (!usdt || usdt <= 0) { alert('Ingrese monto USDT > 0'); return; }
+    if (!tasaCliente || tasaCliente <= 0) { alert('Tasa cliente inválida'); return; }
+    if (!tasaProveedor || tasaProveedor <= 0) { alert('Tasa proveedor inválida'); return; }
+
+    this.loadingPago = true;
+
+    this.movimientoService.pagoClienteAProveedor({
+      clienteOrigenId: clienteId,
+      proveedorDestinoId: proveedorId,
+      usdt: usdt,
+      tasaCliente: tasaCliente,
+      tasaProveedor: tasaProveedor,
+      nota: this.pagoCP.nota || ''
+    }).subscribe({
+      next: () => {
+        alert('Pago Cliente → Proveedor realizado con éxito');
+        this.displayPagoCPModal = false;
+        this.loadingPago = false;
+        this.cargarClientes(); // refresca saldos
+      },
+      error: (err) => {
+        this.loadingPago = false;
+        const msg = err?.error?.message || 'Error al procesar el pago Cliente → Proveedor';
+        alert(msg);
+        console.error(err);
+      }
+    });
+  }
 }

@@ -9,8 +9,11 @@
     </button>
 
     <button pButton label="Transferir a Proveedor" icon="pi pi-exchange" class="p-button-info"
-      (click)="abrirModalTransferencia()">
+      (click)="abrirModalTransferencia()" disabled>
     </button>
+
+    <button pButton label="Pagar a Proveedor (USDT)" icon="pi pi-send"
+          class="p-button-success" (click)="abrirModalPagoClienteProveedor()"></button>
   </div>
 
   <!-- Modal para Transferencia Cliente → Proveedor -->
@@ -78,7 +81,7 @@
       <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
       {{ Math.abs(cliente.saldo) | currency:'COP' }}
     </p>
-    <p><strong>Wallet:</strong> {{ cliente.wallet }}</p>
+    <!-- <p><strong>Wallet:</strong> {{ cliente.wallet }}</p> -->
 
     <div class="acciones-card">
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"
@@ -88,47 +91,136 @@
 </div>
 
 
-  <!-- Modal de Movimientos del Cliente -->
-  <p-dialog header="Movimientos del Cliente: {{ selectedCliente?.nombre }}"
-          [(visible)]="showMovimientosDialog"
-          [modal]="true"
-          [style]="{width: '80vw'}"
-          [closable]="true"
-          (onHide)="showMovimientosDialog = false">
+  <!-- Modal Movimientos/Compras -->
+<p-dialog
+  header="Cliente: {{ selectedCliente?.nombre }}"
+  [(visible)]="showMovimientosDialog"
+  [modal]="true"
+  position="top"
+  [style]="{ width: '95vw' }"
+  styleClass="dialog-full-vert"
+  [closable]="true"
+  (onHide)="showMovimientosDialog = false">
 
-  <p-table 
-    [value]="clienteMovimientos" 
-    scrollable="true" 
+  <p-tabView styleClass="tabview-fill">
+
+    <!-- TAB 1: Movimientos -->
+    <p-tabPanel header="Movimientos">
+      <p-table
+        [value]="clienteMovimientos"
+        scrollable="true"
+        scrollHeight="flex"
+        [responsive]="true"
+        styleClass="fill-table"
+        [style]="{ height: '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Monto (COP)</th>
+            <th>Cuenta Origen</th>
+            <th>Cuenta Destino</th>
+            <th>Caja</th>
+            <th>Cliente</th>
+            <th>Proveedor</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-mov>
+          <tr>
+            <td>{{ mov.fecha | date:'short' }}</td>
+            <td>{{ mov.tipo }}</td>
+            <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ mov.cuentaOrigen || '-' }}</td>
+            <td>{{ mov.cuentaDestino || '-' }}</td>
+            <td>{{ mov.caja || '-' }}</td>
+            <td>{{ mov.pagoCliente || '-' }}</td>
+            <td>{{ mov.pagoProveedor || '-' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+
+    <!-- TAB 2: Compras -->
+    <p-tabPanel header="Compras">
+      <p-table
+        [value]="comprasCliente"
+        scrollable="true"
+        scrollHeight="flex"
+        [responsive]="true"
+        styleClass="fill-table"
+        [style]="{ height: '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th>
+            <th>Monto (Crypto)</th>
+            <th>Símbolo</th>
+            <th>Tasa</th>
+            <th>PESOS (COP)</th>
+            <th>Cuenta</th>
+            <th>Id Depósito</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let(c) let-compra="rowData">
+          <tr>
+            <td>{{ compra.date | date:'short' }}</td>
+            <td>{{ compra.amount }}</td>
+            <td>{{ compra.cryptoSymbol || '-' }}</td>
+            <td>{{ compra.tasa | number:'1.2-2' }}</td>
+            <td>{{ compra.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ compra.nameAccount || '-' }}</td>
+            <td>{{ compra.idDeposit || '-' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="p-text-center">Sin compras asignadas a este cliente.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+    <!-- TAB 3: Ventas -->
+<p-tabPanel header="Ventas">
+  <p-table
+    [value]="ventasCliente"
+    scrollable="true"
     scrollHeight="400px"
     [responsive]="true">
-
     <ng-template pTemplate="header">
       <tr>
         <th>Fecha</th>
-        <th>Tipo</th>
-        <th>Monto (COP)</th>
-        <th>Cuenta Origen</th>
-        <th>Cuenta Destino</th>
-        <th>Caja</th>
-        <th>Cliente</th>
-        <th>Proveedor</th>
+        <th>Monto (Crypto)</th>
+        <th>Símbolo</th>
+        <th>Tasa</th>
+        <th>PESOS (COP)</th>
+        <th>Cuenta</th>
+        <th>Id Retiro</th>
       </tr>
     </ng-template>
 
-    <ng-template pTemplate="body" let-mov>
+    <ng-template pTemplate="body" let-venta>
       <tr>
-        <td>{{ mov.fecha | date:'short' }}</td>
-        <td>{{ mov.tipo }}</td>
-        <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-        <td>{{ mov.cuentaOrigen || '-' }}</td>
-        <td>{{ mov.cuentaDestino || '-' }}</td>
-        <td>{{ mov.caja || '-' }}</td>
-        <td>{{ mov.pagoCliente || '-' }}</td>
-        <td>{{ mov.pagoProveedor || '-' }}</td>
+        <td>{{ venta.date | date:'short' }}</td>
+        <td>{{ venta.dollars }}</td>
+        <td>{{ venta.cryptoSymbol || '-' }}</td>
+        <td>{{ venta.tasa | number:'1.2-2' }}</td>
+        <td>{{ venta.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+        <td>{{ venta.nameAccount || '-' }}</td>
+        <td>{{ venta.idWithdrawals || '-' }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="p-text-center">Sin ventas asignadas a este cliente.</td>
       </tr>
     </ng-template>
   </p-table>
+</p-tabPanel>
+
+
+  </p-tabView>
 </p-dialog>
+
 
 
 
@@ -167,54 +259,94 @@
   </p-dialog>
 
   <!-- Modal de Pago entre Clientes -->
-  <p-dialog header="Pago entre Clientes" [(visible)]="displayPagoModal" [modal]="true" [style]="{ width: '400px' }">
-    <form class="p-fluid">
-      <!-- Cliente Origen -->
-      <div class="p-field">
-        <label>Cliente Origen</label>
-        <p-dropdown [options]="clientes" [(ngModel)]="pago.origenId" name="origen" optionLabel="nombre" optionValue="id"
-          placeholder="Seleccione cliente origen">
-        </p-dropdown>
-        <br>
-        <label>Tasa de Cliente Origen</label>
-        <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen" mode="currency" currency="COP"></p-inputNumber>
-      </div>
-      <br>
+  <p-dialog header="Pago entre Clientes" [(visible)]="displayPagoModal" [modal]="true" [style]="{ width: '460px' }">
+  <form class="p-fluid">
 
-      <!-- Monto a pagar cliente origen-->
-      <div class="p-field">
-        <label>Monto a Pagar de cliente Origen</label>
-        <p-inputNumber [(ngModel)]="pago.monto" name="monto" mode="currency" currency="COP" [min]="0">
-        </p-inputNumber>
-      </div>
-      <br>
-      <!-- Cliente Destino -->
-      <div class="p-field">
-        <label>Cliente Destino</label>
-        <p-dropdown [options]="clientes" [(ngModel)]="pago.destinoId" name="destino" optionLabel="nombre"
-          optionValue="id" placeholder="Seleccione cliente destino">
-        </p-dropdown>
-        <br>
-        <label>Tasa de Cliente Destino</label>
-        <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino" mode="currency" currency="COP"></p-inputNumber>
-        <br>
-      </div>
-      <br>
-      <!-- Nota -->
-      <div class="p-field">
-        <label>Nota (opcional)</label>
-        <input pInputText [(ngModel)]="pago.nota" name="nota" />
-      </div>
-    </form>
+    <!-- Modo de pago -->
+    <div class="p-field">
+      <label>Tipo de pago</label>
+      <p-selectButton
+        [options]="[{label:'USDT', value:'USDT'},{label:'COP', value:'COP'}]"
+        [(ngModel)]="paymentMode"
+        name="paymentMode">
+      </p-selectButton>
+    </div>
 
-    <ng-template pTemplate="footer">
-      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayPagoModal = false">
-      </button>
-      <button pButton label="Confirmar Pago" icon="pi pi-check" class="p-button-success" (click)="confirmarPago()"
-        [disabled]="!pago.origenId || !pago.destinoId || !pago.monto">
-      </button>
-    </ng-template>
-  </p-dialog>
+    <!-- Origen -->
+    <div class="p-field">
+      <label>Cliente Origen</label>
+      <p-dropdown [options]="clientes" [(ngModel)]="pago.origenId" name="origen"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente origen">
+      </p-dropdown>
+    </div>
+
+    <!-- Destino -->
+    <div class="p-field">
+      <label>Cliente Destino</label>
+      <p-dropdown [options]="clientes" [(ngModel)]="pago.destinoId" name="destino"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente destino">
+      </p-dropdown>
+    </div>
+
+    <!-- ======== MODO USDT ======== -->
+    <ng-container *ngIf="paymentMode === 'USDT'">
+      <div class="p-field">
+        <label>Monto (USDT)</label>
+        <p-inputNumber [(ngModel)]="pagoUsdt" name="pagoUsdt"
+                       mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
+      </div>
+
+      <div class="p-field">
+        <label>Tasa Cliente Origen (COP/USDT)</label>
+        <p-inputNumber [(ngModel)]="tasaOrigen" name="tasaOrigen"
+                       mode="currency" currency="COP"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>COP que paga Origen</label>
+        <input pInputText [value]="pesosOrigen | currency:'COP'" readonly />
+      </div>
+
+      <div class="p-field">
+        <label>Tasa Cliente Destino (COP/USDT)</label>
+        <p-inputNumber [(ngModel)]="tasaDestino" name="tasaDestino"
+                       mode="currency" currency="COP"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>COP que recibe Destino</label>
+        <input pInputText [value]="pesosDestino | currency:'COP'" readonly />
+      </div>
+    </ng-container>
+
+    <!-- ======== MODO COP ======== -->
+    <ng-container *ngIf="paymentMode === 'COP'">
+      <div class="p-field">
+        <label>Monto (COP)</label>
+        <p-inputNumber [(ngModel)]="pagoCop" name="pagoCop"
+                       mode="currency" currency="COP" [min]="0" [showButtons]="true"></p-inputNumber>
+      </div>
+    </ng-container>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pago.nota" name="nota" />
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+            (click)="displayPagoModal = false"></button>
+    <button pButton label="Confirmar Pago" icon="pi pi-check" class="p-button-success"
+            (click)="confirmarPago()"
+            [disabled]="!puedeConfirmarPago">
+    </button>
+  </ng-template>
+</p-dialog>
+
+
 
 </div>
 
@@ -271,5 +403,75 @@
         [disabled]="!editCliente?.nombre">
 </button>
 
+  </ng-template>
+</p-dialog>
+<p-dialog header="Pago en USDT: Cliente → Proveedor"
+          [(visible)]="displayPagoCPModal" [modal]="true" [style]="{ width: '460px' }">
+
+  <form class="p-fluid">
+    <!-- Cliente Origen -->
+    <div class="p-field">
+      <label>Cliente Origen</label>
+      <p-dropdown [options]="clientes"
+                  [(ngModel)]="pagoCP.clienteId" name="cp_cliente"
+                  optionLabel="nombre" optionValue="id"
+                  placeholder="Seleccione cliente"></p-dropdown>
+    </div>
+
+    <!-- Proveedor Destino -->
+    <div class="p-field">
+      <label>Proveedor Destino</label>
+      <p-dropdown [options]="proveedores"
+                  [(ngModel)]="pagoCP.proveedorId" name="cp_proveedor"
+                  optionLabel="name" optionValue="id"
+                  placeholder="Seleccione proveedor"></p-dropdown>
+    </div>
+
+    <!-- Monto USDT -->
+    <div class="p-field">
+      <label>Monto (USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.usdt" name="cp_usdt"
+                     mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
+    </div>
+
+    <!-- Tasa Cliente (COP/USDT) + COP -->
+    <div class="p-field">
+      <label>Tasa Cliente (COP/USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.tasaCliente" name="cp_tasaCliente"
+                     mode="currency" currency="COP"></p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (cliente)</label>
+      <input pInputText [value]="pesosClienteCP | currency:'COP'" readonly />
+    </div>
+
+    <!-- Tasa Proveedor (COP/USDT) + COP -->
+    <div class="p-field">
+      <label>Tasa Proveedor (COP/USDT)</label>
+      <p-inputNumber [(ngModel)]="pagoCP.tasaProveedor" name="cp_tasaProveedor"
+                     mode="currency" currency="COP"></p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (proveedor)</label>
+      <input pInputText [value]="pesosProveedorCP | currency:'COP'" readonly />
+    </div>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pagoCP.nota" name="cp_nota" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times"
+            class="p-button-text"
+            (click)="displayPagoCPModal = false"></button>
+
+    <button pButton label="Confirmar Pago" icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarPagoClienteProveedor()"
+            [disabled]="!pagoCP.clienteId || !pagoCP.proveedorId || !pagoCP.usdt || !pagoCP.tasaCliente || !pagoCP.tasaProveedor">
+    </button>
   </ng-template>
 </p-dialog>

@@ -79,4 +79,11 @@ export class SellDollarsService {
 asignarVentaSolana(id: number, accounts: AssignAccount[]): Observable<any> {
   return this.http.put<any>(`${this.apiUrl}/asignar-solana/${id}`, { accounts });
 }
+
+getVentasPorCliente(clienteId: number) {
+    // usa el endpoint del ClienteController
+    return this.http.get<SellDollar[]>(
+      `${environment.apiUrl}/cliente/${clienteId}/ventas`
+    );
+  }
 }

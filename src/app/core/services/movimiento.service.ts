@@ -157,11 +157,12 @@ pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
     .set('montoCop', montoCop);
   return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente-cop`, {}, { params });
 }
-}
-
-  eliminarMovimiento(movimiento: Movimiento): Observable<void> {
+eliminarMovimiento(movimiento: Movimiento): Observable<void> {
     const url = `${this.apiUrl}/eliminar/${movimiento.id}`;
     return this.http.delete<void>(url);
   }
-
 }
+
+  
+
+

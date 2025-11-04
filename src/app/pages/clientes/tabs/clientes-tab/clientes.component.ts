@@ -16,6 +16,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
 import { SellDollar,SellDollarsService } from '../../../../core/services/sell-dollars.service';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { Movimiento } from '../../../../core/services/pago-proveedor.service';
 
 @Component({
   selector: 'app-clientes',
@@ -398,4 +399,16 @@ pagoCP = {
       }
     });
   }
+
+  eliminarMovimiento(movimiento: Movimiento): void {
+  if (!confirm('¿Estás seguro de que deseas eliminar este movimiento?')) return;
+  this.movimientoService.eliminarMovimiento(movimiento).subscribe({
+    next: () => {
+      this.clienteMovimientos = this.clienteMovimientos.filter(m => m.id !== movimiento.id);
+      this.comprasCliente = this.comprasCliente.filter(m => m.id !== movimiento.id);
+      this.ventasCliente = this.ventasCliente.filter(m => m.id !== movimiento.id);
+    },
+    error: () => alert('Error al eliminar el movimiento')
+  });
+}
 }

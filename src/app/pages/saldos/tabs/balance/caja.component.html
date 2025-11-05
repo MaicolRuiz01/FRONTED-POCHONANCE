@@ -36,8 +36,9 @@
       <!-- Estas 3 propiedades deben existir en BalanceGeneral si las vas a mostrar -->
       <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
       <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
-      <p><strong>Cuentas Colombianas:</strong> {{ (selectedBalance?.cuentasCop ?? 0) | currency:'COP'  }}</p>
+      <p><strong>Cuentas Colombianas:</strong> {{ selectedBalance.cuentasCop | currency:'COP' }}</p>   
       <p> <strong>Total Clientes: </strong> {{ totalClientes | currency:'COP' }}</p>
+      <p><strong>Total Clientes:</strong> {{ totalClientes | currency:'COP' }}</p>
       <div *ngIf="totalCajaArr.length > 0">
         <p><strong>Total por Caja: </strong></p>
         <ul>

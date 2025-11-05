@@ -42,6 +42,14 @@ export interface PagoClienteAProveedorDto {
   tasaProveedor: number;  // COP/USDT del proveedor
   nota?: string;
 }
+export interface PagoProveedorAClienteDto {
+  proveedorOrigenId: number;
+  clienteDestinoId: number;
+  usdt: number;
+  tasaProveedor: number; // COP/USDT (origen)
+  tasaCliente: number;   // COP/USDT (destino)
+  nota?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -161,6 +169,10 @@ eliminarMovimiento(movimiento: Movimiento): Observable<void> {
     const url = `${this.apiUrl}/eliminar/${movimiento.id}`;
     return this.http.delete<void>(url);
   }
+
+  pagoProveedorACliente(dto: PagoProveedorAClienteDto): Observable<any> {
+  return this.http.post(`${this.apiUrl}/pago-proveedor-a-cliente`, dto);
+}
 }
 
   

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
-import { PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
+import { Movimiento, PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { FormsModule  } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';  
@@ -62,6 +62,7 @@ export class ProveedorComponent implements OnInit {
   selectedProveedorOrigen: Supplier | null = null;
 
   movimientos: any[] = [];
+  
 
   Supplier_name: string = '';
   Supplier_balance: number = 0; // nuevo, balance por defecto
@@ -256,6 +257,7 @@ onSelectSupplier(supplier: Supplier): void {
   });
 }
 
+
 abrirModalPagoProveedorCliente(): void {
   this.pagoPC = {
     proveedorId: this.selectedSupplier?.id ?? null, // si ya hay proveedor seleccionado, precárgalo
@@ -286,6 +288,17 @@ confirmarPagoProveedorCliente(): void {
       if (this.selectedSupplier?.id) this.onSelectSupplier(this.selectedSupplier); // refresca dialog abierto
     },
     error: (err) => console.error('Error en pago Proveedor→Cliente', err)
+  });
+}
+
+
+  eliminarMovimiento(movimiento: Movimiento): void {
+  this.movimientoService.eliminarMovimiento(movimiento).subscribe({
+    next: () => {
+      console.log('✅ Movimiento eliminado exitosamente');
+      this.loadMovimientosBySupplier(); // Recargar movimientos
+    },
+    error: (err) => console.error('❌ Error eliminando movimiento:', err)
   });
 }
 

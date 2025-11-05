@@ -69,6 +69,7 @@
   </div>
   <br>
   <br>
+
   <!-- Grid de clientes -->
   <div class="grid-clientes">
   <div class="card" *ngFor="let cliente of clientes"
@@ -135,8 +136,12 @@
             <td>{{ mov.caja || '-' }}</td>
             <td>{{ mov.pagoCliente || '-' }}</td>
             <td>{{ mov.pagoProveedor || '-' }}</td>
+              <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(mov)"></button>
           </tr>
+
+          
         </ng-template>
+
       </p-table>
     </p-tabPanel>
 

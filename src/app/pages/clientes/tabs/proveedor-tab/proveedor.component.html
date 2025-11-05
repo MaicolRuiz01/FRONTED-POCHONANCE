@@ -6,6 +6,13 @@
   <div class="p-col-12 p-md-10" style="text-align: center; margin-top: 20px; display: flex; justify-content: start; gap: 10px;">
   <p-button label="Pago Proveedor" icon="pi pi-credit-card" (click)="togglePaymentForm()"
     styleClass="p-button-raised p-button-info"></p-button>
+    <p-button
+  label="Pagar a Cliente (USDT)"
+  icon="pi pi-send"
+  styleClass="p-button-raised p-button-success"
+  (click)="abrirModalPagoProveedorCliente()">
+</p-button>
+
 
     <p-button label="Crear Proveedor" icon="pi pi-plus" (click)="showFormsupplier()"
       styleClass="p-button-raised p-button-info"></p-button>
@@ -234,6 +241,93 @@
       </div>
     </div>
   </p-dialog>
+
+  <p-dialog header="Pago en USDT: Proveedor → Cliente"
+          [(visible)]="displayPagoPCModal"
+          [modal]="true"
+          [style]="{ width: '460px' }">
+
+  <form class="p-fluid">
+    <!-- Proveedor Origen -->
+    <div class="p-field">
+      <label>Proveedor Origen</label>
+      <p-dropdown
+        [options]="suppliers"
+        [(ngModel)]="pagoPC.proveedorId"
+        name="pc_proveedor"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Seleccione proveedor">
+      </p-dropdown>
+    </div>
+
+    <!-- Cliente Destino -->
+    <div class="p-field">
+      <label>Cliente Destino</label>
+      <p-dropdown
+        [options]="clientes"
+        [(ngModel)]="pagoPC.clienteId"
+        name="pc_cliente"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccione cliente">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto USDT -->
+    <div class="p-field">
+      <label>Monto (USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.usdt" name="pc_usdt"
+        mode="decimal" [min]="0" [showButtons]="true">
+      </p-inputNumber>
+    </div>
+
+    <!-- Tasas + COP -->
+    <div class="p-field">
+      <label>Tasa Proveedor (COP/USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.tasaProv" name="pc_tasaProv"
+        mode="currency" currency="COP">
+      </p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (proveedor)</label>
+      <input pInputText [value]="pesosProvPC | currency:'COP'" readonly />
+    </div>
+
+    <div class="p-field">
+      <label>Tasa Cliente (COP/USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.tasaCli" name="pc_tasaCli"
+        mode="currency" currency="COP">
+      </p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (cliente)</label>
+      <input pInputText [value]="pesosCliPC | currency:'COP'" readonly />
+    </div>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pagoPC.nota" name="pc_nota" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times"
+            class="p-button-text"
+            (click)="displayPagoPCModal = false"></button>
+
+    <button pButton label="Confirmar Pago" icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarPagoProveedorCliente()"
+            [disabled]="!pagoPC.proveedorId || !pagoPC.clienteId || !pagoPC.usdt || !pagoPC.tasaProv || !pagoPC.tasaCli">
+    </button>
+  </ng-template>
+</p-dialog>
+
 
   <p *ngIf="suppliers.length === 0">No hay proveedores registrados.</p>
 </div>

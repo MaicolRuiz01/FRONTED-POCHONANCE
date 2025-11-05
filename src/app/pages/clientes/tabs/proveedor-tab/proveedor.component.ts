@@ -28,8 +28,6 @@ export interface PagoProveedorDTO {
     type: 'INGRESO' | 'EGRESO';
 }
 
-
-
 @Component({
   selector: 'app-proveedor',
   standalone: true,
@@ -79,6 +77,16 @@ export class ProveedorComponent implements OnInit {
   loadingCompras = false; 
 clientes: any[] = [];
 
+displayPagoPCModal = false;
+
+pagoPC = {
+  proveedorId: null as number | null,  // origen
+  clienteId:   null as number | null,  // destino
+  usdt:        null as number | null,
+  tasaProv:    null as number | null,  // COP/USDT del proveedor (origen)
+  tasaCli:     null as number | null,  // COP/USDT del cliente (destino)
+  nota:        '' as string
+};
   constructor(
     private supplierService: SupplierService,
     private accountCopService: AccountCopService,
@@ -96,7 +104,16 @@ clientes: any[] = [];
     this.clienteService.listar().subscribe(clientes => this.clientes = clientes);
   }
 
-  
+  get pesosProvPC(): number {
+  const u = this.pagoPC.usdt ?? 0;
+  const t = this.pagoPC.tasaProv ?? 0;
+  return u * t;
+}
+get pesosCliPC(): number {
+  const u = this.pagoPC.usdt ?? 0;
+  const t = this.pagoPC.tasaCli ?? 0;
+  return u * t;
+}
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
@@ -239,5 +256,37 @@ onSelectSupplier(supplier: Supplier): void {
   });
 }
 
+abrirModalPagoProveedorCliente(): void {
+  this.pagoPC = {
+    proveedorId: this.selectedSupplier?.id ?? null, // si ya hay proveedor seleccionado, precárgalo
+    clienteId: null,
+    usdt: null,
+    tasaProv: null,
+    tasaCli: null,
+    nota: ''
+  };
+  this.displayPagoPCModal = true;
+}
+
+confirmarPagoProveedorCliente(): void {
+  const { proveedorId, clienteId, usdt, tasaProv, tasaCli, nota } = this.pagoPC;
+  if (!proveedorId || !clienteId || !usdt || !tasaProv || !tasaCli) return;
+
+  this.movimientoService.pagoProveedorACliente({
+    proveedorOrigenId: proveedorId,
+    clienteDestinoId:  clienteId,
+    usdt:              usdt,
+    tasaProveedor:     tasaProv,
+    tasaCliente:       tasaCli,
+    nota
+  }).subscribe({
+    next: () => {
+      this.displayPagoPCModal = false;
+      this.loadSuppliers();  // refresca saldos
+      if (this.selectedSupplier?.id) this.onSelectSupplier(this.selectedSupplier); // refresca dialog abierto
+    },
+    error: (err) => console.error('Error en pago Proveedor→Cliente', err)
+  });
+}
 
 }

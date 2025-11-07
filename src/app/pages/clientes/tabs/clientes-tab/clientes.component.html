@@ -76,8 +76,11 @@
        (click)="onSelectCliente(cliente)">
 
     <h3>{{ cliente.nombre }}</h3>
-    <!-- <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
-    <p><strong>Correo:</strong> {{ cliente.correo }}</p> -->
+    <div class="saldo-inicial">
+        Saldo inicial del día:
+        <span>{{ cliente.saldoInicialDelDia | number:'1.2-2' }}</span>
+    </div>
+   
     <p>
       <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
       {{ Math.abs(cliente.saldo) | currency:'COP' }}
@@ -500,6 +503,7 @@
       <label>Saldo Actual</label>
       <input pInputText [value]="clienteAjuste?.saldo | currency:'COP'" readonly>
     </div>
+    
 
     <div class="p-field">
       <label>Nuevo Saldo</label>

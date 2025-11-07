@@ -76,8 +76,8 @@
        (click)="onSelectCliente(cliente)">
 
     <h3>{{ cliente.nombre }}</h3>
-    <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
-    <p><strong>Correo:</strong> {{ cliente.correo }}</p>
+    <!-- <p><strong>Usuario:</strong> {{ cliente.nameUser }}</p>
+    <p><strong>Correo:</strong> {{ cliente.correo }}</p> -->
     <p>
       <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
       {{ Math.abs(cliente.saldo) | currency:'COP' }}
@@ -87,6 +87,10 @@
     <div class="acciones-card">
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"
               (click)="$event.stopPropagation(); abrirModalEditar(cliente)"></button>
+      <button pButton label="Ajustar saldo" icon="pi pi-refresh"
+              class="p-button-text p-button-warning p-button-sm"
+              (click)="$event.stopPropagation(); abrirAjusteCliente(cliente)">
+      </button>
     </div>
   </div>
 </div>
@@ -480,3 +484,46 @@
     </button>
   </ng-template>
 </p-dialog>
+<!-- ✅ Modal Ajuste de Saldo de Cliente -->
+<p-dialog header="Ajuste de Saldo"
+          [(visible)]="showAjusteCliente"
+          [modal]="true"
+          [style]="{ width:'360px' }">
+
+  <div class="p-fluid">
+    <div class="p-field">
+      <label>Cliente</label>
+      <input pInputText [value]="clienteAjuste?.nombre" readonly>
+    </div>
+
+    <div class="p-field">
+      <label>Saldo Actual</label>
+      <input pInputText [value]="clienteAjuste?.saldo | currency:'COP'" readonly>
+    </div>
+
+    <div class="p-field">
+      <label>Nuevo Saldo</label>
+      <p-inputNumber [(ngModel)]="nuevoSaldoAjuste"
+                     mode="currency" currency="COP"
+                     [minFractionDigits]="2" [maxFractionDigits]="2">
+      </p-inputNumber>
+    </div>
+
+    <div class="p-field">
+      <label>Motivo</label>
+      <input pInputText [(ngModel)]="motivoAjuste">
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text"
+            (click)="showAjusteCliente=false"></button>
+
+    <button pButton label="Guardar" icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarAjusteCliente()"
+            [disabled]="!nuevoSaldoAjuste || !motivoAjuste">
+    </button>
+  </ng-template>
+</p-dialog>
+

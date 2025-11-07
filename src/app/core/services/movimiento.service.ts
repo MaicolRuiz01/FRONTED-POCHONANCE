@@ -51,6 +51,17 @@ export interface PagoProveedorAClienteDto {
   nota?: string;
 }
 
+export type EntidadAjuste = 'CLIENTE' | 'PROVEEDOR' | 'CUENTACOP';
+
+export interface AjusteSaldoDto {
+  entidad: EntidadAjuste;
+  entidadId: number;
+  nuevoSaldo: number;
+  motivo: string;
+  actor?: string;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -172,6 +183,9 @@ eliminarMovimiento(movimiento: Movimiento): Observable<void> {
 
   pagoProveedorACliente(dto: PagoProveedorAClienteDto): Observable<any> {
   return this.http.post(`${this.apiUrl}/pago-proveedor-a-cliente`, dto);
+}
+ajustarSaldo(dto: AjusteSaldoDto) {
+  return this.http.post(`${this.apiUrl}/ajuste-saldo`, dto);
 }
 }
 

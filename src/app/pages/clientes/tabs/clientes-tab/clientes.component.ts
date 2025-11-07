@@ -17,6 +17,7 @@ import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-
 import { SellDollar,SellDollarsService } from '../../../../core/services/sell-dollars.service';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { Movimiento } from '../../../../core/services/pago-proveedor.service';
+import { AjusteSaldoDto } from '../../../../core/services/movimiento.service';
 
 @Component({
   selector: 'app-clientes',
@@ -85,6 +86,11 @@ pagoCop: number | null = null;
 
   pagoUsdt: number | null = null;
 
+  showAjusteCliente = false;
+clienteAjuste: Cliente | null = null;
+nuevoSaldoAjuste: number | null = null;
+motivoAjuste: string = '';
+
 
   get pesosOrigen(): number {
     return (this.pagoUsdt ?? 0) * (this.tasaOrigen ?? 0);
@@ -112,6 +118,13 @@ pagoCop: number | null = null;
       error: () => alert('Error al cargar los clientes')
     });
   }
+  abrirAjusteCliente(cliente: Cliente) {
+  this.clienteAjuste = cliente;
+  this.nuevoSaldoAjuste = cliente.saldo ?? 0;
+  this.motivoAjuste = '';
+  this.showAjusteCliente = true;
+}
+
 
   cargarProveedores(): void {
   this.supplierService.getAllSuppliers().subscribe({
@@ -411,4 +424,25 @@ pagoCP = {
     error: () => alert('Error al eliminar el movimiento')
   });
 }
+confirmarAjusteCliente() {
+  if (!this.clienteAjuste || this.nuevoSaldoAjuste == null) return;
+
+  const dto: AjusteSaldoDto = {
+    entidad: 'CLIENTE',
+    entidadId: this.clienteAjuste.id!,
+    nuevoSaldo: this.nuevoSaldoAjuste!,
+    motivo: this.motivoAjuste,
+    actor: 'admin'
+  };
+
+  this.movimientoService.ajustarSaldo(dto).subscribe({
+    next: () => {
+      alert('Ajuste guardado correctamente');
+      this.showAjusteCliente = false;
+      this.cargarClientes();
+    },
+    error: () => alert('Error al registrar el ajuste')
+  });
+}
+
 }

@@ -1,104 +1,241 @@
-/* Estilo general para ambos diálogos */
-.custom-dialog .p-dialog {
-  border-radius: 10px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  background-color: #e0f7fa; /* mismo azul claro */
+/* Estilos para Balance dinámico */
+
+/* Root padding */
+.balance-root { padding: 12px 24px; }
+
+/* Top mini-cards */
+.top-toolbar {
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  max-width:1200px;
+  margin: 0 0 1.5rem 0;
+}
+.saldo-card {
+  background:#eaf4ff;
+  border-radius:10px;
+  padding:12px;
+  width:260px;
+  box-shadow:0 6px 14px rgba(0,0,0,0.06);
+}
+.saldo-card h4 { margin:0; font-size:14px; font-weight:700; color:#264653; }
+.saldo-valor { color:#1aa14a; font-weight:800; font-size:18px; margin:6px 0; }
+.muted { color:#4a4a4a; font-size:13px; margin:0; }
+
+/* Grid tarjetas */
+.cards-container {
+  width:100%;
+  max-width:1200px;
+  margin: 0 auto;
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+  padding-bottom: 2rem;
 }
 
-.custom-dialog .p-dialog-header {
-  background-color: #0288d1;
-  color: white;
-  font-size: 1.2rem;
-  text-align: center;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+/* Tarjeta */
+.card {
+  width:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+  transition: transform .18s ease, box-shadow .18s ease;
+  display:flex;
+  flex-direction:column;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 26px 60px rgba(0,0,0,0.14);
 }
 
-.custom-dialog .p-dialog-content {
-  padding: 20px;
-  font-size: 1rem;
-  color: #333;
-  background-color: #defede; /* Verde claro como en .detail-block */
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+/* Header (fecha a la izquierda) */
+.card .header {
+  background: linear-gradient(90deg,#0b79d0,#2ea0f7);
+  color:#fff;
+  text-align:left;
+  padding:8px 16px;
+  padding-left:20px;
+  font-weight:700;
+  font-size:14px;
 }
 
-.custom-dialog .p-button {
-  border-radius: 5px;
+/* Body */
+.card .body {
+  padding:18px;
+  color:#222;
+}
+.field-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:6px 0;
+  border-bottom:1px dashed rgba(0,0,0,0.04);
+}
+.field-row:last-child { border-bottom:none; }
+.field-label { color:#333; font-weight:600; }
+
+/* Valores */
+.field-value { color:#0b79d0; font-weight:700; text-align:right; }
+
+/* Saldo destacado (más grande) */
+.field-value.saldo-value {
+  font-size: 26px;
+  color: #0b79d0;
+  font-weight: 900;
+  letter-spacing: 0.5px;
 }
 
-/* Opcional: mejora visual de los detalles */
-.custom-dialog .detail-block {
-  background-color: #defede;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 10px;
+/* Color negativo */
+.field-value.negative { color:#c0392b; font-weight:700; }
+
+/* Total por tarjeta */
+.total-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  padding:10px;
+  background:#ffffff;
+  border-radius:8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  margin-bottom:6px;
+}
+.total-label { color:#333; font-weight:700; }
+.total-value { background:#2d7b38; color:#fff; padding:6px 10px; border-radius:8px; font-weight:800; }
+
+/* Ganancia */
+.gain-badge {
+  display:inline-block;
+  margin-top:12px;
+  background:#2d7b38;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:10px;
+  font-weight:800;
+  float:right;
+  box-shadow: 0 6px 18px rgba(45,123,56,0.2);
+}
+.gain-badge.negative {
+  background:#c0392b;
+  box-shadow: 0 6px 18px rgba(192,57,43,0.18);
 }
 
-.custom-dialog .detail-value {
-  float: right;
-  font-weight: bold;
-  color: #0288d1;
+/* Buttons small */
+.button-container { margin-top:10px; display:flex; gap:8px; justify-content:flex-end; }
+
+/* clearfix */
+.clearfix::after { content:""; display:block; clear:both; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .cards-container { grid-template-columns: 1fr; gap: 18px; padding: 12px 4px; }
+  .saldo-card { width: 100%; }
+  .field-value.saldo-value { font-size: 22px; }
 }
 
-:host ::ng-deep .p-button.p-button-sm.p-button-rounded {
-  width: 1.8rem;
-  height: 1.8rem;
-  padding: 0;
-  font-size: 0.75rem; /* tamaño del ícono */
-  display: flex;
-  border-radius: 15px;
-  background-color: green;
-}
+/* Estilos solo para la modal "Detalle completo" - reemplaza o añade al final de tu CSS */
 
-::ng-deep .p-dialog {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
+/* Ajuste del header del diálogo para integrar con el estilo */
 ::ng-deep .p-dialog .p-dialog-header {
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: #fff;
-  font-weight: bold;
-  font-size: 1.2rem;
+  background: #ffffff; /* blanco para armonizar con captura */
+  color: #213547;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-bottom: 1px solid rgba(33,53,71,0.06);
+  padding: 14px 18px;
 }
 
-::ng-deep .p-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
-  transition: transform 0.2s ease-in-out;
+/* Contenedor principal */
+.detail-modal {
+  display:flex;
+  flex-direction:column;
 }
 
-::ng-deep .p-card:hover {
-  transform: translateY(-3px);
+/* header interno: fecha/tasa */
+.dm-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding: 12px 18px;
+  gap: 12px;
+}
+.dm-label { color:#6b7280; font-size:12px; margin-bottom:4px; }
+.dm-value { color:#0f172a; font-weight:700; font-size:0.98rem; }
+
+/* cuerpo con scroll y buen padding */
+.dm-body {
+  max-height: 58vh; /* ajustable */
+  overflow:auto;
+  padding: 6px 18px 18px 18px;
 }
 
-::ng-deep .p-card .p-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1976d2;
-  margin-bottom: 0.5rem;
+/* secciones */
+.dm-section {
+  padding: 10px 0;
+}
+.dm-section-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 800;
+  color:#1f3050;
 }
 
-::ng-deep .p-card .p-card-content {
-  font-size: 0.95rem;
-  color: #444;
-  line-height: 1.5;
+/* separador fino */
+.dm-sep {
+  border: none;
+  border-top: 1px solid rgba(33,53,71,0.06);
+  margin: 8px 0;
 }
 
-.balance-label {
-  font-weight: 600;
-  color: #333;
+/* filas de etiqueta/valor (alineación y espaciado) */
+.dm-rows { display:flex; flex-direction:column; gap:6px; }
+.dm-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:2px 0;
+}
+.dm-row-left { color:#374151; font-weight:600; }
+.dm-row-right { color:#0b63a8; font-weight:700; }
+
+/* valores negativos si aplican */
+.dm-row-right.negative { color:#c0392b; }
+
+/* total al final estilo */
+.dm-total-wrap {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:12px;
+  padding: 12px 6px 6px 6px;
+}
+.dm-total-label { font-weight:800; color:#374151; }
+.dm-total-value {
+  background: #2d7b38;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:8px;
+  font-weight:900;
+  box-shadow: 0 6px 18px rgba(45,123,56,0.12);
 }
 
-.balance-value {
-  color: #1976d2;
-  font-weight: bold;
+/* footer del dialog: keep button visible */
+::ng-deep .p-dialog .p-dialog-footer {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(0,0,0,0.04);
+  display:flex;
+  justify-content:flex-end;
 }
 
-.h4{
-   font-size: 1rem;   /* tamaño de la letra */
-  font-weight: 600;    /* grosor */
-  font-style: bold;
+/* responsive: reducir alturas y fuentes en móvil */
+@media (max-width: 780px) {
+  ::ng-deep .p-dialog { width: 95% !important; }
+  .dm-body { max-height: 60vh; padding: 8px 12px; }
+  .dm-section-title { font-size:16px; }
+  .dm-row-right { font-size:0.95rem; }
+  .dm-total-value { padding:6px 10px; font-size:0.95rem; }
 }

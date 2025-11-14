@@ -100,7 +100,56 @@
 
     <ng-template pTemplate="footer">
       <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
-      <button pButton type="button" label="Guardar" (click)="saveAssignment()"
-        [disabled]="!purchaseRate || isRateInvalid || !selectedSupplierId"></button>
+      <button
+    pButton
+    type="button"
+    label="Guardar"
+    (click)="saveAssignment()"
+    [disabled]="isSaveDisabled">
+  </button>
     </ng-template>
   </p-dialog>
+
+  <!-- Modal para configurar la tasa promedio inicial -->
+<p-dialog
+  header="Configurar tasa promedio inicial"
+  [(visible)]="showInitialRateModal"
+  [modal]="true"
+  [closable]="false"
+  [dismissableMask]="false"
+  [style]="{ width: '400px' }">
+
+  <div class="p-fluid">
+    <p>
+      Antes de asignar compras, debes configurar la
+      <strong>tasa promedio inicial</strong> del sistema.
+    </p>
+
+    <div class="p-field" style="margin-bottom: 1rem;">
+      <label for="initialRateInput"><strong>Tasa promedio inicial</strong></label>
+      <input
+        id="initialRateInput"
+        type="number"
+        pInputText
+        [(ngModel)]="initialRate"
+        [ngClass]="{ 'p-invalid': isInitialRateInvalid }"
+        placeholder="Ej: 4100"
+        style="width:100%"
+        inputmode="numeric"
+        (ngModelChange)="validateInitialRate()" />
+      <small *ngIf="isInitialRateInvalid" class="p-error">
+        La tasa inicial debe ser mayor a 0
+      </small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Guardar"
+      (click)="saveInitialRate()"
+      [disabled]="isInitialRateInvalid || !initialRate">
+    </button>
+  </ng-template>
+</p-dialog>

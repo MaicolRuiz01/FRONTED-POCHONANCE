@@ -188,7 +188,3 @@ ajustarSaldo(dto: AjusteSaldoDto) {
   return this.http.post(`${this.apiUrl}/ajuste-saldo`, dto);
 }
 }
-
-  
-
-

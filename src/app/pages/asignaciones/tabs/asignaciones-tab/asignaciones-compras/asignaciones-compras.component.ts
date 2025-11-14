@@ -18,7 +18,7 @@ import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
 import { Cliente, ClienteService } from '../../../../../core/services/cliente.service';
-
+import { AverageRateService } from '../../../../../core/services/average-rate.service';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -79,6 +79,10 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 selectedClienteId: number | null = null;
 assignType: 'proveedor' | 'cliente' = 'proveedor';
 
+  showInitialRateModal: boolean = false;
+  initialRate: number | null = null;
+  isInitialRateInvalid: boolean = false;
+
   //intento de crear tabla a partir del componente MiTabla
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
@@ -87,13 +91,14 @@ assignType: 'proveedor' | 'cliente' = 'proveedor';
     { campo: 'date', columna: 'Fecha' },
   ];
 
-  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService, private clienteService: ClienteService) { }
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService, private clienteService: ClienteService, private averageRateService: AverageRateService,) { }
 
   ngOnInit(): void {
     this.loading = true;
     this.loadDeposits();
     this.loadSuppliers();
     this.loadClientes();
+    
 
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener('resize', () => {
@@ -109,6 +114,7 @@ assignType: 'proveedor' | 'cliente' = 'proveedor';
         this.loadDeposits();  // Igual carga las compras en caso de error
       }
     });
+    this.checkInitialAverageRate();
   }
 
 
@@ -202,7 +208,98 @@ saveAssignment(): void {
     }
   });
 }
+/** Verifica si ya existe una tasa promedio inicial en backend */
+checkInitialAverageRate(): void {
+  this.loading = true;
+  this.averageRateService.getUltimaTasa().subscribe({
+    next: rate => {
+      if (!rate) {
+        // No hay tasa inicial -> mostrar modal
+        this.openInitialRateModal();
+      } else {
+        // Ya está configurada -> continuar flujo normal
+        this.initDataAfterRate();
+      }
+    },
+    error: err => {
+      // Si el backend devuelve 404 o null, tratamos como "no configurado"
+      if (err.status === 404) {
+        this.openInitialRateModal();
+      } else {
+        console.error('Error obteniendo tasa promedio inicial', err);
+        // En caso de duda, permitimos seguir pero lo logueamos
+        this.initDataAfterRate();
+      }
+    }
+  });
+}
 
+/** Abre el modal de configuración de tasa inicial */
+openInitialRateModal(): void {
+  this.showInitialRateModal = true;
+  this.loading = false;
+}
 
+/** Una vez que hay tasa inicial, cargamos todo lo demás */
+initDataAfterRate(): void {
+  // Cargar proveedores y clientes
+  this.loadSuppliers();
+  this.loadClientes();
 
+  // Importar compras automáticas y luego cargar depósitos
+  this.buyService.importarComprasAutomaticamente().subscribe({
+    next: () => {
+      this.loadDeposits();
+    },
+    error: err => {
+      console.error('Error al importar compras automáticas', err);
+      alert('Error al registrar automáticamente las compras');
+      this.loadDeposits();
+    }
+  });
+}
+
+validateInitialRate(): void {
+  this.isInitialRateInvalid = !this.initialRate || this.initialRate <= 0;
+}
+
+saveInitialRate(): void {
+  if (!this.initialRate || this.initialRate <= 0) {
+    this.isInitialRateInvalid = true;
+    return;
+  }
+
+  this.isInitialRateInvalid = false;
+  this.loading = true;
+
+  this.averageRateService.inicializarTasa(this.initialRate).subscribe({
+    next: () => {
+      alert('Tasa promedio inicial configurada correctamente');
+      this.showInitialRateModal = false;
+      // Ahora sí cargamos datos normales
+      this.initDataAfterRate();
+    },
+    error: err => {
+      console.error('Error configurando tasa promedio inicial', err);
+      const msg = (typeof err.error === 'string' && err.error.trim().length)
+        ? err.error
+        : (err.error?.message || err.statusText || 'Error desconocido');
+      alert('Error al configurar la tasa inicial: ' + msg);
+      this.loading = false;
+    }
+  });
+}
+get isSaveDisabled(): boolean {
+  if (!this.purchaseRate || this.isRateInvalid) return true;
+
+  if (this.assignType === 'proveedor') {
+    return !this.selectedSupplierId;
+  }
+
+  if (this.assignType === 'cliente') {
+    return !this.selectedClienteId;
+  }
+
+  return true;
+}
 }

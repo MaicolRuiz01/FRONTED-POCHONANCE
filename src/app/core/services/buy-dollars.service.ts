@@ -16,6 +16,7 @@ export interface BuyDollarsDto {
   clienteName?: string;
   idDeposit: string;
   pesos: number;
+  cryptoSymbol?: string;
 }
 
 @Injectable({
@@ -74,7 +75,4 @@ getComprasPorProveedor(supplierId: number): Observable<BuyDollarsDto[]> {
     `${environment.apiUrl}/supplier/${supplierId}/compras`
   );
 }
-
-
-
 }

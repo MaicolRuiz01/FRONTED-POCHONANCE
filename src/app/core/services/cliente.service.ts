@@ -12,6 +12,10 @@ export interface Cliente {
     wallet: String;
     binanceId?: number;
     saldoInicialDelDia?: number;
+
+    comprasHoy?: number;
+  ventasHoy?: number;
+  ajustesHoy?: number;
 }
 
 @Injectable({

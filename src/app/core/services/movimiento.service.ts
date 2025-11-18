@@ -15,6 +15,16 @@ export interface MovimientoDto {
   caja?: number;
   
 }
+// 👇 debajo de las otras interfaces
+export interface MovimientoVistaCuentaCopDto {
+  id: number;
+  tipo: string;
+  fecha: Date;          // o string, como prefieras
+  montoSigned: number;
+  entrada: boolean;
+  salida: boolean;
+  detalle: string;
+}
 
 export interface PagoClienteAClienteDto {
   clienteOrigenId: number;
@@ -60,7 +70,11 @@ export interface AjusteSaldoDto {
   motivo: string;
   actor?: string;
 }
-
+export interface ResumenDiario {
+  comprasHoy: number;
+  ventasHoy: number;
+  ajustesHoy: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -187,4 +201,34 @@ eliminarMovimiento(movimiento: Movimiento): Observable<void> {
 ajustarSaldo(dto: AjusteSaldoDto) {
   return this.http.post(`${this.apiUrl}/ajuste-saldo`, dto);
 }
+
+getVistaCuentaCop(cuentaId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+    return this.http.get<MovimientoVistaCuentaCopDto[]>(
+      `${this.apiUrl}/vista/cuenta-cop/${cuentaId}`
+    );
+  }
+
+  getVistaCliente(clienteId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+  return this.http.get<MovimientoVistaCuentaCopDto[]>(
+    `${this.apiUrl}/vista/cliente/${clienteId}`
+  );
+}
+
+getVistaProveedor(proveedorId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+  return this.http.get<MovimientoVistaCuentaCopDto[]>(
+    `${this.apiUrl}/vista/proveedor/${proveedorId}`
+  );
+}
+getResumenCliente(clienteId: number): Observable<ResumenDiario> {
+  return this.http.get<ResumenDiario>(
+    `${this.apiUrl}/resumen/cliente/${clienteId}`
+  );
+}
+getResumenProveedor(proveedorId: number): Observable<ResumenDiario> {
+  return this.http.get<ResumenDiario>(
+    `${this.apiUrl}/resumen/proveedor/${proveedorId}`
+  );
+}
+
+
 }

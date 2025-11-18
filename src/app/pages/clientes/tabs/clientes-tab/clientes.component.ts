@@ -113,11 +113,27 @@ motivoAjuste: string = '';
   }
 
   cargarClientes(): void {
-    this.clienteService.listar().subscribe({
-      next: data => this.clientes = data,
-      error: () => alert('Error al cargar los clientes')
-    });
-  }
+  this.clienteService.listar().subscribe({
+    next: data => {
+      this.clientes = data;
+
+      // para cada cliente, pido su resumen del día
+      this.clientes.forEach(c => {
+        if (!c.id) return;
+        this.movimientoService.getResumenCliente(c.id).subscribe({
+          next: (res) => {
+            c.comprasHoy = res.comprasHoy;
+            c.ventasHoy  = res.ventasHoy;
+            c.ajustesHoy = res.ajustesHoy;
+          }
+        });
+      });
+    },
+    error: () => alert('Error al cargar los clientes')
+  });
+}
+
+
   abrirAjusteCliente(cliente: Cliente) {
   this.clienteAjuste = cliente;
   this.nuevoSaldoAjuste = cliente.saldo ?? 0;

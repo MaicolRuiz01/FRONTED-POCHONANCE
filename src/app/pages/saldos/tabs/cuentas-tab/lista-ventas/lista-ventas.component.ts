@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { AccountCopService } from '../../../../../core/services/account-cop.service';
 import { SaleP2PDto } from '../../../../../core/services/sale-p2p.service';
-import { MovimientoService, MovimientoVistaDto } from '../../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoVistaDto, MovimientoVistaCuentaCopDto } from '../../../../../core/services/movimiento.service';
 
 @Component({
   selector: 'app-lista-ventas',
@@ -26,6 +26,9 @@ export class ListaVentasComponent implements OnInit {
 
   loadingVentas = false;
   loadingMovs = false;
+
+  movimientosEntradas: MovimientoVistaCuentaCopDto[] = [];
+  movimientosSalidas:  MovimientoVistaCuentaCopDto[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -53,15 +56,24 @@ export class ListaVentasComponent implements OnInit {
 
   cargarMovimientos(): void {
     this.loadingMovs = true;
-    this.movService.getPagosPorCuenta(this.accountId).subscribe({
-      next: (movs) => { this.movimientos = movs; this.loadingMovs = false; },
-      error: (err) => { console.error('Error al cargar movimientos', err); this.loadingMovs = false; }
+    this.movService.getVistaCuentaCop(this.accountId).subscribe({
+      next: (movs) => {
+        this.movimientosEntradas = movs.filter(m => m.entrada);
+        this.movimientosSalidas  = movs.filter(m => m.salida);
+        this.loadingMovs = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar movimientos', err);
+        this.loadingMovs = false;
+      }
     });
   }
 
   onTabChange(e: any) {
     // index 1 = pestaña Movimientos
-    if (e.index === 1 && this.movimientos.length === 0 && !this.loadingMovs) {
+    if (e.index === 1 && !this.loadingMovs 
+        && this.movimientosEntradas.length === 0 
+        && this.movimientosSalidas.length === 0) {
       this.cargarMovimientos();
     }
   }

@@ -118,7 +118,17 @@ get pesosCliPC(): number {
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
-      next: (data) => this.suppliers = data,
+      next: (data) =>{ this.suppliers = data;
+      this.suppliers.forEach(s => {
+        if (!s.id) return;
+        this.movimientoService.getResumenProveedor(s.id).subscribe({
+          next: (res) => {
+            s.comprasHoy = res.comprasHoy;
+            s.ventasHoy  = res.ventasHoy;
+            s.ajustesHoy = res.ajustesHoy;
+          }
+        });
+      });},
       error: (err) => console.error('Error loading suppliers', err)
     });
   }

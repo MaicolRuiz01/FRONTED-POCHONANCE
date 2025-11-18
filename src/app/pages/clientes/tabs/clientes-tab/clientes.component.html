@@ -85,6 +85,12 @@
       <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>
       {{ Math.abs(cliente.saldo) | currency:'COP' }}
     </p>
+
+    <div class="resumen-dia">
+    <p><strong>Compras hoy:</strong> {{ cliente.comprasHoy || 0 | currency:'COP' }}</p>
+    <p><strong>Ventas hoy:</strong>  {{ cliente.ventasHoy  || 0 | currency:'COP' }}</p>
+    <p><strong>Ajustes hoy:</strong> {{ cliente.ajustesHoy || 0 | currency:'COP' }}</p>
+  </div>
     <!-- <p><strong>Wallet:</strong> {{ cliente.wallet }}</p> -->
 
     <div class="acciones-card">

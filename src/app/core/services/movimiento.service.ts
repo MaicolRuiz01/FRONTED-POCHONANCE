@@ -229,6 +229,12 @@ getResumenProveedor(proveedorId: number): Observable<ResumenDiario> {
     `${this.apiUrl}/resumen/proveedor/${proveedorId}`
   );
 }
+pagoCuentaCopACliente(cuentaId: number, clienteId: number, monto: number) {
+  const params = new HttpParams()
+    .set("cuentaId", cuentaId)
+    .set("clienteId", clienteId)
+    .set("monto", monto);
 
-
+  return this.http.post(`${this.apiUrl}/pago-cuenta-cop-a-cliente`, {}, { params });
+}
 }

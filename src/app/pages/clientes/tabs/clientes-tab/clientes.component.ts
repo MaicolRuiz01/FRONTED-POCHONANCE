@@ -20,6 +20,8 @@ import { Movimiento } from '../../../../core/services/pago-proveedor.service';
 import { AjusteSaldoDto } from '../../../../core/services/movimiento.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 
+import { AjustesService} from '../../../../core/services/ajustes.service';
+import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
 
 @Component({
   selector: 'app-clientes',
@@ -69,6 +71,10 @@ export class ClientesComponent implements OnInit {
   selectedCliente: Cliente | null = null;
   clienteMovimientos: any[] = [];
 
+
+  clienteAjustes: any[] = [];
+  ajustesSeleccionado: any[] = [];
+
   displayEditModal = false;
   editCliente: Cliente | null = null;
   ventasCliente: SellDollar[] = [];
@@ -100,6 +106,7 @@ export class ClientesComponent implements OnInit {
   clienteAjuste: Cliente | null = null;
   nuevoSaldoAjuste: number | null = null;
   motivoAjuste: string = '';
+  accountCopService: any;
 
 
   get pesosOrigen(): number {
@@ -113,10 +120,10 @@ export class ClientesComponent implements OnInit {
     private supplierService: SupplierService,
     private movimientoService: MovimientoService,
     private messageService: MessageService,
-    private buyDollarsService: BuyDollarsService,
+    private buyDollarsService: BuyDollarsService, 
     private sellDollarsService: SellDollarsService,
-    private accountCopService: AccountCopService
-  ) { }
+    private ajustesService: AjustesService
+  ) {}
 
   ngOnInit(): void {
     this.cargarClientes();
@@ -337,6 +344,12 @@ export class ClientesComponent implements OnInit {
     this.clienteMovimientos = [];
     this.comprasCliente = [];
     this.ventasCliente = [];
+  this.selectedCliente = cliente;
+  this.clienteMovimientos = [];
+  this.comprasCliente = [];
+  this.ventasCliente = [];
+  this.ajustesSeleccionado = [];
+  this.clienteAjustes = [];
 
     if (!cliente.id) {
       this.showMovimientosDialog = true;
@@ -373,6 +386,19 @@ export class ClientesComponent implements OnInit {
       },
       error: (err) => console.error('Error al cargar ventas del cliente', err),
     });
+
+    // 👇 Ajustes asignados al cliente
+  this.ajustesService.obtenerporcliente(cliente.id).subscribe({
+    next: data => {
+      console.log("Ajustes recibidos:", data); 
+      this.clienteAjustes = data;
+      this.ajustesSeleccionado = [];
+    },
+    error: () => alert('Error al cargar los ajustes del cliente')
+  });
+
+
+
 
     this.showMovimientosDialog = true;
   }
@@ -512,7 +538,20 @@ export class ClientesComponent implements OnInit {
           console.error(err);
         }
       });
-  }
+  
+
+  this.movimientoService.ajustarSaldo(dto).subscribe({
+    next: () => {
+      alert('Ajuste guardado correctamente');
+      this.showAjusteCliente = false;
+      this.cargarClientes();
+    },
+    error: () => alert('Error al registrar el ajuste')
+  });
+}
 
 
+listarAjustesCliente(clienteId: number) { 
+   
+}
 }

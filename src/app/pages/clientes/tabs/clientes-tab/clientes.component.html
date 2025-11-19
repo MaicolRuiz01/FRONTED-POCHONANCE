@@ -114,7 +114,7 @@
 
   <!-- Modal Movimientos/Compras -->
 <p-dialog
-  header="Cliente: {{ selectedCliente?.nombre }}"
+  header="{{ selectedCliente?.nombre }}"
   [(visible)]="showMovimientosDialog"
   [modal]="true"
   position="top"
@@ -203,6 +203,7 @@
         </ng-template>
       </p-table>
     </p-tabPanel>
+
     <!-- TAB 3: Ventas -->
 <p-tabPanel header="Ventas">
   <p-table
@@ -242,6 +243,30 @@
   </p-table>
 </p-tabPanel>
 
+  <!-- TAB 4: Ajustes -->
+<p-tabPanel header="Ajustes">
+  <p-table [value]="clienteAjustes" selectionMode="single" [(selection)]="ajustesSeleccionado">
+      <ng-template pTemplate="header">
+          <tr>
+              <th>Id</th>
+              <th>Cliente Id</th>
+              <th>Movimiento</th>
+              <th>Contenido</th>
+              <th>Monto actualizado</th>
+          </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ajuste>
+          <tr [pSelectableRow]="ajuste">
+              <td>{{ ajuste.id }}</td>
+              <td>{{ ajuste.usuarioCL?.nombre }}</td>
+              <td>{{ ajuste.movimiento?.id }}</td>
+              <td>{{ ajuste.contenido }}</td>
+              <td>{{ ajuste.monto }}</td>
+          </tr>
+      </ng-template>
+  </p-table>
+</p-tabPanel>
 
   </p-tabView>
 </p-dialog>

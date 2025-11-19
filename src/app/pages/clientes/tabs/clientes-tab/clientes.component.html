@@ -5,6 +5,13 @@
   </div>
 
   <div class="botones-acciones">
+    <button pButton
+        label="Pago desde Cuenta COP"
+        icon="pi pi-wallet"
+        class="p-button-warning"
+        (click)="abrirModalPagoCuentaCop()">
+</button>
+
     <button pButton label="Pagar a Cliente" icon="pi pi-credit-card" class="p-button-danger" (click)="abrirModalPago()">
     </button>
 
@@ -536,4 +543,67 @@
     </button>
   </ng-template>
 </p-dialog>
+
+<p-dialog header="Pago desde Cuenta COP"
+          [(visible)]="displayPagoCuentaCopModal"
+          [modal]="true"
+          [style]="{ width: '420px' }">
+
+  <form class="p-fluid">
+    <!-- Cuenta COP Origen -->
+    <div class="p-field">
+      <label>Cuenta COP (Origen)</label>
+      <p-dropdown
+        [options]="cuentasCop"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="pagoCuentaCop.cuentaId"
+        name="cuentaCop"
+        placeholder="Seleccione cuenta">
+      </p-dropdown>
+    </div>
+
+    <!-- Cliente Destino -->
+    <div class="p-field">
+      <label>Cliente Destino</label>
+      <p-dropdown
+        [options]="clientes"
+        optionLabel="nombre"
+        optionValue="id"
+        [(ngModel)]="pagoCuentaCop.clienteDestinoId"
+        name="clienteDestino"
+        placeholder="Seleccione cliente">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto -->
+    <div class="p-field">
+      <label>Monto (COP)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoCuentaCop.monto"
+        name="montoCop"
+        mode="currency"
+        currency="COP"
+        [min]="0"
+        [showButtons]="true">
+      </p-inputNumber>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar"
+            class="p-button-text"
+            (click)="displayPagoCuentaCopModal = false">
+    </button>
+
+    <button pButton
+            label="Confirmar Pago"
+            icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarPagoCuentaCop()"
+            [disabled]="!pagoCuentaCop.cuentaId || !pagoCuentaCop.clienteDestinoId || !pagoCuentaCop.monto">
+    </button>
+  </ng-template>
+</p-dialog>
+
 

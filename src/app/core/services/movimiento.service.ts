@@ -99,7 +99,7 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   }
 
   getAllMovimientos(): Observable<MovimientoDto[]> {
-    return this.http.get<MovimientoDto[]>(this.apiUrl);
+    return this.http.get<MovimientoDto[]>(`${this.apiUrl}/listar`);
   }
 
   registrarRetiro(idCuentaOrigen: number, monto: number) {

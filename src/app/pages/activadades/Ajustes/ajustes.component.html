@@ -1,0 +1,121 @@
+
+<div class="p-mb-3">
+    <h2>Ajustes</h2>    
+
+<p-button label="crear ajustes" icon="pi pi-plus" (click)="crearDialogVisible = true"></p-button>
+
+</div>
+
+<p-table [value]="ajustes" selectionMode="single" [(selection)]="ajusteSeleccionado">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Id</th>
+            <th>Cliente Id</th>
+            <th>Proveedor Id</th>
+            <th>Movimiento</th>
+            <th>Contenido</th>
+            <th>Monto actualizado</th>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-ajuste>
+        <tr [pSelectableRow]="ajuste">
+            <td>{{ ajuste.id }}</td>
+           <td>{{ ajuste.usuarioCL?.id|| null }}</td>
+            <td>{{ ajuste.usuarioPR?.id || "-----" }}</td>
+            <td>{{ ajuste.movimiento?.id }}</td>
+            <td>{{ ajuste.contenido }}</td>
+            <td>{{ ajuste.monto }}</td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Dialogo para crear ajuste -->
+<p-dialog 
+    header="Crear Ajuste" 
+    [(visible)]="crearDialogVisible" 
+    [modal]="true" 
+    [style]="{ width: '450px' }">
+
+    <form #ajusteForm="ngForm" (ngSubmit)="crearAjuste(ajusteForm.value)">
+
+        <!-- Cliente -->
+        <div class="p-field">
+            <label for="clienteId">Cliente</label>
+            <p-dropdown 
+                [options]="clientes"
+                optionLabel="nombre"
+                optionValue="id"
+                name="usuariocl_id"
+                [(ngModel)]="formValues.usuariocl_id"
+                placeholder="Seleccione un cliente">
+            </p-dropdown>
+        </div>
+<br>
+        <!-- Proveedor -->
+        <div class="p-field">
+            <label for="proveedorId">Proveedor</label>
+            <p-dropdown 
+                [options]="proveedores" 
+                optionLabel="name" 
+                optionValue="id"
+                name="usuariopr_id"
+                [(ngModel)]="formValues.usuariopr_id"
+                placeholder="Seleccione un proveedor">
+            </p-dropdown>
+        </div>
+<br>
+        <!-- Movimiento -->
+        <div class="p-field">
+            <label for="movimiento">Movimiento</label>
+            <p-dropdown 
+                [options]="movimientos" 
+                optionLabel="id"
+                optionValue="id"
+                name="movimientoid"
+                [(ngModel)]="formValues.movimientoid"
+                placeholder="Seleccione un movimiento">
+            </p-dropdown>
+        </div>
+<br>
+        <!-- Contenido -->
+        <div class="p-field">
+            <label for="contenido">Descripción del Ajuste</label>
+            <textarea 
+                pInputTextarea 
+                name="contenido" 
+                [(ngModel)]="formValues.contenido"
+                rows="4" 
+                style="width:100%">
+            </textarea>
+        </div>
+<br>
+          <!-- monto -->
+        <div class="p-field">
+            <label for="monto">monto a editar</label>
+            <input 
+                type="number" 
+                pInputText 
+                name="monto" 
+                [(ngModel)]="formValues.monto">
+        </div>
+<br>
+        <div class="p-mt-3 p-d-flex p-jc-end">
+            <p-button 
+                label="Cancelar" 
+                class="p-button-text" 
+                (click)="cerrarCrearDialog()">
+            </p-button>
+
+            <p-button 
+                label="Guardar" 
+                icon="pi pi-save" 
+                styleClass="p-ml-3"
+                [disabled]="!ajusteForm.valid"
+                (click)="crearAjuste(ajusteForm.value)">
+            </p-button>
+        </div>
+
+    </form>
+
+</p-dialog>

@@ -56,13 +56,20 @@
     </article>
   </div>
 
-  <!-- Dialogo: Detalle completo (se abre con la lupa) -->
-  <!-- Reemplaza SOLO la sección del diálogo por este bloque (mantiene la misma lógica y bindings) -->
-<p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle completo" [style]="{ width: '760px' }" [baseZIndex]="1100" [closeOnEscape]="true" [dismissableMask]="true">
+<p-dialog
+  [(visible)]="showDetailsModal"
+  [modal]="true"
+  header="Detalle completo"
+  [style]="{ width: '760px' }"
+  [baseZIndex]="1100"
+  [closeOnEscape]="true"
+  [dismissableMask]="true">
+
+  <!-- SOLO UN content -->
   <ng-template pTemplate="content">
     <div *ngIf="selectedBalance && detail" class="detail-modal">
 
-      <!-- HEADER: fecha a la izquierda, tasa a la derecha -->
+      <!-- HEADER -->
       <div class="dm-header">
         <div class="dm-header-left">
           <div class="dm-label">Fecha</div>
@@ -74,16 +81,25 @@
         </div>
       </div>
 
-      <!-- CONTENIDO: scroll interno -->
+      <!-- BODY -->
       <div class="dm-body">
 
         <!-- VENTAS -->
         <section class="dm-section">
           <h3 class="dm-section-title">VENTAS</h3>
           <div class="dm-rows">
-            <div class="dm-row"><div class="dm-row-left">Ventas totales</div><div class="dm-row-right">{{ detail.ventas.total | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Utilidad ventas</div><div class="dm-row-right">{{ detail.ventas.utilidad | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">4x1000</div><div class="dm-row-right">{{ detail.ventas.cuatroPorMil | number:'1.0-0' }}</div></div>
+            <div class="dm-row">
+              <div class="dm-row-left">Ventas totales</div>
+              <div class="dm-row-right">{{ detail.ventas.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad ventas</div>
+              <div class="dm-row-right">{{ detail.ventas.utilidad | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">4x1000</div>
+              <div class="dm-row-right">{{ detail.ventas.cuatroPorMil | number:'1.0-0' }}</div>
+            </div>
           </div>
         </section>
 
@@ -93,9 +109,18 @@
         <section class="dm-section">
           <h3 class="dm-section-title">P2P</h3>
           <div class="dm-rows">
-            <div class="dm-row"><div class="dm-row-left">Total P2P</div><div class="dm-row-right">{{ detail.p2p.total | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Comisión P2P</div><div class="dm-row-right">{{ detail.p2p.comision | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Utilidad P2P</div><div class="dm-row-right">{{ detail.p2p.utilidad | number:'1.0-0' }}</div></div>
+            <div class="dm-row">
+              <div class="dm-row-left">Total P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Comisión P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.comision | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.utilidad | number:'1.0-0' }}</div>
+            </div>
           </div>
         </section>
 
@@ -105,24 +130,51 @@
         <section class="dm-section">
           <h3 class="dm-section-title">DEC</h3>
           <div class="dm-rows">
-            <div class="dm-row"><div class="dm-row-left">Total Dec</div><div class="dm-row-right">{{ detail.dec.total | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Comisión Dec</div><div class="dm-row-right">{{ detail.dec.comision | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Utilidad Dec</div><div class="dm-row-right">{{ detail.dec.utilidad | number:'1.0-0' }}</div></div>
+            <div class="dm-row">
+              <div class="dm-row-left">Total Dec</div>
+              <div class="dm-row-right">{{ detail.dec.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Comisión Dec</div>
+              <div class="dm-row-right">{{ detail.dec.comision | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad Dec</div>
+              <div class="dm-row-right">{{ detail.dec.utilidad | number:'1.0-0' }}</div>
+            </div>
           </div>
         </section>
 
         <hr class="dm-sep"/>
 
-        <!-- RESUMEN OPERACIONES -->
+        <!-- RESUMEN -->
         <section class="dm-section">
           <h3 class="dm-section-title">RESUMEN</h3>
           <div class="dm-rows">
-            <div class="dm-row"><div class="dm-row-left">Comisiones totales</div><div class="dm-row-right">{{ detail.comisionesTotal | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Retiros</div><div class="dm-row-right">{{ detail.retiros | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Traslado</div><div class="dm-row-right">{{ detail.traslado | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Pagos a proveedor</div><div class="dm-row-right">{{ detail.pagosProveedor | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">TRX</div><div class="dm-row-right">{{ detail.trx | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Reintegro trust</div><div class="dm-row-right">{{ detail.reintegroTrust | number:'1.0-0' }}</div></div>
+            <div class="dm-row">
+              <div class="dm-row-left">Comisiones totales</div>
+              <div class="dm-row-right">{{ detail.comisionesTotal | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Retiros</div>
+              <div class="dm-row-right">{{ detail.retiros | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Traslado</div>
+              <div class="dm-row-right">{{ detail.traslado | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Pagos a proveedor</div>
+              <div class="dm-row-right">{{ detail.pagosProveedor | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">TRX</div>
+              <div class="dm-row-right">{{ detail.trx | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Reintegro trust</div>
+              <div class="dm-row-right">{{ detail.reintegroTrust | number:'1.0-0' }}</div>
+            </div>
           </div>
         </section>
 
@@ -132,42 +184,31 @@
         <section class="dm-section">
           <h3 class="dm-section-title">GASTOS & AJUSTES</h3>
           <div class="dm-rows">
-            <div class="dm-row"><div class="dm-row-left">Gastos</div><div class="dm-row-right">{{ detail.gastos | number:'1.0-0' }}</div></div>
-            <div class="dm-row"><div class="dm-row-left">Ajustes</div><div class="dm-row-right">{{ detail.ajustes | number:'1.0-0' }}</div></div>
+            <div class="dm-row">
+              <div class="dm-row-left">Gastos</div>
+              <div class="dm-row-right">{{ detail.gastos | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Ajustes</div>
+              <div class="dm-row-right">{{ detail.ajustes | number:'1.0-0' }}</div>
+            </div>
           </div>
         </section>
 
-        <!-- TOTAL al final -->
+        <!-- TOTAL -->
         <div class="dm-total-wrap">
           <div class="dm-total-label">TOTAL</div>
           <div class="dm-total-value">{{ detail.totalCalculado | number:'1.0-0' }}</div>
         </div>
 
-  <ng-template pTemplate="content">
-    <div *ngIf="selectedBalance">
-      <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-      <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency:'COP' }}</p>
-
-      <!-- Estas 3 propiedades deben existir en BalanceGeneral si las vas a mostrar -->
-      <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
-      <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
-      <p><strong>Cuentas Colombianas:</strong> {{ selectedBalance.cuentasCop | currency:'COP' }}</p>   
-      <p> <strong>Total Clientes: </strong> {{ totalClientes | currency:'COP' }}</p>
-      <p><strong>Total Clientes:</strong> {{ totalClientes | currency:'COP' }}</p>
-      <div *ngIf="totalCajaArr.length > 0">
-        <p><strong>Total por Caja: </strong></p>
-        <ul>
-          <li *ngFor="let caja of totalCajaArr">
-            {{ caja.nombre }}: {{ caja.monto | currency:'COP' }}
-          </li>
-        </ul>
-      </div>
-    </div>
+      </div> <!-- dm-body -->
+    </div> <!-- detail-modal -->
   </ng-template>
 
   <ng-template pTemplate="footer">
     <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
 </p-dialog>
+
 
 </div>

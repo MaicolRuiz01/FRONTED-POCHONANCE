@@ -19,7 +19,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { Movimiento } from '../../../../core/services/pago-proveedor.service';
 import { AjusteSaldoDto } from '../../../../core/services/movimiento.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
-
+import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
 @Component({
   selector: 'app-clientes',
@@ -35,7 +35,8 @@ import { AccountCopService, AccountCop } from '../../../../core/services/account
     DropdownModule,
     TabViewModule,
     TableModule,
-    SelectButtonModule
+    SelectButtonModule,
+    AjusteSaldoDialogComponent
   ],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css'],
@@ -102,6 +103,8 @@ export class ClientesComponent implements OnInit {
   motivoAjuste: string = '';
 
 
+
+
   get pesosOrigen(): number {
     return (this.pagoUsdt ?? 0) * (this.tasaOrigen ?? 0);
   }
@@ -157,9 +160,10 @@ export class ClientesComponent implements OnInit {
 
   abrirAjusteCliente(cliente: Cliente) {
     this.clienteAjuste = cliente;
-    this.nuevoSaldoAjuste = cliente.saldo ?? 0;
-    this.motivoAjuste = '';
     this.showAjusteCliente = true;
+  }
+  onAjusteClienteRealizado() {
+    this.cargarClientes();
   }
 
   abrirModalPagoCuentaCop(): void {
@@ -170,6 +174,8 @@ export class ClientesComponent implements OnInit {
     };
     this.displayPagoCuentaCopModal = true;
   }
+
+
 
   cargarProveedores(): void {
     this.supplierService.getAllSuppliers().subscribe({
@@ -467,26 +473,6 @@ export class ClientesComponent implements OnInit {
         this.ventasCliente = this.ventasCliente.filter(m => m.id !== movimiento.id);
       },
       error: () => alert('Error al eliminar el movimiento')
-    });
-  }
-  confirmarAjusteCliente() {
-    if (!this.clienteAjuste || this.nuevoSaldoAjuste == null) return;
-
-    const dto: AjusteSaldoDto = {
-      entidad: 'CLIENTE',
-      entidadId: this.clienteAjuste.id!,
-      nuevoSaldo: this.nuevoSaldoAjuste!,
-      motivo: this.motivoAjuste,
-      actor: 'admin'
-    };
-
-    this.movimientoService.ajustarSaldo(dto).subscribe({
-      next: () => {
-        alert('Ajuste guardado correctamente');
-        this.showAjusteCliente = false;
-        this.cargarClientes();
-      },
-      error: () => alert('Error al registrar el ajuste')
     });
   }
 

@@ -1,0 +1,65 @@
+<p-dialog
+  header="Ajuste de Saldo"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width:'380px' }"
+  (onHide)="cerrar()">
+
+  <div class="p-fluid">
+    <div class="p-field">
+      <label>Entidad</label>
+      <input pInputText [value]="entidad + ' - ' + nombreEntidad" readonly />
+    </div>
+
+    <div class="p-field">
+      <label>Saldo actual</label>
+      <input pInputText [value]="saldoActual | currency:'COP'" readonly />
+    </div>
+
+    <div class="p-field">
+      <label>Tipo de ajuste</label>
+      <p-selectButton
+        [options]="modoOptions"
+        [(ngModel)]="entrada"
+        name="tipoAjuste">
+      </p-selectButton>
+    </div>
+
+    <div class="p-field">
+      <label>Monto (COP)</label>
+      <p-inputNumber
+        [(ngModel)]="monto"
+        name="montoAjuste"
+        mode="currency"
+        currency="COP"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [min]="0">
+      </p-inputNumber>
+    </div>
+
+    <div class="p-field">
+      <label>Motivo</label>
+      <input pInputText [(ngModel)]="motivo" name="motivoAjuste" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      class="p-button-text"
+      (click)="cerrar()"
+      [disabled]="loading">
+    </button>
+
+    <button
+      pButton
+      label="Guardar"
+      icon="pi pi-check"
+      class="p-button-success"
+      (click)="guardar()"
+      [disabled]="loading || !monto || !motivo">
+    </button>
+  </ng-template>
+</p-dialog>

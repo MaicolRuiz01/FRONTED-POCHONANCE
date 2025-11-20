@@ -13,7 +13,7 @@ import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
 import { CajaService, Caja } from '../../../../core/services/caja.service';
-import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
 import { ClienteService } from '../../../../core/services/cliente.service';
 import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
@@ -51,6 +51,7 @@ export interface PagoProveedorDTO {
   styleUrls: ['./proveedor.component.css']
 })
 export class ProveedorComponent implements OnInit {
+
   Math = Math;
   suppliers: Supplier[] = [];
   accountCops: AccountCop[] = [];
@@ -93,6 +94,8 @@ export class ProveedorComponent implements OnInit {
 
   showAjusteProveedor = false;
   proveedorAjuste: Supplier | null = null;
+  ajustesProveedor: MovimientoAjusteDto[] = [];
+  loadingAjustes = false;
 
   constructor(
     private supplierService: SupplierService,
@@ -282,6 +285,17 @@ export class ProveedorComponent implements OnInit {
       },
       error: err => console.error('Error cargando compras proveedor', err),
       complete: () => this.loadingCompras = false
+    });
+
+    this.loadingAjustes = true;
+    this.movimientoService.getAjustesProveedor(supplier.id).subscribe({
+      next: ajustes => {
+        this.ajustesProveedor = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: err => console.error('Error cargando ajustes proveedor', err),
+      complete: () => this.loadingAjustes = false
     });
   }
 

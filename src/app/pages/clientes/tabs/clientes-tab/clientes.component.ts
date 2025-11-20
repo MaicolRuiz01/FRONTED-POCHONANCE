@@ -11,7 +11,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { SupplierService } from '../../../../core/services/supplier.service';
 import { MessageService } from 'primeng/api';
-import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
 import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
 import { SellDollar, SellDollarsService } from '../../../../core/services/sell-dollars.service';
@@ -102,7 +102,8 @@ export class ClientesComponent implements OnInit {
   nuevoSaldoAjuste: number | null = null;
   motivoAjuste: string = '';
 
-
+  ajustesCliente: MovimientoAjusteDto[] = [];
+  loadingAjustesCliente = false;
 
 
   get pesosOrigen(): number {
@@ -359,10 +360,8 @@ export class ClientesComponent implements OnInit {
       error: (err) => console.error('Error al cargar historial de movimientos', err),
     });
 
-    // 👇 Compras asignadas al cliente
     this.buyDollarsService.getComprasPorCliente(cliente.id).subscribe({
       next: (compras) => {
-        // Si necesitas orden, el backend ya lo puede traer desc; si no:
         this.comprasCliente = [...compras].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
@@ -372,12 +371,22 @@ export class ClientesComponent implements OnInit {
 
     this.sellDollarsService.getVentasPorCliente(cliente.id).subscribe({
       next: (ventas) => {
-        // por si el backend no viene ordenado
         this.ventasCliente = [...ventas].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
       },
       error: (err) => console.error('Error al cargar ventas del cliente', err),
+    });
+
+    this.loadingAjustesCliente = true;
+    this.movimientoService.getAjustesCliente(cliente.id).subscribe({
+      next: (ajustes) => {
+        this.ajustesCliente = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: (err) => console.error('Error al cargar ajustes del cliente', err),
+      complete: () => this.loadingAjustesCliente = false
     });
 
     this.showMovimientosDialog = true;

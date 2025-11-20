@@ -29,6 +29,7 @@
 
       <ng-template pTemplate="content">
   <div class="account-details">
+    <p>Saldo inicial del dia: {{caja.saldoInicialDelDia | number:'1.2-2'}}</p>
     <div class="card-row">
       <span class="label">Saldo:</span>
       <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
@@ -72,46 +73,102 @@
           [style]="{ width: '80vw' }"
           [closable]="true">
 
-  <ng-container *ngIf="!loadingMovs; else loadingTpl">
-    <p-table [value]="movimientosCaja" scrollable="true" scrollHeight="420px" [responsive]="true">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Monto (COP)</th>
-          <th>Cuenta Origen</th>
-          <th>Cuenta Destino</th>
-          <th>Caja</th>
-          <th>Cliente</th>
-          <th>Proveedor</th>
-        </tr>
-      </ng-template>
+  <p-tabView>
+    <!-- TAB 1: Movimientos -->
+    <p-tabPanel header="Movimientos">
+      <ng-container *ngIf="!loadingMovs; else loadingMovsTpl">
+        <p-table [value]="movimientosCaja" scrollable="true" scrollHeight="420px" [responsive]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto (COP)</th>
+              <th>Cuenta Origen</th>
+              <th>Cuenta Destino</th>
+              <th>Caja</th>
+              <th>Cliente</th>
+              <th>Proveedor</th>
+            </tr>
+          </ng-template>
 
-      <ng-template pTemplate="body" let-mov>
-        <tr>
-          <td>{{ mov.fecha | date:'short' }}</td>
-          <td>{{ mov.tipo }}</td>
-          <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-          <td>{{ mov.cuentaOrigen || '-' }}</td>
-          <td>{{ mov.cuentaDestino || '-' }}</td>
-          <td>{{ mov.caja || '-' }}</td>
-          <td>{{ mov.pagoCliente || '-' }}</td>
-          <td>{{ mov.pagoProveedor || '-' }}</td>
-        </tr>
-      </ng-template>
+          <ng-template pTemplate="body" let-mov>
+            <tr>
+              <td>{{ mov.fecha | date:'short' }}</td>
+              <td>{{ mov.tipo }}</td>
+              <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ mov.cuentaOrigen || '-' }}</td>
+              <td>{{ mov.cuentaDestino || '-' }}</td>
+              <td>{{ mov.caja || '-' }}</td>
+              <td>{{ mov.pagoCliente || '-' }}</td>
+              <td>{{ mov.pagoProveedor || '-' }}</td>
+            </tr>
+          </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="8" class="p-text-center">Sin movimientos para esta caja.</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </ng-container>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="p-text-center">Sin movimientos para esta caja.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
 
-  <ng-template #loadingTpl>
-    <div class="p-3">Cargando movimientos...</div>
-  </ng-template>
+      <ng-template #loadingMovsTpl>
+        <div class="p-3">Cargando movimientos...</div>
+      </ng-template>
+    </p-tabPanel>
+
+    <!-- TAB 2: Ajustes de saldo -->
+    <p-tabPanel header="Ajustes de saldo">
+      <ng-container *ngIf="!loadingAjustesCaja; else loadingAjustesTpl">
+        <p-table
+          [value]="ajustesCaja"
+          scrollable="true"
+          scrollHeight="420px"
+          [responsive]="true">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Motivo</th>
+              <th>Actor</th>
+              <th>Saldo anterior</th>
+              <th>Saldo nuevo</th>
+              <th>Diferencia</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-aj>
+            <tr>
+              <td>{{ aj.fecha | date:'short' }}</td>
+              <td>{{ aj.tipo }}</td>
+              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.motivo || '-' }}</td>
+              <td>{{ aj.actor || '-' }}</td>
+              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="p-text-center">Sin ajustes de saldo para esta caja.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-template #loadingAjustesTpl>
+        <div class="p-3">Cargando ajustes de saldo...</div>
+      </ng-template>
+    </p-tabPanel>
+  </p-tabView>
 </p-dialog>
+
 
 <app-ajuste-saldo-dialog
   *ngIf="cajaAjuste"

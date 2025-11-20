@@ -7,9 +7,10 @@ import { AccountBinance } from './account-binance.service';
 
 
 export interface AccountCop {
-  id?:number;
+  id?: number;
   name: string;
   balance: number;
+  saldoInicialDelDia?: number;
 }
 export type AccountCopCreate = Omit<AccountCop, 'id'>;
 
@@ -17,9 +18,9 @@ export type AccountCopCreate = Omit<AccountCop, 'id'>;
   providedIn: 'root'
 })
 export class AccountCopService {
-   private apiUrl = `${environment.apiUrl}/cuenta-cop`;
+  private apiUrl = `${environment.apiUrl}/cuenta-cop`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<AccountCop[]> {
     return this.http.get<AccountCop[]>(this.apiUrl);
@@ -37,10 +38,12 @@ export class AccountCopService {
     return this.http.get<SaleP2PDto[]>(url);
   }
   getTotalBalance(): Observable<number> {
-  return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
-}
-getAllCajas(): Observable<{ id: number, name: string, saldo: number }[]> {
+    return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
+  }
+  getAllCajas(): Observable<{ id: number, name: string, saldo: number }[]> {
     return this.http.get<{ id: number, name: string, saldo: number }[]>(`${environment.apiUrl}/efectivo`);
-}
-
+  }
+  getById(id: number): Observable<AccountCop> {
+    return this.http.get<AccountCop>(`${this.apiUrl}/${id}`);
+  }
 }

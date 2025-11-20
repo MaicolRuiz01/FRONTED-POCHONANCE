@@ -1,34 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
-import { PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
+import { Movimiento, PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
-import { FormsModule  } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';  
+import { FormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { ListaPagosComponent } from './lista-pagos/lista-pagos.component';
 import { CardModule } from 'primeng/card';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
 import { CajaService, Caja } from '../../../../core/services/caja.service';
-import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
 import { ClienteService } from '../../../../core/services/cliente.service';
 import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
 import { TableModule } from 'primeng/table';
+import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
 export interface PagoProveedorDTO {
-    id: number;
-    amount: number;
-    date: Date;
-    accountOriginName: string;
-    accountDestinyName: string;
-    type: 'INGRESO' | 'EGRESO';
+  id: number;
+  amount: number;
+  date: Date;
+  accountOriginName: string;
+  accountDestinyName: string;
+  type: 'INGRESO' | 'EGRESO';
 }
-
-
 
 @Component({
   selector: 'app-proveedor',
@@ -45,12 +44,14 @@ export interface PagoProveedorDTO {
     CommonModule,
     CalendarModule,
     TabViewModule,
-    TableModule 
+    TableModule,
+    AjusteSaldoDialogComponent
   ],
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']
 })
 export class ProveedorComponent implements OnInit {
+
   Math = Math;
   suppliers: Supplier[] = [];
   accountCops: AccountCop[] = [];
@@ -65,6 +66,7 @@ export class ProveedorComponent implements OnInit {
 
   movimientos: any[] = [];
 
+
   Supplier_name: string = '';
   Supplier_balance: number = 0; // nuevo, balance por defecto
   SupplierlastPaymentDate: Date = new Date(); // nuevo, fecha por defecto
@@ -72,12 +74,28 @@ export class ProveedorComponent implements OnInit {
   cajas: any[] = [];
   selectedCaja: any | null = null;
   paymentMethod: string = 'Cuenta Bancaria';
-  paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor','Cliente'];
+  paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor', 'Cliente'];
   selectedCliente: any | null = null;
-  comprasProveedor: BuyDollarsDto[] = [];   
-  loadingMovs = false;                      
-  loadingCompras = false; 
-clientes: any[] = [];
+  comprasProveedor: BuyDollarsDto[] = [];
+  loadingMovs = false;
+  loadingCompras = false;
+  clientes: any[] = [];
+
+  displayPagoPCModal = false;
+
+  pagoPC = {
+    proveedorId: null as number | null,  // origen
+    clienteId: null as number | null,  // destino
+    usdt: null as number | null,
+    tasaProv: null as number | null,  // COP/USDT del proveedor (origen)
+    tasaCli: null as number | null,  // COP/USDT del cliente (destino)
+    nota: '' as string
+  };
+
+  showAjusteProveedor = false;
+  proveedorAjuste: Supplier | null = null;
+  ajustesProveedor: MovimientoAjusteDto[] = [];
+  loadingAjustes = false;
 
   constructor(
     private supplierService: SupplierService,
@@ -87,7 +105,7 @@ clientes: any[] = [];
     private movimientoService: MovimientoService,
     private clienteService: ClienteService,
     private buyDollarsService: BuyDollarsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadSuppliers();
@@ -96,11 +114,42 @@ clientes: any[] = [];
     this.clienteService.listar().subscribe(clientes => this.clientes = clientes);
   }
 
-  
+  get pesosProvPC(): number {
+    const u = this.pagoPC.usdt ?? 0;
+    const t = this.pagoPC.tasaProv ?? 0;
+    return u * t;
+  }
+  get pesosCliPC(): number {
+    const u = this.pagoPC.usdt ?? 0;
+    const t = this.pagoPC.tasaCli ?? 0;
+    return u * t;
+  }
+
+  abrirAjusteProveedor(supplier: Supplier) {
+    this.proveedorAjuste = supplier;
+    this.showAjusteProveedor = true;
+  }
+
+  onAjusteProveedorRealizado() {
+    this.loadSuppliers(); // recarga los saldos después del ajuste
+  }
+
 
   loadSuppliers(): void {
     this.supplierService.getAllSuppliers().subscribe({
-      next: (data) => this.suppliers = data,
+      next: (data) => {
+        this.suppliers = data;
+        this.suppliers.forEach(s => {
+          if (!s.id) return;
+          this.movimientoService.getResumenProveedor(s.id).subscribe({
+            next: (res) => {
+              s.comprasHoy = res.comprasHoy;
+              s.ventasHoy = res.ventasHoy;
+              s.ajustesHoy = res.ajustesHoy;
+            }
+          });
+        });
+      },
       error: (err) => console.error('Error loading suppliers', err)
     });
   }
@@ -118,82 +167,82 @@ clientes: any[] = [];
   }
 
   createSupplier(data: any): void {
-  this.supplierService.createSupplier({
-    name: data.name,
-    balance: data.balance || 0, // Asigna un balance por defecto si no se proporciona
-    lastPaymentDate: new Date()
-  }).subscribe({
-    next: (supplier) => {
-      this.suppliers.push(supplier);
-      this.showform = false;
+    this.supplierService.createSupplier({
+      name: data.name,
+      balance: data.balance || 0, // Asigna un balance por defecto si no se proporciona
+      lastPaymentDate: new Date()
+    }).subscribe({
+      next: (supplier) => {
+        this.suppliers.push(supplier);
+        this.showform = false;
 
-      this.Supplier_name = '';
-      this.Supplier_balance = 0;
-      this.SupplierlastPaymentDate = new Date();
-    },
-    error: (err) => console.error('Error creating supplier', err)
-  }); 
-}
+        this.Supplier_name = '';
+        this.Supplier_balance = 0;
+        this.SupplierlastPaymentDate = new Date();
+      },
+      error: (err) => console.error('Error creating supplier', err)
+    });
+  }
 
 
   // Obtener los pagos asociados al proveedor seleccionado
   loadMovimientosBySupplier(): void {
     if (this.selectedSupplier) {
       const supplierId = this.selectedSupplier.id;
-      
-       console.log('Cargando movimientos para el proveedor ID:', supplierId);
-       console.log('Proveedor seleccionado:', this.movimientos);
+
+      console.log('Cargando movimientos para el proveedor ID:', supplierId);
+      console.log('Proveedor seleccionado:', this.movimientos);
       this.paymentService.getMovimientosBySupplier(supplierId).subscribe({
         next: (data) => this.movimientos = data,
         error: (err) => console.error('Error cargando movimientos', err)
-        
+
       });
     }
   }
 
   // Llamar al servicio para realizar el pago
   makePayment(): void {
-  const proveedorDestinoId = Number(this.selectedSupplier?.id ?? 0);
-  if (proveedorDestinoId === 0) {
-    console.error('Proveedor destino no seleccionado');
-    return;
+    const proveedorDestinoId = Number(this.selectedSupplier?.id ?? 0);
+    if (proveedorDestinoId === 0) {
+      console.error('Proveedor destino no seleccionado');
+      return;
+    }
+
+    let cuentaId: number | null = null;
+    let cajaId: number | null = null;
+    let proveedorOrigenId: number | null = null;
+    let clienteId: number | null = null;
+
+    if (this.paymentMethod === 'Cuenta Bancaria') {
+      cuentaId = Number(this.selectedAccountCop?.id ?? 0);
+      if (cuentaId === 0) return console.error('Cuenta COP no seleccionada');
+    } else if (this.paymentMethod === 'Caja') {
+      cajaId = Number(this.selectedCaja?.id ?? 0);
+      if (cajaId === 0) return console.error('Caja no seleccionada');
+    } else if (this.paymentMethod === 'Proveedor') {
+      proveedorOrigenId = Number(this.selectedProveedorOrigen?.id ?? 0);
+      if (proveedorOrigenId === 0) return console.error('Proveedor origen no seleccionado');
+    } else if (this.paymentMethod === 'Cliente') {
+      clienteId = Number(this.selectedCliente?.id ?? 0);
+      if (clienteId === 0) return console.error('Cliente no seleccionado');
+    }
+
+    this.movimientoService.registrarPagoProveedor(
+      cuentaId,
+      cajaId,
+      proveedorOrigenId,
+      proveedorDestinoId,
+      this.amount,
+      clienteId // 🔹 aquí pasas el cliente si existe
+    ).subscribe({
+      next: (response) => {
+        console.log('✅ Pago realizado exitosamente', response);
+        this.loadSuppliers();
+        this.togglePaymentForm();
+      },
+      error: (err) => console.error('❌ Error realizando el pago:', err)
+    });
   }
-
-  let cuentaId: number | null = null;
-  let cajaId: number | null = null;
-  let proveedorOrigenId: number | null = null;
-  let clienteId: number | null = null;
-
-  if (this.paymentMethod === 'Cuenta Bancaria') {
-    cuentaId = Number(this.selectedAccountCop?.id ?? 0);
-    if (cuentaId === 0) return console.error('Cuenta COP no seleccionada');
-  } else if (this.paymentMethod === 'Caja') {
-    cajaId = Number(this.selectedCaja?.id ?? 0);
-    if (cajaId === 0) return console.error('Caja no seleccionada');
-  } else if (this.paymentMethod === 'Proveedor') {
-    proveedorOrigenId = Number(this.selectedProveedorOrigen?.id ?? 0);
-    if (proveedorOrigenId === 0) return console.error('Proveedor origen no seleccionado');
-  } else if (this.paymentMethod === 'Cliente') {
-    clienteId = Number(this.selectedCliente?.id ?? 0);
-    if (clienteId === 0) return console.error('Cliente no seleccionado');
-  }
-
-  this.movimientoService.registrarPagoProveedor(
-    cuentaId,
-    cajaId,
-    proveedorOrigenId,
-    proveedorDestinoId,
-    this.amount,
-    clienteId // 🔹 aquí pasas el cliente si existe
-  ).subscribe({
-    next: (response) => {
-      console.log('✅ Pago realizado exitosamente', response);
-      this.loadSuppliers();
-      this.togglePaymentForm();
-    },
-    error: (err) => console.error('❌ Error realizando el pago:', err)
-  });
-}
 
 
 
@@ -209,35 +258,90 @@ clientes: any[] = [];
     }
   }
 
-onSelectSupplier(supplier: Supplier): void {
-  this.selectedSupplier = supplier;
-  this.movimientos = [];
-  this.comprasProveedor = [];
-  this.showPagosDialog = true;
+  onSelectSupplier(supplier: Supplier): void {
+    this.selectedSupplier = supplier;
+    this.movimientos = [];
+    this.comprasProveedor = [];
+    this.showPagosDialog = true;
 
-  if (!supplier?.id) return;
+    if (!supplier?.id) return;
 
-  // Movimientos
-  this.loadingMovs = true;
-  this.paymentService.getMovimientosBySupplier(supplier.id).subscribe({
-    next: data => this.movimientos = data,
-    error: err => console.error('Error cargando movimientos', err),
-    complete: () => this.loadingMovs = false
-  });
+    // Movimientos
+    this.loadingMovs = true;
+    this.paymentService.getMovimientosBySupplier(supplier.id).subscribe({
+      next: data => this.movimientos = data,
+      error: err => console.error('Error cargando movimientos', err),
+      complete: () => this.loadingMovs = false
+    });
 
-  // Compras (BuyDollars)
-  this.loadingCompras = true;
-  this.buyDollarsService.getComprasPorProveedor(supplier.id).subscribe({
-    next: compras => {
-      // Si el backend ya viene ordenado, esto es opcional:
-      this.comprasProveedor = [...compras].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-    },
-    error: err => console.error('Error cargando compras proveedor', err),
-    complete: () => this.loadingCompras = false
-  });
-}
+    // Compras (BuyDollars)
+    this.loadingCompras = true;
+    this.buyDollarsService.getComprasPorProveedor(supplier.id).subscribe({
+      next: compras => {
+        // Si el backend ya viene ordenado, esto es opcional:
+        this.comprasProveedor = [...compras].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      },
+      error: err => console.error('Error cargando compras proveedor', err),
+      complete: () => this.loadingCompras = false
+    });
 
+    this.loadingAjustes = true;
+    this.movimientoService.getAjustesProveedor(supplier.id).subscribe({
+      next: ajustes => {
+        this.ajustesProveedor = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: err => console.error('Error cargando ajustes proveedor', err),
+      complete: () => this.loadingAjustes = false
+    });
+  }
+
+
+  abrirModalPagoProveedorCliente(): void {
+    this.pagoPC = {
+      proveedorId: this.selectedSupplier?.id ?? null, // si ya hay proveedor seleccionado, precárgalo
+      clienteId: null,
+      usdt: null,
+      tasaProv: null,
+      tasaCli: null,
+      nota: ''
+    };
+    this.displayPagoPCModal = true;
+  }
+
+  confirmarPagoProveedorCliente(): void {
+    const { proveedorId, clienteId, usdt, tasaProv, tasaCli, nota } = this.pagoPC;
+    if (!proveedorId || !clienteId || !usdt || !tasaProv || !tasaCli) return;
+
+    this.movimientoService.pagoProveedorACliente({
+      proveedorOrigenId: proveedorId,
+      clienteDestinoId: clienteId,
+      usdt: usdt,
+      tasaProveedor: tasaProv,
+      tasaCliente: tasaCli,
+      nota
+    }).subscribe({
+      next: () => {
+        this.displayPagoPCModal = false;
+        this.loadSuppliers();  // refresca saldos
+        if (this.selectedSupplier?.id) this.onSelectSupplier(this.selectedSupplier); // refresca dialog abierto
+      },
+      error: (err) => console.error('Error en pago Proveedor→Cliente', err)
+    });
+  }
+
+
+  eliminarMovimiento(movimiento: Movimiento): void {
+    this.movimientoService.eliminarMovimiento(movimiento).subscribe({
+      next: () => {
+        console.log('✅ Movimiento eliminado exitosamente');
+        this.loadMovimientosBySupplier(); // Recargar movimientos
+      },
+      error: (err) => console.error('❌ Error eliminando movimiento:', err)
+    });
+  }
 
 }

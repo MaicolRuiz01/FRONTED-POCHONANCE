@@ -8,9 +8,10 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
+import { DialogModule } from 'primeng/dialog';
 import { OrdenesCriptoService,OrdenSpotDTO } from '../../../../core/services/ordenes-cripto.service';
 import { AccountBinance,AccountBinanceService } from '../../../../core/services/account-binance.service';
+import { CryptoAverageRateService } from '../../../../core/services/crypto-average-rate.service'; 
 import { finalize} from 'rxjs';
 
 @Component({
@@ -23,7 +24,8 @@ import { finalize} from 'rxjs';
     ButtonModule,
     InputTextModule,
     TagModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    DialogModule
   ],
   templateUrl: './ordenes-cripto.component.html',
   styleUrls: ['./ordenes-cripto.component.css']
@@ -41,9 +43,16 @@ export class OrdenesCriptoComponent implements OnInit {
   cuentas: AccountBinance[] = [];
   limiteImport = 50;
 
+  mostrarModalTasaCripto = false;
+  criptoSeleccionada: string | null = null;
+  tasaInicialCripto: number | null = null;
+  isTasaInicialCriptoInvalid = false;
+  loadingTasaCripto = false;
+
   constructor(
     private ordenesSrv: OrdenesCriptoService,
-    private cuentasSrv: AccountBinanceService
+    private cuentasSrv: AccountBinanceService,
+    private cryptoRateSrv: CryptoAverageRateService
   ) {}
 
   ngOnInit(): void {
@@ -120,5 +129,79 @@ export class OrdenesCriptoComponent implements OnInit {
       comisionUsdt: num(d.comisionUsdt ?? d.commission ?? d.feeTotalUsdt),
       fecha: d.fecha ?? d.time ?? d.filledAt ?? null
     };
+  }
+
+   // ==================== LÓGICA TASA CRIPTO ====================
+
+  /** Extrae la cripto base desde el símbolo del par (ej: TRXUSDT -> TRX) */
+  private obtenerCriptoBase(simboloPar: string): string {
+    if (!simboloPar) return '';
+    const up = simboloPar.toUpperCase();
+    if (up.endsWith('USDT')) return up.replace('USDT', '');
+    if (up.endsWith('USDC')) return up.replace('USDC', '');
+    return up;
+  }
+
+  /** Click en el botón de la fila para configurar tasa cripto */
+  configurarTasaDesdeFila(simboloPar: string): void {
+    const cripto = this.obtenerCriptoBase(simboloPar);
+    if (!cripto) return;
+
+    // 1) Consultar si ya hay tasa para esa cripto
+    this.cryptoRateSrv.getUltimaPorCripto(cripto).subscribe({
+      next: (rate) => {
+        if (rate) {
+          // Ya existe -> solo aviso, no vuelvo a pedir inicialización
+          alert(`Ya hay una tasa promedio configurada para ${cripto}: ${rate.tasaPromedioDia}`);
+        } else {
+          // No existe -> abrir modal para que el usuario la ponga
+          this.criptoSeleccionada = cripto;
+          this.tasaInicialCripto = null;
+          this.isTasaInicialCriptoInvalid = false;
+          this.mostrarModalTasaCripto = true;
+        }
+      },
+      error: err => {
+        console.error('Error consultando tasa por cripto', err);
+        alert('Error consultando la tasa promedio de la cripto');
+      }
+    });
+  }
+
+  validarTasaInicialCripto(): void {
+    this.isTasaInicialCriptoInvalid =
+      this.tasaInicialCripto == null || this.tasaInicialCripto <= 0;
+  }
+
+  guardarTasaInicialCripto(): void {
+    if (!this.criptoSeleccionada || this.tasaInicialCripto == null) {
+      return;
+    }
+    this.validarTasaInicialCripto();
+    if (this.isTasaInicialCriptoInvalid) return;
+
+    this.loadingTasaCripto = true;
+    this.cryptoRateSrv.inicializarCripto(this.criptoSeleccionada, this.tasaInicialCripto)
+      .pipe(finalize(() => (this.loadingTasaCripto = false)))
+      .subscribe({
+        next: (rate) => {
+          console.log('Tasa inicial cripto guardada', rate);
+          alert(`Tasa inicial para ${this.criptoSeleccionada} guardada: ${rate.tasaPromedioDia}`);
+          this.mostrarModalTasaCripto = false;
+          this.criptoSeleccionada = null;
+          this.tasaInicialCripto = null;
+        },
+        error: err => {
+          console.error('Error guardando tasa inicial cripto', err);
+          const msg = err.error?.message || err.statusText || 'Error desconocido';
+          alert('Error guardando tasa inicial de la cripto: ' + msg);
+        }
+      });
+  }
+
+  cancelarTasaCripto(): void {
+    this.mostrarModalTasaCripto = false;
+    this.criptoSeleccionada = null;
+    this.tasaInicialCripto = null;
   }
 }

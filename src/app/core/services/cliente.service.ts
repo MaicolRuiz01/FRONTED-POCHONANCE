@@ -4,13 +4,18 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
 export interface Cliente {
-    id: number;
-    nombre: String;
-    correo: String;
-    nameUser: String;
-    saldo: number;
-    wallet: String;
-    binanceId?: number;
+  id: number;
+  nombre: string;
+  correo: String;
+  nameUser: String;
+  saldo: number;
+  wallet: String;
+  binanceId?: number;
+  saldoInicialDelDia?: number;
+
+  comprasHoy?: number;
+  ventasHoy?: number;
+  ajustesHoy?: number;
 }
 
 @Injectable({
@@ -19,7 +24,7 @@ export interface Cliente {
 export class ClienteService {
   private readonly apiUrl = `${environment.apiUrl}/cliente`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   listar(): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${this.apiUrl}/listar`);
@@ -50,5 +55,5 @@ export class ClienteService {
   historial(clienteId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${clienteId}/historial-transacciones`);
   }
-  
+
 }

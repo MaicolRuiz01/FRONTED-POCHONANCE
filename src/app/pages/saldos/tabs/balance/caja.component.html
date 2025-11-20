@@ -143,6 +143,24 @@
           <div class="dm-total-value">{{ detail.totalCalculado | number:'1.0-0' }}</div>
         </div>
 
+  <ng-template pTemplate="content">
+    <div *ngIf="selectedBalance">
+      <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
+      <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency:'COP' }}</p>
+
+      <!-- Estas 3 propiedades deben existir en BalanceGeneral si las vas a mostrar -->
+      <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
+      <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
+      <p><strong>Cuentas Colombianas:</strong> {{ selectedBalance.cuentasCop | currency:'COP' }}</p>   
+      <p> <strong>Total Clientes: </strong> {{ totalClientes | currency:'COP' }}</p>
+      <p><strong>Total Clientes:</strong> {{ totalClientes | currency:'COP' }}</p>
+      <div *ngIf="totalCajaArr.length > 0">
+        <p><strong>Total por Caja: </strong></p>
+        <ul>
+          <li *ngFor="let caja of totalCajaArr">
+            {{ caja.nombre }}: {{ caja.monto | currency:'COP' }}
+          </li>
+        </ul>
       </div>
     </div>
   </ng-template>

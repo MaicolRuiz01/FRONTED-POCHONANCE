@@ -6,6 +6,13 @@
   <div class="p-col-12 p-md-10" style="text-align: center; margin-top: 20px; display: flex; justify-content: start; gap: 10px;">
   <p-button label="Pago Proveedor" icon="pi pi-credit-card" (click)="togglePaymentForm()"
     styleClass="p-button-raised p-button-info"></p-button>
+    <p-button
+  label="Pagar a Cliente (USDT)"
+  icon="pi pi-send"
+  styleClass="p-button-raised p-button-success"
+  (click)="abrirModalPagoProveedorCliente()">
+</p-button>
+
 
     <p-button label="Crear Proveedor" icon="pi pi-plus" (click)="showFormsupplier()"
       styleClass="p-button-raised p-button-info"></p-button>
@@ -34,24 +41,47 @@
       </ng-template>
 
       <ng-template pTemplate="content">
+        <div class="saldo-inicial">
+        Saldo inicial del día:
+        <span>{{ supplier.saldoInicialDelDia | number:'1.2-2' }}</span>
+    </div>
+    <div class="resumen-dia">
+    <p><strong>Compras hoy:</strong> {{ supplier.comprasHoy || 0 | currency:'COP' }}</p>
+    <p><strong>Ventas hoy:</strong>  {{ supplier.ventasHoy  || 0 | currency:'COP' }}</p>
+    <p><strong>Ajustes hoy:</strong> {{ supplier.ajustesHoy || 0 | currency:'COP' }}</p>
+  </div>
         <div class="account-details">
           <div class="card-row">
+            
   <span class="label">
     {{ (supplier?.balance ?? 0) >= 0 ? 'Debemos:' : 'Debe:' }}
   </span>
   <span class="value">
     {{ Math.abs(supplier?.balance ?? 0) | currency:'COP' }}
   </span>
+  
 </div>
 
           <div class="card-row">
             <span class="label">Último pago:</span>
             <span class="value">{{ supplier?.lastPaymentDate | date:'mediumDate' }}</span>
           </div>
+          
         </div>
+        <div class="acciones-card">
+        <button
+          pButton
+          label="Ajustar saldo"
+          icon="pi pi-refresh"
+          class="p-button-text p-button-warning p-button-sm"
+          (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)">
+        </button>
+      </div>
       </ng-template>
+      
     </p-card>
   </div>
+  
 </div>
 
   <p-dialog
@@ -115,7 +145,55 @@
         <div class="p-3">Cargando compras...</div>
       </ng-template>
     </p-tabPanel>
+        <!-- TAB 3: Ajustes de saldo -->
+    <p-tabPanel header="Ajustes de saldo">
+      <ng-container *ngIf="!loadingAjustes; else ajustesLoading">
+        <p-table
+          [value]="ajustesProveedor"
+          scrollable="true"
+          scrollHeight="400px"
+          [responsive]="true">
 
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Motivo</th>
+              <th>Actor</th>
+              <th>Saldo anterior</th>
+              <th>Saldo nuevo</th>
+              <th>Diferencia</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-aj>
+            <tr>
+              <td>{{ aj.fecha | date:'short' }}</td>
+              <td>{{ aj.tipo }}</td>
+              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.motivo || '-' }}</td>
+              <td>{{ aj.actor || '-' }}</td>
+              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="p-text-center">Sin ajustes de saldo para este proveedor.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-template #ajustesLoading>
+        <div class="p-3">Cargando ajustes...</div>
+      </ng-template>
+    </p-tabPanel>
   </p-tabView>
 </p-dialog>
 
@@ -191,50 +269,183 @@
     </div>
   </div>
 </p-dialog>
-
   <!-- Dialog de formulario para crear proveedor -->
-  <p-dialog header="Formulario de Proveedor" [(visible)]="showform" [modal]="true" [closable]="false"
-    [style]="{width: '400px'}">
-    <div class="p-fluid">
-      <div class="p-grid">
-        <br>
-        <div class="p-col-12 p-md-6">
-          <label for="name">Nombre :</label>
-          <input id="nombre" [(ngModel)]="Supplier_name" placeholder="Ingrese el nombre">
-        </div>
+<p-dialog
+  header="Formulario de Proveedor"
+  [(visible)]="showform"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: '420px' }"
+  (onHide)="showform = false"
+>
+  <div class="p-fluid">
+    <div class="p-grid">
+      <div class="p-col-12 p-md-12">
+        <label for="nombre">Nombre :</label>
+        <input
+          pInputText
+          id="nombre"
+          [(ngModel)]="Supplier_name"
+          placeholder="Ingrese el nombre"
+        />
+      </div>
 
-        <br>
-        <div class="p-col-12 p-md-6">
-          <label for="balance" class="p-d-block p-mb-2">Balance inicial</label>
-          <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" mode="decimal" currency="COP" [min]="0"
-            [prefix]="'$'" [showButtons]="true" placeholder="Ej: 1000" class="decimal"></p-inputNumber>
-        </div>
+      <div class="p-col-12 p-md-12">
+        <label for="balance" class="p-d-block p-mb-2">Balance inicial</label>
+        <p-inputNumber
+          id="balance"
+          [(ngModel)]="Supplier_balance"
+          mode="decimal"
+          currency="COP"
+          [prefix]="'$'"
+          [showButtons]="true"
+          placeholder="Ej: 1000"
+          class="decimal"
+        ></p-inputNumber>
+      </div>
 
-        <br>
-        <div class="p-field p-col-12">
-      <label for="lastPaymentDate" class="p-d-block p-mb-2">Última fecha de pago</label>
-      <p-calendar 
-        id="lastPaymentDate" 
-        [(ngModel)]="SupplierlastPaymentDate" 
-        dateFormat="yy-mm-dd" 
-        showIcon="true"
-        class="p-inputtext-sm"
-        placeholder="Seleccione la fecha"
-      ></p-calendar>
-    </div>
-
-        <br>
-        <div class="p-col-12" style="text-align: right; margin-top: 20px;">
-          <button pButton type="button" label="Crear Proveedor" icon="pi pi-check"
-            (click)="createSupplier({ name: Supplier_name, balance: Supplier_balance, lastPaymentDate: SupplierlastPaymentDate })"></button>
-          <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-secondary"
-            (click)="showFormsupplier()"></button>
-        </div>
-
+      <div class="p-field p-col-12">
+        <label for="lastPaymentDate" class="p-d-block p-mb-2">
+          Última fecha de pago
+        </label>
+        <p-calendar
+          id="lastPaymentDate"
+          [(ngModel)]="SupplierlastPaymentDate"
+          dateFormat="yy-mm-dd"
+          showIcon="true"
+          class="p-inputtext-sm"
+          placeholder="Seleccione la fecha"
+        ></p-calendar>
       </div>
     </div>
-  </p-dialog>
+  </div>
+
+  <!-- ✅ Footer del diálogo: botones alineados y bonitos -->
+  <ng-template pTemplate="footer">
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-text p-button-secondary"
+        (click)="showform = false"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        label="Crear Proveedor"
+        icon="pi pi-check"
+        (click)="createSupplier({
+          name: Supplier_name,
+          balance: Supplier_balance,
+          lastPaymentDate: SupplierlastPaymentDate
+        })"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+
+  <p-dialog header="Pago en USDT: Proveedor → Cliente"
+          [(visible)]="displayPagoPCModal"
+          [modal]="true"
+          [style]="{ width: '460px' }">
+
+  <form class="p-fluid">
+    <!-- Proveedor Origen -->
+    <div class="p-field">
+      <label>Proveedor Origen</label>
+      <p-dropdown
+        [options]="suppliers"
+        [(ngModel)]="pagoPC.proveedorId"
+        name="pc_proveedor"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Seleccione proveedor">
+      </p-dropdown>
+    </div>
+
+    <!-- Cliente Destino -->
+    <div class="p-field">
+      <label>Cliente Destino</label>
+      <p-dropdown
+        [options]="clientes"
+        [(ngModel)]="pagoPC.clienteId"
+        name="pc_cliente"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccione cliente">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto USDT -->
+    <div class="p-field">
+      <label>Monto (USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.usdt" name="pc_usdt"
+        mode="decimal" [min]="0" [showButtons]="true">
+      </p-inputNumber>
+    </div>
+
+    <!-- Tasas + COP -->
+    <div class="p-field">
+      <label>Tasa Proveedor (COP/USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.tasaProv" name="pc_tasaProv"
+        mode="currency" currency="COP">
+      </p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (proveedor)</label>
+      <input pInputText [value]="pesosProvPC | currency:'COP'" readonly />
+    </div>
+
+    <div class="p-field">
+      <label>Tasa Cliente (COP/USDT)</label>
+      <p-inputNumber
+        [(ngModel)]="pagoPC.tasaCli" name="pc_tasaCli"
+        mode="currency" currency="COP">
+      </p-inputNumber>
+    </div>
+    <div class="p-field">
+      <label>COP (cliente)</label>
+      <input pInputText [value]="pesosCliPC | currency:'COP'" readonly />
+    </div>
+
+    <!-- Nota -->
+    <div class="p-field">
+      <label>Nota (opcional)</label>
+      <input pInputText [(ngModel)]="pagoPC.nota" name="pc_nota" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times"
+            class="p-button-text"
+            (click)="displayPagoPCModal = false"></button>
+
+    <button pButton label="Confirmar Pago" icon="pi pi-check"
+            class="p-button-success"
+            (click)="confirmarPagoProveedorCliente()"
+            [disabled]="!pagoPC.proveedorId || !pagoPC.clienteId || !pagoPC.usdt || !pagoPC.tasaProv || !pagoPC.tasaCli">
+    </button>
+  </ng-template>
+</p-dialog>
+
 
   <p *ngIf="suppliers.length === 0">No hay proveedores registrados.</p>
 </div>
 </div>
+<app-ajuste-saldo-dialog
+  *ngIf="proveedorAjuste"
+  [visible]="showAjusteProveedor"
+  (visibleChange)="showAjusteProveedor = $event"
+  [entidad]="'PROVEEDOR'"
+  [entidadId]="proveedorAjuste.id"
+  [nombreEntidad]="proveedorAjuste.name"
+  [saldoActual]="proveedorAjuste.balance ?? 0"
+  (ajusteRealizado)="onAjusteProveedorRealizado()">
+</app-ajuste-saldo-dialog>

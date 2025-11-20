@@ -8,6 +8,11 @@ export interface Supplier {
   name: string;
   balance: number;
   lastPaymentDate: Date;
+  saldoInicialDelDia?: number;
+
+  comprasHoy?: number;
+  ventasHoy?: number;
+  ajustesHoy?: number;
 }
 
 @Injectable({

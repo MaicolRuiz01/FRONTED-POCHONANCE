@@ -38,3 +38,27 @@
   gap: 0.5rem; /* Espacio entre botones */
 }
 
+/* Si este CSS va en el .scss del componente: */
+:host ::ng-deep .dialog-full-vert.p-dialog {
+  top: 0 !important;
+  bottom: 0 !important;                 /* asegura que “llegue” al fondo */
+  transform: none !important;           /* sin centrado vertical */
+  height: 100dvh !important;            /* dvh = viewport real en móvil */
+  max-height: 100dvh !important;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom); /* iOS notch */
+  padding-top: env(safe-area-inset-top);
+}
+
+:host ::ng-deep .dialog-full-vert .p-dialog-header,
+:host ::ng-deep .dialog-full-vert .p-dialog-footer {
+  flex: 0 0 auto;                       /* tamaño natural */
+}
+
+:host ::ng-deep .dialog-full-vert .p-dialog-content {
+  flex: 1 1 auto;                       /* ocupa todo el alto disponible */
+  min-height: 0;                        /* evita overflow por flex */
+  overflow: auto;                       /* scroll interno del contenido */
+}

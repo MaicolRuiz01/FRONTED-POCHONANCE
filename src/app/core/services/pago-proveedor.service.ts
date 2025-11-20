@@ -6,6 +6,7 @@ import { PagoProveedorDTO } from '../../pages/clientes/tabs/proveedor-tab/provee
 
 
 export interface Movimiento {
+  idtransaccion: string;
   id: number;
   tipo: 'INGRESO' | 'EGRESO';
   monto: number;

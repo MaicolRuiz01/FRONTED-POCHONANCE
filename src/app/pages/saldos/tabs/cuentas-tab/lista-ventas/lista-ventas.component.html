@@ -1,11 +1,42 @@
-<h2>Detalle de Cuenta</h2>
-<p-button label="Regresar" icon="pi pi-arrow-left" class="p-button-text p-mb-3" (click)="goBack()"></p-button>
+<div class="account-header">
+  <div class="account-header-left">
+    <button
+      pButton
+      label="Regresar"
+      icon="pi pi-arrow-left"
+      class="p-button-rounded p-button-text"
+      (click)="goBack()">
+    </button>
 
-<p-card>
+    <div class="account-header-text">
+      <h2 class="account-title">{{ accountName }}</h2>
+      <p class="account-subtitle">
+        Cuenta COP • ID #{{ accountId }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Si quieres mostrar saldo actual de la cuenta -->
+  <div class="account-header-right" *ngIf="saldo != null">
+    <span class="account-badge-label">Saldo actual</span>
+    <span class="account-badge-amount">
+      {{ saldo | currency:'COP':'symbol':'1.0-0' }}
+    </span>
+  </div>
+</div>
+
+<br>
+<hr>
+<br>
+<p-card class="account-card">
   <p-tabView (onChange)="onTabChange($event)">
-    <!-- TAB 1: Ventas -->
+
+    <!-- TAB 0: Ventas -->
     <p-tabPanel header="Ventas">
-      <p-table [value]="ventas" *ngIf="!loadingVentas && ventas.length > 0" class="p-datatable-striped p-shadow-2">
+      <p-table
+        [value]="ventas"
+        *ngIf="!loadingVentas && ventas.length > 0"
+        class="p-datatable-striped p-shadow-2">
         <ng-template pTemplate="header">
           <tr>
             <th>ID</th>
@@ -25,40 +56,125 @@
       </p-table>
 
       <div *ngIf="loadingVentas">Cargando ventas…</div>
-      <p *ngIf="!loadingVentas && ventas.length === 0">No hay ventas registradas para esta cuenta.</p>
+      <p *ngIf="!loadingVentas && ventas.length === 0">
+        No hay ventas registradas para esta cuenta.
+      </p>
     </p-tabPanel>
 
-    <!-- TAB 2: Movimientos -->
-    <p-tabPanel header="Movimientos">
-      <p-table [value]="movimientos" *ngIf="!loadingMovs && movimientos.length > 0" class="p-datatable-striped p-shadow-2">
+    <!-- TAB 1: Entradas -->
+    <p-tabPanel header="Entradas">
+      <p-table
+        [value]="movimientosEntradas"
+        *ngIf="!loadingMovs && movimientosEntradas.length > 0"
+        class="p-datatable-striped p-shadow-2">
         <ng-template pTemplate="header">
           <tr>
             <th>Fecha</th>
             <th>Tipo</th>
             <th>Monto (COP)</th>
-            <th>Cuenta Origen</th>
-            <th>Cuenta Destino</th>
-            <th>Caja</th>
-            <th>Cliente</th>
-            <th>Proveedor</th>
+            <th>Detalle</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-mov>
           <tr>
             <td>{{ mov.fecha | date:'short' }}</td>
             <td>{{ mov.tipo }}</td>
-            <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ mov.cuentaOrigen  || '-' }}</td>
-            <td>{{ mov.cuentaDestino || '-' }}</td>
-            <td>{{ mov.caja          || '-' }}</td>
-            <td>{{ mov.pagoCliente   || '-' }}</td>
-            <td>{{ mov.pagoProveedor || '-' }}</td>
+            <td>{{ mov.montoSigned | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ mov.detalle }}</td>
           </tr>
         </ng-template>
       </p-table>
 
       <div *ngIf="loadingMovs">Cargando movimientos…</div>
-      <p *ngIf="!loadingMovs && movimientos.length === 0">No hay movimientos para esta cuenta.</p>
+      <p *ngIf="!loadingMovs && movimientosEntradas.length === 0">
+        No hay entradas para esta cuenta.
+      </p>
     </p-tabPanel>
+
+    <!-- TAB 2: Salidas -->
+    <p-tabPanel header="Salidas">
+      <p-table
+        [value]="movimientosSalidas"
+        *ngIf="!loadingMovs && movimientosSalidas.length > 0"
+        class="p-datatable-striped p-shadow-2">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Monto (COP)</th>
+            <th>Detalle</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-mov>
+          <tr>
+            <td>{{ mov.fecha | date:'short' }}</td>
+            <td>{{ mov.tipo }}</td>
+            <td>{{ mov.montoSigned | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ mov.detalle }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div *ngIf="loadingMovs">Cargando movimientos…</div>
+      <p *ngIf="!loadingMovs && movimientosSalidas.length === 0">
+        No hay salidas para esta cuenta.
+      </p>
+    </p-tabPanel>
+
+    <!-- TAB 3: Ajustes de saldo -->
+    <p-tabPanel header="Ajustes de saldo">
+      <ng-container *ngIf="!loadingAjustes; else ajustesLoadingTpl">
+        <p-table
+          [value]="ajustesCuenta"
+          *ngIf="ajustesCuenta.length > 0"
+          class="p-datatable-striped p-shadow-2">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Motivo</th>
+              <th>Actor</th>
+              <th>Saldo anterior</th>
+              <th>Saldo nuevo</th>
+              <th>Diferencia</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-aj>
+            <tr>
+              <td>{{ aj.fecha | date:'short' }}</td>
+              <td>{{ aj.tipo }}</td>
+              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.motivo || '-' }}</td>
+              <td>{{ aj.actor || '-' }}</td>
+              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="p-text-center">
+                Sin ajustes de saldo para esta cuenta.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <p *ngIf="ajustesCuenta.length === 0">
+          No hay ajustes de saldo para esta cuenta.
+        </p>
+      </ng-container>
+
+      <ng-template #ajustesLoadingTpl>
+        <div class="p-3">Cargando ajustes de saldo…</div>
+      </ng-template>
+    </p-tabPanel>
+
   </p-tabView>
 </p-card>
+

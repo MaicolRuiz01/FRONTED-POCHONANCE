@@ -27,6 +27,7 @@
       <td>{{ pago.caja || '-' }}</td>
       <td>{{ pago.pagoCliente || '-' }}</td>
       <td>{{ pago.pagoProveedor || '-' }}</td>
+       <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(pago)"></button>
     </tr>
   </ng-template>
 </p-table>

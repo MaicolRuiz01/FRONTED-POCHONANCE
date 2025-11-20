@@ -8,19 +8,20 @@ export interface Caja {
   id: number;
   name: string;
   saldo: number;
+  saldoInicialDelDia?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CajaService {
   private readonly apiUrl = `${environment.apiUrl}/efectivo`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   listar(): Observable<Caja[]> {
     return this.http.get<Caja[]>(this.apiUrl);
   }
   crear(caja: Partial<Caja>): Observable<Caja> {
-  return this.http.post<Caja>(this.apiUrl, caja);
-}
+    return this.http.post<Caja>(this.apiUrl, caja);
+  }
 
 }

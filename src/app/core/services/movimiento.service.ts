@@ -6,20 +6,20 @@ import { Movimiento } from './pago-proveedor.service';
 
 export interface MovimientoDto {
   id: number;
-  tipo: string; // 'retiro', 'deposito', 'transferencia', 'pago'
+  tipo: string; 
   monto: number;
   cuentaFromId: number;
-  cuentaToId?: number; // Solo para transferencias
+  cuentaToId?: number;
   fecha: Date;
   descripcion?: string;
   caja?: number;
 
 }
-// 👇 debajo de las otras interfaces
+
 export interface MovimientoVistaCuentaCopDto {
   id: number;
   tipo: string;
-  fecha: Date;          // o string, como prefieras
+  fecha: Date;
   montoSigned: number;
   entrada: boolean;
   salida: boolean;
@@ -36,7 +36,7 @@ export interface PagoClienteAClienteDto {
 }
 
 export interface MovimientoVistaDto {
-  id?: number; // 🔹 importante para poder editar
+  id?: number; 
   tipo: string;
   fecha: Date;
   monto: number;
@@ -48,16 +48,16 @@ export interface PagoClienteAProveedorDto {
   clienteOrigenId: number;
   proveedorDestinoId: number;
   usdt: number;
-  tasaCliente: number;    // COP/USDT del cliente
-  tasaProveedor: number;  // COP/USDT del proveedor
+  tasaCliente: number;
+  tasaProveedor: number;
   nota?: string;
 }
 export interface PagoProveedorAClienteDto {
   proveedorOrigenId: number;
   clienteDestinoId: number;
   usdt: number;
-  tasaProveedor: number; // COP/USDT (origen)
-  tasaCliente: number;   // COP/USDT (destino)
+  tasaProveedor: number;
+  tasaCliente: number;
   nota?: string;
 }
 
@@ -67,8 +67,8 @@ export type EntidadAjuste = 'CLIENTE' | 'PROVEEDOR' | 'CUENTACOP' | 'CAJA';
 export interface AjusteSaldoDto {
   entidad: EntidadAjuste;
   entidadId: number;
-  monto: number;       // valor POSITIVO del ajuste
-  entrada: boolean;    // true = suma, false = resta
+  monto: number;
+  entrada: boolean;
   motivo: string;
   actor?: string;
 }
@@ -77,6 +77,20 @@ export interface ResumenDiario {
   ventasHoy: number;
   ajustesHoy: number;
 }
+
+
+export interface MovimientoAjusteDto {
+  id: number;
+  tipo: string;
+  fecha: Date;
+  monto: number;
+  motivo?: string;
+  actor?: string;
+  saldoAnterior?: number;
+  saldoNuevo?: number;
+  diferencia?: number;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -239,4 +253,29 @@ export class MovimientoService {
 
     return this.http.post(`${this.apiUrl}/pago-cuenta-cop-a-cliente`, {}, { params });
   }
+
+getAjustesCliente(clienteId: number): Observable<MovimientoAjusteDto[]> {
+  return this.http.get<MovimientoAjusteDto[]>(
+    `${this.apiUrl}/ajustes/cliente/${clienteId}`
+  );
+}
+
+getAjustesProveedor(proveedorId: number): Observable<MovimientoAjusteDto[]> {
+  return this.http.get<MovimientoAjusteDto[]>(
+    `${this.apiUrl}/ajustes/proveedor/${proveedorId}`
+  );
+}
+
+getAjustesCuentaCop(cuentaId: number): Observable<MovimientoAjusteDto[]> {
+  return this.http.get<MovimientoAjusteDto[]>(
+    `${this.apiUrl}/ajustes/cuenta-cop/${cuentaId}`
+  );
+}
+
+getAjustesCaja(cajaId: number): Observable<MovimientoAjusteDto[]> {
+  return this.http.get<MovimientoAjusteDto[]>(
+    `${this.apiUrl}/ajustes/caja/${cajaId}`
+  );
+}
+
 }

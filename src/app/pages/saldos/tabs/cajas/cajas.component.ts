@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Caja, CajaService } from '../../../../core/services/caja.service';
-import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -36,6 +36,9 @@ export class CajasComponent implements OnInit {
   cajaSeleccionada: Caja | null = null;
   movimientosCaja: any[] = [];
   loadingMovs = false;
+
+  ajustesCaja: MovimientoAjusteDto[] = [];
+  loadingAjustesCaja = false;
 
   constructor(
     private movimientoService: MovimientoService,
@@ -93,6 +96,16 @@ export class CajasComponent implements OnInit {
       },
       error: e => console.error('Error al cargar movimientos de caja', e),
       complete: () => this.loadingMovs = false
+    });
+    
+    this.movimientoService.getAjustesCaja(caja.id).subscribe({
+      next: ajustes => {
+        this.ajustesCaja = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: e => console.error('Error al cargar ajustes de caja', e),
+      complete: () => this.loadingAjustesCaja = false
     });
   }
 }

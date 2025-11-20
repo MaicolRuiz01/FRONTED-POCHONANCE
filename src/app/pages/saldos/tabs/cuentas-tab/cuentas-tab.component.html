@@ -32,6 +32,7 @@
       (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
+          <p>Saldo inicial del dia: {{account.saldoInicialDelDia | number:'1.2-2'}}</p>
           <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
            <button
     pButton

@@ -59,16 +59,29 @@
   <span class="value">
     {{ Math.abs(supplier?.balance ?? 0) | currency:'COP' }}
   </span>
+  
 </div>
 
           <div class="card-row">
             <span class="label">Último pago:</span>
             <span class="value">{{ supplier?.lastPaymentDate | date:'mediumDate' }}</span>
           </div>
+          
         </div>
+        <div class="acciones-card">
+        <button
+          pButton
+          label="Ajustar saldo"
+          icon="pi pi-refresh"
+          class="p-button-text p-button-warning p-button-sm"
+          (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)">
+        </button>
+      </div>
       </ng-template>
+      
     </p-card>
   </div>
+  
 </div>
 
   <p-dialog

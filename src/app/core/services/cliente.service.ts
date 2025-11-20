@@ -5,7 +5,7 @@ import { environment } from '../../../environment/environment';
 
 export interface Cliente {
     id: number;
-    nombre: String;
+    nombre: string;
     correo: String;
     nameUser: String;
     saldo: number;

@@ -10,13 +10,15 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
 @Component({
   selector: 'app-cajas-tab',
   standalone: true,
   imports: [
     FormsModule, ButtonModule, InputTextModule, DialogModule, TabViewModule,
-    TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule
+    TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule,
+    AjusteSaldoDialogComponent
   ],
   templateUrl: './cajas.component.html',
   styleUrls: ['./cajas.component.css']   // 👈 corregido (plural)
@@ -26,6 +28,8 @@ export class CajasComponent implements OnInit {
   cajas: Caja[] = [];
   displayCajaDialog = false;
   nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
+  showAjusteCaja = false;
+  cajaAjuste: Caja | null = null;
 
   // 🔹 NUEVO: estado para ver movimientos de una caja
   showMovsDialog = false;
@@ -36,7 +40,7 @@ export class CajasComponent implements OnInit {
   constructor(
     private movimientoService: MovimientoService,
     private cajaService: CajaService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCajas();
@@ -61,6 +65,15 @@ export class CajasComponent implements OnInit {
       },
       error: () => alert('Error al guardar caja')
     });
+  }
+
+  abrirAjusteCaja(caja: Caja) {
+    this.cajaAjuste = caja;
+    this.showAjusteCaja = true;
+  }
+
+  onAjusteCajaRealizado() {
+    this.loadCajas(); // refresca saldos después del ajuste
   }
 
   // 🔹 NUEVO: abrir modal y cargar movimientos por caja

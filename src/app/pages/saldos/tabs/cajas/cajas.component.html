@@ -28,13 +28,22 @@
       </ng-template>
 
       <ng-template pTemplate="content">
-        <div class="account-details">
-          <div class="card-row">
-            <span class="label">Saldo:</span>
-            <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
-          </div>
-        </div>
-      </ng-template>
+  <div class="account-details">
+    <div class="card-row">
+      <span class="label">Saldo:</span>
+      <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
+    </div>
+
+    <button
+      pButton
+      label="Ajustar saldo"
+      icon="pi pi-refresh"
+      class="p-button-warning p-button-text p-button-sm"
+      (click)="abrirAjusteCaja(caja); $event.stopPropagation()">
+    </button>
+  </div>
+</ng-template>
+
     </p-card>
   </div>
 </div>
@@ -103,3 +112,15 @@
     <div class="p-3">Cargando movimientos...</div>
   </ng-template>
 </p-dialog>
+
+<app-ajuste-saldo-dialog
+  *ngIf="cajaAjuste"
+  [visible]="showAjusteCaja"
+  (visibleChange)="showAjusteCaja = $event"
+  [entidad]="'CAJA'"
+  [entidadId]="cajaAjuste.id"
+  [nombreEntidad]="cajaAjuste.name"
+  [saldoActual]="cajaAjuste.saldo ?? 0"
+  (ajusteRealizado)="onAjusteCajaRealizado()">
+</app-ajuste-saldo-dialog>
+

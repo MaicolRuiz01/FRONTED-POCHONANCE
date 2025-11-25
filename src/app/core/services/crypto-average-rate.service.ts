@@ -52,4 +52,8 @@ export class CryptoAverageRateService {
   getPendientes() {
     return this.http.get<CryptoPendienteDto[]>(`${this.apiUrl}/pendientes`);
   }
+  getTasasDelDia() {
+  return this.http.get<CryptoAverageRateDto[]>("/api/crypto-average-rate/del-dia");
+}
+
 }

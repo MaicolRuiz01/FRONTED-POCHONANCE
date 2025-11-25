@@ -57,6 +57,7 @@ export class SaldosComponent implements OnInit {
   totalBalanceCop = 0;
   latestRate = 0;
   balanceTotalExterno = 0;
+  balanceTotalExternoCop = 0;
   tasasCriptoHoy: CryptoAverageRateDto[] = [];
   createAccountDialog = false;
   modalVisible = false;
@@ -66,6 +67,7 @@ export class SaldosComponent implements OnInit {
   loading: boolean = true;
   selectAccountTypeDialog: boolean = false;
   selectedAccountType: string | null = null;
+  noAverageRate: boolean = false;
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
@@ -111,7 +113,8 @@ export class SaldosComponent implements OnInit {
     this.loadCajas();
     this.getTotalCajas();
     this.loadCryptoRatesToday();
-  this.loadAverageRate();  }
+    this.loadAverageRate();
+  }
 
 
   getTotalBalance() {
@@ -136,10 +139,14 @@ export class SaldosComponent implements OnInit {
 
   getBalanceTotalExterno() {
     this.accountService.getBalanceTotalExterno().subscribe({
-      next: res => this.balanceTotalExterno = res,
+      next: res => {
+        this.balanceTotalExterno = res;
+        this.recalculateExternalCop();      // 👈 recalcular COP
+      },
       error: err => console.error('Error obteniendo saldo total externo:', err)
     });
   }
+
 
   getBalanceTotalInterno() {
     this.accountService.getBalanceTotalInterno().subscribe({
@@ -408,17 +415,28 @@ export class SaldosComponent implements OnInit {
   }
 
   loadAverageRate() {
-  this.averageRateService.getUltimaTasa().subscribe({
-    next: (res) => {
-      // res puede venir null (si no hay registro)
-      this.latestRate = res?.averageRate ?? 0;
-    },
-    error: (err) => {
-      console.error('Error obteniendo tasa promedio:', err);
-      this.latestRate = 0;
-    }
-  });
-}
+    this.averageRateService.getUltimaTasa().subscribe({
+      next: (res) => {
+        if (!res) {
+          this.noAverageRate = true;
+          this.latestRate = 0;
+        } else {
+          this.noAverageRate = false;
+          this.latestRate = res.averageRate;
+        }
+
+        this.recalculateExternalCop();
+      },
+      error: (err) => {
+        console.error('Error obteniendo tasa promedio:', err);
+        this.noAverageRate = true;
+        this.latestRate = 0;
+        this.recalculateExternalCop();
+      }
+    });
+  }
+
+
 
 
   syncAllBalances() {
@@ -478,4 +496,8 @@ export class SaldosComponent implements OnInit {
         }
       });
   }
+  private recalculateExternalCop(): void {
+    this.balanceTotalExternoCop = (this.balanceTotalExterno || 0) * (this.latestRate || 0);
+  }
+
 }

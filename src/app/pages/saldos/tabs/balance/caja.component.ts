@@ -134,7 +134,7 @@ export class CajaComponent implements OnInit {
     const p2pUtilidad = b.utilidadP2P ?? 0;
     const cuatroPorMil = b.cuatroPorMilDeVentas ?? 0;
     const comisionTrust = b.comisionTrust ?? 0;
-
+    
     const retiros = 0;
     const traslado = 0;
     const pagosProveedor = b.proveedores ?? 0;
@@ -182,6 +182,7 @@ export class CajaComponent implements OnInit {
       ajustes,
       totalCalculado,
     };
+    this.criptosHoy = this.parseCriptos(b.detalleCriptosJson);
 
     this.showDetailsModal = true;
   }

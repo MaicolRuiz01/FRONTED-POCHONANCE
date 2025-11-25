@@ -195,6 +195,31 @@
           </div>
         </section>
 
+        <!-- === CRIPTOS DEL DÍA === -->
+<section class="dm-section" *ngIf="criptosHoy.length > 0">
+  <h3 class="dm-section-title">CRIPTOS DEL DÍA</h3>
+
+  <div class="dm-rows">
+    <div class="dm-row" *ngFor="let c of criptosHoy">
+      <div class="dm-row-left">
+        <b>{{ c.cripto }}</b>
+        <span style="opacity:0.7;">
+          ({{ c.saldoCripto | number:'1.3-3' }} unidades)
+        </span>
+      </div>
+      <div class="dm-row-right">
+        {{ c.totalUsdt | number:'1.2-2' }} USDT
+        <span style="opacity: 0.8;">
+          · tasa {{ c.tasaUsdt | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="dm-sep"/>
+
+
         <!-- TOTAL -->
         <div class="dm-total-wrap">
           <div class="dm-total-label">TOTAL</div>

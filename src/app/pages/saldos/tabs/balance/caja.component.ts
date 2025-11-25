@@ -6,7 +6,7 @@ import { CardModule } from 'primeng/card';
 
 import {
   BalanceGeneral,
-  BalanceGeneralService
+  BalanceGeneralService, CryptoResumenDia
 } from '../../../../core/services/balance-general.service';
 
 import { AccountCop } from '../../../../core/services/account-cop.service';
@@ -53,21 +53,15 @@ export class CajaComponent implements OnInit {
   showDetailsModal = false;
   showAdditionalInfoModal = false;
   selectedBalance: BalanceGeneral | null = null;
-
-  // Ganancias diarias (saldo hoy - saldo ayer)
   gains: number[] = [];
-
-  // Detalle para el modal “Detalle completo”
   detail: BalanceDetail | null = null;
-
-  // Totales adicionales (como en tu versión original)
   totalCajaObj: Record<string, number> = {};
   totalCajaArr: { nombre: string; monto: number }[] = [];
   totalClientes: number = 0;
-
   cuentas: AccountCop[] = [];
+  criptosHoy: CryptoResumenDia[] = [];
 
-  constructor(private balanceService: BalanceGeneralService) {}
+  constructor(private balanceService: BalanceGeneralService) { }
 
   ngOnInit(): void {
     this.loadBalances();
@@ -82,6 +76,12 @@ export class CajaComponent implements OnInit {
         );
         this.computeGains();
         console.log('Balances desde backend:', this.balances);
+        if (this.balances.length > 0) {
+          const hoy = this.balances[0];
+          this.criptosHoy = this.parseCriptos(hoy.detalleCriptosJson);
+        } else {
+          this.criptosHoy = [];
+        }
       },
       error: (err) => {
         console.error('Error cargando balances', err);
@@ -230,5 +230,18 @@ export class CajaComponent implements OnInit {
   // Stub para el botón de refrescar tarjeta
   syncCard(b: BalanceGeneral): void {
     console.log('Sincronizar tarjeta (stub):', b.id ?? b.date);
+  }
+  private parseCriptos(json?: string | null): CryptoResumenDia[] {
+    if (!json) return [];
+    try {
+      const arr = JSON.parse(json);
+      if (Array.isArray(arr)) {
+        return arr as CryptoResumenDia[];
+      }
+      return [];
+    } catch (e) {
+      console.error('Error parseando detalleCriptosJson', e);
+      return [];
+    }
   }
 }

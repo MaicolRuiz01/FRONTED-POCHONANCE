@@ -17,7 +17,8 @@ import { BalanceService } from '../../../../core/services/balance.service';
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { finalize } from 'rxjs/operators';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
+import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core/services/crypto-average-rate.service';
+import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
 
 export interface DisplayAccount {
   id?: number;
@@ -56,22 +57,20 @@ export class SaldosComponent implements OnInit {
   totalBalanceCop = 0;
   latestRate = 0;
   balanceTotalExterno = 0;
-
+  tasasCriptoHoy: CryptoAverageRateDto[] = [];
   createAccountDialog = false;
   modalVisible = false;
   cajas: { id: number, name: string, saldo: number }[] = [];
-
-  // NUEVO: modo edición y referencia al ID seleccionado
   editMode = false;
   selectedAccountId: number | null = null;
   loading: boolean = true;
-  selectAccountTypeDialog: boolean = false; // Controla el nuevo dialog de selección
-  selectedAccountType: string | null = null; // Almacena el tipo de cuenta seleccionado temporalmente
-  
+  selectAccountTypeDialog: boolean = false;
+  selectedAccountType: string | null = null;
+
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'TRUST', value: 'TRUST' },
-    {label: 'SOLANA', value: 'SOLANA' }
+    { label: 'SOLANA', value: 'SOLANA' }
   ];
 
   accounts: DisplayAccount[] = [];
@@ -91,7 +90,7 @@ export class SaldosComponent implements OnInit {
   };
 
   totalCajasCop: number = 0;
-  syncingAll = false; 
+  syncingAll = false;
 
   constructor(
     private accountService: AccountBinanceService,
@@ -99,26 +98,41 @@ export class SaldosComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private http: HttpClient,
-    private balanceService: BalanceService
+    private balanceService: BalanceService,
+    private cryptoRateService: CryptoAverageRateService,
+    private averageRateService: AverageRateService
   ) { }
 
   ngOnInit() {
     this.loadAccounts();
     this.getTotalBalance();
-    this.getLatestPurchaseRate();
     this.getBalanceTotalInterno();
     this.getBalanceTotalExterno();
     this.loadCajas();
     this.getTotalCajas();
-  }
+    this.loadCryptoRatesToday();
+  this.loadAverageRate();  }
 
-  // ---------- Totales ----------
+
   getTotalBalance() {
     this.accountService.getTotalBalance().subscribe({
       next: res => this.totalBalanceCop = res,
       error: err => console.error('Error obteniendo saldo total:', err)
     });
   }
+
+  loadCryptoRatesToday(): void {
+    this.cryptoRateService.getTasasDelDia().subscribe({
+      next: (data: CryptoAverageRateDto[]) => {
+        this.tasasCriptoHoy = data || [];
+      },
+      error: (e: any) => {
+        console.error('Error cargando tasas cripto del día', e);
+        this.tasasCriptoHoy = [];
+      }
+    });
+  }
+
 
   getBalanceTotalExterno() {
     this.accountService.getBalanceTotalExterno().subscribe({
@@ -164,7 +178,7 @@ export class SaldosComponent implements OnInit {
           address: c.address || '–',
           isFlipped: false,
           saldoExterno: undefined, // se consultará solo con botón
-          syncing: false 
+          syncing: false
         }));
       },
       error: err => console.error(err)
@@ -393,12 +407,19 @@ export class SaldosComponent implements OnInit {
     };
   }
 
-  getLatestPurchaseRate() {
-    this.accountService.getLatestPurchaseRate().subscribe({
-      next: res => this.latestRate = res,
-      error: err => console.error('Error obteniendo tasa de compra:', err)
-    });
-  }
+  loadAverageRate() {
+  this.averageRateService.getUltimaTasa().subscribe({
+    next: (res) => {
+      // res puede venir null (si no hay registro)
+      this.latestRate = res?.averageRate ?? 0;
+    },
+    error: (err) => {
+      console.error('Error obteniendo tasa promedio:', err);
+      this.latestRate = 0;
+    }
+  });
+}
+
 
   syncAllBalances() {
     this.syncingAll = true;
@@ -426,35 +447,35 @@ export class SaldosComponent implements OnInit {
       });
   }
   syncInternalAccount(account: DisplayAccount, event: Event) {
-  event.stopPropagation();             // evita voltear la card al hacer click
-  account.syncing = true;
+    event.stopPropagation();             // evita voltear la card al hacer click
+    account.syncing = true;
 
-  this.accountService.syncInternalByName(account.accountType)
-    .pipe(finalize(() => account.syncing = false))
-    .subscribe({
-      next: (snapshot) => {
-        // Mensaje con resumen del snapshot
-        const resumen = Object.entries(snapshot)
-          .map(([k, v]) => `${k}: ${(v ?? 0).toFixed(2)}`)
-          .join(', ');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sincronizado',
-          detail: resumen || `Saldos actualizados para ${account.accountType}`
-        });
+    this.accountService.syncInternalByName(account.accountType)
+      .pipe(finalize(() => account.syncing = false))
+      .subscribe({
+        next: (snapshot) => {
+          // Mensaje con resumen del snapshot
+          const resumen = Object.entries(snapshot)
+            .map(([k, v]) => `${k}: ${(v ?? 0).toFixed(2)}`)
+            .join(', ');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sincronizado',
+            detail: resumen || `Saldos actualizados para ${account.accountType}`
+          });
 
-        // refresca tarjetas y totales internos
-        this.loadAccounts();
-        this.getBalanceTotalInterno();
-        this.getTotalBalance();
-      },
-      error: _ => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: `No se pudo sincronizar ${account.accountType}`
-        });
-      }
-    });
-}
+          // refresca tarjetas y totales internos
+          this.loadAccounts();
+          this.getBalanceTotalInterno();
+          this.getTotalBalance();
+        },
+        error: _ => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `No se pudo sincronizar ${account.accountType}`
+          });
+        }
+      });
+  }
 }

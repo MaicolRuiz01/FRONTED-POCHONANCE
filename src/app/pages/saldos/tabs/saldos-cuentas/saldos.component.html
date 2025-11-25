@@ -17,6 +17,27 @@
         <h4>Total en Cajas</h4>
         <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
     </div>
+
+        <div class="saldo-card p-3 border rounded">
+      <h4>Criptos (hoy)</h4>
+
+      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+        <div *ngFor="let t of tasasCriptoHoy" class="crypto-row">
+          <span class="crypto-name">{{ t.cripto }}</span>
+          <span class="crypto-amount">
+            {{ t.saldoFinalCripto | number:'1.4-8' }} {{ t.cripto }}
+          </span>
+          <span class="crypto-usdt">
+            {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
+          </span>
+        </div>
+      </ng-container>
+
+      <ng-template #noCriptoData>
+        <p style="margin:0;font-size:0.85rem;">Sin datos de tasas cripto hoy.</p>
+      </ng-template>
+    </div>
+
 <br>
     <ng-template pTemplate="left">
         <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>

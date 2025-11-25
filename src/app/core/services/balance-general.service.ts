@@ -21,6 +21,14 @@ export interface BalanceGeneral {
   saldoCuentasBinance: number;
   proveedores: number;
   cuentasCop: number;
+  detalleCriptosJson?: string | null;
+}
+
+export interface CryptoResumenDia {
+  cripto: string;
+  saldoCripto: number;
+  tasaUsdt: number;
+  totalUsdt: number;
 }
 
 @Injectable({

@@ -108,10 +108,11 @@ export class CajaComponent implements OnInit {
   // Suma las fuentes para cada tarjeta
   getCardTotal(b: BalanceGeneral): number {
     const cripto = b.saldoCuentasBinance ?? 0;
-    const clientes = b.clientesSaldo ?? 0;
+    const clientes = b.saldoClientes ?? 0;
     const proveedores = b.proveedores ?? 0;
     const cuentasCop = b.cuentasCop ?? 0;
-    const cajas = b.saldoCajas ?? 0;
+    const cajas = b.efectivoDelDia ?? 0;
+
     return cripto + clientes + proveedores + cuentasCop + cajas;
   }
 

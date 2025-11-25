@@ -61,7 +61,6 @@ export class SaldosComponent implements OnInit {
   tasasCriptoHoy: CryptoAverageRateDto[] = [];
   createAccountDialog = false;
   modalVisible = false;
-  cajas: { id: number, name: string, saldo: number }[] = [];
   editMode = false;
   selectedAccountId: number | null = null;
   loading: boolean = true;
@@ -91,7 +90,6 @@ export class SaldosComponent implements OnInit {
     apiSecret: ''
   };
 
-  totalCajasCop: number = 0;
   syncingAll = false;
 
   constructor(
@@ -110,8 +108,6 @@ export class SaldosComponent implements OnInit {
     this.getTotalBalance();
     this.getBalanceTotalInterno();
     this.getBalanceTotalExterno();
-    this.loadCajas();
-    this.getTotalCajas();
     this.loadCryptoRatesToday();
     this.loadAverageRate();
   }
@@ -155,25 +151,6 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  // ---------- Cajas ----------
-  loadCajas() {
-    this.cajaService.getAllCajas().subscribe({
-      next: res => {
-        this.cajas = res;
-        this.loading = false; // Oculta el spinner cuando los datos están cargados
-      },
-      error: err => console.error('Error cargando cajas:', err)
-    });
-  }
-
-  getTotalCajas() {
-    this.balanceService.getTotalCajas().subscribe({
-      next: res => this.totalCajasCop = res.total,
-      error: err => console.error('Error obteniendo total de cajas:', err)
-    });
-  }
-
-  // ---------- Cuentas ----------
   loadAccounts() {
     this.accountService.traerCuentas().subscribe({
       next: res => {
@@ -184,13 +161,32 @@ export class SaldosComponent implements OnInit {
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
-          saldoExterno: undefined, // se consultará solo con botón
+          saldoExterno: 0,  // 👈 valor inicial
           syncing: false
         }));
+
+        // 👇 cargar saldo externo automáticamente para cada cuenta
+        this.accounts.forEach(acc => {
+          this.cargarSaldoExternoInicial(acc);
+        });
       },
       error: err => console.error(err)
     });
   }
+  private cargarSaldoExternoInicial(account: DisplayAccount): void {
+    this.accountService.getUSDTBalanceBinance(account.accountType)
+      .subscribe({
+        next: saldo => {
+          account.saldoExterno = parseFloat(saldo) || 0;
+        },
+        error: _ => {
+          console.error(`No se pudo obtener el saldo externo de ${account.accountType}`);
+          // Si quieres, aquí NO mostramos toast para no spamear, solo error en consola.
+        }
+      });
+  }
+
+
 
   consultarSaldoExterno(account: DisplayAccount, event: Event) {
     event.stopPropagation(); // evita que se voltee la card

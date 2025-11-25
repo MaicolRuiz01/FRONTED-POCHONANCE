@@ -108,9 +108,9 @@
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"
               (click)="$event.stopPropagation(); abrirModalEditar(cliente)"></button>
       <button pButton label="Ajustar saldo" icon="pi pi-refresh"
-              class="p-button-text p-button-warning p-button-sm"
-              (click)="$event.stopPropagation(); abrirAjusteCliente(cliente)">
-      </button>
+        class="p-button-text p-button-warning p-button-sm"
+        (click)="$event.stopPropagation(); abrirAjusteCliente(cliente)">
+</button>
     </div>
   </div>
 </div>
@@ -245,31 +245,57 @@
     </ng-template>
   </p-table>
 </p-tabPanel>
+    <!-- TAB 4: Ajustes de saldo -->
+    <p-tabPanel header="Ajustes de saldo">
+      <ng-container *ngIf="!loadingAjustesCliente; else ajustesClienteLoading">
+        <p-table
+          [value]="ajustesCliente"
+          scrollable="true"
+          scrollHeight="400px"
+          [responsive]="true">
 
-  <!-- TAB 4: Ajustes -->
-<p-tabPanel header="Ajustes">
-  <p-table [value]="clienteAjustes" selectionMode="single" [(selection)]="ajustesSeleccionado">
-      <ng-template pTemplate="header">
-          <tr>
-              <th>Id</th>
-              <th>Cliente Id</th>
-              <th>Movimiento</th>
-              <th>Contenido</th>
-              <th>Monto actualizado</th>
-          </tr>
-      </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Motivo</th>
+              <th>Actor</th>
+              <th>Saldo anterior</th>
+              <th>Saldo nuevo</th>
+              <th>Diferencia</th>
+            </tr>
+          </ng-template>
 
-      <ng-template pTemplate="body" let-ajuste>
-          <tr [pSelectableRow]="ajuste">
-              <td>{{ ajuste.id }}</td>
-              <td>{{ ajuste.usuarioCL?.nombre }}</td>
-              <td>{{ ajuste.movimiento?.id }}</td>
-              <td>{{ ajuste.contenido }}</td>
-              <td>{{ ajuste.monto }}</td>
-          </tr>
+          <ng-template pTemplate="body" let-aj>
+            <tr>
+              <td>{{ aj.fecha | date:'short' }}</td>
+              <td>{{ aj.tipo }}</td>
+              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.motivo || '-' }}</td>
+              <td>{{ aj.actor || '-' }}</td>
+              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="p-text-center">Sin ajustes de saldo para este cliente.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-template #ajustesClienteLoading>
+        <div class="p-3">Cargando ajustes...</div>
       </ng-template>
-  </p-table>
-</p-tabPanel>
+    </p-tabPanel>
+
+
 
   </p-tabView>
 </p-dialog>
@@ -528,49 +554,7 @@
     </button>
   </ng-template>
 </p-dialog>
-<!-- ✅ Modal Ajuste de Saldo de Cliente -->
-<p-dialog header="Ajuste de Saldo"
-          [(visible)]="showAjusteCliente"
-          [modal]="true"
-          [style]="{ width:'360px' }">
 
-  <div class="p-fluid">
-    <div class="p-field">
-      <label>Cliente</label>
-      <input pInputText [value]="clienteAjuste?.nombre" readonly>
-    </div>
-
-    <div class="p-field">
-      <label>Saldo Actual</label>
-      <input pInputText [value]="clienteAjuste?.saldo | currency:'COP'" readonly>
-    </div>
-    
-
-    <div class="p-field">
-      <label>Nuevo Saldo</label>
-      <p-inputNumber [(ngModel)]="nuevoSaldoAjuste"
-                     mode="currency" currency="COP"
-                     [minFractionDigits]="2" [maxFractionDigits]="2">
-      </p-inputNumber>
-    </div>
-
-    <div class="p-field">
-      <label>Motivo</label>
-      <input pInputText [(ngModel)]="motivoAjuste">
-    </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" class="p-button-text"
-            (click)="showAjusteCliente=false"></button>
-
-    <button pButton label="Guardar" icon="pi pi-check"
-            class="p-button-success"
-            (click)="confirmarAjusteCliente()"
-            [disabled]="!nuevoSaldoAjuste || !motivoAjuste">
-    </button>
-  </ng-template>
-</p-dialog>
 
 <p-dialog header="Pago desde Cuenta COP"
           [(visible)]="displayPagoCuentaCopModal"
@@ -634,43 +618,15 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog 
-    header="Generar Excel por cliente"
-    [(visible)]="showexcelmodal"
-    [modal]="true"
-    [style]="{ width: '450px' }">
-
-    <form #ajusteForm="ngForm" (ngSubmit)="exportarExcelcliente(formValues.usuariocl_id)">
-
-        <div class="p-field">
-            <label for="clienteId">Cliente</label>
-
-            <p-dropdown 
-                [options]="clientes"
-                optionLabel="nombre"
-                optionValue="id"
-                name="usuariocl_id"
-                [(ngModel)]="formValues.usuariocl_id"
-                placeholder="Seleccione un cliente"
-                required>
-            </p-dropdown>
-        </div>
-
-        <br>
-
-        <div class="p-mt-3 p-d-flex p-jc-end">
-            <p-button 
-                label="Cancelar"
-                class="p-button-text"
-                (click)="cerrarmodalexcel()">
-            </p-button>
-
-            <p-button label="generar excel" icon="pi pi-save" styleClass="p-ml-3" type="submit">
-            </p-button>
-        </div>
-
-    </form>
-
-</p-dialog>
+<app-ajuste-saldo-dialog
+  *ngIf="clienteAjuste"
+  [visible]="showAjusteCliente"
+  (visibleChange)="showAjusteCliente = $event"
+  [entidad]="'CLIENTE'"
+  [entidadId]="clienteAjuste.id!"
+  [nombreEntidad]="clienteAjuste.nombre"
+  [saldoActual]="clienteAjuste.saldo ?? 0"
+  (ajusteRealizado)="onAjusteClienteRealizado()">
+</app-ajuste-saldo-dialog>
 
 

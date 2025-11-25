@@ -32,7 +32,15 @@
       (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
+          <p>Saldo inicial del dia: {{account.saldoInicialDelDia | number:'1.2-2'}}</p>
           <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
+           <button
+    pButton
+    label="Ajustar saldo"
+    icon="pi pi-refresh"
+    class="p-button-warning p-button-text p-button-sm"
+    (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
+  </button>
         </div>
       </ng-template>
     </p-card>
@@ -158,3 +166,13 @@
     <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
   </p-footer>
 </p-dialog>
+<app-ajuste-saldo-dialog
+  *ngIf="cuentaAjuste"
+  [visible]="showAjusteCuenta"
+  (visibleChange)="showAjusteCuenta = $event"
+  [entidad]="'CUENTACOP'"
+  [entidadId]="cuentaAjuste.id!"
+  [nombreEntidad]="cuentaAjuste.name"
+  [saldoActual]="cuentaAjuste.balance ?? 0"
+  (ajusteRealizado)="onAjusteCuentaRealizado()">
+</app-ajuste-saldo-dialog>

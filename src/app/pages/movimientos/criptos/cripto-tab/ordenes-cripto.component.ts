@@ -1,18 +1,16 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// PrimeNG OrdenesCriptoService, OrdenSpotDTO   AccountBinanceService, AccountBinance
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
-import { OrdenesCriptoService,OrdenSpotDTO } from '../../../../core/services/ordenes-cripto.service';
-import { AccountBinance,AccountBinanceService } from '../../../../core/services/account-binance.service';
-import { CryptoAverageRateService } from '../../../../core/services/crypto-average-rate.service'; 
-import { finalize} from 'rxjs';
+import { OrdenesCriptoService, OrdenSpotDTO } from '../../../../core/services/ordenes-cripto.service';
+import { AccountBinance, AccountBinanceService } from '../../../../core/services/account-binance.service';
+import { CryptoAverageRateService } from '../../../../core/services/crypto-average-rate.service';
+import { forkJoin, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-ordenes-cripto',
@@ -34,7 +32,7 @@ export class OrdenesCriptoComponent implements OnInit {
   @ViewChild('dt') dt!: Table;
 
   loadingTable = false;   // carga del listado
-  importing    = false;   // spinner pequeño de importación en 2º plano
+  importing = false;   // spinner pequeño de importación en 2º plano
 
   ordenes: OrdenSpotDTO[] = [];
   filtroCuenta = '';      // se manda al backend
@@ -48,26 +46,38 @@ export class OrdenesCriptoComponent implements OnInit {
   tasaInicialCripto: number | null = null;
   isTasaInicialCriptoInvalid = false;
   loadingTasaCripto = false;
+  pendientes: {
+    cripto: string;
+    saldoActualCripto: number;
+    tasaInicial?: number;
+    invalida?: boolean;
+  }[] = [];
+  mostrarDialogPendientes = false;
+  procesandoPendientes = false;
+
 
   constructor(
     private ordenesSrv: OrdenesCriptoService,
     private cuentasSrv: AccountBinanceService,
     private cryptoRateSrv: CryptoAverageRateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // 1) pintar lo que YA hay guardado
-    this.listar();
+  this.listar();
 
-    // 2) correr la importación en segundo plano y refrescar al terminar
-    this.importarEnSegundoPlano();
+  // SOLO PARA PROBAR: comentar esto
+  // this.refrescar();
 
-    // opcional: cargar cuentas para dropdown o filtros más adelante
-    this.cuentasSrv.traerCuentas().subscribe({
-      next: (cs) => (this.cuentas = cs.filter(c => c.tipo?.toUpperCase() === 'BINANCE')),
-      error: () => {}
-    });
-  }
+  // y llamar manualmente:
+  this.mostrarDialogPendientes = true;
+  this.pendientes = [{
+    cripto: 'TRX',
+    saldoActualCripto: 6577.6158,
+    tasaInicial: undefined,
+    invalida: false
+  }];
+}
+
 
   /** Solo lista (no importa). */
   listar(): void {
@@ -95,8 +105,73 @@ export class OrdenesCriptoComponent implements OnInit {
 
   /** Re-importar (2º plano) + refrescar cuando termine. */
   refrescar(): void {
-    this.importarEnSegundoPlano();
+  this.cryptoRateSrv.getPendientes().subscribe({
+    next: (lista) => {
+      console.log('👉 Pendientes recibidos del backend:', lista); // DEBUG
+
+      if (!lista || lista.length === 0) {
+        this.importarEnSegundoPlano();
+      } else {
+        this.pendientes = lista.map(p => ({
+          cripto: p.cripto,
+          saldoActualCripto: p.saldoActualCripto,
+          tasaInicial: undefined,
+          invalida: false
+        }));
+        this.mostrarDialogPendientes = true;
+      }
+    },
+    error: err => {
+      console.error('Error cargando criptos pendientes', err);
+      alert('No se pudo verificar las tasas iniciales. Intenta de nuevo.');
+    }
+  });
+}
+
+
+  puedeGuardarPendientes(): boolean {
+    if (!this.pendientes || this.pendientes.length === 0) return false;
+    return this.pendientes.every(p => p.tasaInicial != null && p.tasaInicial > 0);
   }
+
+  cancelarPendientes(): void {
+    this.mostrarDialogPendientes = false;
+    this.pendientes = [];
+  }
+
+  guardarPendientesYImportar(): void {
+    // validar
+    let ok = true;
+    for (const p of this.pendientes) {
+      p.invalida = !p.tasaInicial || p.tasaInicial <= 0;
+      if (p.invalida) ok = false;
+    }
+    if (!ok) return;
+
+    this.procesandoPendientes = true;
+
+    const peticiones = this.pendientes.map(p =>
+      this.cryptoRateSrv.inicializarCripto(p.cripto, p.tasaInicial!)
+    );
+
+    forkJoin(peticiones)
+      .pipe(finalize(() => (this.procesandoPendientes = false)))
+      .subscribe({
+        next: () => {
+          this.mostrarDialogPendientes = false;
+          this.pendientes = [];
+          // 👇 ahora sí, importar órdenes
+          this.importing = true;
+          this.importarEnSegundoPlano();
+        },
+        error: err => {
+          console.error('Error guardando tasas iniciales', err);
+          alert('Ocurrió un error guardando las tasas iniciales. Revisa e intenta de nuevo.');
+        }
+      });
+  }
+
+
 
   /** Re-lista por cuenta (sin re-importar). */
   buscarPorCuenta(): void {
@@ -131,7 +206,7 @@ export class OrdenesCriptoComponent implements OnInit {
     };
   }
 
-   // ==================== LÓGICA TASA CRIPTO ====================
+  // ==================== LÓGICA TASA CRIPTO ====================
 
   /** Extrae la cripto base desde el símbolo del par (ej: TRXUSDT -> TRX) */
   private obtenerCriptoBase(simboloPar: string): string {

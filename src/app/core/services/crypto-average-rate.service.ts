@@ -16,6 +16,11 @@ export interface CryptoAverageRateDto {
   saldoFinalCripto: number;
 }
 
+export interface CryptoPendienteDto {
+  cripto: string;
+  saldoActualCripto: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,4 +48,12 @@ export class CryptoAverageRateService {
       { cripto, tasaInicialUsdt }
     );
   }
+
+  getPendientes() {
+    return this.http.get<CryptoPendienteDto[]>(`${this.apiUrl}/pendientes`);
+  }
+  getTasasDelDia() {
+  return this.http.get<CryptoAverageRateDto[]>("/api/crypto-average-rate/del-dia");
+}
+
 }

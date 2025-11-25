@@ -1,158 +1,251 @@
-<app-mi-table [columns]="columns" [data]="balances">
+<!-- Balance dinámico: tarjetas basadas en datos reales desde BalanceGeneralService -->
+<div class="balance-root">
 
-  <ng-template #actionTemplate let-balance>
-    <p-button icon="pi pi-search" title="Ver Detalles" [rounded]="true" [text]="true" [raised]="true" severity="success"
-      (click)="showDetails(balance)">
-    </p-button>
+  <!-- Top mini-card dinámico -->
+  <div class="top-toolbar p-3 mb-4">
+    <div class="saldo-card p-3 border rounded">
+      <h4>Saldo total (sumas por tarjeta)</h4>
+      <p class="saldo-valor">{{ totalAggregate | number:'1.0-0' }} COP</p>
+      <p class="muted">Registros: {{ balances.length }}</p>
+    </div>
+
+    <div class="saldo-actions">
+      <button pButton icon="pi pi-sync" label="Actualizar totales" class="p-button-info" (click)="loadBalances()"></button>
+    </div>
+  </div>
+
+  <div *ngIf="balances.length === 0" class="p-3">
+    <p>Cargando balances o no hay balances disponibles.</p>
+  </div>
+
+  <!-- Grid de tarjetas dinámicas -->
+  <div class="grid cards-container" *ngIf="balances.length > 0">
+    <article class="card" *ngFor="let b of balances; let i = index" role="article"
+             [attr.aria-label]="'Balance ' + (b.date | date:'dd/MM/yyyy')">
+      <div class="header">{{ b.date | date:'dd/MM/yyyy' }}</div>
+
+      <div class="body">
+        <div class="field-row">
+          <div class="field-label">Saldo</div>
+          <div class="field-value saldo-value">{{ b.saldo | number:'1.0-0' }}</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">Clientes</div>
+          <div class="field-value"
+           [ngClass]="{'negative': (b.saldoClientes ?? 0) < 0}">
+           {{ b.saldoClientes | number:'1.0-0' }}
+          </div>
+        </div>
+        <hr>
+        <div class="field-row"><div class="field-label">Proveedores</div><div class="field-value">{{ b.proveedores | number:'1.0-0' }}</div></div>
+        <hr>
+        <div class="field-row"><div class="field-label">Cuentas COP</div><div class="field-value">{{ b.cuentasCop | number:'1.0-0' }}</div></div>
+        <hr>
+        <div class="field-row">
+  <div class="field-label">Cajas</div>
+  <div class="field-value">{{ b.efectivoDelDia | number:'1.0-0' }}</div>
+</div>
 
 
+        <div class="clearfix"></div>
 
 
+        <!-- Ganancia diaria: saldo hoy - saldo ayer -->
+        <div class="clearfix"></div>
+        <div [ngClass]="{'gain-badge': true, 'negative': getGain(i) < 0}" >
+          Ganancia: {{ (getGain(i) >= 0 ? '+' : '') + (getGain(i) | number:'1.0-0') }}
+        </div>
 
+        <!-- Botones: lupa (morado) abre detalle completo; refresh es sync -->
+        <div style="clear:both"></div>
+        <div class="button-container">
+          <button pButton icon="pi pi-search" class="p-button-sm" style="background:#6f42c1;border-color:#6f42c1;color:white"
+                  (click)="$event.stopPropagation(); prepareDetail(b)"></button>
+          <button pButton icon="pi pi-refresh" class="p-button-sm p-button-warning" (click)="$event.stopPropagation(); syncCard(b)"></button>
+        </div>
+      </div>
+    </article>
+  </div>
 
+<p-dialog
+  [(visible)]="showDetailsModal"
+  [modal]="true"
+  header="Detalle completo"
+  [style]="{ width: '760px' }"
+  [baseZIndex]="1100"
+  [closeOnEscape]="true"
+  [dismissableMask]="true">
 
-
-
-
-
-
-
-
-
-
-
-
-  </ng-template>
-</app-mi-table>
-
-<!-- Dialogo 1: Detalle -->
-<p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle de Balance">
-
+  <!-- SOLO UN content -->
   <ng-template pTemplate="content">
-    <div *ngIf="selectedBalance">
-      <p><strong>Fecha:</strong> {{ selectedBalance.date }}</p>
-      <p><strong>Saldo:</strong> {{ selectedBalance.saldo | currency:'COP' }}</p>
+    <div *ngIf="selectedBalance && detail" class="detail-modal">
 
-      <!-- Estas 3 propiedades deben existir en BalanceGeneral si las vas a mostrar -->
-      <p><strong>Saldo de Cuentas Binance:</strong> {{ selectedBalance.saldoCuentasBinance | currency:'COP' }}</p>
-      <p><strong>Saldo Proveedores:</strong> {{ selectedBalance.proveedores | currency:'COP' }}</p>
-      <p><strong>Cuentas Colombianas:</strong> {{ selectedBalance.cuentasCop | currency:'COP' }}</p>   
-      <p> <strong>Total Clientes: </strong> {{ totalClientes | currency:'COP' }}</p>
-      <p><strong>Total Clientes:</strong> {{ totalClientes | currency:'COP' }}</p>
-      <div *ngIf="totalCajaArr.length > 0">
-        <p><strong>Total por Caja: </strong></p>
-        <ul>
-          <li *ngFor="let caja of totalCajaArr">
-            {{ caja.nombre }}: {{ caja.monto | currency:'COP' }}
-          </li>
-        </ul>
+      <!-- HEADER -->
+      <div class="dm-header">
+        <div class="dm-header-left">
+          <div class="dm-label">Fecha</div>
+          <div class="dm-value">{{ selectedBalance.date | date:'dd/MM/yyyy' }}</div>
+        </div>
+        <div class="dm-header-right">
+          <div class="dm-label">Tasa prom</div>
+          <div class="dm-value">{{ detail.tasaProm | number:'1.0-0' }}</div>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="dm-body">
+
+        <!-- VENTAS -->
+        <section class="dm-section">
+          <h3 class="dm-section-title">VENTAS</h3>
+          <div class="dm-rows">
+            <div class="dm-row">
+              <div class="dm-row-left">Ventas totales</div>
+              <div class="dm-row-right">{{ detail.ventas.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad ventas</div>
+              <div class="dm-row-right">{{ detail.ventas.utilidad | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">4x1000</div>
+              <div class="dm-row-right">{{ detail.ventas.cuatroPorMil | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="dm-sep"/>
+
+        <!-- P2P -->
+        <section class="dm-section">
+          <h3 class="dm-section-title">P2P</h3>
+          <div class="dm-rows">
+            <div class="dm-row">
+              <div class="dm-row-left">Total P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Comisión P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.comision | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad P2P</div>
+              <div class="dm-row-right">{{ detail.p2p.utilidad | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="dm-sep"/>
+
+        <!-- DEC -->
+        <section class="dm-section">
+          <h3 class="dm-section-title">DEC</h3>
+          <div class="dm-rows">
+            <div class="dm-row">
+              <div class="dm-row-left">Total Dec</div>
+              <div class="dm-row-right">{{ detail.dec.total | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Comisión Dec</div>
+              <div class="dm-row-right">{{ detail.dec.comision | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Utilidad Dec</div>
+              <div class="dm-row-right">{{ detail.dec.utilidad | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="dm-sep"/>
+
+        <!-- RESUMEN -->
+        <section class="dm-section">
+          <h3 class="dm-section-title">RESUMEN</h3>
+          <div class="dm-rows">
+            <div class="dm-row">
+              <div class="dm-row-left">Comisiones totales</div>
+              <div class="dm-row-right">{{ detail.comisionesTotal | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Retiros</div>
+              <div class="dm-row-right">{{ detail.retiros | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Traslado</div>
+              <div class="dm-row-right">{{ detail.traslado | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Pagos a proveedor</div>
+              <div class="dm-row-right">{{ detail.pagosProveedor | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">TRX</div>
+              <div class="dm-row-right">{{ detail.trx | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Reintegro trust</div>
+              <div class="dm-row-right">{{ detail.reintegroTrust | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="dm-sep"/>
+
+        <!-- GASTOS & AJUSTES -->
+        <section class="dm-section">
+          <h3 class="dm-section-title">GASTOS & AJUSTES</h3>
+          <div class="dm-rows">
+            <div class="dm-row">
+              <div class="dm-row-left">Gastos</div>
+              <div class="dm-row-right">{{ detail.gastos | number:'1.0-0' }}</div>
+            </div>
+            <div class="dm-row">
+              <div class="dm-row-left">Ajustes</div>
+              <div class="dm-row-right">{{ detail.ajustes | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- === CRIPTOS DEL DÍA === -->
+<section class="dm-section" *ngIf="criptosHoy.length > 0">
+  <h3 class="dm-section-title">CRIPTOS DEL DÍA</h3>
+
+  <div class="dm-rows">
+    <div class="dm-row" *ngFor="let c of criptosHoy">
+      <div class="dm-row-left">
+        <b>{{ c.cripto }}</b>
+        <span style="opacity:0.7;">
+          ({{ c.saldoCripto | number:'1.3-3' }} unidades)
+        </span>
+      </div>
+      <div class="dm-row-right">
+        {{ c.totalUsdt | number:'1.2-2' }} USDT
+        <span style="opacity: 0.8;">
+          · tasa {{ c.tasaUsdt | number:'1.2-2' }}
+        </span>
       </div>
     </div>
+  </div>
+</section>
+
+<hr class="dm-sep"/>
+
+
+        <!-- TOTAL -->
+        <div class="dm-total-wrap">
+          <div class="dm-total-label">TOTAL</div>
+          <div class="dm-total-value">{{ detail.totalCalculado | number:'1.0-0' }}</div>
+        </div>
+
+      </div> <!-- dm-body -->
+    </div> <!-- detail-modal -->
   </ng-template>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <ng-template pTemplate="footer">
-    <button pButton label="Inf. adicional" class="p-button-info mt-3" (click)="showAdditionalInfo()"></button>
     <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
   </ng-template>
-
 </p-dialog>
 
-<!-- Dialogo 2: Info adicional -->
-<p-dialog [(visible)]="showAdditionalInfoModal" [modal]="true" header="Inf. adicional balance">
-  <ng-template pTemplate="content">
-    <div *ngIf="selectedBalance">
-      <p><strong>Tasa Promedio del Día:</strong> {{ selectedBalance.tasaPromedioDelDia }}</p>
-      <p><strong>Tasa Venta del Día:</strong> {{ selectedBalance.tasaVentaDelDia }}</p>
-      <p><strong>Total P2P (USD):</strong> {{ selectedBalance.totalP2PdelDia | currency:'COP' }}</p>
-      <p><strong>Comisiones P2P (COP):</strong> {{ selectedBalance.comisionesP2PdelDia | currency:'COP' }}</p>
-      <p><strong>4x1000 de P2P:</strong> {{ selectedBalance.cuatroPorMilDeVentas | currency:'COP' }}</p>
-      <p><strong>Utilidad P2P:</strong> {{ selectedBalance.utilidadP2P | currency:'COP' }}</p>
-      <p><strong>Total Ventas Generales (USD):</strong> {{ selectedBalance.totalVentasGeneralesDelDia | currency:'COP' }}</p>
-      <p><strong>Utilidad Ventas Generales:</strong> {{ selectedBalance.utilidadVentasGenerales | currency:'COP' }}</p>
-    </div>
-  </ng-template>
 
-  <ng-template pTemplate="footer">
-    <button pButton label="Cerrar" (click)="showAdditionalInfoModal = false" class="p-button-danger"></button>
-  </ng-template>
-</p-dialog>
+</div>

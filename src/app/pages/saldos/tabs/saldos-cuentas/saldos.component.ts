@@ -152,6 +152,8 @@ export class SaldosComponent implements OnInit {
   }
 
   loadAccounts() {
+    this.loading = true;  // 👈 empieza la carga
+
     this.accountService.traerCuentas().subscribe({
       next: res => {
         this.accounts = res.map(c => ({
@@ -161,18 +163,22 @@ export class SaldosComponent implements OnInit {
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
-          saldoExterno: 0,  // 👈 valor inicial
+          saldoExterno: 0,
           syncing: false
         }));
 
-        // 👇 cargar saldo externo automáticamente para cada cuenta
-        this.accounts.forEach(acc => {
-          this.cargarSaldoExternoInicial(acc);
-        });
+        // cargar saldo externo automáticamente
+        this.accounts.forEach(acc => this.cargarSaldoExternoInicial(acc));
+
+        this.loading = false; // 👈 ya terminó
       },
-      error: err => console.error(err)
+      error: err => {
+        console.error(err);
+        this.loading = false; // 👈 aunque falle, quita el spinner
+      }
     });
   }
+
   private cargarSaldoExternoInicial(account: DisplayAccount): void {
     this.accountService.getUSDTBalanceBinance(account.accountType)
       .subscribe({

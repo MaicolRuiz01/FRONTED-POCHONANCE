@@ -1,59 +1,87 @@
 import { Component, OnInit } from '@angular/core';
-import { BalanceGeneral, BalanceGeneralService } from '../../../../core/services/balance-general.service';
+import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 
+import {
+  BalanceGeneral,
+  BalanceGeneralService, CryptoResumenDia
+} from '../../../../core/services/balance-general.service';
 
-import { TableColumn } from '../../../../shared/mi-table/mi-table.component';
-import { MiTableComponent } from '../../../../shared/mi-table/mi-table.component';
 import { AccountCop } from '../../../../core/services/account-cop.service';
+
+interface BalanceDetailSection {
+  total?: number;
+  comision?: number;
+  cuatroPorMil?: number;
+  utilidad?: number;
+}
+
+interface BalanceDetail {
+  tasaProm: number;
+  ventas: BalanceDetailSection;
+  p2p: BalanceDetailSection;
+  dec: BalanceDetailSection;
+  comisionesTotal: number;
+  retiros: number;
+  traslado: number;
+  pagosProveedor: number;
+  trx: number;
+  reintegroTrust: number;
+  gastos: number;
+  ajustes: number;
+  totalCalculado: number;
+}
 
 @Component({
   selector: 'app-caja',
   standalone: true,
-  imports: [DialogModule
-    , CommonModule, TableModule, ButtonModule, CurrencyPipe, MiTableComponent, CardModule
+  imports: [
+    CommonModule,
+    DialogModule,
+    ButtonModule,
+    CardModule,
   ],
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.css'],
 })
 export class CajaComponent implements OnInit {
+
   balances: BalanceGeneral[] = [];
+
   showDetailsModal = false;
   showAdditionalInfoModal = false;
   selectedBalance: BalanceGeneral | null = null;
-
+  gains: number[] = [];
+  detail: BalanceDetail | null = null;
   totalCajaObj: Record<string, number> = {};
   totalCajaArr: { nombre: string; monto: number }[] = [];
   totalClientes: number = 0;
-
   cuentas: AccountCop[] = [];
-
-  get totalCuentas(): number {
-  return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
-}
-
-  columns: TableColumn[] = [
-    { campo: 'date', columna: 'Fecha' },
-    { campo: 'saldo', columna: 'Saldo' }
-  ];
+  criptosHoy: CryptoResumenDia[] = [];
 
   constructor(private balanceService: BalanceGeneralService) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadBalances();
   }
 
+  // === Carga REAL desde backend, sin mocks ===
   loadBalances(): void {
     this.balanceService.listar().subscribe({
       next: (data) => {
-        this.balances = data;
-        this.balances = this.balances.sort((a, b) => {
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
-});
+        this.balances = (data || []).sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        this.computeGains();
+        console.log('Balances desde backend:', this.balances);
+        if (this.balances.length > 0) {
+          const hoy = this.balances[0];
+          this.criptosHoy = this.parseCriptos(hoy.detalleCriptosJson);
+        } else {
+          this.criptosHoy = [];
+        }
       },
       error: (err) => {
         console.error('Error cargando balances', err);
@@ -61,34 +89,131 @@ export class CajaComponent implements OnInit {
     });
   }
 
+  // === Calcula ganancia diaria por índice ===
+  private computeGains(): void {
+    this.gains = [];
+    for (let i = 0; i < this.balances.length; i++) {
+      const today = this.balances[i];
+      const yesterday = this.balances[i + 1];
+      const saldoToday = today?.saldo ?? 0;
+      const saldoYesterday = yesterday?.saldo ?? 0;
+      this.gains[i] = saldoToday - saldoYesterday;
+    }
+  }
+
+  getGain(index: number): number {
+    return this.gains[index] ?? 0;
+  }
+
+  // Suma las fuentes para cada tarjeta
+  getCardTotal(b: BalanceGeneral): number {
+    const cripto = b.saldoCuentasBinance ?? 0;
+    const clientes = b.saldoClientes ?? 0;
+    const proveedores = b.proveedores ?? 0;
+    const cuentasCop = b.cuentasCop ?? 0;
+    const cajas = b.efectivoDelDia ?? 0;
+
+    return cripto + clientes + proveedores + cuentasCop + cajas;
+  }
+
+  // Total agregado para la mini-card superior
+  get totalAggregate(): number {
+    return this.balances.reduce(
+      (acc, b) => acc + this.getCardTotal(b),
+      0
+    );
+  }
+
+  // === Lupa: prepara detalle y abre modal ===
+  prepareDetail(b: BalanceGeneral): void {
+    this.selectedBalance = b;
+
+    const ventasTotal = b.totalVentasGeneralesDelDia ?? 0;
+    const ventasUtilidad = b.utilidadVentasGenerales ?? 0;
+    const p2pTotal = b.totalP2PdelDia ?? 0;
+    const p2pComisiones = b.comisionesP2PdelDia ?? 0;
+    const p2pUtilidad = b.utilidadP2P ?? 0;
+    const cuatroPorMil = b.cuatroPorMilDeVentas ?? 0;
+    const comisionTrust = b.comisionTrust ?? 0;
+    
+    const retiros = 0;
+    const traslado = 0;
+    const pagosProveedor = b.proveedores ?? 0;
+    const trx = 0;
+    const reintegroTrust = comisionTrust;
+    const gastos = 0;
+    const ajustes = 0;
+
+    const comisionesTotal = p2pComisiones + cuatroPorMil + comisionTrust;
+
+    const totalCalculado =
+      ventasTotal +
+      p2pTotal -
+      comisionesTotal +
+      reintegroTrust -
+      (retiros + traslado + pagosProveedor + trx + gastos) +
+      ajustes +
+      this.getCardTotal(b);
+
+    this.detail = {
+      tasaProm: b.tasaPromedioDelDia ?? 0,
+      ventas: {
+        total: ventasTotal,
+        comision: ventasUtilidad,
+        cuatroPorMil,
+        utilidad: ventasUtilidad,
+      },
+      p2p: {
+        total: p2pTotal,
+        comision: p2pComisiones,
+        utilidad: p2pUtilidad,
+      },
+      dec: {
+        total: 0,
+        comision: 0,
+        utilidad: 0,
+      },
+      comisionesTotal,
+      retiros,
+      traslado,
+      pagosProveedor,
+      trx,
+      reintegroTrust,
+      gastos,
+      ajustes,
+      totalCalculado,
+    };
+    this.criptosHoy = this.parseCriptos(b.detalleCriptosJson);
+
+    this.showDetailsModal = true;
+  }
+
+  // Atajo si quieres seguir usando showDetails(balance)
   showDetails(row: BalanceGeneral): void {
-  // Buscar el registro completo en this.balances por id
-  const full = this.balances.find(b => b.id === row.id);
-  this.selectedBalance = full ?? row; // usa el completo si lo encuentra
-  this.showDetailsModal = true;
-}
+    this.prepareDetail(row);
+  }
 
-
+  // === Lógica original de “Info adicional” ===
   showAdditionalInfo(): void {
-    // Llamada a totalCaja
     this.balanceService.totalCaja().subscribe({
       next: (data) => {
         this.totalCajaObj = data || {};
-        this.totalCajaArr = Object.entries(this.totalCajaObj).map(([nombre, monto]) => ({
-          nombre,
-          monto: Number(monto ?? 0)
-        }));
+        this.totalCajaArr = Object.entries(this.totalCajaObj).map(
+          ([nombre, monto]) => ({
+            nombre,
+            monto: Number(monto ?? 0),
+          })
+        );
       },
       error: (err) => {
         console.error('Error cargando total caja', err);
       },
     });
 
-    // Llamada a totalClientes
     this.balanceService.totalClientes().subscribe({
       next: (total) => {
         this.totalClientes = total;
-        this.showAdditionalInfoModal = true; // Abrimos modal cuando llega el dato
+        this.showAdditionalInfoModal = true;
       },
       error: (err) => {
         console.error('Error cargando total clientes', err);
@@ -101,5 +226,24 @@ export class CajaComponent implements OnInit {
     this.showDetailsModal = false;
     this.showAdditionalInfoModal = false;
     this.selectedBalance = null;
+    this.detail = null;
+  }
+
+  // Stub para el botón de refrescar tarjeta
+  syncCard(b: BalanceGeneral): void {
+    console.log('Sincronizar tarjeta (stub):', b.id ?? b.date);
+  }
+  private parseCriptos(json?: string | null): CryptoResumenDia[] {
+    if (!json) return [];
+    try {
+      const arr = JSON.parse(json);
+      if (Array.isArray(arr)) {
+        return arr as CryptoResumenDia[];
+      }
+      return [];
+    } catch (e) {
+      console.error('Error parseando detalleCriptosJson', e);
+      return [];
+    }
   }
 }

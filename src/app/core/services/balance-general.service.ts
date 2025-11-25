@@ -15,12 +15,21 @@ export interface BalanceGeneral {
   utilidadP2P: number;
   totalVentasGeneralesDelDia: number;
   utilidadVentasGenerales: number;
-  clientesSaldo: number;
-  saldoCajas: number;
+  saldoClientes: number;
+  efectivoDelDia: number;
   comisionTrust: number;
   saldoCuentasBinance: number;
   proveedores: number;
   cuentasCop: number;
+  detalleCriptosJson?: string | null;
+  
+}
+
+export interface CryptoResumenDia {
+  cripto: string;
+  saldoCripto: number;
+  tasaUsdt: number;
+  totalUsdt: number;
 }
 
 @Injectable({

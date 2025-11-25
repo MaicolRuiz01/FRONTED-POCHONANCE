@@ -2,21 +2,51 @@
 <p-confirmDialog></p-confirmDialog>
 
 <p-toolbar styleClass="mb-4">
-    <div class="saldo-card p-3 border rounded">
+    <!-- <div class="saldo-card p-3 border rounded">
         <h4>Saldo Interno total</h4>
         <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
         <p>${{ totalBalanceUsd | number:'1.0-0' }} USDT</p>
         <p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
-    </div>
+    </div> -->
     <div class="saldo-card p-3 border rounded">
-        <h4>Saldo Externo total</h4>
-        <p>${{ balanceTotalExterno | number:'1.0-0' }} USDT</p>
+  <h4>Saldo Externo total</h4>
+
+<p>${{ balanceTotalExterno | number:'1.0-2' }} USDT</p>
+<p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
+<!-- Caso: sí existe tasa promedio -->
+<p *ngIf="latestRate > 0">
+  
+  ≈ {{ balanceTotalExternoCop | number:'1.0-0' }} COP
+  
+</p>
+
+<!-- Caso: no existe tasa promedio -->
+<p *ngIf="latestRate === 0" style="color:#c0392b; font-weight:600;">
+  Sin tasa promedio disponible
+</p>
+
+</div>
+
+        <div class="saldo-card p-3 border rounded">
+      <h4>Criptos (hoy)</h4>
+
+      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+        <div *ngFor="let t of tasasCriptoHoy" class="crypto-row">
+          <span class="crypto-name">{{ t.cripto }}</span>
+          <span class="crypto-amount">
+            {{ t.saldoFinalCripto | number:'1.4-8' }} {{ t.cripto }}
+          </span>
+          <span class="crypto-usdt">
+            {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
+          </span>
+        </div>
+      </ng-container>
+
+      <ng-template #noCriptoData>
+        <p style="margin:0;font-size:0.85rem;">Sin datos de tasas cripto hoy.</p>
+      </ng-template>
     </div>
 
-    <div class="saldo-card p-3 border rounded">
-        <h4>Total en Cajas</h4>
-        <p>${{ totalCajasCop | number:'1.0-0' }} COP</p>
-    </div>
 <br>
     <ng-template pTemplate="left">
         <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
@@ -59,18 +89,9 @@
 
     <!-- Contenido clickable -->
 <div class="card-body" (click)="toggleText(account)">
-<!-- Botón que consulta saldo externo -->
-    <div class="button-container">
-    <button pButton 
-          icon="pi pi-bookmark"
-          severity="info" 
-          variant="outlined"
-          [raised]="true"
-          size="small"
-          title="Consultar Saldo Externo"
-          (click)="consultarSaldoExterno(account, $event)">
-  </button>
-  <button pButton
+  <div class="button-container">
+    <!-- Solo dejamos el botón de sincronizar interno -->
+    <button pButton
           icon="pi pi-refresh"
           severity="warning"
           variant="outlined"
@@ -79,16 +100,19 @@
           [loading]="account.syncing"
           title="Sincronizar saldos internos"
           (click)="syncInternalAccount(account, $event)">
-  </button>
+    </button>
   </div>
-   <ng-container *ngIf="!account.isFlipped; else detalles"> 
-    <p><strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}</p>
 
-    <!-- Se muestra solo si ya se consultó -->
-    <p *ngIf="account.saldoExterno !== undefined">
-      <strong>Saldo Externo (USDT)</strong>: {{ account.saldoExterno | number:'1.2-2' }}
-    </p>
+  <ng-container *ngIf="!account.isFlipped; else detalles"> 
+    <!-- AHORA: saldo externo es lo principal -->
+    <p><strong>Saldo Externo (USDT)</strong>: {{ account.saldoExterno | number:'1.2-2' }}</p>
+
+    <!-- Si quieres seguir viendo el interno, lo dejamos abajo como secundario -->
+    <!-- <p class="muted">
+      <strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}
+    </p> -->
   </ng-container>
+
 
 
   <ng-template #detalles>

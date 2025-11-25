@@ -76,22 +76,24 @@
             [(ngModel)]="accounts[i].accountCop" 
             optionValue="id" 
             optionLabel="name"
-            placeholder="Selecciona cuenta"
-            (onChange)="onAccountAmountChange()">
+            placeholder="Selecciona cuenta">
           </p-dropdown>
+
         </div>
         
         <div class="p-field p-col-12 p-md-5">
-          <label>Pesos recibidos</label>
-          <p-inputNumber 
-            [(ngModel)]="accounts[i].amount" 
-            mode="currency" 
-            currency="COP" 
-            [min]="0"
-            class="w-full"
-            (onInput)="onAccountAmountChange()">
-          </p-inputNumber>
-        </div>
+  <label>Pesos recibidos</label>
+  <input
+  type="number"
+  pInputText
+  [(ngModel)]="accounts[i].amount"
+  min="0"
+  class="w-full"
+  (input)="onAccountAmountChange(i)"
+/>
+
+</div>
+
         
         <div class="p-field p-col-12 p-md-2 p-d-flex p-ai-center">
           <button pButton icon="pi pi-trash" 

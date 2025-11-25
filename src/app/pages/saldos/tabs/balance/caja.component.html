@@ -30,11 +30,23 @@
           <div class="field-value saldo-value">{{ b.saldo | number:'1.0-0' }}</div>
         </div>
 
-        <div class="field-row"><div class="field-label">Criptos</div><div class="field-value">{{ b.saldoCuentasBinance | number:'1.0-0' }}</div></div>
-        <div class="field-row"><div class="field-label">Clientes</div><div class="field-value" [ngClass]="{'negative': (b.clientesSaldo ?? 0) < 0}">{{ b.clientesSaldo | number:'1.0-0' }}</div></div>
+        <div class="field-row">
+          <div class="field-label">Clientes</div>
+          <div class="field-value"
+           [ngClass]="{'negative': (b.saldoClientes ?? 0) < 0}">
+           {{ b.saldoClientes | number:'1.0-0' }}
+          </div>
+        </div>
+        <hr>
         <div class="field-row"><div class="field-label">Proveedores</div><div class="field-value">{{ b.proveedores | number:'1.0-0' }}</div></div>
+        <hr>
         <div class="field-row"><div class="field-label">Cuentas COP</div><div class="field-value">{{ b.cuentasCop | number:'1.0-0' }}</div></div>
-        <div class="field-row"><div class="field-label">Cajas</div><div class="field-value">{{ b.saldoCajas | number:'1.0-0' }}</div></div>
+        <hr>
+        <div class="field-row">
+  <div class="field-label">Cajas</div>
+  <div class="field-value">{{ b.efectivoDelDia | number:'1.0-0' }}</div>
+</div>
+
 
         <div class="clearfix"></div>
 

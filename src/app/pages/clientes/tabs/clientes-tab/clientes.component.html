@@ -21,6 +21,10 @@
 
     <button pButton label="Pagar a Proveedor (USDT)" icon="pi pi-send"
           class="p-button-success" (click)="abrirModalPagoClienteProveedor()"></button>
+
+          <button pButton label="Exportar Excel" icon="pi pi-file-excel" class="p-button-success" 
+            (click)="abrirmodalexcel()">
+          </button>
   </div>
 
   <!-- Modal para Transferencia Cliente → Proveedor -->
@@ -115,7 +119,7 @@
 
   <!-- Modal Movimientos/Compras -->
 <p-dialog
-  header="Cliente: {{ selectedCliente?.nombre }}"
+  header="{{ selectedCliente?.nombre }}"
   [(visible)]="showMovimientosDialog"
   [modal]="true"
   position="top"
@@ -157,10 +161,9 @@
             <td>{{ mov.caja || '-' }}</td>
             <td>{{ mov.pagoCliente || '-' }}</td>
             <td>{{ mov.pagoProveedor || '-' }}</td>
-              <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(mov)"></button>
-          </tr>
 
-          
+              <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(mov)"></button>
+            </tr>
         </ng-template>
 
       </p-table>
@@ -204,6 +207,7 @@
         </ng-template>
       </p-table>
     </p-tabPanel>
+
     <!-- TAB 3: Ventas -->
 <p-tabPanel header="Ventas">
   <p-table

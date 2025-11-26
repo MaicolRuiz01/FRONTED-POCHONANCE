@@ -117,7 +117,7 @@ export class MovimientoService {
   }
 
   getAllMovimientos(): Observable<MovimientoDto[]> {
-    return this.http.get<MovimientoDto[]>(this.apiUrl);
+    return this.http.get<MovimientoDto[]>(`${this.apiUrl}/listar`);
   }
 
   registrarRetiro(idCuentaOrigen: number, monto: number) {

@@ -11,6 +11,11 @@ export interface AccountCop {
   name: string;
   balance: number;
   saldoInicialDelDia?: number;
+
+  entradasHoy?: number;
+  salidasHoy?: number;
+  ajustesHoy?: number;
+  ventasDolaresHoy?: number;
 }
 export type AccountCopCreate = Omit<AccountCop, 'id'>;
 

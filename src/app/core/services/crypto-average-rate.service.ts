@@ -28,7 +28,7 @@ export class CryptoAverageRateService {
 
   private readonly apiUrl = `${environment.apiUrl}/api/crypto-average-rate`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Última tasa registrada para una cripto (puede ser null si nunca se ha inicializado) */
   getUltimaPorCripto(cripto: string): Observable<CryptoAverageRateDto | null> {
@@ -52,8 +52,14 @@ export class CryptoAverageRateService {
   getPendientes() {
     return this.http.get<CryptoPendienteDto[]>(`${this.apiUrl}/pendientes`);
   }
+
+  initDia(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/init-dia`, {});
+  }
+
   getTasasDelDia() {
-  return this.http.get<CryptoAverageRateDto[]>("/api/crypto-average-rate/del-dia");
-}
+    // mejor usar apiUrl en vez de ruta “plana”
+    return this.http.get<CryptoAverageRateDto[]>(`${this.apiUrl}/del-dia`);
+  }
 
 }

@@ -16,6 +16,8 @@ export interface Cliente {
   comprasHoy?: number;
   ventasHoy?: number;
   ajustesHoy?: number;
+  entradasHoy?: number;
+  salidasHoy?: number; 
 }
 
 @Injectable({

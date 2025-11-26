@@ -13,6 +13,8 @@ export interface Supplier {
   comprasHoy?: number;
   ventasHoy?: number;
   ajustesHoy?: number;
+  entradasHoy?: number;
+  salidasHoy?: number; 
 }
 
 @Injectable({

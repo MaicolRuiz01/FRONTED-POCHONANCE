@@ -143,12 +143,15 @@ export class ProveedorComponent implements OnInit {
           if (!s.id) return;
           this.movimientoService.getResumenProveedor(s.id).subscribe({
             next: (res) => {
-              s.comprasHoy = res.comprasHoy;
-              s.ventasHoy = res.ventasHoy;
+              s.entradasHoy = res.entradasHoy;
+              s.salidasHoy = res.salidasHoy;
               s.ajustesHoy = res.ajustesHoy;
+              s.comprasHoy = res.comprasDolaresHoy;  // BuyDollars del día (COP)
+              s.ventasHoy = res.ventasDolaresHoy;   // SellDollars del día (COP)
             }
           });
         });
+
       },
       error: (err) => console.error('Error loading suppliers', err)
     });

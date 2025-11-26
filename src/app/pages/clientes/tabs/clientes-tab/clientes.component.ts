@@ -57,7 +57,7 @@ export class ClientesComponent implements OnInit {
 
   tasaOrigen = 0;
   tasaDestino = 0;
-  cuentasCop: AccountCop[] = [];   // 🔹 cuentas COP que vienen del backend
+  cuentasCop: AccountCop[] = [];
   displayPagoCuentaCopModal = false;
 
   pagoCuentaCop = {
@@ -73,10 +73,7 @@ export class ClientesComponent implements OnInit {
   displayEditModal = false;
   editCliente: Cliente | null = null;
   ventasCliente: SellDollar[] = [];
-  // modo de pago: 'USDT' o 'COP'
   paymentMode: 'USDT' | 'COP' = 'USDT';
-
-  // Monto COP cuando el modo es COP
   pagoCop: number | null = null;
 
 
@@ -141,18 +138,19 @@ export class ClientesComponent implements OnInit {
     this.clienteService.listar().subscribe({
       next: data => {
         this.clientes = data;
-
-        // para cada cliente, pido su resumen del día
         this.clientes.forEach(c => {
           if (!c.id) return;
           this.movimientoService.getResumenCliente(c.id).subscribe({
             next: (res) => {
-              c.comprasHoy = res.comprasHoy;
-              c.ventasHoy = res.ventasHoy;
+              c.entradasHoy = res.entradasHoy;
+              c.salidasHoy = res.salidasHoy;
               c.ajustesHoy = res.ajustesHoy;
+              c.comprasHoy = res.comprasDolaresHoy;   // BuyDollars día en COP
+              c.ventasHoy = res.ventasDolaresHoy;    // SellDollars día en COP
             }
           });
         });
+
       },
       error: () => alert('Error al cargar los clientes')
     });

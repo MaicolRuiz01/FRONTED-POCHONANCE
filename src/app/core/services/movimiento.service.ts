@@ -6,7 +6,7 @@ import { Movimiento } from './pago-proveedor.service';
 
 export interface MovimientoDto {
   id: number;
-  tipo: string; 
+  tipo: string;
   monto: number;
   cuentaFromId: number;
   cuentaToId?: number;
@@ -36,7 +36,7 @@ export interface PagoClienteAClienteDto {
 }
 
 export interface MovimientoVistaDto {
-  id?: number; 
+  id?: number;
   tipo: string;
   fecha: Date;
   monto: number;
@@ -72,12 +72,14 @@ export interface AjusteSaldoDto {
   motivo: string;
   actor?: string;
 }
-export interface ResumenDiario {
-  comprasHoy: number;
-  ventasHoy: number;
-  ajustesHoy: number;
-}
 
+export interface ResumenDiario {
+  comprasDolaresHoy: number;
+  ventasDolaresHoy: number;
+  ajustesHoy: number;
+  entradasHoy: number;
+  salidasHoy: number;
+}
 
 export interface MovimientoAjusteDto {
   id: number;
@@ -254,28 +256,28 @@ export class MovimientoService {
     return this.http.post(`${this.apiUrl}/pago-cuenta-cop-a-cliente`, {}, { params });
   }
 
-getAjustesCliente(clienteId: number): Observable<MovimientoAjusteDto[]> {
-  return this.http.get<MovimientoAjusteDto[]>(
-    `${this.apiUrl}/ajustes/cliente/${clienteId}`
-  );
-}
+  getAjustesCliente(clienteId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/cliente/${clienteId}`
+    );
+  }
 
-getAjustesProveedor(proveedorId: number): Observable<MovimientoAjusteDto[]> {
-  return this.http.get<MovimientoAjusteDto[]>(
-    `${this.apiUrl}/ajustes/proveedor/${proveedorId}`
-  );
-}
+  getAjustesProveedor(proveedorId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/proveedor/${proveedorId}`
+    );
+  }
 
-getAjustesCuentaCop(cuentaId: number): Observable<MovimientoAjusteDto[]> {
-  return this.http.get<MovimientoAjusteDto[]>(
-    `${this.apiUrl}/ajustes/cuenta-cop/${cuentaId}`
-  );
-}
+  getAjustesCuentaCop(cuentaId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/cuenta-cop/${cuentaId}`
+    );
+  }
 
-getAjustesCaja(cajaId: number): Observable<MovimientoAjusteDto[]> {
-  return this.http.get<MovimientoAjusteDto[]>(
-    `${this.apiUrl}/ajustes/caja/${cajaId}`
-  );
-}
+  getAjustesCaja(cajaId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/caja/${cajaId}`
+    );
+  }
 
 }

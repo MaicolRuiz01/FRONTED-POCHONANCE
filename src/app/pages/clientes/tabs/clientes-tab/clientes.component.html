@@ -94,11 +94,12 @@
     </p>
 
     <div class="resumen-dia">
-    <p><strong>Compras hoy:</strong> {{ cliente.comprasHoy || 0 | currency:'COP' }}</p>
-    <p><strong>Ventas hoy:</strong>  {{ cliente.ventasHoy  || 0 | currency:'COP' }}</p>
-    <p><strong>Ajustes hoy:</strong> {{ cliente.ajustesHoy || 0 | currency:'COP' }}</p>
-  </div>
-    <!-- <p><strong>Wallet:</strong> {{ cliente.wallet }}</p> -->
+  <p><strong>Entradas hoy:</strong> {{ cliente.entradasHoy || 0 | currency:'COP' }}</p>
+  <p><strong>Salidas hoy:</strong>  {{ cliente.salidasHoy  || 0 | currency:'COP' }}</p>
+  <p><strong>Compras USDT hoy:</strong> {{ cliente.comprasHoy || 0 | currency:'COP' }}</p>
+  <p><strong>Ventas USDT hoy:</strong>  {{ cliente.ventasHoy  || 0 | currency:'COP' }}</p>
+  <p><strong>Ajustes hoy:</strong> {{ cliente.ajustesHoy || 0 | currency:'COP' }}</p>
+</div>
 
     <div class="acciones-card">
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"

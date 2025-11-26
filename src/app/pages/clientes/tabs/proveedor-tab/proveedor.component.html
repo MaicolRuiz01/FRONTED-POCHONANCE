@@ -46,10 +46,14 @@
         <span>{{ supplier.saldoInicialDelDia | number:'1.2-2' }}</span>
     </div>
     <div class="resumen-dia">
-    <p><strong>Compras hoy:</strong> {{ supplier.comprasHoy || 0 | currency:'COP' }}</p>
-    <p><strong>Ventas hoy:</strong>  {{ supplier.ventasHoy  || 0 | currency:'COP' }}</p>
-    <p><strong>Ajustes hoy:</strong> {{ supplier.ajustesHoy || 0 | currency:'COP' }}</p>
-  </div>
+  <p><strong>Entradas hoy:</strong> {{ supplier.entradasHoy || 0 | currency:'COP' }}</p>
+  <p><strong>Salidas hoy:</strong>  {{ supplier.salidasHoy  || 0 | currency:'COP' }}</p>
+  <p><strong>Compras USDT hoy:</strong> {{ supplier.comprasHoy || 0 | currency:'COP' }}</p>
+  <p><strong>Ventas USDT hoy:</strong>  {{ supplier.ventasHoy  || 0 | currency:'COP' }}</p>
+
+  <p><strong>Ajustes hoy:</strong>   {{ supplier.ajustesHoy || 0 | currency:'COP' }}</p>
+</div>
+
         <div class="account-details">
           <div class="card-row">
             

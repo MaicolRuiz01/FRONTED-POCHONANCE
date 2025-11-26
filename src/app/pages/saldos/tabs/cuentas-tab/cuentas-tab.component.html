@@ -28,24 +28,42 @@
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card"
-      (click)="goToVentas(account.id!)">
+    <p-card class="account-card p-shadow-3"
+            [header]="account.name"
+            styleClass="account-card"
+            (click)="goToVentas(account.id!)">
       <ng-template pTemplate="content">
         <div class="account-details">
-          <p>Saldo inicial del dia: {{account.saldoInicialDelDia | number:'1.2-2'}}</p>
-          <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
-           <button
-    pButton
-    label="Ajustar saldo"
-    icon="pi pi-refresh"
-    class="p-button-warning p-button-text p-button-sm"
-    (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
-  </button>
+          <p>Saldo inicial del día: {{ account.saldoInicialDelDia | number:'1.2-2' }}</p>
+
+          <div class="resumen-dia">
+            <p><strong>Entradas hoy:</strong>
+              {{ account.entradasHoy || 0 | currency:'COP' }}</p>
+            <p><strong>Salidas hoy:</strong>
+              {{ account.salidasHoy || 0 | currency:'COP' }}</p>
+            <p><strong>Ventas USDT hoy:</strong>
+              {{ account.ventasDolaresHoy || 0 | currency:'COP' }}</p>
+            <p><strong>Ajustes hoy:</strong>
+              {{ account.ajustesHoy || 0 | currency:'COP' }}</p>
+          </div>
+
+          <p>
+            <strong>Balance:</strong> {{ account.balance | currency:'COP' }}
+          </p>
+
+          <button
+            pButton
+            label="Ajustar saldo"
+            icon="pi pi-refresh"
+            class="p-button-warning p-button-text p-button-sm"
+            (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
+          </button>
         </div>
       </ng-template>
     </p-card>
   </div>
 </div>
+
 
 <!-- Formulario de creación de cuenta en un modal -->
 <p-dialog header="Crear Cuenta Colombiana" [(visible)]="displayDialog" [modal]="true" [closable]="true">

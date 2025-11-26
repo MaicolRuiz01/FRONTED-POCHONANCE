@@ -16,6 +16,12 @@ export interface AccountBinance {
   apiKey?: string;
   apiSecret?: string;
 }
+export interface CryptoBalanceDetail {
+  symbol: string;
+  quantity: number;
+  usdtValue: number;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +29,7 @@ export interface AccountBinance {
 export class AccountBinanceService {
   private apiUrl = `${environment.apiUrl}/cuenta-binance`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   traerCuentas(): Observable<AccountBinance[]> {
     return this.http.get<AccountBinance[]>(this.apiUrl);
@@ -73,4 +79,9 @@ export class AccountBinanceService {
     const url = `${this.apiUrl}/sync-internal?name=${encodeURIComponent(name)}`;
     return this.http.post<Record<string, number>>(url, {});
   }
+  getInternalBalances(name: string): Observable<CryptoBalanceDetail[]> {
+  const url = `${this.apiUrl}/balances-internos?name=${encodeURIComponent(name)}`;
+  return this.http.get<CryptoBalanceDetail[]>(url);
+}
+
 }

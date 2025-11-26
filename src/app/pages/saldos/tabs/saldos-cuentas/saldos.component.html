@@ -2,12 +2,6 @@
 <p-confirmDialog></p-confirmDialog>
 
 <p-toolbar styleClass="mb-4">
-    <!-- <div class="saldo-card p-3 border rounded">
-        <h4>Saldo Interno total</h4>
-        <p>${{ totalBalanceCop | number:'1.0-0' }} COP</p>
-        <p>${{ totalBalanceUsd | number:'1.0-0' }} USDT</p>
-        <p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
-    </div> -->
     <div class="saldo-card p-3 border rounded">
   <h4>Saldo Externo total</h4>
 
@@ -107,10 +101,36 @@
     <!-- AHORA: saldo externo es lo principal -->
     <p><strong>Saldo Externo (USDT)</strong>: {{ account.saldoExterno | number:'1.2-2' }}</p>
 
-    <!-- Si quieres seguir viendo el interno, lo dejamos abajo como secundario -->
-    <!-- <p class="muted">
-      <strong>Saldo Interno (USDT)</strong>: {{ account.saldoInterno | number:'1.2-2' }}
-    </p> -->
+        <div class="crypto-detail">
+      <!-- loading local por card -->
+      <p *ngIf="account.loadingBalances">
+        <i class="pi pi-spin pi-spinner"></i> Cargando criptos...
+      </p>
+
+      <ng-container *ngIf="!account.loadingBalances">
+        <table *ngIf="account.balances && account.balances.length > 0; else sinCriptos">
+          <thead>
+            <tr>
+              <th>Cripto</th>
+              <th>Cantidad</th>
+              <th>≈ USDT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of account.balances">
+              <td>{{ b.symbol }}</td>
+              <td>{{ b.quantity | number:'1.4-8' }}</td>
+              <td>{{ b.usdtValue | number:'1.2-2' }} USDT</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #sinCriptos>
+          <p class="muted">Sin criptos registradas.</p>
+        </ng-template>
+      </ng-container>
+    </div>
+
   </ng-container>
 
 

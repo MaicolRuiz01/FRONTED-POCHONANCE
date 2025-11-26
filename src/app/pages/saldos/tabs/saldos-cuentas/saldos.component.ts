@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountBinanceService, AccountBinance } from '../../../../core/services/account-binance.service';
+import { AccountBinanceService, AccountBinance, CryptoBalanceDetail } from '../../../../core/services/account-binance.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -14,11 +14,11 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { AccountCopService } from '../../../../core/services/account-cop.service';
 import { BalanceService } from '../../../../core/services/balance.service';
-import { ConfirmDialogModule } from "primeng/confirmdialog";
-import { finalize } from 'rxjs/operators';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core/services/crypto-average-rate.service';
 import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
+import { finalize, switchMap } from 'rxjs/operators';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 export interface DisplayAccount {
   id?: number;
@@ -29,6 +29,8 @@ export interface DisplayAccount {
   address?: string;
   isFlipped: boolean;
   syncing: boolean;
+  balances?: CryptoBalanceDetail[];
+  loadingBalances?: boolean;
 }
 
 @Component({
@@ -164,11 +166,18 @@ export class SaldosComponent implements OnInit {
           address: c.address || '–',
           isFlipped: false,
           saldoExterno: 0,
-          syncing: false
+          syncing: false,
+          loadingBalances: false,
+          balances: []
         }));
 
+
         // cargar saldo externo automáticamente
-        this.accounts.forEach(acc => this.cargarSaldoExternoInicial(acc));
+        this.accounts.forEach(acc => {
+          this.cargarSaldoExternoInicial(acc);
+          this.cargarCriptosInicial(acc);   // 👈 NUEVO
+        });
+
 
         this.loading = false; // 👈 ya terminó
       },
@@ -401,7 +410,6 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  // ---------- Util ----------
   private resetForm() {
     this.newAccount = {
       name: '',
@@ -501,5 +509,27 @@ export class SaldosComponent implements OnInit {
   private recalculateExternalCop(): void {
     this.balanceTotalExternoCop = (this.balanceTotalExterno || 0) * (this.latestRate || 0);
   }
+
+  private cargarCriptosInicial(account: DisplayAccount): void {
+    account.loadingBalances = true;
+
+    this.accountService.syncInternalByName(account.accountType)
+      .pipe(
+        switchMap(() =>
+          this.accountService.getInternalBalances(account.accountType)
+        ),
+        finalize(() => account.loadingBalances = false)
+      )
+      .subscribe({
+        next: (balances) => {
+          account.balances = balances || [];
+        },
+        error: _ => {
+          console.error(`No se pudieron cargar las criptos de ${account.accountType}`);
+          account.balances = [];
+        }
+      });
+  }
+
 
 }

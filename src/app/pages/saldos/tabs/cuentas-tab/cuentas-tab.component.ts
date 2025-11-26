@@ -91,17 +91,28 @@ export class CuentasTabComponent implements OnInit {
   }
 
   loadCuentas() {
-    this.accountService.getAll().subscribe({
-      next: (cuentas: AccountCop[]) => {
-        console.log('Cuentas recibidas:', cuentas);
-        this.cuentas = cuentas;
-      },
-      error: (err: any) => {
-        console.error('Error al cargar cuentas:', err.message, err);
-      }
-    });
+  this.accountService.getAll().subscribe({
+    next: (cuentas: AccountCop[]) => {
+      this.cuentas = cuentas;
 
-  }
+      this.cuentas.forEach(c => {
+        if (!c.id) return;
+        this.movimientoService.getResumenCuentaCop(c.id).subscribe({
+          next: (res) => {
+            c.entradasHoy     = res.entradasHoy;
+            c.salidasHoy      = res.salidasHoy;
+            c.ajustesHoy      = res.ajustesHoy;
+            c.ventasDolaresHoy = res.ventasDolaresHoy; // 👈 SOLO ventas
+          }
+        });
+      });
+    },
+    error: (err: any) => {
+      console.error('Error al cargar cuentas:', err.message, err);
+    }
+  });
+}
+
 
   loadClientes() {
     this.clienteService.listar().subscribe({

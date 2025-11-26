@@ -20,10 +20,8 @@ import { Movimiento } from '../../../../core/services/pago-proveedor.service';
 import { AjusteSaldoDto } from '../../../../core/services/movimiento.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
-
 import { AjustesService } from '../../../../core/services/ajustes.service';
 import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
-
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 

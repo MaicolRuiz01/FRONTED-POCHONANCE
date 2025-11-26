@@ -247,6 +247,12 @@ export class MovimientoService {
       `${this.apiUrl}/resumen/proveedor/${proveedorId}`
     );
   }
+  getResumenCuentaCop(cuentaId: number): Observable<ResumenDiario> {
+    return this.http.get<ResumenDiario>(
+      `${this.apiUrl}/resumen/cuenta-cop/${cuentaId}`
+    );
+  }
+
   pagoCuentaCopACliente(cuentaId: number, clienteId: number, monto: number) {
     const params = new HttpParams()
       .set("cuentaId", cuentaId)
@@ -279,5 +285,6 @@ export class MovimientoService {
       `${this.apiUrl}/ajustes/caja/${cajaId}`
     );
   }
+
 
 }

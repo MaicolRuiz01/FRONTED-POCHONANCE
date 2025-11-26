@@ -21,6 +21,12 @@ import { AjusteSaldoDto } from '../../../../core/services/movimiento.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
+import { AjustesService } from '../../../../core/services/ajustes.service';
+import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
+
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 @Component({
   selector: 'app-clientes',
   standalone: true,
@@ -66,9 +72,20 @@ export class ClientesComponent implements OnInit {
     monto: null as number | null
   };
 
+  comprausdt: number | null = null;
+  ventausdt: number | null = null;
+
+
+  formValues = {
+    usuariocl_id: null
+  };
   showMovimientosDialog: boolean = false;
   selectedCliente: Cliente | null = null;
   clienteMovimientos: any[] = [];
+
+
+  clienteAjustes: any[] = [];
+  ajustesSeleccionado: any[] = [];
 
   displayEditModal = false;
   editCliente: Cliente | null = null;
@@ -98,6 +115,8 @@ export class ClientesComponent implements OnInit {
   clienteAjuste: Cliente | null = null;
   nuevoSaldoAjuste: number | null = null;
   motivoAjuste: string = '';
+  accountCopService: any;
+  showexcelmodal: boolean = false;
 
   ajustesCliente: MovimientoAjusteDto[] = [];
   loadingAjustesCliente = false;
@@ -116,7 +135,7 @@ export class ClientesComponent implements OnInit {
     private messageService: MessageService,
     private buyDollarsService: BuyDollarsService,
     private sellDollarsService: SellDollarsService,
-    private accountCopService: AccountCopService
+    private ajustesService: AjustesService
   ) { }
 
   ngOnInit(): void {
@@ -126,8 +145,8 @@ export class ClientesComponent implements OnInit {
   }
   cargarCuentasCop(): void {
     this.accountCopService.getAll().subscribe({
-      next: (data) => this.cuentasCop = data,
-      error: (err) => {
+      next: (data: AccountCop[]) => this.cuentasCop = data,
+      error: (err: any) => {
         console.error('Error al cargar cuentas COP', err);
         alert('Error al cargar cuentas COP');
       }
@@ -203,13 +222,12 @@ export class ClientesComponent implements OnInit {
         this.editCliente = null;
         this.cargarClientes();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error al actualizar cliente', err);
         alert('No se pudo actualizar el cliente');
       }
     });
   }
-
 
   cancelarEdicion(): void {
     this.displayEditModal = false;
@@ -275,7 +293,7 @@ export class ClientesComponent implements OnInit {
           this.loadingPago = false;
           this.cargarClientes();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.loadingPago = false;
           const msg = err?.error?.message || 'Error al procesar el pago C2C (USDT)';
           alert(msg);
@@ -296,7 +314,7 @@ export class ClientesComponent implements OnInit {
             this.loadingPago = false;
             this.cargarClientes();
           },
-          error: (err) => {
+          error: (err: any) => {
             this.loadingPago = false;
             const msg = err?.error?.message || 'Error al procesar el pago C2C (COP)';
             alert(msg);
@@ -342,6 +360,12 @@ export class ClientesComponent implements OnInit {
     this.clienteMovimientos = [];
     this.comprasCliente = [];
     this.ventasCliente = [];
+    this.selectedCliente = cliente;
+    this.clienteMovimientos = [];
+    this.comprasCliente = [];
+    this.ventasCliente = [];
+    this.ajustesSeleccionado = [];
+    this.clienteAjustes = [];
 
     if (!cliente.id) {
       this.showMovimientosDialog = true;
@@ -354,6 +378,7 @@ export class ClientesComponent implements OnInit {
         this.clienteMovimientos = [...data].sort(
           (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         );
+        console.log('Movimientos del cliente:', this.clienteMovimientos);
       },
       error: (err) => console.error('Error al cargar historial de movimientos', err),
     });
@@ -386,6 +411,19 @@ export class ClientesComponent implements OnInit {
       error: (err) => console.error('Error al cargar ajustes del cliente', err),
       complete: () => this.loadingAjustesCliente = false
     });
+
+    // 👇 Ajustes asignados al cliente
+    this.ajustesService.obtenerporcliente(cliente.id).subscribe({
+      next: data => {
+        console.log("Ajustes recibidos:", data);
+        this.clienteAjustes = data;
+        this.ajustesSeleccionado = [];
+      },
+      error: () => alert('Error al cargar los ajustes del cliente')
+    });
+
+
+
 
     this.showMovimientosDialog = true;
   }
@@ -507,5 +545,87 @@ export class ClientesComponent implements OnInit {
       });
   }
 
+  listarAjustesCliente(clienteId: number) {
 
+  }
+
+  abrirmodalexcel(): void {
+    this.showexcelmodal = true;
+  }
+
+  cerrarmodalexcel(): void {
+    this.showexcelmodal = false;
+  }
+
+  exportarExcelcliente(id: number | null): void {
+
+    const cliente = this.clientes.find(c => c.id === id);
+    if (!cliente) return;
+
+    const nombreCliente = cliente.nombre.trim().toLowerCase();
+
+    const movimientosFiltrados = this.clienteMovimientos.filter(mov =>
+      mov.pagoCliente?.trim().toLowerCase().includes(nombreCliente)
+    );
+
+    this.sellDollarsService.getVentasPorCliente(id!).subscribe({
+      next: (ventas) => {
+
+        this.ventasCliente = [...ventas].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        this.buyDollarsService.getComprasPorCliente(id!).subscribe({
+          next: (compras) => {
+
+            this.comprasCliente = [...compras].sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            console.log("Movimientos filtrados:", movimientosFiltrados);
+            console.log("Compras del cliente:", this.comprasCliente);
+            console.log("Ventas del cliente:", this.ventasCliente);
+
+            if (
+              movimientosFiltrados.length === 0 &&
+              this.comprasCliente.length === 0 &&
+              this.ventasCliente.length === 0
+            ) {
+              console.warn("No hay datos para exportar.");
+              return;
+            }
+
+            // -----------------------------
+            // 📘 CREAR EXCEL MULTIHOJA
+            // -----------------------------
+            const workbook = XLSX.utils.book_new();
+
+            // 🟦 Hoja Movimientos
+            const wsMov = XLSX.utils.json_to_sheet(movimientosFiltrados);
+            XLSX.utils.book_append_sheet(workbook, wsMov, 'Movimientos');
+
+            // 🟩 Hoja Compras
+            const wsCompra = XLSX.utils.json_to_sheet(this.comprasCliente);
+            XLSX.utils.book_append_sheet(workbook, wsCompra, 'Compras');
+
+            // 🟥 Hoja Ventas
+            const wsVenta = XLSX.utils.json_to_sheet(this.ventasCliente);
+            XLSX.utils.book_append_sheet(workbook, wsVenta, 'Ventas');
+
+            // Exportar archivo
+            const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([excelBuffer], {
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
+            saveAs(blob, `Reporte_${cliente.nombre}.xlsx`);
+            this.showexcelmodal = false;
+
+          },
+          error: (err) => console.error('Error al cargar compras del cliente', err)
+        });
+      },
+      error: (err) => console.error('Error al cargar ventas del cliente', err)
+    });
+  }
 }

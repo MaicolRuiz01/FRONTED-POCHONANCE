@@ -106,15 +106,27 @@ export class SaldosComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.loadAccounts();
-    this.getTotalBalance();
-    this.getBalanceTotalInterno();
-    this.getBalanceTotalExterno();
-    this.loadCryptoRatesToday();
-    this.loadAverageRate();
+    // 1) Inicializar criptos del día (sincroniza y crea snapshots si hace falta)
+    this.cryptoRateService.initDia()
+      .pipe(finalize(() => {
+        // 2) Una vez hecho (o aunque falle), cargamos todo lo demás
+        this.loadAccounts();
+        this.getTotalBalance();
+        this.getBalanceTotalInterno();
+        this.getBalanceTotalExterno();
+        this.loadCryptoRatesToday();
+        this.loadAverageRate();
+      }))
+      .subscribe({
+        next: () => {
+          // ok, no hace falta hacer nada
+        },
+        error: err => {
+          console.error('Error inicializando criptos del día:', err);
+        }
+      });
   }
-
-
+  
   getTotalBalance() {
     this.accountService.getTotalBalance().subscribe({
       next: res => this.totalBalanceCop = res,
@@ -511,25 +523,21 @@ export class SaldosComponent implements OnInit {
   }
 
   private cargarCriptosInicial(account: DisplayAccount): void {
-    account.loadingBalances = true;
+  account.loadingBalances = true;
 
-    this.accountService.syncInternalByName(account.accountType)
-      .pipe(
-        switchMap(() =>
-          this.accountService.getInternalBalances(account.accountType)
-        ),
-        finalize(() => account.loadingBalances = false)
-      )
-      .subscribe({
-        next: (balances) => {
-          account.balances = balances || [];
-        },
-        error: _ => {
-          console.error(`No se pudieron cargar las criptos de ${account.accountType}`);
-          account.balances = [];
-        }
-      });
-  }
+  this.accountService.getInternalBalances(account.accountType)
+    .pipe(finalize(() => account.loadingBalances = false))
+    .subscribe({
+      next: (balances) => {
+        account.balances = balances || [];
+      },
+      error: _ => {
+        console.error(`No se pudieron cargar las criptos de ${account.accountType}`);
+        account.balances = [];
+      }
+    });
+}
+
 
 
 }

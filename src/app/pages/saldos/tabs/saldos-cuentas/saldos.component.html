@@ -2,50 +2,76 @@
 <p-confirmDialog></p-confirmDialog>
 
 <p-toolbar styleClass="mb-4">
-    <div class="saldo-card p-3 border rounded">
-  <h4>Saldo Externo total</h4>
+  <!-- Card SALDO TOTAL -->
+  <div class="saldo-card saldo-card-main p-3 border rounded">
+    <h4>Saldo total</h4>
 
-<p>${{ balanceTotalExterno | number:'1.0-2' }} USDT</p>
-<p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
-<!-- Caso: sí existe tasa promedio -->
-<p *ngIf="latestRate > 0">
-  
-  ≈ {{ balanceTotalExternoCop | number:'1.0-0' }} COP
-  
-</p>
+    <p>${{ balanceTotalExterno | number:'1.0-2' }} USDT</p>
+    <p><strong>Tasa Promedio:</strong> {{ latestRate | number:'1.2-2' }}</p>
 
-<!-- Caso: no existe tasa promedio -->
-<p *ngIf="latestRate === 0" style="color:#c0392b; font-weight:600;">
-  Sin tasa promedio disponible
-</p>
+    <p *ngIf="latestRate > 0">
+      ≈ {{ balanceTotalExternoCop | number:'1.0-0' }} COP
+    </p>
 
-</div>
+    <p *ngIf="latestRate === 0" style="color:#c0392b; font-weight:600;">
+      Sin tasa promedio disponible
+    </p>
+  </div>
 
-        <div class="saldo-card p-3 border rounded">
-      <h4>Criptos (hoy)</h4>
+  <!-- Card CRIPTOS HOY -->
+  <div class="saldo-card saldo-card-crypto p-3 border rounded">
+    <h4>Criptos (hoy)</h4>
 
-      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
-        <div *ngFor="let t of tasasCriptoHoy" class="crypto-row">
-          <span class="crypto-name">{{ t.cripto }}</span>
-          <span class="crypto-amount">
-            {{ t.saldoFinalCripto | number:'1.4-8' }} {{ t.cripto }}
-          </span>
-          <span class="crypto-usdt">
-            {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
-          </span>
-        </div>
-      </ng-container>
+    <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
 
-      <ng-template #noCriptoData>
-        <p style="margin:0;font-size:0.85rem;">Sin datos de tasas cripto hoy.</p>
-      </ng-template>
-    </div>
+      <!-- contenedor con scroll si se necesita -->
+      <div class="crypto-table-wrap">
+        <table class="crypto-summary-table">
+          <thead>
+            <tr>
+              <th>Cripto</th>
+              <th>Saldo</th>
+              <th>Tasa (USDT)</th>
+              <th>≈ USDT</th>
+              <th *ngIf="latestRate > 0">≈ COP</th>
+            </tr>
+          </thead>
 
-<br>
-    <ng-template pTemplate="left">
-        <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+          <tbody>
+            <tr *ngFor="let t of tasasCriptoHoy">
+              <td class="col-cripto">
+                {{ t.cripto }}
+              </td>
+              <td class="col-num">
+                {{ t.saldoFinalCripto | number:'1.4-8' }}
+              </td>
+              <td class="col-num">
+                {{ t.tasaPromedioDia | number:'1.4-8' }}
+              </td>
+              <td class="col-num">
+                {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }}
+              </td>
+              <td class="col-num" *ngIf="latestRate > 0">
+                {{ (t.saldoFinalCripto * t.tasaPromedioDia * latestRate) | number:'1.0-0' }} COP
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <ng-template #noCriptoData>
+      <p style="margin:0;font-size:0.85rem;">
+        Sin datos de tasas cripto hoy.
+      </p>
     </ng-template>
-    <ng-template pTemplate="right">
+  </div>
+
+  <!-- resto del toolbar igual -->
+  <ng-template pTemplate="left">
+    <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+  </ng-template>
+  <ng-template pTemplate="right">
     <button
       pButton
       label="Sincronizar saldos"
@@ -56,6 +82,7 @@
     </button>
   </ng-template>
 </p-toolbar>
+
 
 <br><br>
 <div *ngIf="loading" class="spinner-container">

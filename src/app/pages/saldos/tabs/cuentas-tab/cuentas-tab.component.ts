@@ -14,7 +14,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
-
+import { GastoService } from '../../../../core/services/gasto.service';
 
 @Component({
   selector: 'app-cuentas-tab',
@@ -61,6 +61,7 @@ export class CuentasTabComponent implements OnInit {
     private movimientoService: MovimientoService,
     private clienteService: ClienteService,
     private cajaService: CajaService,
+    private gastoService: GastoService,
     private router: Router) { }
 
   ngOnInit(): void {
@@ -97,21 +98,24 @@ export class CuentasTabComponent implements OnInit {
 
       this.cuentas.forEach(c => {
         if (!c.id) return;
-        this.movimientoService.getResumenCuentaCop(c.id).subscribe({
-          next: (res) => {
-            c.entradasHoy     = res.entradasHoy;
-            c.salidasHoy      = res.salidasHoy;
-            c.ajustesHoy      = res.ajustesHoy;
-            c.ventasDolaresHoy = res.ventasDolaresHoy; // 👈 SOLO ventas
-          }
+
+        // Resumen diario existente
+        this.movimientoService.getResumenCuentaCop(c.id).subscribe(res => {
+          c.entradasHoy      = res.entradasHoy;
+          c.salidasHoy       = res.salidasHoy;
+          c.ajustesHoy       = res.ajustesHoy;
+          c.ventasDolaresHoy = res.ventasDolaresHoy;
+        });
+
+        // 🔹 NUEVO: total gastos hoy
+        this.gastoService.getTotalGastosHoyCuentaCop(c.id).subscribe(total => {
+          c.gastosHoy = total;
         });
       });
-    },
-    error: (err: any) => {
-      console.error('Error al cargar cuentas:', err.message, err);
     }
   });
 }
+
 
 
   loadClientes() {

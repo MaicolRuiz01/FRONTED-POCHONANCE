@@ -98,12 +98,34 @@
     </p>
 
     <div class="resumen-dia">
-  <p><strong>Entradas hoy:</strong> {{ cliente.entradasHoy || 0 | currency:'COP' }}</p>
-  <p><strong>Salidas hoy:</strong>  {{ cliente.salidasHoy  || 0 | currency:'COP' }}</p>
-  <p><strong>Compras USDT hoy:</strong> {{ cliente.comprasHoy || 0 | currency:'COP' }}</p>
-  <p><strong>Ventas USDT hoy:</strong>  {{ cliente.ventasHoy  || 0 | currency:'COP' }}</p>
-  <p><strong>Ajustes hoy:</strong> {{ cliente.ajustesHoy || 0 | currency:'COP' }}</p>
+
+  <p *ngIf="(cliente.entradasHoy ?? 0) > 0">
+    <strong>Entradas hoy:</strong>
+    {{ cliente.entradasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(cliente.salidasHoy ?? 0) > 0">
+    <strong>Salidas hoy:</strong>
+    {{ cliente.salidasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(cliente.comprasHoy ?? 0) > 0">
+    <strong>Compras USDT hoy:</strong>
+    {{ cliente.comprasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(cliente.ventasHoy ?? 0) > 0">
+    <strong>Ventas USDT hoy:</strong>
+    {{ cliente.ventasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(cliente.ajustesHoy ?? 0) > 0">
+    <strong>Ajustes hoy:</strong>
+    {{ cliente.ajustesHoy | currency:'COP' }}
+  </p>
+
 </div>
+
 
     <div class="acciones-card">
       <button pButton label="Editar" icon="pi pi-pencil" class="p-button-text p-button-sm"

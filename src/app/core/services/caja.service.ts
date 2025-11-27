@@ -9,6 +9,7 @@ export interface Caja {
   name: string;
   saldo: number;
   saldoInicialDelDia?: number;
+  gastosHoy?: number;
 }
 
 @Injectable({ providedIn: 'root' })

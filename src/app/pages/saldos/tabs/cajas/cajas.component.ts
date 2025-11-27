@@ -11,6 +11,7 @@ import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
+import { GastoService } from '../../../../core/services/gasto.service';
 
 @Component({
   selector: 'app-cajas-tab',
@@ -42,7 +43,8 @@ export class CajasComponent implements OnInit {
 
   constructor(
     private movimientoService: MovimientoService,
-    private cajaService: CajaService
+    private cajaService: CajaService,
+    private gastoService: GastoService
   ) { }
 
   ngOnInit(): void {
@@ -50,8 +52,19 @@ export class CajasComponent implements OnInit {
   }
 
   loadCajas() {
-    this.cajaService.listar().subscribe(data => this.cajas = data);
+    this.cajaService.listar().subscribe(data => {
+      this.cajas = data;
+
+      this.cajas.forEach(caja => {
+        if (!caja.id) return;
+
+        this.gastoService.getTotalGastosHoyCaja(caja.id).subscribe(total => {
+          caja.gastosHoy = total;
+        });
+      });
+    });
   }
+
 
   get totalCajas(): number {
     return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
@@ -97,7 +110,7 @@ export class CajasComponent implements OnInit {
       error: e => console.error('Error al cargar movimientos de caja', e),
       complete: () => this.loadingMovs = false
     });
-    
+
     this.movimientoService.getAjustesCaja(caja.id).subscribe({
       next: ajustes => {
         this.ajustesCaja = [...ajustes].sort(

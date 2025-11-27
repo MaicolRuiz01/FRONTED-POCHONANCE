@@ -148,7 +148,7 @@ export class SaldosComponent implements OnInit {
 
 
   getBalanceTotalExterno() {
-    this.accountService.getBalanceTotalExterno().subscribe({
+    this.accountService.getBalanceTotalInterno().subscribe({
       next: res => {
         this.balanceTotalExterno = res;
         this.recalculateExternalCop();      // 👈 recalcular COP

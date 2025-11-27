@@ -1,19 +1,6 @@
 <!-- Balance dinámico: tarjetas basadas en datos reales desde BalanceGeneralService -->
 <div class="balance-root">
 
-  <!-- Top mini-card dinámico -->
-  <div class="top-toolbar p-3 mb-4">
-    <div class="saldo-card p-3 border rounded">
-      <h4>Saldo total (sumas por tarjeta)</h4>
-      <p class="saldo-valor">{{ totalAggregate | number:'1.0-0' }} COP</p>
-      <p class="muted">Registros: {{ balances.length }}</p>
-    </div>
-
-    <div class="saldo-actions">
-      <button pButton icon="pi pi-sync" label="Actualizar totales" class="p-button-info" (click)="loadBalances()"></button>
-    </div>
-  </div>
-
   <div *ngIf="balances.length === 0" class="p-3">
     <p>Cargando balances o no hay balances disponibles.</p>
   </div>
@@ -31,14 +18,40 @@
         </div>
 
         <div class="field-row">
-          <div class="field-label">Clientes</div>
-          <div class="field-value"
-           [ngClass]="{'negative': (b.saldoClientes ?? 0) < 0}">
-           {{ b.saldoClientes | number:'1.0-0' }}
-          </div>
-        </div>
+  <div class="field-label">
+    {{
+      (b.saldoClientes ?? 0) < 0
+        ? 'Nos debe (Clientes)'
+        : ((b.saldoClientes ?? 0) > 0
+            ? 'Debemos (Clientes)'
+            : 'Clientes')
+    }}
+  </div>
+
+  <div class="field-value"
+       [ngClass]="{ 'negative': (b.saldoClientes ?? 0) < 0 }">
+    {{ Math.abs(b.saldoClientes ?? 0) | number:'1.0-0' }}
+  </div>
+</div>
+
         <hr>
-        <div class="field-row"><div class="field-label">Proveedores</div><div class="field-value">{{ b.proveedores | number:'1.0-0' }}</div></div>
+        <div class="field-row">
+  <div class="field-label">
+    {{
+      (b.proveedores ?? 0) < 0
+        ? 'Nos debe (Proveedores)'
+        : ((b.proveedores ?? 0) > 0
+            ? 'Debemos (Proveedores)'
+            : 'Proveedores')
+    }}
+  </div>
+
+  <div class="field-value"
+       [ngClass]="{ 'negative': (b.proveedores ?? 0) < 0 }">
+    {{ Math.abs(b.proveedores ?? 0) | number:'1.0-0' }}
+  </div>
+</div>
+
         <hr>
         <div class="field-row"><div class="field-label">Cuentas COP</div><div class="field-value">{{ b.cuentasCop | number:'1.0-0' }}</div></div>
         <hr>

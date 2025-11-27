@@ -60,6 +60,7 @@ export class CajaComponent implements OnInit {
   totalClientes: number = 0;
   cuentas: AccountCop[] = [];
   criptosHoy: CryptoResumenDia[] = [];
+  Math = Math;
 
   constructor(private balanceService: BalanceGeneralService) { }
 
@@ -114,14 +115,6 @@ export class CajaComponent implements OnInit {
     const cajas = b.efectivoDelDia ?? 0;
 
     return cripto + clientes + proveedores + cuentasCop + cajas;
-  }
-
-  // Total agregado para la mini-card superior
-  get totalAggregate(): number {
-    return this.balances.reduce(
-      (acc, b) => acc + this.getCardTotal(b),
-      0
-    );
   }
 
   // === Lupa: prepara detalle y abre modal ===

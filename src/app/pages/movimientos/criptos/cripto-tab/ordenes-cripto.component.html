@@ -4,22 +4,47 @@
   <div class="actions">
     <span class="p-input-icon-left">
       <i class="pi pi-search"></i>
-      <input pInputText type="text" [(ngModel)]="filtroGlobal" placeholder="Buscar en tabla..."
-        (input)="onGlobalFilter($event)" />
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="filtroGlobal"
+        placeholder="Buscar en tabla..."
+        (input)="onGlobalFilter($event)"
+      />
     </span>
 
-    <input pInputText type="text" [(ngModel)]="filtroCuenta" placeholder="Cuenta (opcional)" class="ml-8" />
-    <button pButton title="Filtrar cuenta" icon="pi pi-filter" class="p-button-info ml-4"
-      (click)="buscarPorCuenta()"></button>
+    <input
+      pInputText
+      type="text"
+      [(ngModel)]="filtroCuenta"
+      placeholder="Cuenta (opcional)"
+      class="ml-8"
+    />
+    <button
+      pButton
+      title="Filtrar cuenta"
+      icon="pi pi-filter"
+      class="p-button-info ml-4"
+      (click)="buscarPorCuenta()"
+    ></button>
 
-    <button pButton label="Re-importar (2º plano)" icon="pi pi-refresh" class="p-button-primary ml-4"
-      (click)="refrescar()" [disabled]="importing"></button>
+    <button
+      pButton
+      label="Re-importar (2º plano)"
+      icon="pi pi-refresh"
+      class="p-button-primary ml-4"
+      (click)="refrescar()"
+      [disabled]="importing"
+    ></button>
 
     <span class="importing" *ngIf="importing">
-      <br>
+      <br />
       <div class=".p-progress-spinner">
-        <br>
-        <p-progressSpinner strokeWidth="6" [style]="{ width: '50px', height: '50px' }" />
+        <br />
+        <p-progressSpinner
+          strokeWidth="6"
+          [style]="{ width: '50px', height: '50px' }"
+        ></p-progressSpinner>
       </div>
       <span class="bold">Sincronizando…</span>
     </span>
@@ -27,115 +52,83 @@
 </div>
 
 <div class="table-wrap" *ngIf="!importing">
-  <p-table #dt
-         [value]="ordenes"
-         [paginator]="true"
-         [rows]="25"
-         [rowsPerPageOptions]="[10,25,50,100]"
-         [loading]="loadingTable"
-         [globalFilterFields]="['cuenta','simbolo','lado','estado']"
-         [filterDelay]="0"
-         [showCurrentPageReport]="true"
-         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} órdenes"
-         sortMode="multiple"
-         responsiveLayout="scroll"
-         dataKey="idOrden"
-         [tableStyle]="{ 'min-width': '980px' }">
+  <p-table
+    #dt
+    [value]="ordenes"
+    [paginator]="true"
+    [rows]="25"
+    [rowsPerPageOptions]="[10, 25, 50, 100]"
+    [loading]="loadingTable"
+    [globalFilterFields]="['cuenta', 'simbolo', 'cripto', 'tipoOperacion']"
+    [filterDelay]="0"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} órdenes"
+    sortMode="multiple"
+    responsiveLayout="scroll"
+    dataKey="idOrdenBinance"
+    [tableStyle]="{ 'min-width': '980px' }"
+  >
+    <!-- header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="fechaOperacion">
+          Fecha
+          <p-sortIcon field="fechaOperacion"></p-sortIcon>
+        </th>
+        <th pSortableColumn="cuenta">
+          Cuenta
+          <p-sortIcon field="cuenta"></p-sortIcon>
+        </th>
+        <th pSortableColumn="cripto">
+          Cripto
+          <p-sortIcon field="cripto"></p-sortIcon>
+        </th>
+        <th pSortableColumn="simbolo">
+          Par
+          <p-sortIcon field="simbolo"></p-sortIcon>
+        </th>
+        <th>Tipo</th>
+        <th pSortableColumn="cantidadCripto">Unidades</th>
+        <th pSortableColumn="tasaUsdt">Tasa USDT</th>
+        <th pSortableColumn="totalUsdt">Total USDT</th>
+        <th pSortableColumn="comisionUsdt" class="hide-sm">
+          Comisión (USDT)
+        </th>
+        <th class="hide-sm">Id Orden</th>
+      </tr>
+    </ng-template>
 
-  <!-- ÚNICO header -->
-  <ng-template pTemplate="header">
-    <tr>
-      <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha"></p-sortIcon></th>
-      <th pSortableColumn="cuenta">Cuenta <p-sortIcon field="cuenta"></p-sortIcon></th>
-      <th pSortableColumn="simbolo">Símbolo <p-sortIcon field="simbolo"></p-sortIcon></th>
-      <th>Lado</th>
-      <th pSortableColumn="precio">Precio</th>
-      <th pSortableColumn="cantidadBase">Base</th>
-      <th pSortableColumn="cantidadQuote">Quote</th>
-      <th pSortableColumn="comisionUsdt" class="hide-sm">Comisión (USDT)</th>
-      <th class="hide-sm">Id Orden</th>
-    </tr>
-  </ng-template>
+    <!-- body -->
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.fechaOperacion | date : 'yyyy-MM-dd HH:mm:ss' }}</td>
+        <td>{{ row.cuenta }}</td>
+        <td>{{ row.cripto }}</td>
+        <td>{{ row.simbolo }}</td>
+        <td>
+          <p-tag
+            [value]="row.tipoOperacion"
+            [severity]="tagSeverity(row.tipoOperacion)"
+          ></p-tag>
+        </td>
+        <td>{{ row.cantidadCripto | number : '1.6-8' }}</td>
+        <td>{{ row.tasaUsdt | number : '1.6-8' }}</td>
+        <td>{{ row.totalUsdt | number : '1.2-8' }}</td>
+        <td class="hide-sm">
+          {{ row.comisionUsdt | number : '1.4-8' }}
+        </td>
+        <td class="hide-sm">
+          {{ row.idOrdenBinance }}
+        </td>
+      </tr>
+    </ng-template>
 
-  <!-- ÚNICO body -->
-  <ng-template pTemplate="body" let-row>
-    <tr>
-      <td>{{ row.fecha | date:'yyyy-MM-dd HH:mm:ss' }}</td>
-      <td>{{ row.cuenta }}</td>
-      <td>{{ row.simbolo }}</td>
-      <td><p-tag [value]="row.lado" [severity]="tagSeverity(row.lado)"></p-tag></td>
-      <td>{{ row.precio | number:'1.6-8' }}</td>
-      <td>{{ row.cantidadBase | number:'1.6-8' }}</td>
-      <td>{{ row.cantidadQuote | number:'1.2-8' }}</td>
-      <td class="hide-sm">{{ row.comisionUsdt | number:'1.4-8' }}</td>
-      <td class="hide-sm">{{ row.idOrden }}</td>
-    </tr>
-  </ng-template>
-
-  <ng-template pTemplate="emptymessage">
-    <tr>
-      <td colspan="10" class="empty">
-        {{ loadingTable ? 'Cargando...' : 'Sin datos' }}
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
-
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="10" class="empty">
+          {{ loadingTable ? 'Cargando...' : 'Sin datos' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>
-<p-dialog
-  header="Configurar tasas iniciales de criptos"
-  [(visible)]="mostrarDialogPendientes"
-  [modal]="true"
-  [closable]="false"
-  [dismissableMask]="false"
-  [style]="{ width: '480px' }">
-
-  <div class="p-fluid" *ngIf="pendientes?.length">
-    <p>
-      Antes de importar las órdenes, debes definir la
-      <strong>tasa promedio inicial</strong> para estas criptomonedas.
-      El sistema usará el saldo real en Binance como saldo inicial.
-    </p>
-
-    <div class="p-field" style="margin-bottom: 1rem;"
-         *ngFor="let p of pendientes">
-      <label>
-        <strong>{{ p.cripto }}</strong>
-        <span class="saldo-info">
-          (saldo actual: {{ p.saldoActualCripto | number:'1.4-8' }} {{ p.cripto }})
-        </span>
-      </label>
-      <input
-        type="number"
-        pInputText
-        [(ngModel)]="p.tasaInicial"
-        [ngClass]="{ 'p-invalid': p.invalida }"
-        placeholder="Ej: 0.12"
-        style="width:100%"
-        inputmode="numeric" />
-      <small *ngIf="p.invalida" class="p-error">
-        La tasa debe ser mayor que 0
-      </small>
-    </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <button
-      pButton
-      type="button"
-      label="Cancelar"
-      class="p-button-text"
-      (click)="cancelarPendientes()"
-      [disabled]="procesandoPendientes">
-    </button>
-
-    <button
-      pButton
-      type="button"
-      label="Guardar y continuar"
-      (click)="guardarPendientesYImportar()"
-      [disabled]="procesandoPendientes || !puedeGuardarPendientes()">
-    </button>
-  </ng-template>
-</p-dialog>
-

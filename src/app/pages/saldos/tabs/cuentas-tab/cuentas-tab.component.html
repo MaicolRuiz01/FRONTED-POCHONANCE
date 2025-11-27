@@ -37,14 +37,31 @@
           <p>Saldo inicial del día: {{ account.saldoInicialDelDia | number:'1.2-2' }}</p>
 
           <div class="resumen-dia">
-            <p><strong>Entradas hoy:</strong>
-              {{ account.entradasHoy || 0 | currency:'COP' }}</p>
-            <p><strong>Salidas hoy:</strong>
-              {{ account.salidasHoy || 0 | currency:'COP' }}</p>
-            <p><strong>Ventas USDT hoy:</strong>
-              {{ account.ventasDolaresHoy || 0 | currency:'COP' }}</p>
-            <p><strong>Ajustes hoy:</strong>
-              {{ account.ajustesHoy || 0 | currency:'COP' }}</p>
+            <p *ngIf="(account.entradasHoy ?? 0) > 0">
+  <strong>Entradas hoy:</strong>
+  {{ account.entradasHoy | currency:'COP' }}
+</p>
+
+<p *ngIf="(account.salidasHoy ?? 0) > 0">
+  <strong>Salidas hoy:</strong>
+  {{ account.salidasHoy | currency:'COP' }}
+</p>
+
+<p *ngIf="(account.ventasDolaresHoy ?? 0) > 0">
+  <strong>Ventas USDT hoy:</strong>
+  {{ account.ventasDolaresHoy | currency:'COP' }}
+</p>
+
+<p *ngIf="(account.ajustesHoy ?? 0) > 0">
+  <strong>Ajustes hoy:</strong>
+  {{ account.ajustesHoy | currency:'COP' }}
+</p>
+
+<p *ngIf="(account.gastosHoy ?? 0) > 0">
+  <strong>Gastos hoy:</strong>
+  {{ account.gastosHoy | currency:'COP' }}
+</p>
+
           </div>
 
           <p>

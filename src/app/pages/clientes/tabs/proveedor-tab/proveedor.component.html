@@ -46,13 +46,34 @@
         <span>{{ supplier.saldoInicialDelDia | number:'1.2-2' }}</span>
     </div>
     <div class="resumen-dia">
-  <p><strong>Entradas hoy:</strong> {{ supplier.entradasHoy || 0 | currency:'COP' }}</p>
-  <p><strong>Salidas hoy:</strong>  {{ supplier.salidasHoy  || 0 | currency:'COP' }}</p>
-  <p><strong>Compras USDT hoy:</strong> {{ supplier.comprasHoy || 0 | currency:'COP' }}</p>
-  <p><strong>Ventas USDT hoy:</strong>  {{ supplier.ventasHoy  || 0 | currency:'COP' }}</p>
 
-  <p><strong>Ajustes hoy:</strong>   {{ supplier.ajustesHoy || 0 | currency:'COP' }}</p>
+  <p *ngIf="(supplier.entradasHoy ?? 0) > 0">
+    <strong>Entradas hoy:</strong>
+    {{ supplier.entradasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(supplier.salidasHoy ?? 0) > 0">
+    <strong>Salidas hoy:</strong>
+    {{ supplier.salidasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(supplier.comprasHoy ?? 0) > 0">
+    <strong>Compras USDT hoy:</strong>
+    {{ supplier.comprasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(supplier.ventasHoy ?? 0) > 0">
+    <strong>Ventas USDT hoy:</strong>
+    {{ supplier.ventasHoy | currency:'COP' }}
+  </p>
+
+  <p *ngIf="(supplier.ajustesHoy ?? 0) > 0">
+    <strong>Ajustes hoy:</strong>
+    {{ supplier.ajustesHoy | currency:'COP' }}
+  </p>
+
 </div>
+
 
         <div class="account-details">
           <div class="card-row">

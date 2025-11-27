@@ -31,4 +31,12 @@ export class GastoService {
     return this.http.put<void>(`${this.apiUrl}/${id}/pagar`, {});
 
   }
+  getTotalGastosHoyCuentaCop(id: number) {
+  return this.http.get<number>(`${this.apiUrl}/total-hoy/cuenta-cop/${id}`);
+}
+
+getTotalGastosHoyCaja(id: number) {
+  return this.http.get<number>(`${this.apiUrl}/total-hoy/caja/${id}`);
+}
+
 }

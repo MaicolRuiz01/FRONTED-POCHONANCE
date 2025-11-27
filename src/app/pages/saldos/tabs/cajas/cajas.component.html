@@ -30,6 +30,8 @@
       <ng-template pTemplate="content">
   <div class="account-details">
     <p>Saldo inicial del dia: {{caja.saldoInicialDelDia | number:'1.2-2'}}</p>
+    <p><strong>Gastos hoy:</strong> {{ caja.gastosHoy || 0 | currency:'COP' }}</p>
+
     <div class="card-row">
       <span class="label">Saldo:</span>
       <span class="value">{{ caja?.saldo | currency:'COP' }}</span>

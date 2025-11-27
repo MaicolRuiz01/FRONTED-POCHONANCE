@@ -22,7 +22,7 @@ export interface BalanceGeneral {
   proveedores: number;
   cuentasCop: number;
   detalleCriptosJson?: string | null;
-  
+  netoNoAsignadasUsdt: number;
 }
 
 export interface CryptoResumenDia {

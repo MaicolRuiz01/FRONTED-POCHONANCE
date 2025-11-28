@@ -18,54 +18,59 @@
     </p>
   </div>
 
+
   <!-- Card CRIPTOS HOY -->
-  <div class="saldo-card saldo-card-crypto p-3 border rounded">
-    <h4>Criptos (hoy)</h4>
+<div class="saldo-card saldo-card-crypto p-3 border rounded">
+  <h4>Criptos (hoy)</h4>
 
-    <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
-
-      <!-- contenedor con scroll si se necesita -->
-      <div class="crypto-table-wrap">
-        <table class="crypto-summary-table">
-          <thead>
-            <tr>
-              <th>Cripto</th>
-              <th>Saldo</th>
-              <th>Tasa (USDT)</th>
-              <th>≈ USDT</th>
-              <th *ngIf="latestRate > 0">≈ COP</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let t of tasasCriptoHoy">
-              <td class="col-cripto">
-                {{ t.cripto }}
-              </td>
-              <td class="col-num">
-                {{ t.saldoFinalCripto | number:'1.4-8' }}
-              </td>
-              <td class="col-num">
-                {{ t.tasaPromedioDia | number:'1.4-8' }}
-              </td>
-              <td class="col-num">
-                {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }}
-              </td>
-              <td class="col-num" *ngIf="latestRate > 0">
-                {{ (t.saldoFinalCripto * t.tasaPromedioDia * latestRate) | number:'1.0-0' }} COP
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </ng-container>
-
-    <ng-template #noCriptoData>
-      <p style="margin:0;font-size:0.85rem;">
-        Sin datos de tasas cripto hoy.
-      </p>
-    </ng-template>
+  <!-- total en USDT (y COP) arriba -->
+  <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
+    Total ≈ 
+    <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
+    <span *ngIf="latestRate > 0">
+      · ≈ {{ (totalCriptosUsdt * latestRate) | number:'1.0-0' }} COP
+    </span>
   </div>
+
+  <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+    <div class="crypto-list">
+      <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
+        <div class="crypto-flip-inner">
+          <!-- Frente: nombre + saldo en cripto -->
+          <div class="crypto-face front">
+            <span class="crypto-symbol">
+              {{ t.cripto }}
+            </span>
+            <span class="crypto-amount">
+              {{ t.saldoFinalCripto | number:'1.4-8' }} {{ t.cripto }}
+            </span>
+          </div>
+
+          <!-- Reverso: tasa USDT + total USDT + COP -->
+          <div class="crypto-face back">
+            <span class="crypto-symbol">
+              {{ t.cripto }}
+            </span>
+            <span class="crypto-extra">
+              {{ t.tasaPromedioDia | number:'1.4-8' }} USDT ·
+              {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
+              <span *ngIf="latestRate > 0">
+                · {{ (t.saldoFinalCripto * t.tasaPromedioDia * latestRate) | number:'1.0-0' }} COP
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #noCriptoData>
+    <p style="margin:0;font-size:0.85rem;">
+      Sin datos de tasas cripto hoy.
+    </p>
+  </ng-template>
+</div>
+
 
   <!-- resto del toolbar igual -->
   <ng-template pTemplate="left">

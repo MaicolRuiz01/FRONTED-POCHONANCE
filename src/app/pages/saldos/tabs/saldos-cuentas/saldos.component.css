@@ -284,3 +284,88 @@ body {
 .crypto-summary-table tbody tr:last-child td {
   border-bottom: none;
 }
+
+/* ----- Card de criptos (hoy) mejor presentada ----- */
+
+.saldo-card-crypto {
+  min-width: 320px;
+  max-width: 420px;
+  overflow: hidden;
+}
+
+.crypto-total {
+  margin-top: 4px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: #2c3e50;
+}
+
+.crypto-total strong {
+  font-weight: 600;
+}
+
+/* Lista vertical de criptos */
+.crypto-list {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Flip por fila */
+.crypto-flip-row {
+  position: relative;
+  perspective: 600px;
+}
+
+.crypto-flip-inner {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease;
+  cursor: pointer;
+}
+
+/* Efecto: voltear en hover */
+.crypto-flip-row:hover .crypto-flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* Caras */
+.crypto-face {
+  position: relative;
+  border-radius: 6px;
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  backface-visibility: hidden;
+}
+
+.crypto-face.front {
+  background: #f5f7ff;
+}
+
+.crypto-face.back {
+  background: #edf3ff;
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* Textos */
+.crypto-symbol {
+  font-weight: 600;
+  color: #34495e;
+}
+
+.crypto-amount,
+.crypto-extra {
+  flex: 1;
+  text-align: right;
+  margin-left: 8px;
+  white-space: nowrap;
+  color: #2c3e50;
+}
+

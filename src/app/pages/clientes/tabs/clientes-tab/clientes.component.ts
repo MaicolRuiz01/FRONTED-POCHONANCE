@@ -79,6 +79,7 @@ export class ClientesComponent implements OnInit {
   formValues = {
     usuariocl_id: null
   };
+  
   showMovimientosDialog: boolean = false;
   selectedCliente: Cliente | null = null;
   clienteMovimientos: any[] = [];

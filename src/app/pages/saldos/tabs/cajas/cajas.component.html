@@ -177,7 +177,7 @@
   [entidad]="'CAJA'"
   [entidadId]="cajaAjuste.id"
   [nombreEntidad]="cajaAjuste.name"
-  [saldoActual]="cajaAjuste.saldo ?? 0"
+  [saldoActual]="cajaAjuste.saldo || 0"
   (ajusteRealizado)="onAjusteCajaRealizado()">
 </app-ajuste-saldo-dialog>
 

@@ -15,6 +15,9 @@ import { ClienteService, Cliente } from '../../../../core/services/cliente.servi
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 @Component({
   selector: 'app-cuentas-tab',
@@ -55,6 +58,11 @@ export class CuentasTabComponent implements OnInit {
   montoPago?: number;
   showAjusteCuenta = false;
   cuentaAjuste: AccountCop | null = null;
+  displayDialogExcel: boolean = false;
+
+  formsValues = {
+    cuentaId: null
+  };
 
 
   constructor(private accountService: AccountCopService,
@@ -154,6 +162,13 @@ export class CuentasTabComponent implements OnInit {
     this.montoMovimiento = undefined;
   }
 
+  abrirDialogexcel() {
+   this.displayDialogExcel = true;
+  }
+  cerrarDialogexcel() {
+    this.displayDialogExcel = false;
+  }
+
   registrarRetiro() {
     if (!this.selectedCuentaOrigenId || !this.selectedCajaId || !this.montoMovimiento) return;
 
@@ -207,4 +222,74 @@ export class CuentasTabComponent implements OnInit {
     });
   }
 
+
+  exportarExcelcuenta(id: number | null): void {
+
+    if (!id) return;
+
+    const cuenta = this.cuentas.find(c => c.id === id);
+    if (!cuenta) {
+      console.error("Cuenta no encontrada");
+      return;
+    }
+
+    const nombreCuenta = cuenta.name.trim().toLowerCase();
+
+    // 🔹 Movimientos filtrados de esta cuenta (del proveedor)
+    this.movimientoService.getAllMovimientos().subscribe({
+      next: (movimientos: any[]) => {
+
+
+        const movimientosFiltrados = movimientos.filter(mov => {
+          // extraer posible nombre: puede venir como string, objeto {name:...} o null/undefined
+          const raw = mov.pagoProveedor;
+
+          let proveedorName = '';
+          if (raw == null) {
+            proveedorName = '';
+          } else if (typeof raw === 'string') {
+            proveedorName = raw;
+          } else if (typeof raw === 'object' && raw.name) {
+            proveedorName = raw.name;
+          } else {
+            // si viene solo el id u otro tipo, forzamos a string
+            proveedorName = String(raw);
+          }
+
+          return proveedorName.trim().toLowerCase().includes(nombreCuenta);
+        });
+
+        // 🔹 Cargar compras por proveedor (si necesitas otra llamada, hazla aquí y combínala,
+        // por ahora solo exportamos los movimientos filtrados)
+
+        console.log("Movimientos filtrados:", movimientosFiltrados);
+
+        // --------------------------------
+        // 🟦 CREAR EXCEL CON MULTIHOJA
+        // --------------------------------
+        const workbook = XLSX.utils.book_new();
+
+        // Hoja 1 ─ Movimientos
+        const wsMov = XLSX.utils.json_to_sheet(movimientosFiltrados);
+        XLSX.utils.book_append_sheet(workbook, wsMov, 'Movimientos');
+
+        // Hoja 2 ─ Compras (agregar si implementas la carga de compras)
+
+        // Exportar archivo
+        const excelBuffer = XLSX.write(workbook, {
+          bookType: 'xlsx',
+          type: 'array'
+        });
+
+        const blob = new Blob([excelBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        saveAs(blob, `Reporte_Cuenta_${cuenta.name}.xlsx`);
+
+        this.displayDialogExcel = false; // nombre real de tu modal
+      },
+      error: (err: any) => console.error("Error al cargar movimientos", err)
+    });
+  }
 }

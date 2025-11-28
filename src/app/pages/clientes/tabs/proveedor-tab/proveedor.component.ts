@@ -20,6 +20,10 @@ import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-
 import { TableModule } from 'primeng/table';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
+
 export interface PagoProveedorDTO {
   id: number;
   amount: number;
@@ -92,10 +96,15 @@ export class ProveedorComponent implements OnInit {
     nota: '' as string
   };
 
+   formValues = {
+    usuariocl_id: null
+  };
+
   showAjusteProveedor = false;
   proveedorAjuste: Supplier | null = null;
   ajustesProveedor: MovimientoAjusteDto[] = [];
   loadingAjustes = false;
+  showmodelexcel: boolean = false;
 
   constructor(
     private supplierService: SupplierService,
@@ -343,5 +352,68 @@ export class ProveedorComponent implements OnInit {
       error: (err) => console.error('❌ Error eliminando movimiento:', err)
     });
   }
+
+  abrirmodalexcel() {
+    
+    this.showmodelexcel=true;
+  }
+
+  cerrarmodalExcel() {
+  this.showmodelexcel=false;
+  }
+
+  exportarExcelproveedor(id: number | null): void {
+    const proveedor = this.suppliers.find(c => c.id === id);
+    if (!proveedor) return;
+
+    const nombreProveedor = proveedor.name.trim().toLowerCase();
+
+    const movimientosFiltrados = this.movimientos.filter(mov =>
+      mov.pagoProveedor?.trim().toLowerCase().includes(nombreProveedor)
+    );
+
+    this.buyDollarsService.getComprasPorProveedor(id!).subscribe({
+      next: (compras) => {
+        this.comprasProveedor = [...compras].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        console.log("Movimientos filtrados:", movimientosFiltrados);
+        console.log("Compras del proveedor:", this.comprasProveedor);
+
+        if (
+          movimientosFiltrados.length === 0 &&
+          this.comprasProveedor.length === 0
+        ) {
+          console.warn("No hay datos para exportar.");
+          return;
+        }
+
+        // -----------------------------
+        // 📘 CREAR EXCEL MULTIHOJA
+        // -----------------------------
+        const workbook = XLSX.utils.book_new();
+
+        // 🟦 Hoja Movimientos
+        const wsMov = XLSX.utils.json_to_sheet(movimientosFiltrados);
+        XLSX.utils.book_append_sheet(workbook, wsMov, 'Movimientos');
+
+        // 🟩 Hoja Compras
+        const wsCompra = XLSX.utils.json_to_sheet(this.comprasProveedor);
+        XLSX.utils.book_append_sheet(workbook, wsCompra, 'Compras');
+
+        // Exportar archivo
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        saveAs(blob, `Reporte_${proveedor.name}.xlsx`);
+        this.showmodelexcel = false;
+      },
+      error: (err) => console.error('Error al cargar compras del proveedor', err)
+    });
+  }
+
 
 }

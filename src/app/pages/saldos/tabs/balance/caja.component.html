@@ -33,7 +33,7 @@
         <div class="field-row">
           <div class="field-label">Clientes</div>
           <div class="field-value"
-           [ngClass]="{'negative': (b.saldoClientes ?? 0) < 0}">
+           [ngClass]="{'negative': (b.saldoClientes || 0) < 0}">
            {{ b.saldoClientes | number:'1.0-0' }}
           </div>
         </div>

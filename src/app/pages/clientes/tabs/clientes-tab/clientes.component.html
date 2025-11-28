@@ -625,8 +625,47 @@
   [entidad]="'CLIENTE'"
   [entidadId]="clienteAjuste.id!"
   [nombreEntidad]="clienteAjuste.nombre"
-  [saldoActual]="clienteAjuste.saldo ?? 0"
+  [saldoActual]="clienteAjuste.saldo || 0"
   (ajusteRealizado)="onAjusteClienteRealizado()">
 </app-ajuste-saldo-dialog>
+
+<p-dialog 
+    header="Generar Excel por cliente"
+    [(visible)]="showexcelmodal"
+    [modal]="true"
+    [style]="{ width: '450px' }">
+
+    <form #ajusteForm="ngForm" (ngSubmit)="exportarExcelcliente(formValues.usuariocl_id)">
+
+        <div class="p-field">
+            <label for="clienteId">Cliente</label>
+
+            <p-dropdown 
+                [options]="clientes"
+                optionLabel="nombre"
+                optionValue="id"
+                name="usuariocl_id"
+                [(ngModel)]="formValues.usuariocl_id"
+                placeholder="Seleccione un cliente"
+                required>
+            </p-dropdown>
+        </div>
+
+        <br>
+
+        <div class="p-mt-3 p-d-flex p-jc-end">
+            <p-button 
+                label="Cancelar"
+                class="p-button-text"
+                (click)="cerrarmodalexcel()">
+            </p-button>
+
+            <p-button label="generar excel" icon="pi pi-save" styleClass="p-ml-3" type="submit">
+            </p-button>
+        </div>
+
+    </form>
+
+</p-dialog>
 
 

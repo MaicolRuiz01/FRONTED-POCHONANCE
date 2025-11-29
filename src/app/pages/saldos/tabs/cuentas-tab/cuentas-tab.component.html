@@ -26,60 +26,108 @@
 
 <hr>
 <!-- Tarjetas para mostrar las cuentas -->
+<!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card class="account-card p-shadow-3"
-            [header]="account.name"
-            styleClass="account-card"
-            (click)="goToVentas(account.id!)">
+    <p-card
+      class="account-card p-shadow-3"
+      [header]="account.name"
+      styleClass="account-card">
+
       <ng-template pTemplate="content">
-        <div class="account-details">
-          <p>Saldo inicial del día: {{ account.saldoInicialDelDia | number:'1.2-2' }}</p>
+        <!-- Contenedor flip -->
+        <div
+          class="account-flip"
+          [class.is-flipped]="account.isFlipped"
+          (click)="toggleFlip(account, $event)">
 
-          <div class="resumen-dia">
-            <p *ngIf="(account.entradasHoy ?? 0) > 0">
-  <strong>Entradas hoy:</strong>
-  {{ account.entradasHoy | currency:'COP' }}
-</p>
+          <div class="flip-inner">
+            <!-- 🔹 FRONT: solo balance -->
+            <div class="flip-face flip-front">
+              <div class="account-details">
+                <p>
+                  <strong>Balance:</strong>
+                  {{ account.balance | currency:'COP' }}
+                </p>
+                <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
+                  Click para ver resumen del día
+                </p>
+              </div>
+            </div>
 
-<p *ngIf="(account.salidasHoy ?? 0) > 0">
-  <strong>Salidas hoy:</strong>
-  {{ account.salidasHoy | currency:'COP' }}
-</p>
+            <!-- 🔹 BACK: todos los detalles -->
+            <div class="flip-face flip-back">
+              <div class="account-details">
 
-<p *ngIf="(account.ventasDolaresHoy ?? 0) > 0">
-  <strong>Ventas USDT hoy:</strong>
-  {{ account.ventasDolaresHoy | currency:'COP' }}
-</p>
+                <p>Saldo inicial del día:
+                  {{ account.saldoInicialDelDia | number:'1.2-2' }}
+                </p>
 
-<p *ngIf="(account.ajustesHoy ?? 0) > 0">
-  <strong>Ajustes hoy:</strong>
-  {{ account.ajustesHoy | currency:'COP' }}
-</p>
+                <div class="resumen-dia">
+                  <p *ngIf="(account.entradasHoy ?? 0) > 0">
+                    <strong>Entradas hoy:</strong>
+                    {{ account.entradasHoy | currency:'COP' }}
+                  </p>
 
-<p *ngIf="(account.gastosHoy ?? 0) > 0">
-  <strong>Gastos hoy:</strong>
-  {{ account.gastosHoy | currency:'COP' }}
-</p>
+                  <p *ngIf="(account.salidasHoy ?? 0) > 0">
+                    <strong>Salidas hoy:</strong>
+                    {{ account.salidasHoy | currency:'COP' }}
+                  </p>
 
+                  <p *ngIf="(account.salidasRetirosHoy ?? 0) > 0">
+                    <strong>Retiros hoy:</strong>
+                    {{ account.salidasRetirosHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.ventasDolaresHoy ?? 0) > 0">
+                    <strong>Ventas USDT hoy:</strong>
+                    {{ account.ventasDolaresHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.ajustesHoy ?? 0) > 0">
+                    <strong>Ajustes hoy:</strong>
+                    {{ account.ajustesHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.gastosHoy ?? 0) > 0">
+                    <strong>Gastos hoy:</strong>
+                    {{ account.gastosHoy | currency:'COP' }}
+                  </p>
+                </div>
+
+                <p style="margin-top: 8px;">
+                  <strong>Balance:</strong>
+                  {{ account.balance | currency:'COP' }}
+                </p>
+
+                <div class="back-actions">
+                  <button
+                    pButton
+                    label="Ver ventas"
+                    icon="pi pi-eye"
+                    class="p-button-text p-button-sm"
+                    (click)="goToVentas(account.id!); $event.stopPropagation()">
+                  </button>
+
+                  <button
+                    pButton
+                    label="Ajustar saldo"
+                    icon="pi pi-refresh"
+                    class="p-button-warning p-button-text p-button-sm"
+                    (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
+                  </button>
+                </div>
+
+              </div>
+            </div>
           </div>
-
-          <p>
-            <strong>Balance:</strong> {{ account.balance | currency:'COP' }}
-          </p>
-
-          <button
-            pButton
-            label="Ajustar saldo"
-            icon="pi pi-refresh"
-            class="p-button-warning p-button-text p-button-sm"
-            (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
-          </button>
         </div>
       </ng-template>
+
     </p-card>
   </div>
 </div>
+
 
 
 <!-- Formulario de creación de cuenta en un modal -->

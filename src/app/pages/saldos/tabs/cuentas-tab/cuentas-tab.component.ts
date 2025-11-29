@@ -97,17 +97,18 @@ export class CuentasTabComponent implements OnInit {
       this.cuentas = cuentas;
 
       this.cuentas.forEach(c => {
+        c.isFlipped = false;  // 👈 arranca siempre de frente
+
         if (!c.id) return;
 
-        // Resumen diario existente
         this.movimientoService.getResumenCuentaCop(c.id).subscribe(res => {
-          c.entradasHoy      = res.entradasHoy;
-          c.salidasHoy       = res.salidasHoy;
-          c.ajustesHoy       = res.ajustesHoy;
-          c.ventasDolaresHoy = res.ventasDolaresHoy;
+          c.entradasHoy       = res.entradasHoy;
+          c.salidasHoy        = res.salidasHoy;
+          c.ajustesHoy        = res.ajustesHoy;
+          c.ventasDolaresHoy  = res.ventasDolaresHoy;
+          c.salidasRetirosHoy = res.salidasRetirosHoy;
         });
 
-        // 🔹 NUEVO: total gastos hoy
         this.gastoService.getTotalGastosHoyCuentaCop(c.id).subscribe(total => {
           c.gastosHoy = total;
         });
@@ -115,6 +116,7 @@ export class CuentasTabComponent implements OnInit {
     }
   });
 }
+
 
 
 
@@ -220,6 +222,11 @@ export class CuentasTabComponent implements OnInit {
       },
       error: () => alert('Error al registrar pago')
     });
+  }
+
+  toggleFlip(account: AccountCop, event: MouseEvent) {
+    event.stopPropagation();          // para que no dispare otras cosas
+    account.isFlipped = !account.isFlipped;
   }
 
 }

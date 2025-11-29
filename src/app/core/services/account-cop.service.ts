@@ -16,6 +16,8 @@ export interface AccountCop {
   ajustesHoy?: number;
   ventasDolaresHoy?: number;
   gastosHoy?: number;
+  salidasRetirosHoy?: number;
+  isFlipped?: boolean;
 }
 export type AccountCopCreate = Omit<AccountCop, 'id'>;
 

@@ -79,6 +79,7 @@ export interface ResumenDiario {
   ajustesHoy: number;
   entradasHoy: number;
   salidasHoy: number;
+  salidasRetirosHoy: number;
 }
 
 export interface MovimientoAjusteDto {

@@ -5,10 +5,12 @@ import { SharedModule } from '../../../shared/shared.module';
 import { SaldosComponent } from '../tabs/saldos-cuentas/saldos.component';
 import { CuentasTabComponent } from '../tabs/cuentas-tab/cuentas-tab.component';
 import { ActivatedRoute } from '@angular/router';
+import { CuentasVesComponent } from '../tabs/cuentas-ves/cuentas-ves.component';
+
 @Component({
   selector: 'app-saldos-tab',
   standalone: true,
-  imports: [SharedModule, SaldosComponent, CajasComponent, CajaComponent, CuentasTabComponent],
+  imports: [SharedModule, SaldosComponent, CajasComponent, CajaComponent, CuentasTabComponent, CuentasVesComponent],
   templateUrl: './saldos-tab.component.html',
   styleUrls: ['./saldos-tab.component.css']
 })

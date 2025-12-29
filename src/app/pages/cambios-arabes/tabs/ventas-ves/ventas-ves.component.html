@@ -1,0 +1,109 @@
+<!-- BOTÓN -->
+<div class="p-mb-3">
+  <button
+    pButton
+    icon="pi pi-plus"
+    label="Nueva venta VES"
+    (click)="new()"
+  ></button>
+</div>
+
+<!-- DIALOG FORM -->
+<p-dialog
+  [(visible)]="showForm"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '60vw' }"
+  [header]="editingId ? 'Editar Venta VES' : 'Nueva Venta VES'"
+>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="p-fluid">
+
+    <div class="p-formgrid p-grid">
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Bolívares (VES)</label>
+        <p-inputNumber formControlName="bolivares"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Tasa (COP)</label>
+        <p-inputNumber formControlName="tasa"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Pesos (preview)</label>
+        <p-inputNumber formControlName="pesosPreview" [disabled]="true"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Cliente ID</label>
+        <p-inputNumber formControlName="clienteId"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Proveedor ID</label>
+        <p-inputNumber formControlName="proveedorId"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>Cuenta COP ID</label>
+        <p-inputNumber formControlName="cuentaCopId"></p-inputNumber>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="p-d-flex p-jc-end p-mt-3">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-times"
+        label="Cancelar"
+        class="p-button-secondary p-mr-2"
+        (click)="cancel()"
+      ></button>
+
+      <button
+        pButton
+        type="submit"
+        icon="pi pi-save"
+        [label]="editingId ? 'Actualizar' : 'Guardar'"
+      ></button>
+    </div>
+
+  </form>
+</p-dialog>
+
+<!-- TABLA -->
+<p-card header="Ventas registradas">
+  <p-table
+    [value]="rows"
+    [paginator]="true"
+    [rows]="10"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>VES</th>
+        <th>Tasa</th>
+        <th>Pesos</th>
+        <th style="width: 120px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-r>
+      <tr>
+        <td>{{ r.date | date:'short' }}</td>
+        <td>{{ r.bolivares }}</td>
+        <td>{{ r.tasa }}</td>
+        <td>{{ r.pesos }}</td>
+        <td>
+          <button pButton icon="pi pi-pencil" class="p-button-text" (click)="edit(r)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-text p-button-danger" (click)="remove(r)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

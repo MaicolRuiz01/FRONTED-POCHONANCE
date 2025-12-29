@@ -1,0 +1,91 @@
+<!-- Botón y total -->
+<div class="botones-container">
+  <button
+    pButton
+    label="Agregar Cuenta VES"
+    icon="pi pi-plus"
+    class="p-button-success"
+    (click)="abrirDialogCrear()">
+  </button>
+
+  <div class="total-container">
+    <p-card>
+      <ng-template pTemplate="content">
+        <div class="total-content">
+          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+          <strong>Total Cuentas VES:</strong>
+          {{ totalCuentas | number:'1.2-2' }} VES
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
+
+<hr>
+
+<!-- Cards de cuentas -->
+<div class="p-grid p-dir-col p-align-start">
+  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
+    <p-card
+      class="account-card p-shadow-3"
+      [header]="account.name"
+      styleClass="account-card">
+
+      <ng-template pTemplate="content">
+        <div class="account-details">
+          <p>
+            <strong>Balance:</strong>
+            {{ account.balance | number:'1.2-2' }} VES
+          </p>
+          <p *ngIf="account.saldoInicialDelDia != null">
+            <small>Saldo inicial del día:
+              {{ account.saldoInicialDelDia | number:'1.2-2' }} VES
+            </small>
+          </p>
+        </div>
+      </ng-template>
+
+    </p-card>
+  </div>
+</div>
+
+<!-- Dialog crear cuenta -->
+<p-dialog
+  header="Crear Cuenta VES"
+  [(visible)]="displayDialog"
+  [modal]="true"
+  [closable]="true">
+
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="name">Nombre</label>
+      <input id="name" pInputText [(ngModel)]="newAccount.name" />
+    </div>
+
+    <div class="p-field">
+      <label for="balance">Saldo inicial (VES)</label>
+      <p-inputNumber
+        id="balance"
+        [(ngModel)]="newAccount.balance"
+        [min]="0">
+      </p-inputNumber>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      class="p-button-text"
+      (click)="displayDialog = false">
+    </button>
+
+    <button
+      pButton
+      label="Crear"
+      icon="pi pi-check"
+      class="p-button-success"
+      (click)="crearCuenta()">
+    </button>
+  </ng-template>
+</p-dialog>

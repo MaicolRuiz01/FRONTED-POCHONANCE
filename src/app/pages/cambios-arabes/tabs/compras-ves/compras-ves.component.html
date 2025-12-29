@@ -1,0 +1,211 @@
+<!-- BOTÓN -->
+<div class="p-mb-4">
+  <button
+    pButton
+    icon="pi pi-plus"
+    label="Nueva compra VES"
+    class="p-button-sm"
+    (click)="new()"
+  ></button>
+</div>
+
+<!-- DIALOG -->
+<p-dialog
+  [(visible)]="showForm"
+  modal
+  [style]="{ width: '42rem' }"
+  [header]="editingId ? 'Editar Compra VES' : 'Nueva Compra VES'"
+>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="p-fluid">
+
+    <!-- ================= DATOS ================= -->
+    <div class="p-formgrid p-grid p-mb-4">
+
+      <div class="p-field p-col-12 p-md-4">
+        <label class="p-mb-1">Bolívares (VES)</label>
+        <p-inputNumber formControlName="bolivares" inputStyleClass="w-full"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label class="p-mb-1">Tasa (COP)</label>
+        <p-inputNumber formControlName="tasa" inputStyleClass="w-full"></p-inputNumber>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label class="p-mb-1">Pesos</label>
+        <p-inputNumber
+          formControlName="pesosPreview"
+          [disabled]="true"
+          inputStyleClass="w-full"
+        ></p-inputNumber>
+      </div>
+
+    </div>
+
+    <!-- ================= ASIGNACIÓN ================= -->
+    <div class="p-mb-3">
+      <label class="p-d-block p-mb-2 font-semibold">Asignar compra a</label>
+
+      <div class="p-d-flex p-ai-center p-gap-4">
+        <div class="p-field-radiobutton">
+          <p-radioButton
+            name="asignadoA"
+            value="supplier"
+            formControlName="asignadoA"
+            inputId="supplier"
+          ></p-radioButton>
+          <label for="supplier">Proveedor</label>
+        </div>
+
+        <div class="p-field-radiobutton">
+          <p-radioButton
+            name="asignadoA"
+            value="cliente"
+            formControlName="asignadoA"
+            inputId="cliente"
+          ></p-radioButton>
+          <label for="cliente">Cliente</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SELECTORES ================= -->
+    <div class="p-mb-4" *ngIf="form.value.asignadoA === 'supplier'">
+      <label class="p-d-block p-mb-1">Proveedor</label>
+      <p-dropdown
+        [options]="suppliers"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Seleccione proveedor"
+        formControlName="supplierId"
+        class="w-full"
+      ></p-dropdown>
+    </div>
+
+    <div class="p-mb-4" *ngIf="form.value.asignadoA === 'cliente'">
+      <label class="p-d-block p-mb-1">Cliente</label>
+      <p-dropdown
+        [options]="clientes"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccione cliente"
+        formControlName="clienteId"
+        class="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="p-dialog-footer p-d-flex p-jc-end p-gap-2">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        class="p-button-text p-button-sm"
+        (click)="cancel()"
+      ></button>
+
+      <button
+        pButton
+        type="submit"
+        icon="pi pi-save"
+        label="Guardar"
+        class="p-button-sm"
+      ></button>
+    </div>
+
+  </form>
+</p-dialog>
+
+<br><br><br>
+<p-card class="p-mt-4">
+
+  <ng-template pTemplate="header">
+    <div class="p-d-flex p-ai-center p-jc-between">
+      <span class="text-lg font-semibold">Ventas registradas</span>
+      <span class="text-500 text-sm">{{ rows.length }} registros</span>
+    </div>
+  </ng-template>
+
+  <p-table
+    [value]="rows"
+    [rows]="10"
+    [paginator]="true"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-sm p-datatable-striped"
+  >
+
+    <!-- HEADER -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th class="text-right">VES</th>
+        <th class="text-right">Tasa</th>
+        <th class="text-right">Pesos</th>
+        <th>Asignado</th>
+        <th class="text-center" style="width: 110px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <!-- BODY -->
+    <ng-template pTemplate="body" let-r>
+      <tr>
+
+        <td>
+          <span class="text-sm">
+            {{ r.date | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+        </td>
+
+        <td class="text-right font-medium">
+          {{ r.bolivares | number:'1.2-2' }}
+        </td>
+
+        <td class="text-right">
+          {{ r.tasa | number:'1.2-2' }}
+        </td>
+
+        <td class="text-right font-semibold">
+          {{ r.pesos | number:'1.2-2' }}
+        </td>
+
+        <td>
+          <span
+            class="p-tag p-tag-rounded"
+            [ngClass]="r.supplier ? 'p-tag-info' : 'p-tag-success'"
+          >
+            {{ r.supplier ? 'Proveedor' : 'Cliente' }}
+          </span>
+        </td>
+
+        <td class="text-center">
+          <button
+            pButton
+            icon="pi pi-pencil"
+            class="p-button-text p-button-sm"
+            (click)="edit(r)"
+          ></button>
+
+          <button
+            pButton
+            icon="pi pi-trash"
+            class="p-button-text p-button-sm p-button-danger"
+            (click)="remove(r)"
+          ></button>
+        </td>
+
+      </tr>
+    </ng-template>
+
+    <!-- EMPTY -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center text-500 p-4">
+          No hay registros aún
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</p-card>
+

@@ -1,0 +1,84 @@
+<p-card header="Configurar Tasas VES">
+  <form [formGroup]="form" class="rates-form">
+
+    <!-- GRID DE 3 COLUMNAS -->
+    <div class="rates-grid">
+      <!-- CABECERA -->
+      <div class="rates-header">PESOS</div>
+      <div class="rates-header">TASA</div>
+      <div class="rates-header">VES</div>
+
+      <!-- FILA 1 -->
+      <div class="rates-cell pesos-cell">
+        {{ pesos1 | number:'1.0-0' }}
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="tasa1"
+          [minFractionDigits]="2"
+        ></p-inputNumber>
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="ves1"
+        ></p-inputNumber>
+      </div>
+
+      <!-- FILA 2 -->
+      <div class="rates-cell pesos-cell">
+        {{ pesos2 | number:'1.0-0' }}
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="tasa2"
+          [minFractionDigits]="2"
+        ></p-inputNumber>
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="ves2"
+        ></p-inputNumber>
+      </div>
+
+      <!-- FILA 3 -->
+      <div class="rates-cell pesos-cell">
+        {{ pesos3 | number:'1.0-0' }}
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="tasa3"
+          [minFractionDigits]="2"
+        ></p-inputNumber>
+      </div>
+      <div class="rates-cell">
+        <p-inputNumber
+          formControlName="ves3"
+        ></p-inputNumber>
+      </div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="buttons-row">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-save"
+        label="Guardar"
+        (click)="save()"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        class="p-button-success"
+        icon="pi pi-image"
+        label="Generar imagen"
+        (click)="generateImage()"
+      ></button>
+    </div>
+
+    <!-- CANVAS OCULTO PARA GENERAR LA IMAGEN -->
+    <canvas #rateCanvas style="display:none;"></canvas>
+
+  </form>
+</p-card>

@@ -20,7 +20,7 @@ export const routes: Routes = [  {
   path:'',
   component:AppLayoutComponent,
   children:[
-    {path:'', component:MypageComponent,},
+    {path:'', component:SaldosTabComponent,},
 
     {
       path: 'asignaciones',

@@ -84,6 +84,14 @@
         <hr>
 
         <div class="field-row">
+          <div class="field-label">VES (en pesos)</div>
+          <div class="field-value">
+            {{ b.saldosVES | number:'1.0-0' }}
+          </div>
+        </div>
+        <hr>
+
+        <div class="field-row">
   <div class="field-label">No asignadas (USDT)</div>
   <div class="field-value" [ngClass]="{ 'negative': b.netoNoAsignadasUsdt < 0 }">
     {{ b.netoNoAsignadasUsdt | number:'1.2-2' }}

@@ -113,8 +113,9 @@ export class CajaComponent implements OnInit {
     const proveedores = b.proveedores ?? 0;
     const cuentasCop = b.cuentasCop ?? 0;
     const cajas = b.efectivoDelDia ?? 0;
+    const ves = b.saldosVES ?? 0; 
 
-    return cripto + clientes + proveedores + cuentasCop + cajas;
+    return cripto + clientes + proveedores + cuentasCop + cajas+ ves;
   }
 
   // === Lupa: prepara detalle y abre modal ===

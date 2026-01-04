@@ -1,4 +1,12 @@
 <p-card header="Configurar Tasas VES">
+  <div class="ves-balance-chip" *ngIf="saldoVesPesos !== null">
+    <span class="ves-balance-label">Saldo VES (en pesos):</span>
+    <span class="ves-balance-value">
+      {{ saldoVesPesos | number:'1.0-0' }}
+    </span>
+  </div>
+  <hr>
+  <br>
   <form [formGroup]="form" class="rates-form">
 
     <!-- GRID DE 3 COLUMNAS -->

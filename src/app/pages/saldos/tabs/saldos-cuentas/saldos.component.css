@@ -369,3 +369,132 @@ body {
   color: #2c3e50;
 }
 
+/* ==================== TOOLBAR Y CARDS SUPERIORES ==================== */
+
+/* Hacemos que el toolbar pueda envolver contenido */
+.saldos-toolbar.p-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Contenedor de las 2 cards de resumen */
+.saldo-header-cards {
+  display: flex;
+  gap: 1rem;
+  flex: 1 1 auto;
+  align-items: stretch;
+}
+
+/* Card genérica */
+.saldo-card {
+  background-color: #e8f1ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Texto dentro de la card de saldo */
+.saldo-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin: 0 0 4px;
+}
+
+.saldo-usdt {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #16a34a;
+  margin: 0;
+}
+
+.saldo-unit {
+  font-size: 0.85rem;
+  margin-left: 4px;
+  color: #6b7280;
+}
+
+.saldo-rate {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.saldo-rate .label {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.saldo-rate .value {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.saldo-cop {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.saldo-warning {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #c0392b;
+  font-weight: 600;
+}
+
+/* Card de criptos */
+.saldo-card-crypto {
+  min-width: 320px;
+  max-width: 420px;
+  overflow: hidden;
+}
+
+/* Mensaje "sin datos" */
+.no-cripto-data {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+/* ==================== RESPONSIVE MOBILE ==================== */
+@media (max-width: 768px) {
+  .saldos-toolbar.p-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saldo-header-cards {
+    flex-direction: column;
+  }
+
+  .saldo-card-main,
+  .saldo-card-crypto {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Botones del toolbar ocupan ancho completo y se separan un poco */
+  .saldos-toolbar .p-toolbar-group-left,
+  .saldos-toolbar .p-toolbar-group-right {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+
+  .saldos-toolbar .p-toolbar-group-right {
+    justify-content: flex-end;
+  }
+
+  .saldo-usdt {
+    font-size: 1.2rem;
+  }
+}
+
+

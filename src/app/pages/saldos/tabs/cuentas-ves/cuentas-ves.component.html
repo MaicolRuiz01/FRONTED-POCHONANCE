@@ -16,6 +16,12 @@
           <strong>Total Cuentas VES:</strong>
           {{ totalCuentas | number:'1.2-2' }} VES
         </div>
+        <hr>
+        <div class="total-content" *ngIf="tasaVesPromedio !== null">
+          <i class="pi pi-percentage" style="margin-right: 6px;"></i>
+          <strong>Tasa promedio actual:</strong>
+          {{ tasaVesPromedio | number:'1.2-2' }}
+        </div>
       </ng-template>
     </p-card>
   </div>

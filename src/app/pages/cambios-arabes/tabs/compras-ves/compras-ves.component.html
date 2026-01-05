@@ -1,3 +1,39 @@
+<!-- DIALOG: Tasa promedio inicial VES -->
+<p-dialog
+  [(visible)]="showInitRateDialog"
+  [modal]="true"
+  [closable]="false"
+  [dismissableMask]="false"
+  header="Configurar tasa promedio inicial VES"
+  [style]="{ width: '420px' }"
+>
+  <form [formGroup]="initRateForm" class="p-fluid">
+    <p>
+      No hay una tasa promedio inicial registrada para VES.<br />
+      Ingresa la tasa base (COP por VES) que usará el sistema como punto de partida.
+    </p>
+
+    <div class="p-field p-mt-3">
+      <label for="tasaInicial">Tasa inicial (COP / VES)</label>
+      <p-inputNumber
+        inputId="tasaInicial"
+        formControlName="tasaInicial"
+        [minFractionDigits]="2"
+        inputStyleClass="w-full"
+      ></p-inputNumber>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Guardar tasa inicial"
+      icon="pi pi-check"
+      (click)="confirmarTasaInicial()"
+    ></button>
+  </ng-template>
+</p-dialog>
+
 <!-- BOTÓN -->
 <div class="p-mb-4">
   <button
@@ -6,22 +42,21 @@
     label="Nueva compra VES"
     class="p-button-sm"
     (click)="new()"
+    [disabled]="showInitRateDialog"  
   ></button>
 </div>
 
-<!-- DIALOG -->
+<!-- DIALOG COMPRA -->
 <p-dialog
   [(visible)]="showForm"
   modal
   [style]="{ width: '42rem' }"
   [header]="editingId ? 'Editar Compra VES' : 'Nueva Compra VES'"
 >
-
   <form [formGroup]="form" (ngSubmit)="submit()" class="p-fluid">
 
     <!-- ================= DATOS ================= -->
     <div class="p-formgrid p-grid p-mb-4">
-
       <div class="p-field p-col-12 p-md-4">
         <label class="p-mb-1">Bolívares (VES)</label>
         <p-inputNumber formControlName="bolivares" inputStyleClass="w-full"></p-inputNumber>
@@ -40,7 +75,6 @@
           inputStyleClass="w-full"
         ></p-inputNumber>
       </div>
-
     </div>
 
     <!-- ================= ASIGNACIÓN ================= -->
@@ -117,9 +151,10 @@
   </form>
 </p-dialog>
 
-<br><br><br>
-<p-card class="p-mt-4">
+<br /><br /><br />
 
+<!-- TABLA -->
+<p-card class="p-mt-4">
   <ng-template pTemplate="header">
     <div class="p-d-flex p-ai-center p-jc-between">
       <span class="text-lg font-semibold">Ventas registradas</span>
@@ -134,8 +169,6 @@
     responsiveLayout="scroll"
     styleClass="p-datatable-sm p-datatable-striped"
   >
-
-    <!-- HEADER -->
     <ng-template pTemplate="header">
       <tr>
         <th>Fecha</th>
@@ -147,10 +180,8 @@
       </tr>
     </ng-template>
 
-    <!-- BODY -->
     <ng-template pTemplate="body" let-r>
       <tr>
-
         <td>
           <span class="text-sm">
             {{ r.date | date:'dd/MM/yyyy HH:mm' }}
@@ -193,11 +224,9 @@
             (click)="remove(r)"
           ></button>
         </td>
-
       </tr>
     </ng-template>
 
-    <!-- EMPTY -->
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="6" class="text-center text-500 p-4">
@@ -205,7 +234,5 @@
         </td>
       </tr>
     </ng-template>
-
   </p-table>
 </p-card>
-

@@ -12,6 +12,10 @@ import {
   AccountVes,
   AccountVesCreate
 } from '../../../../core/services/AccountVes.service';
+import {
+  VesAverageRateApiService,
+  VesAverageRateDto
+} from '../../../../core/services/ves-average-rate.service';
 
 @Component({
   selector: 'app-cuentas-ves',
@@ -38,16 +42,36 @@ export class CuentasVesComponent implements OnInit {
     balance: 0
   };
 
-  constructor(private accountVesService: AccountVesService) {}
+  // 👇 aquí guardamos la última tasa promedio
+  tasaVesPromedio: number | null = null;
+
+  constructor(
+    private accountVesService: AccountVesService,
+    private vesRateApi: VesAverageRateApiService
+  ) {}
 
   ngOnInit(): void {
     this.loadCuentas();
+    this.loadTasaVesPromedio();
   }
 
   loadCuentas(): void {
     this.accountVesService.getAll().subscribe({
       next: cuentas => this.cuentas = cuentas,
       error: () => alert('Error al cargar cuentas VES')
+    });
+  }
+
+  private loadTasaVesPromedio(): void {
+    this.vesRateApi.getUltima().subscribe({
+      next: (rate: VesAverageRateDto | null) => {
+        // si hay registro tomamos tasaPromedioDia, si no, null
+        this.tasaVesPromedio = rate ? rate.tasaPromedioDia : null;
+      },
+      error: (err) => {
+        console.error('Error cargando tasa promedio VES', err);
+        this.tasaVesPromedio = null;
+      }
     });
   }
 

@@ -11,6 +11,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
+import { VesAverageRateApiService } from '../../../../core/services/ves-average-rate.service';
+
 @Component({
   selector: 'app-compras-ves',
   standalone: true,
@@ -39,14 +41,20 @@ export class ComprasVesComponent implements OnInit {
 
   form!: FormGroup;
 
+  // 👇 para la tasa inicial
+  showInitRateDialog = false;
+  initRateForm!: FormGroup;
+
   constructor(
     private fb: FormBuilder,
     private compraApi: CompraVesService,
     private supplierApi: SupplierService,
-    private clienteApi: ClienteService
+    private clienteApi: ClienteService,
+    private vesRateApi: VesAverageRateApiService
   ) {}
 
   ngOnInit(): void {
+    // form de la compra
     this.form = this.fb.group({
       bolivares: [null, Validators.required],
       tasa: [null, Validators.required],
@@ -57,6 +65,11 @@ export class ComprasVesComponent implements OnInit {
       clienteId: [null],
     });
 
+    // form del dialog de tasa inicial
+    this.initRateForm = this.fb.group({
+      tasaInicial: [0, [Validators.required, Validators.min(0.0001)]],
+    });
+
     // Preview pesos
     this.form.valueChanges.subscribe(v => {
       const bol = v.bolivares ?? 0;
@@ -64,11 +77,47 @@ export class ComprasVesComponent implements OnInit {
       this.form.get('pesosPreview')?.setValue(bol * tasa, { emitEvent: false });
     });
 
+    this.checkInitialVesRate();  // 👈 primero verificamos tasa inicial
     this.load();
     this.loadSuppliers();
     this.loadClientes();
   }
 
+  // ================== TASA INICIAL ==================
+  private checkInitialVesRate(): void {
+  this.vesRateApi.getUltima().subscribe({
+    next: (rate) => {
+      // SOLO si el backend responde OK y NO hay registro → mostrar modal
+      this.showInitRateDialog = !rate;
+    },
+    error: (err) => {
+      console.error('Error consultando tasa VES inicial', err);
+      // SI HAY ERROR NO FORZAMOS NADA
+      this.showInitRateDialog = false;
+    }
+  });
+}
+
+
+  confirmarTasaInicial(): void {
+    if (this.initRateForm.invalid) {
+      this.initRateForm.markAllAsTouched();
+      return;
+    }
+
+    const tasa = this.initRateForm.value.tasaInicial;
+    this.vesRateApi.setInicial(tasa).subscribe({
+      next: () => {
+        this.showInitRateDialog = false;
+      },
+      error: (err) => {
+        console.error('Error guardando tasa inicial VES', err);
+        alert('No se pudo guardar la tasa inicial VES');
+      }
+    });
+  }
+
+  // ================== CRUD COMPRAS ==================
   load(): void {
     this.compraApi.list().subscribe(r => this.rows = r);
   }

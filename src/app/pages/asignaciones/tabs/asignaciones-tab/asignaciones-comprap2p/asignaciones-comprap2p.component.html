@@ -1,0 +1,153 @@
+<div class="card p-p-4">
+  <h2 class="p-mb-5 p-text-bold">Compras P2P Hoy (No Asignadas)</h2>
+
+  <!-- filtro por cuenta (opcional) -->
+  <div class="p-mb-3">
+    <label class="p-mr-2">Filtrar por cuenta Binance:</label>
+    <p-dropdown
+      [options]="binanceAccounts"
+      [(ngModel)]="selectedBinanceAccount"
+      optionLabel="name"
+      placeholder="Todas las cuentas"
+      [showClear]="true"
+      (onChange)="onFilterByAccount()"
+      (onClear)="onFilterByAccount()"
+      [appendTo]="'body'">
+    </p-dropdown>
+  </div>
+
+  <div *ngIf="loading" class="spinner-container">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <p *ngIf="!loading && allBuysP2P?.length === 0">{{ noBuysMessage || 'No hay compras para mostrar.' }}</p>
+
+  <app-mi-table [columns]="columns" [data]="allBuysP2P" *ngIf="!isMobile && !loading">
+    <ng-template #actionTemplate let-buy>
+      <p-button
+        icon="pi pi-check-square"
+        title="Asignar"
+        styleClass="p-button-rounded p-button-sm"
+        (click)="openAssignDialog(buy)">
+      </p-button>
+    </ng-template>
+  </app-mi-table>
+
+  <div *ngIf="isMobile && !loading">
+    <app-card-list
+      [data]="allBuysP2P"
+      [columns]="[
+        { label: 'numberOrder', field: 'N° de orden' },
+        { label: 'date', field: 'Fecha' },
+        { label: 'dollarsUs', field: 'Dolares' },
+        { label: 'pesosCop', field: 'Pesos COP' },
+        { label: 'commission', field: 'Comision' }
+      ]">
+      <ng-template #cardActionTemplate let-buy>
+        <button
+          pButton
+          type="button"
+          label="Asignar"
+          class="p-button-sm p-button-success"
+          (click)="openAssignDialog(buy)">
+        </button>
+      </ng-template>
+    </app-card-list>
+  </div>
+
+  <!-- Modal asignación -->
+  <p-dialog
+    header="Asignar cuenta(s) a la compra"
+    [(visible)]="displayAssignDialog"
+    [modal]="true"
+    [closable]="true"
+    [style]="{ width: '450px' }"
+    [breakpoints]="{ '960px': '95vw' }">
+
+    <div class="p-fluid p-formgrid p-grid">
+
+      <div class="p-field p-col-12">
+        <label>¿A qué tipo de cuenta desea asignar?</label>
+        <div class="p-formgroup-inline">
+          <p-radioButton
+            name="accountType"
+            [value]="true"
+            [(ngModel)]="isExternal"
+            inputId="external"
+            (onChange)="handleAssignType()">
+          </p-radioButton>
+          <label for="external" class="p-mr-3">Cuenta Externa</label>
+
+          <br><br>
+
+          <p-radioButton
+            name="accountType"
+            [value]="false"
+            [(ngModel)]="isExternal"
+            inputId="colombian"
+            (onChange)="handleAssignType()">
+          </p-radioButton>
+          <label for="colombian">Cuenta Colombiana</label>
+        </div>
+      </div>
+
+      <!-- externa -->
+      <ng-container *ngIf="isExternal">
+        <div class="p-field p-col-12">
+          <label for="externalAccountName">Nombre de la Cuenta</label>
+          <input id="externalAccountName" pInputText [(ngModel)]="externalAccountName" />
+        </div>
+
+        <div class="p-field p-col-12">
+          <label for="amountExternal">Monto</label>
+          <input id="amountExternal" type="number" pInputText [(ngModel)]="externalAmount" />
+        </div>
+      </ng-container>
+
+      <!-- colombianas -->
+      <ng-container *ngIf="!isExternal">
+        <div class="p-field p-col-12">
+          <label for="account">Seleccionar cuenta colombiana</label>
+          <p-multiSelect
+            id="account"
+            [options]="cuentasDisponibles"
+            [(ngModel)]="selectedAccounts"
+            optionLabel="name"
+            placeholder="Seleccionar cuentas"
+            [appendTo]="'body'"
+            (onChange)="onAccountsChange()">
+          </p-multiSelect>
+
+          <div class="p-field p-col-12" *ngFor="let assignment of selectedAssignments">
+            <label>{{ assignment.account.name }}</label>
+            <input
+              type="number"
+              pInputText
+              [(ngModel)]="assignment.amount"
+              [placeholder]="'Monto para ' + assignment.account.name" />
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        (click)="displayAssignDialog = false"
+        class="p-button-text">
+      </button>
+
+      <button
+        pButton
+        label="Asignar"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="assignAccounts()">
+      </button>
+    </ng-template>
+  </p-dialog>
+</div>
+

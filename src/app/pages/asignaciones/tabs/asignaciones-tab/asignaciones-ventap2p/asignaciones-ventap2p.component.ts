@@ -80,52 +80,12 @@ export class AsignacionesVentap2pComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadAccountsp2p();
+  this.loadNoAsignadas();
+  this.isMobile = window.innerWidth <= 768;
+  window.addEventListener('resize', () => {
     this.isMobile = window.innerWidth <= 768;
-    window.addEventListener('resize', () => {
-      this.isMobile = window.innerWidth <= 768;
-    });
-  }
-
-  loadAccountsp2p():void {
-    this.loading = true;
-    this.saleService.getAllSales().subscribe({
-      next: (data) => {
-        this.allAccountsp2p = data; // ✅ se cargan directamente
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar ventas P2P:', err);
-        this.loading = false;
-      }
-    })
-  }
-
-  loadTodaySales(): void {
-    this.noSalesMessage = '';
-    if (!this.selectedBinanceAccount) {
-      alert("Por favor selecciona una cuenta de Binance.");
-      return;
-    }
-    this.loading = true;
-    const accountName = this.selectedBinanceAccount.name;
-    this.saleService.getAllSalesToday(accountName).subscribe({
-      next: (sales) => {
-        this.allAccountsp2p = sales;
-        if (!sales || sales.length === 0) {
-          this.noSalesMessage = 'No hay ventas p2p hechas el día de hoy';
-        }
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar las ventas del día:', err);
-        this.noSalesMessage = 'Error al obtener ventas';
-        this.loading = false;
-      }
-    });
-  }
-
-
+  });
+}
   openAssignDialog(sale: SaleP2PDto): void {
     this.selectedSale = sale;
     this.displayAssignDialog = true;
@@ -195,14 +155,37 @@ submitAssignRequest(accounts: any): void {
   next: () => {
     alert('Cuentas asignadas exitosamente.');  // ✅ Mensaje definido en el cliente
     this.displayAssignDialog = false;
-    this.loadTodaySales();
+    this.loadNoAsignadas();
   },
   error: (err) => {
     console.error('Error al asignar cuentas:', err);
     alert('Error al asignar las cuentas');
   }
 });
-
-
 }
+
+loadNoAsignadas(): void {
+  this.loading = true;
+  this.noSalesMessage = '';
+
+  const req$ = this.selectedBinanceAccount
+    ? this.saleService.getTodayNoAsignadas(this.selectedBinanceAccount.name)
+    : this.saleService.getTodayNoAsignadasAllAccounts();
+
+  req$.subscribe({
+    next: (sales) => {
+      this.allAccountsp2p = sales ?? [];
+      if (this.allAccountsp2p.length === 0) {
+        this.noSalesMessage = 'No hay ventas P2P no asignadas hoy.';
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar ventas P2P no asignadas:', err);
+      this.noSalesMessage = 'Error al obtener ventas';
+      this.loading = false;
+    }
+  });
+}
+
 }

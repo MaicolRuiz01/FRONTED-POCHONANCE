@@ -6,50 +6,40 @@ import { environment } from '../../../environment/environment';
 export interface SaleP2PDto {
   id: number;
   numberOrder: string;
-  date: Date;
-  taxType: string;
+  date: string;          // normalmente llega como string ISO
   pesosCop: number;
+  dollarsUs: number;
   commission: number;
-  accountCopIds: number[];
-  nameAccount: string;
-  nameAccountBinance: string;
-  accountAmounts: { [key: number]: number }; // Nuevo campo para montos por cuenta
-  dollarsUs:number;
+  nameAccountBinance?: string;
+  // si lo agregaste en backend:
+  // asignado?: boolean;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class SaleP2PService {
   private apiUrl = `${environment.apiUrl}/saleP2P`;
-  private apiUrlgetallsales = `http://localhost:8080/saleP2P/all`;
-
 
   constructor(private http: HttpClient) {}
 
-  createSale(saleDto: SaleP2PDto): Observable<SaleP2PDto> {
-    return this.http.post<SaleP2PDto>(this.apiUrl, saleDto);
+  /** ✅ HOY no asignadas de 1 cuenta (importa+guarda y lista no asignadas) */
+  getTodayNoAsignadas(account: string): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/today/no-asignadas?account=${encodeURIComponent(account)}`;
+    return this.http.get<SaleP2PDto[]>(url);
   }
 
+  /** ✅ HOY no asignadas de TODAS las cuentas BINANCE */
+  getTodayNoAsignadasAllAccounts(): Observable<SaleP2PDto[]> {
+    const url = `${this.apiUrl}/today/no-asignadas/all-binance`;
+    return this.http.get<SaleP2PDto[]>(url);
+  }
+
+  /** asignación igual que antes */
   assignAccounts(
     saleId: number,
-    accounts: { amount: number, nameAccount: string, accountCop: number | null }[]): Observable<any> {
+    accounts: { amount: number; nameAccount: string; accountCop: number | null }[]
+  ): Observable<any> {
     const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
     return this.http.post(url, accounts, { responseType: 'text' as 'json' });
   }
-
-  getAllSales(): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today/all-binance`;
-    console.log('Fetching all sales from:', url);
-    return this.http.get<SaleP2PDto[]>(url);
-  }
-
-  getsalesp2p(): Observable<SaleP2PDto[]> {
-    return this.http.get<SaleP2PDto[]>(this.apiUrlgetallsales);
-  }
-
-  getAllSalesToday(account: string): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today?account=${account}`;
-    return this.http.get<SaleP2PDto[]>(url);
-  }
 }
+

@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { AsignacionesVentasComponent } from './asignaciones-ventas/asignaciones-ventas.component';
 import { AsignacionesComprasComponent } from './asignaciones-compras/asignaciones-compras.component';
 import { AsignacionesVentap2pComponent } from './asignaciones-ventap2p/asignaciones-ventap2p.component';
+import { AsignacionesComprap2pComponent } from './asignaciones-comprap2p/asignaciones-comprap2p.component';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
 
@@ -26,6 +27,7 @@ import { MenuItem } from 'primeng/api';
     AsignacionesComprasComponent,
     AsignacionesVentasComponent,
     AsignacionesVentap2pComponent,
+    AsignacionesComprap2pComponent,
     PanelMenuModule,
   ],
   templateUrl: './asignaciones-tab.component.html',
@@ -37,6 +39,7 @@ export class AsignacionesTabComponent{
 
   @ViewChild('compraTemplate') compraTemplate!: TemplateRef<any>;
   @ViewChild('ventasTemplate') ventasTemplate!: TemplateRef<any>;
+  @ViewChild('comprasp2pTemplate') comprasp2pTemplate!: TemplateRef<any>;
   @ViewChild('p2pTemplate') p2pTemplate!: TemplateRef<any>;
 
   ngAfterViewInit() {
@@ -54,6 +57,7 @@ export class AsignacionesTabComponent{
               }
             ]
           },
+
           {
             label: 'Ventas',
             icon: "pi pi-chart-line",
@@ -63,9 +67,19 @@ export class AsignacionesTabComponent{
                 template: this.ventasTemplate
               }
             ]
+          },{
+            label: 'COMPRAS P2P',
+            icon: "pi pi-exchange",
+            items: [
+              {
+                label: 'Por Asignar',
+                template: this.comprasp2pTemplate
+              }
+            ]
+            
           },
           {
-            label: 'P2P',
+            label: 'VENTAS P2P',
             icon: "pi pi-exchange",
             items: [
               {

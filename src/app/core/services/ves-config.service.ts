@@ -1,15 +1,19 @@
+// ves-config.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
+import { Observable } from 'rxjs';
 
 export interface VesConfigDto {
   ves1: number;
   tasa1: number;
-  ves2: number;
-  tasa2: number;
-  ves3: number;
-  tasa3: number;
+
+  ves2: number | null;
+  tasa2: number | null;
+
+  ves3: number | null;
+  tasa3: number | null;
+
   lastUpdate?: string;
 }
 
@@ -19,11 +23,11 @@ export class VesConfigService {
 
   constructor(private http: HttpClient) {}
 
-  getConfig() {
+  getConfig(): Observable<VesConfigDto> {
     return this.http.get<VesConfigDto>(this.api);
   }
 
-  updateConfig(dto: VesConfigDto) {
+  updateConfig(dto: VesConfigDto): Observable<VesConfigDto> {
     return this.http.put<VesConfigDto>(this.api, dto);
   }
 }

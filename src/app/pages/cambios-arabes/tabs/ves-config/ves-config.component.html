@@ -1,71 +1,64 @@
-<p-card header="Configurar Tasas VES">
+<p-card header="Configurar Tasas VES3">
   <div class="ves-balance-chip" *ngIf="saldoVesPesos !== null">
     <span class="ves-balance-label">Saldo VES (en pesos):</span>
     <span class="ves-balance-value">
       {{ saldoVesPesos | number:'1.0-0' }}
     </span>
   </div>
-  <hr>
-  <br>
-  <form [formGroup]="form" class="rates-form">
 
-    <!-- GRID DE 3 COLUMNAS -->
+  <hr />
+  <br />
+
+  <!-- MODO -->
+  <div class="mode-row">
+    <p-inputSwitch [(ngModel)]="tasaUnica" (onChange)="onToggleTasaUnica()"></p-inputSwitch>
+    <span class="mode-label">
+      Usar tasa única
+    </span>
+  </div>
+
+  <form [formGroup]="form" class="rates-form">
     <div class="rates-grid">
-      <!-- CABECERA -->
       <div class="rates-header">PESOS</div>
       <div class="rates-header">TASA</div>
       <div class="rates-header">VES</div>
 
-      <!-- FILA 1 -->
+      <!-- FILA 1 (siempre) -->
       <div class="rates-cell pesos-cell">
         {{ pesos1 | number:'1.0-0' }}
       </div>
       <div class="rates-cell">
-        <p-inputNumber
-          formControlName="tasa1"
-          [minFractionDigits]="2"
-        ></p-inputNumber>
+        <p-inputNumber formControlName="tasa1" [minFractionDigits]="2"></p-inputNumber>
       </div>
       <div class="rates-cell">
-        <p-inputNumber
-          formControlName="ves1"
-        ></p-inputNumber>
+        <p-inputNumber formControlName="ves1"></p-inputNumber>
       </div>
 
-      <!-- FILA 2 -->
-      <div class="rates-cell pesos-cell">
-        {{ pesos2 | number:'1.0-0' }}
-      </div>
-      <div class="rates-cell">
-        <p-inputNumber
-          formControlName="tasa2"
-          [minFractionDigits]="2"
-        ></p-inputNumber>
-      </div>
-      <div class="rates-cell">
-        <p-inputNumber
-          formControlName="ves2"
-        ></p-inputNumber>
-      </div>
+      <!-- FILA 2 (solo si NO es tasa única) -->
+      <ng-container *ngIf="!tasaUnica">
+        <div class="rates-cell pesos-cell">
+          {{ pesos2 | number:'1.0-0' }}
+        </div>
+        <div class="rates-cell">
+          <p-inputNumber formControlName="tasa2" [minFractionDigits]="2"></p-inputNumber>
+        </div>
+        <div class="rates-cell">
+          <p-inputNumber formControlName="ves2"></p-inputNumber>
+        </div>
 
-      <!-- FILA 3 -->
-      <div class="rates-cell pesos-cell">
-        {{ pesos3 | number:'1.0-0' }}
-      </div>
-      <div class="rates-cell">
-        <p-inputNumber
-          formControlName="tasa3"
-          [minFractionDigits]="2"
-        ></p-inputNumber>
-      </div>
-      <div class="rates-cell">
-        <p-inputNumber
-          formControlName="ves3"
-        ></p-inputNumber>
-      </div>
+        <!-- FILA 3 -->
+        <div class="rates-cell pesos-cell">
+          {{ pesos3 | number:'1.0-0' }}
+        </div>
+        <div class="rates-cell">
+          <p-inputNumber formControlName="tasa3" [minFractionDigits]="2"></p-inputNumber>
+        </div>
+        <div class="rates-cell">
+          <p-inputNumber formControlName="ves3"></p-inputNumber>
+        </div>
+      </ng-container>
     </div>
 
-    <!-- BOTONES -->
     <div class="buttons-row">
       <button
         pButton
@@ -80,13 +73,11 @@
         type="button"
         class="p-button-success"
         icon="pi pi-image"
-        label="Generar imagen"
+        [label]="tasaUnica ? 'Generar imagen (tasa única)' : 'Generar imagen'"
         (click)="generateImage()"
       ></button>
     </div>
 
-    <!-- CANVAS OCULTO PARA GENERAR LA IMAGEN -->
     <canvas #rateCanvas style="display:none;"></canvas>
-
   </form>
 </p-card>

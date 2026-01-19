@@ -287,5 +287,10 @@ export class MovimientoService {
     );
   }
 
+  downloadExcelProveedor(proveedorId: number): Observable<Blob> {
+  const url = `${this.apiUrl}/excel/proveedor/${proveedorId}`;
+  return this.http.get(url, { responseType: 'blob' });
+}
+
 
 }

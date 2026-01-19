@@ -271,43 +271,54 @@ export class VesConfigComponent implements OnInit {
 
   // NUEVA: tasa única con plantilla ves-tasa-unica.jpg
   private generateImageTasaUnica(): void {
-    const canvas = this.canvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const canvas = this.canvasRef.nativeElement;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
-    const img = new Image();
-    img.src = this.baseImagePathUnica;
+  const img = new Image();
+  img.src = this.baseImagePathUnica;
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
 
-      // texto grande centrado (ajusta si hace falta)
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-      const tasa = this.form.value.tasa1 ?? 0;
+    // ✅ fecha con año
+    const fechaTxt = this.getFechaActualTexto(); // "19 enero 2026"
+    ctx.textAlign = 'left';
+    ctx.font = `${canvas.height * 0.055}px Arial`;
+    ctx.fillStyle = '#F5D37B'; // doradito
+    ctx.fillText(fechaTxt, canvas.width * 0.08, canvas.height * 0.14);
 
-      // Sombra suave + dorado (tipo ejemplo)
-      ctx.font = `${canvas.height * 0.12}px Arial`;
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillText(this.formatRate(tasa), canvas.width * 0.50 + 3, canvas.height * 0.62 + 3);
+    // ✅ tasa un poco más pequeña
+    const tasa = this.form.value.tasa1 ?? 0;
+    const tasaTxt = this.formatRate(tasa);
 
-      ctx.fillStyle = '#F5D37B';
-      ctx.fillText(this.formatRate(tasa), canvas.width * 0.50, canvas.height * 0.62);
+    ctx.textAlign = 'center';
 
-      const now = new Date();
-      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-      const fechaTxt = `${now.getDate()} ${meses[now.getMonth()]}`;
+    // sombra
+    ctx.font = `${canvas.height * 0.10}px Arial`; // 👈 antes 0.12
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillText(tasaTxt, canvas.width * 0.50 + 3, canvas.height * 0.62 + 3);
 
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `tasa_unica_${fechaTxt.replace(' ', '_')}.png`;
-      link.click();
-    };
-  }
+    // texto principal
+    ctx.fillStyle = '#F5D37B';
+    ctx.fillText(tasaTxt, canvas.width * 0.50, canvas.height * 0.62);
+
+    // Descargar
+    const dataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataUrl;
+
+    const safeName = fechaTxt.replaceAll(' ', '_'); // 19_enero_2026
+    link.download = `tasa_unica_${safeName}.png`;
+    link.click();
+  };
+
+  img.onerror = (err) => console.error('Error cargando plantilla TASA UNICA', err);
+}
 
   private formatNumber(value: number): string {
     if (value == null) return '0';
@@ -319,4 +330,14 @@ export class VesConfigComponent implements OnInit {
     // 9.0 como el ejemplo, o 9,00 depende de tu preferencia:
     return Number(value).toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
   }
+
+  private getFechaActualTexto(): string {
+  const now = new Date();
+  const meses = [
+    'enero','febrero','marzo','abril','mayo','junio',
+    'julio','agosto','septiembre','octubre','noviembre','diciembre'
+  ];
+  return `${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()}`;
+}
+
 }

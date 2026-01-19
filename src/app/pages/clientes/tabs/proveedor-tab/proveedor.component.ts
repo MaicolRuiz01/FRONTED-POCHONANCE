@@ -347,4 +347,26 @@ export class ProveedorComponent implements OnInit {
     });
   }
 
+  downloadExcel(supplier: Supplier, event?: Event) {
+  event?.stopPropagation(); // para que no abra el dialog al darle click
+
+  if (!supplier?.id) return;
+
+  this.movimientoService.downloadExcelProveedor(supplier.id).subscribe({
+    next: (blob) => {
+      const fileName = `proveedor_${supplier.id}_${supplier.name}.xlsx`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    },
+    error: (err) => console.error('Error descargando excel', err)
+  });
+}
+
+
 }

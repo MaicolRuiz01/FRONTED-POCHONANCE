@@ -1,19 +1,17 @@
 <p-tabView [(activeIndex)]="selectedIndex">
-  <p-tabPanel header="SALDOS">
+  <p-tabPanel header="CUENTAS">
     <app-saldos></app-saldos>
-  </p-tabPanel>
-  <p-tabPanel header="BALANCE">
-    <app-caja></app-caja>
-  </p-tabPanel>
-  <p-tabPanel header="CUENTAS COP">
-   <app-cuentas-tab></app-cuentas-tab>
-  </p-tabPanel>
-
-  <p-tabPanel header="CUENTAS VES">
-    <app-cuentas-ves></app-cuentas-ves>
   </p-tabPanel>
 
   <p-tabPanel header="CAJAS">
-   <app-cajas-tab></app-cajas-tab>
+    <app-cajas-tab></app-cajas-tab>
+  </p-tabPanel>
+
+  <p-tabPanel header="CLIENTES">
+    <app-clientes></app-clientes>
+  </p-tabPanel>
+
+  <p-tabPanel header="BALANCE">
+    <app-caja></app-caja>
   </p-tabPanel>
 </p-tabView>

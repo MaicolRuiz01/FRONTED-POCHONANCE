@@ -73,7 +73,10 @@
       <p-inputNumber
         id="balance"
         [(ngModel)]="newAccount.balance"
-        [min]="0">
+        [min]="0"
+        locale="es-VE"
+        [minFractionDigits]="2"
+  [maxFractionDigits]="2">>
       </p-inputNumber>
     </div>
   </div>

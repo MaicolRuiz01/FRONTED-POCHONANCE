@@ -228,5 +228,10 @@ export class CuentasTabComponent implements OnInit {
     event.stopPropagation();          // para que no dispare otras cosas
     account.isFlipped = !account.isFlipped;
   }
+  getDisponible(balance?: number | null): number {
+  const b = Number(balance ?? 0);
+  const comision = b * 0.004; // 4x1000
+  return b - comision;
+}
 
 }

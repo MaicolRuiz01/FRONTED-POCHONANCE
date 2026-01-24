@@ -1,299 +1,376 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<p-toolbar styleClass="mb-4 saldos-toolbar">
-  <!-- CONTENEDOR NUEVO PARA LAS CARDS -->
-  <div class="saldo-header-cards">
-    <!-- Card SALDO TOTAL -->
-    <div class="saldo-card saldo-card-main p-3 border rounded">
-      <h4 class="saldo-title">Saldo total</h4>
+<p-toolbar *ngIf="viewMode === 'BINANCE' || viewMode === 'COP' || viewMode === 'VES'" styleClass="mb-4 saldos-toolbar">
 
-      <p class="saldo-usdt">
-        ${{ balanceTotalExterno | number:'1.0-2' }}
-        <span class="saldo-unit">USDT</span>
-      </p>
-
-      <p class="saldo-rate" *ngIf="latestRate > 0">
-        <span class="label">Tasa promedio</span>
-        <span class="value">{{ latestRate | number:'1.2-2' }}</span>
-      </p>
-
-      <p class="saldo-cop" *ngIf="latestRate > 0">
-        ≈ {{ balanceTotalExternoCop | number:'1.0-0' }} COP
-      </p>
-
-      <p
-        class="saldo-warning"
-        *ngIf="latestRate === 0"
-      >
-        Sin tasa promedio disponible
-      </p>
-    </div>
-
-    <!-- Card CRIPTOS HOY -->
-    <div class="saldo-card saldo-card-crypto p-3 border rounded">
-      <h4 class="saldo-title">Criptos (hoy)</h4>
-
-      <!-- total en USDT (y COP) arriba -->
-      <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
-        Total ≈ 
-        <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
-        <span *ngIf="latestRate > 0">
-          · ≈ {{ (totalCriptosUsdt * latestRate) | number:'1.0-0' }} COP
-        </span>
-      </div>
-
-      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
-        <div class="crypto-list">
-          <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
-            <div class="crypto-flip-inner">
-              <!-- Frente -->
-              <div class="crypto-face front">
-                <span class="crypto-symbol">
-                  {{ t.cripto }}
-                </span>
-                <span class="crypto-amount">
-                  {{ t.saldoFinalCripto | number:'1.4-8' }} {{ t.cripto }}
-                </span>
-              </div>
-
-              <!-- Reverso -->
-              <div class="crypto-face back">
-                <span class="crypto-symbol">
-                  {{ t.cripto }}
-                </span>
-                <span class="crypto-extra">
-                  {{ t.tasaPromedioDia | number:'1.4-8' }} USDT ·
-                  {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
-                  <span *ngIf="latestRate > 0">
-                    · {{ (t.saldoFinalCripto * t.tasaPromedioDia * latestRate) | number:'1.0-0' }} COP
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noCriptoData>
-        <p class="no-cripto-data">
-          Sin datos de tasas cripto hoy.
-        </p>
-      </ng-template>
-    </div>
-  </div>
-
-  <!-- Botones del toolbar tal cual -->
+  <!-- IZQUIERDA: VOLVER -->
   <ng-template pTemplate="left">
-    <button pButton title="Nueva Cuenta" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
-  </ng-template>
-
-  <ng-template pTemplate="right">
-    <button
-      pButton
-      label="Sincronizar saldos"
-      icon="pi pi-sync"
-      class="p-button-info"
-      [loading]="syncingAll"
-      (click)="syncAllBalances()">
+    <button pButton
+            icon="pi pi-arrow-left"
+            label="Volver"
+            class="p-button-text"
+            (click)="volverResumen()">
     </button>
   </ng-template>
+
+  <!-- DERECHA: SOLO BINANCE TIENE BOTÓN AGREGAR (COP ya lo trae adentro) -->
+  <ng-template pTemplate="right">
+    <button *ngIf="viewMode === 'BINANCE'"
+            pButton
+            icon="pi pi-plus"
+            label="AGREGAR CUENTA BINANCE"
+            class="p-button-success"
+            (click)="openNew()">
+    </button>
+  </ng-template>
+
 </p-toolbar>
 
 
+<!-- ===== RESUMEN: 4 CARDS (AHORA FUERA DEL TOOLBAR) ===== -->
+<div class="saldo-header-cards" *ngIf="viewMode === 'RESUMEN'">
 
-<br><br>
-<div *ngIf="loading" class="spinner-container">
-<p-progressSpinner></p-progressSpinner>
-</div>
-<p *ngIf="loading">Cargando cuentas...</p>
-<div class="grid" *ngIf="accounts.length > 0">
-  <div *ngFor="let account of accounts" 
-       class="custom-card" 
-       style="--grad:#4cafef,#2196f3; --background:#fff; --text:#444;">
-    
-    <!-- Botones flotantes -->
-    <div class="multi-button">
-      <button class="fas fa-pen" title="Editar" (click)="editarCuenta(account)"></button>
-      <button class="fas fa-trash" title="Eliminar" (click)="confirmDelete(account)"></button>
-    </div>
+  <!-- 1) SALDO TOTAL -->
+  <div class="saldo-card saldo-card-main p-3 border rounded">
+    <h4 class="saldo-title">Saldo</h4>
 
-    <div class="card-header">
-      {{ account.accountType }}
-    </div>
+    <p class="saldo-usdt">
+      ${{ balanceTotalExterno | number:'1.0-2' }}
+      <span class="saldo-unit">USDT</span>
+    </p>
 
-    <div class="icon">
-      <i class="fa-thin fa-wallet"></i>
-    </div>
+    <p class="saldo-rate" *ngIf="latestRate > 0">
+      <span class="label">Tasa promedio</span>
+      <span class="value">{{ latestRate | number:'1.2-2' }}</span>
+    </p>
 
-    <!-- Contenido clickable -->
-<div class="card-body" (click)="toggleText(account)">
-  <div class="button-container">
-    <!-- Solo dejamos el botón de sincronizar interno -->
-    <button pButton
-          icon="pi pi-refresh"
-          severity="warning"
-          variant="outlined"
-          [raised]="true"
-          size="small"
-          [loading]="account.syncing"
-          title="Sincronizar saldos internos"
-          (click)="syncInternalAccount(account, $event)">
-    </button>
+    <p class="saldo-cop" *ngIf="latestRate > 0">
+      ≈ {{ balanceTotalExternoCop | number:'1.0-0' }} COP
+    </p>
+
+    <p class="saldo-warning" *ngIf="latestRate === 0">
+      Sin tasa promedio disponible
+    </p>
   </div>
 
-  <ng-container *ngIf="!account.isFlipped; else detalles"> 
-    <!-- AHORA: saldo externo es lo principal -->
-    <p><strong>Saldo Externo (USDT)</strong>: {{ account.saldoExterno | number:'1.2-2' }}</p>
+  <!-- 2) CRIPTOS HOY -->
+  <div class="saldo-card saldo-card-crypto p-3 border rounded"
+       style="cursor:pointer"
+       (click)="verBinance()">
 
-        <div class="crypto-detail">
-      <!-- loading local por card -->
-      <p *ngIf="account.loadingBalances">
-        <i class="pi pi-spin pi-spinner"></i> Cargando criptos...
-      </p>
+    <h4 class="saldo-title">Criptos</h4>
 
-      <ng-container *ngIf="!account.loadingBalances">
-        <table *ngIf="account.balances && account.balances.length > 0; else sinCriptos">
-          <thead>
-            <tr>
-              <th>Cripto</th>
-              <th>Cantidad</th>
-              <th>≈ USDT</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let b of account.balances">
-              <td>{{ b.symbol }}</td>
-              <td>{{ b.quantity | number:'1.4-8' }}</td>
-              <td>{{ b.usdtValue | number:'1.2-2' }} USDT</td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
+      <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
+    </div>
 
-        <ng-template #sinCriptos>
-          <p class="muted">Sin criptos registradas.</p>
+    <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+      <div class="crypto-list">
+        <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
+          <div class="crypto-flip-inner">
+
+            <!-- FRENTE: SOLO VALOR EN USDT -->
+            <div class="crypto-face front">
+              <span class="crypto-symbol">{{ t.cripto }}</span>
+              <span class="crypto-amount">
+                {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
+              </span>
+            </div>
+
+            <!-- REVERSO: SOLO TASA -->
+            <div class="crypto-face back">
+              <span class="crypto-symbol">{{ t.cripto }}</span>
+              <span class="crypto-extra">
+                Tasa: {{ t.tasaPromedioDia | number:'1.4-6' }} USDT
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
+        Click para ver cuentas Binance
+      </div>
+    </ng-container>
+
+    <ng-template #noCriptoData>
+      <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
+    </ng-template>
+  </div>
+
+  <!-- 3) COP -->
+<div class="saldo-card p-3 border rounded"
+     style="cursor:pointer"
+     (click)="verCop()">
+  <h4 class="saldo-title">Cuentas COP</h4>
+
+  <p *ngIf="loadingCop">
+    <i class="pi pi-spin pi-spinner"></i> Cargando...
+  </p>
+
+  <p class="saldo-cop" *ngIf="!loadingCop">
+    {{ totalCuentasCop | currency:'COP':'symbol':'1.0-0' }}
+  </p>
+
+  <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
+    Click para ver cuentas COP
+  </div>
+</div>
+
+
+  <!-- 4) VES -->
+  <!-- 4) VES -->
+<div class="saldo-card p-3 border rounded"
+     style="cursor:pointer"
+     (click)="verVes()">
+  <h4 class="saldo-title">Cuentas VES</h4>
+
+  <p *ngIf="loadingVes">
+    <i class="pi pi-spin pi-spinner"></i> Cargando...
+  </p>
+
+  <p class="saldo-usdt" *ngIf="!loadingVes">
+    {{ totalCuentasVes | number:'1.2-2' }} <span class="saldo-unit">VES</span>
+  </p>
+
+  <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
+    Click para ver cuentas VES
+  </div>
+</div>
+
+
+</div>
+<!-- ================= VISTA BINANCE (tus cards actuales) ================= -->
+<div *ngIf="viewMode === 'BINANCE'">
+
+  <br><br>
+
+  <div *ngIf="loading" class="spinner-container">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+  <p *ngIf="loading">Cargando cuentas...</p>
+
+  <div class="grid" *ngIf="accounts.length > 0">
+    <div *ngFor="let account of accounts"
+         class="custom-card"
+         style="--grad:#4cafef,#2196f3; --background:#fff; --text:#444;">
+
+      <!-- Botones flotantes -->
+      <div class="multi-button">
+        <button class="fas fa-pen" title="Editar" (click)="editarCuenta(account)"></button>
+        <button class="fas fa-trash" title="Eliminar" (click)="confirmDelete(account)"></button>
+      </div>
+
+      <div class="card-header">
+        {{ account.accountType }}
+      </div>
+
+      <div class="icon">
+        <i class="fa-thin fa-wallet"></i>
+      </div>
+
+      <!-- Contenido clickable -->
+      <div class="card-body" (click)="toggleText(account)">
+        <div class="button-container">
+          <!-- Solo dejamos el botón de sincronizar interno -->
+          <button pButton
+                  icon="pi pi-refresh"
+                  severity="warning"
+                  variant="outlined"
+                  [raised]="true"
+                  size="small"
+                  [loading]="account.syncing"
+                  title="Sincronizar saldos internos"
+                  (click)="syncInternalAccount(account, $event)">
+          </button>
+        </div>
+
+        <ng-container *ngIf="!account.isFlipped; else detalles">
+          <!-- saldo externo es lo principal -->
+          <p><strong>Saldo</strong>: {{ account.saldoExterno | number:'1.2-2' }}</p>
+
+          <div class="crypto-detail">
+            <!-- loading local por card -->
+            <p *ngIf="account.loadingBalances">
+              <i class="pi pi-spin pi-spinner"></i> Cargando criptos...
+            </p>
+
+            <ng-container *ngIf="!account.loadingBalances">
+              <table *ngIf="account.balances && account.balances.length > 0; else sinCriptos">
+                <thead>
+                  <tr>
+                    <th>Cripto</th>
+                    <th>Cantidad</th>
+                    <th>≈ USDT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let b of account.balances">
+                    <td>{{ b.symbol }}</td>
+                    <td>{{ b.quantity | number:'1.4-8' }}</td>
+                    <td>{{ b.usdtValue | number:'1.2-2' }} USDT</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <ng-template #sinCriptos>
+                <p class="muted">Sin criptos registradas.</p>
+              </ng-template>
+            </ng-container>
+          </div>
+
+        </ng-container>
+
+        <ng-template #detalles>
+          <p><strong>Correo:</strong> {{ account.correo }}</p>
+          <p><strong>Wallet:</strong> {{ account.address }}</p>
         </ng-template>
-      </ng-container>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="viewMode === 'COP'" class="cop-view">
+  <app-cuentas-tab></app-cuentas-tab>
+</div>
+
+<div *ngIf="viewMode === 'VES'" class="ves-view">
+  <app-cuentas-ves></app-cuentas-ves>
+</div>
+
+
+<!-- ================= DIALOGS (tus dialogs tal cual) ================= -->
+
+<p-dialog
+  [header]="'Seleccionar Tipo de Cuenta'"
+  [(visible)]="selectAccountTypeDialog"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [baseZIndex]="1100"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="p-fluid p-text-center">
+    <p>¿Qué tipo de cuenta Binance deseas crear?</p>
+    <p-dropdown
+      [options]="tiposCuenta"
+      [(ngModel)]="selectedAccountType"
+      placeholder="Seleccione tipo"
+      [showClear]="true"
+      [appendTo]="'body'">
+    </p-dropdown>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton
+            label="Continuar"
+            icon="pi pi-angle-right"
+            class="p-button-success"
+            (click)="openCreateAccountDialog()"
+            [disabled]="!selectedAccountType">
+    </button>
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog
+  [header]="editMode ? 'Editar cuenta Binance' : 'Crear nueva cuenta Binance'"
+  [(visible)]="createAccountDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [contentStyle]="{ 'max-height': '70vh', 'overflow': 'auto' }"
+  [baseZIndex]="1100">
+
+  <div class="p-fluid">
+
+  <!-- Nombre (siempre) -->
+  <div class="p-field">
+    <label for="name">Nombre* :</label>
+    <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
+  </div>
+
+  <br>
+
+  <!-- Wallet (siempre) -->
+  <div class="p-field">
+    <label for="wallet">Wallet (dirección USDT)* :</label>
+    <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
+  </div>
+
+  <br>
+
+  <!-- Tipo (siempre) -->
+  <div class="p-field">
+    <label>Tipo de cuenta* :</label>
+    <p-dropdown
+      [options]="tiposCuenta"
+      [(ngModel)]="newAccount.tipo"
+      placeholder="Seleccione tipo"
+      [showClear]="true"
+      [appendTo]="'body'">
+    </p-dropdown>
+  </div>
+
+  <br>
+
+  <!-- SOLO BINANCE -->
+  <ng-container *ngIf="newAccount.tipo === 'BINANCE'">
+
+    <div class="p-field">
+      <label for="reference">Id de cuenta Binance* :</label>
+      <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
+    </div>
+
+    <br>
+
+    <div class="p-field">
+      <label for="correo">Correo electrónico* :</label>
+      <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
+    </div>
+
+    <br>
+
+    <div class="p-field">
+      <label for="user">Usuario Binance :</label>
+      <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
+    </div>
+
+    <br>
+
+    <div class="p-field">
+      <label>API Key*</label>
+      <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
+    </div>
+
+    <br>
+
+    <div class="p-field">
+      <label>API Secret*</label>
+      <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
     </div>
 
   </ng-container>
 
-
-
-  <ng-template #detalles>
-    <p><strong>Correo:</strong> {{ account.correo }}</p>
-    <p><strong>Wallet:</strong> {{ account.address }}</p>
-  </ng-template>
 </div>
 
-
-
-  </div>
-</div>
-
-<p-dialog 
- [header]="'Seleccionar Tipo de Cuenta'"
- [(visible)]="selectAccountTypeDialog"
- [modal]="true"
- [style]="{ width: '400px' }"
- [baseZIndex]="1100"
- [closable]="false"
- [draggable]="false"
- [resizable]="false">
-
- <div class="p-fluid p-text-center">
-<p>¿Qué tipo de cuenta Binance deseas crear?</p>
-<p-dropdown 
-[options]="tiposCuenta"
-[(ngModel)]="selectedAccountType"
-placeholder="Seleccione tipo"
-[showClear]="true"
-[appendTo]="'body'">
-</p-dropdown>
-</div>
-
-<ng-template pTemplate="footer">
-<button pButton 
-              label="Continuar" 
-              icon="pi pi-angle-right" 
-              class="p-button-success"
-              (click)="openCreateAccountDialog()"
-              [disabled]="!selectedAccountType"></button>
-  </ng-template>
-</p-dialog>
-
-<p-dialog 
-  [header]="editMode ? 'Editar cuenta Binance' : 'Crear nueva cuenta Binance'"
-  [(visible)]="createAccountDialog"
-  [modal]="false"
-  [style]="{ width: '500px' }"
-  [baseZIndex]="1100">
-
-  <div class="p-fluid">
-      <div class="p-field">
-          <label for="name">Nombre* :</label>
-          <br>
-          <input id="name" type="text" pInputText [(ngModel)]="newAccount.name" />
-      </div>
-<br>
-      <div class="p-field">
-          <label for="reference">Id de cuenta Binance* :</label>
-          <input id="reference" type="text" pInputText [(ngModel)]="newAccount.referenceAccount" />
-      </div>
-<br>
-      <div class="p-field">
-          <label for="correo">Correo electrónico* :</label>
-          <input id="correo" type="email" pInputText [(ngModel)]="newAccount.correo" />
-      </div>
-<br>
-      <div class="p-field">
-          <label for="user">Usuario Binance :</label>
-          <input id="user" type="text" pInputText [(ngModel)]="newAccount.userBinance" />
-      </div>
-<br>
-      <div class="p-field">
-          <label for="balance">Saldo inicial en USDT* :</label>
-          <input id="balance" type="number" pInputText [(ngModel)]="newAccount.balance" />
-      </div>
-<br>
-      <div class="p-field">
-          <label for="wallet">Wallet (dirección USDT)* :</label>
-          <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
-      </div>
-<br>
-      <div class="p-field">
-          <label>Tipo de cuenta* :</label>
-          <p-dropdown [options]="tiposCuenta"
-                      [(ngModel)]="newAccount.tipo"
-                      placeholder="Seleccione tipo"
-                      [showClear]="true"
-                      [appendTo]="'body'">
-          </p-dropdown>
-      </div>
-<br>
-      <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
-          <label>API Key*</label>
-          <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
-      </div>
-<br>
-      <div *ngIf="newAccount.tipo === 'BINANCE'" class="p-field">
-          <label>API Secret*</label>
-          <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
-      </div>
-  </div>
 
   <ng-template pTemplate="footer">
-      <button pButton 
-              label="Cancelar" 
-              icon="pi pi-times" 
-              class="p-button-danger"
-              (click)="cancelarNuevaCuenta()"></button>
+    <button pButton
+            label="Cancelar"
+            icon="pi pi-times"
+            class="p-button-danger"
+            (click)="cancelarNuevaCuenta()">
+    </button>
 
-      <!-- Aquí cambiamos dinámicamente -->
-      <button pButton 
-              [label]="editMode ? 'Actualizar' : 'Crear'" 
-              icon="pi pi-check" 
-              class="p-button-success"
-              (click)="guardarCuenta()"></button>
+    <button pButton
+            [label]="editMode ? 'Actualizar' : 'Crear'"
+            icon="pi pi-check"
+            class="p-button-success"
+            (click)="guardarCuenta()">
+    </button>
   </ng-template>
 </p-dialog>

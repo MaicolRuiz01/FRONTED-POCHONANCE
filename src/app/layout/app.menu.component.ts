@@ -32,16 +32,16 @@ export class AppMenuComponent implements OnInit {
                       label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
                       routerLink: ['/asignaciones']
                   },
-                  {
+                  /* {
                     label: 'ASIGNADAS', icon: 'pi pi-fw pi-check-square',
                     routerLink: ['/historial']
                 
-                  },
+                  }, */
                   
-                  {
+                  /* {
                     label: 'ACTIVIDADES', icon: 'pi pi-fw pi-clock',
                     routerLink: ['/actividades']
-                },
+                }, */
                 {
                     label: 'MOVIMIENTOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                     routerLink: ['/movimientos']

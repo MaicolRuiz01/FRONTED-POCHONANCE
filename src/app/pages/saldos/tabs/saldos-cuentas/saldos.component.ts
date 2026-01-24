@@ -19,6 +19,10 @@ import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core
 import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
 import { finalize, switchMap } from 'rxjs/operators';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { AccountVesService } from '../../../../core/services/AccountVes.service';
+import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
+import { CuentasVesComponent } from '../cuentas-ves/cuentas-ves.component';
+
 
 export interface DisplayAccount {
   id?: number;
@@ -51,7 +55,9 @@ export interface DisplayAccount {
     InputTextModule,
     InputNumberModule,
     ConfirmDialogModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    CuentasTabComponent,
+    CuentasVesComponent
   ]
 })
 export class SaldosComponent implements OnInit {
@@ -71,6 +77,14 @@ export class SaldosComponent implements OnInit {
   selectAccountTypeDialog: boolean = false;
   selectedAccountType: string | null = null;
   noAverageRate: boolean = false;
+
+  viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
+
+
+totalCuentasCop = 0;
+totalCuentasVes = 0;
+loadingCop = false;
+loadingVes = false;
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
@@ -104,7 +118,8 @@ export class SaldosComponent implements OnInit {
     private http: HttpClient,
     private balanceService: BalanceService,
     private cryptoRateService: CryptoAverageRateService,
-    private averageRateService: AverageRateService
+    private averageRateService: AverageRateService,
+    private accountVesService: AccountVesService
   ) { }
 
   ngOnInit() {
@@ -118,6 +133,9 @@ export class SaldosComponent implements OnInit {
         this.getBalanceTotalExterno();
         this.loadCryptoRatesToday();
         this.loadAverageRate();
+        this.loadTotalCop();
+        this.loadTotalVes();
+
       }))
       .subscribe({
         next: () => {
@@ -548,7 +566,51 @@ export class SaldosComponent implements OnInit {
         }
       });
   }
+  verBinance() {
+  this.viewMode = 'BINANCE';
+}
 
+volverResumen() {
+  this.viewMode = 'RESUMEN';
+}
 
+loadTotalCop(): void {
+  this.loadingCop = true;
+
+  // tu servicio ya está inyectado como "cajaService" (AccountCopService)
+  this.cajaService.getAll()
+    .pipe(finalize(() => this.loadingCop = false))
+    .subscribe({
+      next: cuentas => {
+        this.totalCuentasCop = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+      },
+      error: err => {
+        console.error('Error cargando total COP', err);
+        this.totalCuentasCop = 0;
+      }
+    });
+}
+
+loadTotalVes(): void {
+  this.loadingVes = true;
+
+  this.accountVesService.getAll()
+    .pipe(finalize(() => this.loadingVes = false))
+    .subscribe({
+      next: cuentas => {
+        this.totalCuentasVes = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+      },
+      error: err => {
+        console.error('Error cargando total VES', err);
+        this.totalCuentasVes = 0;
+      }
+    });
+}
+verCop() {
+  this.viewMode = 'COP';
+}
+verVes() {
+  this.viewMode = 'VES';
+}
 
 }

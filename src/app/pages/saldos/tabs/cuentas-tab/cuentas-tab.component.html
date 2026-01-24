@@ -16,7 +16,7 @@
       <ng-template pTemplate="content">
         <div class="total-content">
           <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-          <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
+           {{ totalCuentas | currency:'COP' }}
         </div>
       </ng-template>
     </p-card>
@@ -46,9 +46,15 @@
             <div class="flip-face flip-front">
               <div class="account-details">
                 <p>
-                  <strong>Balance:</strong>
-                  {{ account.balance | currency:'COP' }}
-                </p>
+  <strong>Balance:</strong>
+  {{ account.balance | currency:'COP' }}
+</p>
+
+<p style="margin-top: 4px;">
+  <strong>Disponible:</strong>
+  {{ getDisponible(account.balance) | currency:'COP' }}
+</p>
+
                 <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
                   Click para ver resumen del día
                 </p>

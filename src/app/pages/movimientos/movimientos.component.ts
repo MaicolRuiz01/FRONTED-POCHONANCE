@@ -13,6 +13,8 @@ import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos
 import { OrdenesCriptoComponent } from './criptos/cripto-tab/ordenes-cripto.component';
 import { CompletadaComponent } from './criptos/listadocripto/completada.component';
 import { Movimiento } from '../../core/services/pago-proveedor.service';
+import { BuyTapComponent } from '../historial/tabs/buy-tap/buy-tap.component';
+import { SellTabComponent } from '../historial/tabs/sell-tab/sell-tab.component';
 
 
 @Component({
@@ -28,8 +30,10 @@ import { Movimiento } from '../../core/services/pago-proveedor.service';
     ButtonModule,
     InputTextModule,
     OrdenesCriptoComponent,
-    CompletadaComponent
-  ],
+    CompletadaComponent,
+    SellTabComponent,
+    BuyTapComponent
+],
   templateUrl: './movimientos.component.html',
   styleUrl: './movimientos.component.css'
 })

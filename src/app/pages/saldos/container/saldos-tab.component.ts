@@ -6,11 +6,11 @@ import { SaldosComponent } from '../tabs/saldos-cuentas/saldos.component';
 import { CuentasTabComponent } from '../tabs/cuentas-tab/cuentas-tab.component';
 import { ActivatedRoute } from '@angular/router';
 import { CuentasVesComponent } from '../tabs/cuentas-ves/cuentas-ves.component';
-
+import { ClientesComponent } from '../../clientes/tabs/clientes-tab/clientes.component';
 @Component({
   selector: 'app-saldos-tab',
   standalone: true,
-  imports: [SharedModule, SaldosComponent, CajasComponent, CajaComponent, CuentasTabComponent, CuentasVesComponent],
+  imports: [SharedModule, SaldosComponent, CajasComponent, CajaComponent, CuentasTabComponent, CuentasVesComponent, ClientesComponent],
   templateUrl: './saldos-tab.component.html',
   styleUrls: ['./saldos-tab.component.css']
 })

@@ -15,6 +15,7 @@ import { ClienteService, Cliente } from '../../../../core/services/cliente.servi
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { GastoService } from '../../../../core/services/gasto.service';
+type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
 @Component({
   selector: 'app-cuentas-tab',
@@ -35,11 +36,17 @@ import { GastoService } from '../../../../core/services/gasto.service';
 })
 export class CuentasTabComponent implements OnInit {
   cuentas: AccountCop[] = [];
-  newAccount: AccountCopCreate = { name: '', balance: 0 };
+  newAccount: AccountCopCreate = { name: '', balance: 0, bankType: 'NEQUI' };
   displayDialog: boolean = false;
   clientes: Cliente[] = [];
   cajas: Caja[] = [];
   selectedCajaId?: number;
+
+  bankTypes = [
+  { label: 'Nequi', value: 'NEQUI' },
+  { label: 'Daviplata', value: 'DAVIPLATA' },
+  { label: 'Bancolombia', value: 'BANCOLOMBIA' }
+];
 
 
   selectedCuentaOrigenId?: number;
@@ -128,15 +135,20 @@ export class CuentasTabComponent implements OnInit {
   }
 
   createAccount() {
-    console.log('Creating Account:', this.newAccount);
-    this.accountService.create(this.newAccount).subscribe(account => {
-      this.cuentas.push(account);
-      this.displayDialog = false;
-      this.newAccount = { name: '', balance: 0 }; // Reseteo sin ID
-    }, error => {
-      console.error('Error creating account', error);
-    });
+  if (!this.newAccount.name || this.newAccount.balance == null || !this.newAccount.bankType) {
+    alert('Nombre, balance y tipo de banco son obligatorios');
+    return;
   }
+
+  this.accountService.create(this.newAccount).subscribe(account => {
+    this.cuentas.push(account);
+    this.displayDialog = false;
+    this.newAccount = { name: '', balance: 0, bankType: 'NEQUI' };
+  }, error => {
+    console.error('Error creating account', error);
+  });
+}
+
 
   showCreateDialog() {
     this.displayDialog = true;
@@ -233,5 +245,31 @@ export class CuentasTabComponent implements OnInit {
   const comision = b * 0.004; // 4x1000
   return b - comision;
 }
+
+selectedBankType: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null = null;
+
+setBankFilter(type: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null) {
+  this.selectedBankType = type;
+}
+
+get filteredCuentas(): AccountCop[] {
+  if (!this.selectedBankType) return this.cuentas;
+  return this.cuentas.filter(c => c.bankType === this.selectedBankType);
+}
+
+bankLogo(type?: string | null): string {
+  const t = (type ?? '').toString().trim().toUpperCase();
+
+  switch (t as BankType) {
+    case 'NEQUI': return '/assets/layout/images/nequi.png';
+    case 'DAVIPLATA': return '/assets/layout/images/daviplata.png';
+    case 'BANCOLOMBIA': return '/assets/layout/images/bancolombia.png';
+    default: return '/assets/layout/images/nequi.png';
+  }
+}
+
+
+
+
 
 }

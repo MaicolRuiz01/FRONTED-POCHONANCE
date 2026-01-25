@@ -380,19 +380,7 @@
         ></p-inputNumber>
       </div>
 
-      <div class="p-field p-col-12">
-        <label for="lastPaymentDate" class="p-d-block p-mb-2">
-          Última fecha de pago
-        </label>
-        <p-calendar
-          id="lastPaymentDate"
-          [(ngModel)]="SupplierlastPaymentDate"
-          dateFormat="yy-mm-dd"
-          showIcon="true"
-          class="p-inputtext-sm"
-          placeholder="Seleccione la fecha"
-        ></p-calendar>
-      </div>
+      
     </div>
   </div>
 
@@ -416,7 +404,7 @@
         (click)="createSupplier({
           name: Supplier_name,
           balance: Supplier_balance,
-          lastPaymentDate: SupplierlastPaymentDate
+
         })"
       ></button>
     </div>

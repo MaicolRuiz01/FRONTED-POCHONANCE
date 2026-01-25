@@ -196,3 +196,70 @@ button.p-button-success {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
 }
+
+.bank-filter{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin: 8px 0 14px;
+  flex-wrap: wrap;
+}
+
+.bank-chip{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition: .15s ease;
+}
+
+.bank-chip:hover{
+  transform: translateY(-1px);
+}
+
+.bank-chip.active{
+  border-color:#2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.bank-logo{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.bank-chip-text{
+  font-weight:600;
+  font-size:.9rem;
+}
+
+.bank-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom: 6px;
+}
+
+.bank-logo-card{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+}
+
+.bank-name{
+  font-weight:600;
+  font-size:.9rem;
+  opacity:.9;
+}
+
+/* footer dialog alineado */
+.dialog-footer{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:10px;
+}

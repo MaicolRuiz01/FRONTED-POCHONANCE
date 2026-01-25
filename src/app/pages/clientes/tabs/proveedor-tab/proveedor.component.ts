@@ -69,7 +69,7 @@ export class ProveedorComponent implements OnInit {
 
   Supplier_name: string = '';
   Supplier_balance: number = 0; // nuevo, balance por defecto
-  SupplierlastPaymentDate: Date = new Date(); // nuevo, fecha por defecto
+
 
   cajas: any[] = [];
   selectedCaja: any | null = null;
@@ -170,22 +170,22 @@ export class ProveedorComponent implements OnInit {
   }
 
   createSupplier(data: any): void {
-    this.supplierService.createSupplier({
-      name: data.name,
-      balance: data.balance || 0, // Asigna un balance por defecto si no se proporciona
-      lastPaymentDate: new Date()
-    }).subscribe({
-      next: (supplier) => {
-        this.suppliers.push(supplier);
-        this.showform = false;
+  this.supplierService.createSupplier({
+    name: data.name,
+    balance: data.balance || 0
+    // lastPaymentDate: <-- NO se envía al crear
+  }).subscribe({
+    next: (supplier) => {
+      this.suppliers.push(supplier);
+      this.showform = false;
 
-        this.Supplier_name = '';
-        this.Supplier_balance = 0;
-        this.SupplierlastPaymentDate = new Date();
-      },
-      error: (err) => console.error('Error creating supplier', err)
-    });
-  }
+      this.Supplier_name = '';
+      this.Supplier_balance = 0;
+    },
+    error: (err) => console.error('Error creating supplier', err)
+  });
+}
+
 
 
   // Obtener los pagos asociados al proveedor seleccionado

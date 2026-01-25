@@ -16,7 +16,7 @@
       <ng-template pTemplate="content">
         <div class="total-content">
           <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-           {{ totalCuentas | currency:'COP' }}
+          {{ totalCuentas | currency:'COP' }}
         </div>
       </ng-template>
     </p-card>
@@ -25,41 +25,69 @@
 <br>
 
 <hr>
+
+<!-- ===== FILTRO POR BANCO (LOGOS) ===== -->
+<div class="bank-filter">
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === null" (click)="setBankFilter(null)"
+    title="Todas">
+    <span class="bank-chip-text">Todas</span>
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'NEQUI'" (click)="setBankFilter('NEQUI')"
+    title="Nequi">
+    <img class="bank-logo" [src]="bankLogo('NEQUI')" alt="Nequi">
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'DAVIPLATA'"
+    (click)="setBankFilter('DAVIPLATA')" title="Daviplata">
+    <img class="bank-logo" [src]="bankLogo('DAVIPLATA')" alt="Daviplata">
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'BANCOLOMBIA'"
+    (click)="setBankFilter('BANCOLOMBIA')" title="Bancolombia">
+    <img class="bank-logo" [src]="bankLogo('BANCOLOMBIA')" alt="Bancolombia">
+
+  </button>
+</div>
+
 <!-- Tarjetas para mostrar las cuentas -->
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
-  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card
-      class="account-card p-shadow-3"
-      [header]="account.name"
-      styleClass="account-card">
+  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of filteredCuentas">
+
+    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card">
 
       <ng-template pTemplate="content">
         <!-- Contenedor flip -->
-        <div
-          class="account-flip"
-          [class.is-flipped]="account.isFlipped"
-          (click)="toggleFlip(account, $event)">
+        <div class="account-flip" [class.is-flipped]="account.isFlipped" (click)="toggleFlip(account, $event)">
 
           <div class="flip-inner">
             <!-- 🔹 FRONT: solo balance -->
             <div class="flip-face flip-front">
               <div class="account-details">
-                <p>
-  <strong>Balance:</strong>
-  {{ account.balance | currency:'COP' }}
-</p>
 
-<p style="margin-top: 4px;">
-  <strong>Disponible:</strong>
-  {{ getDisponible(account.balance) | currency:'COP' }}
-</p>
+                <div class="bank-row">
+                  <img class="bank-logo-card" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
+                  <span class="bank-name">{{ account.bankType }}</span>
+                </div>
+
+                <p>
+                  <strong>Balance:</strong>
+                  {{ account.balance | currency:'COP' }}
+                </p>
+
+                <p style="margin-top: 4px;">
+                  <strong>Disponible:</strong>
+                  {{ getDisponible(account.balance) | currency:'COP' }}
+                </p>
 
                 <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
                   Click para ver resumen del día
                 </p>
+
               </div>
             </div>
+
 
             <!-- 🔹 BACK: todos los detalles -->
             <div class="flip-face flip-back">
@@ -107,18 +135,11 @@
                 </p>
 
                 <div class="back-actions">
-                  <button
-                    pButton
-                    label="Ver ventas"
-                    icon="pi pi-eye"
-                    class="p-button-text p-button-sm"
+                  <button pButton label="Ver ventas" icon="pi pi-eye" class="p-button-text p-button-sm"
                     (click)="goToVentas(account.id!); $event.stopPropagation()">
                   </button>
 
-                  <button
-                    pButton
-                    label="Ajustar saldo"
-                    icon="pi pi-refresh"
+                  <button pButton label="Ajustar saldo" icon="pi pi-refresh"
                     class="p-button-warning p-button-text p-button-sm"
                     (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
                   </button>
@@ -139,27 +160,49 @@
 <!-- Formulario de creación de cuenta en un modal -->
 <p-dialog header="Crear Cuenta Colombiana" [(visible)]="displayDialog" [modal]="true" [closable]="true">
   <div class="p-grid p-fluid">
+
     <div class="p-col-12 p-md-6">
       <label for="name">Nombre de la Cuenta</label>
       <input id="name" pInputText [(ngModel)]="newAccount.name" />
     </div>
+
     <div class="p-col-12 p-md-6">
       <label for="balance">Balance</label>
-  <p-inputNumber
-    [(ngModel)]="newAccount.balance"
-    name="balance"
-    mode="currency"
-    currency="COP"
-    [min]="0">
-  </p-inputNumber>
+      <p-inputNumber [(ngModel)]="newAccount.balance" name="balance" mode="currency" currency="COP" [min]="0">
+      </p-inputNumber>
     </div>
+
+    <div class="p-col-12">
+      <label>Tipo de banco</label>
+      <p-dropdown [options]="bankTypes" [(ngModel)]="newAccount.bankType" optionLabel="label" optionValue="value"
+        placeholder="Seleccione" [appendTo]="'body'">
+      </p-dropdown>
+    </div>
+
   </div>
 
-  <p-footer>
-    <button pButton label="Cancelar" icon="pi pi-times" (click)="displayDialog = false" class="p-button-text"></button>
-    <button pButton label="Crear" icon="pi pi-check" (click)="createAccount()" class="p-button-success"></button>
-  </p-footer>
+  <ng-template pTemplate="footer">
+  <div class="dialog-footer">
+    <button
+      pButton
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="displayDialog = false">
+    </button>
+
+    <button
+      pButton
+      label="Crear"
+      icon="pi pi-check"
+      class="p-button-success"
+      (click)="createAccount()">
+    </button>
+  </div>
+</ng-template>
+
 </p-dialog>
+
 <!-- RETIRO -->
 <p-dialog header="Registrar Retiro" [(visible)]="displayDialogRetiro" [modal]="true">
   <div class="p-fluid">
@@ -255,13 +298,7 @@
     <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
   </p-footer>
 </p-dialog>
-<app-ajuste-saldo-dialog
-  *ngIf="cuentaAjuste"
-  [visible]="showAjusteCuenta"
-  (visibleChange)="showAjusteCuenta = $event"
-  [entidad]="'CUENTACOP'"
-  [entidadId]="cuentaAjuste.id!"
-  [nombreEntidad]="cuentaAjuste.name"
-  [saldoActual]="cuentaAjuste.balance ?? 0"
-  (ajusteRealizado)="onAjusteCuentaRealizado()">
+<app-ajuste-saldo-dialog *ngIf="cuentaAjuste" [visible]="showAjusteCuenta" (visibleChange)="showAjusteCuenta = $event"
+  [entidad]="'CUENTACOP'" [entidadId]="cuentaAjuste.id!" [nombreEntidad]="cuentaAjuste.name"
+  [saldoActual]="cuentaAjuste.balance ?? 0" (ajusteRealizado)="onAjusteCuentaRealizado()">
 </app-ajuste-saldo-dialog>

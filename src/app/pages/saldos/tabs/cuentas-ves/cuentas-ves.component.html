@@ -1,11 +1,6 @@
 <!-- Botón y total -->
 <div class="botones-container">
-  <button
-    pButton
-    label="Agregar Cuenta VES"
-    icon="pi pi-plus"
-    class="p-button-success"
-    (click)="abrirDialogCrear()">
+  <button pButton label="Agregar Cuenta VES" icon="pi pi-plus" class="p-button-success" (click)="abrirDialogCrear()">
   </button>
 
   <div class="total-container">
@@ -32,35 +27,37 @@
 <!-- Cards de cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card
-      class="account-card p-shadow-3"
-      [header]="account.name"
-      styleClass="account-card">
-
+    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card">
       <ng-template pTemplate="content">
         <div class="account-details">
           <p>
             <strong>Balance:</strong>
             {{ account.balance | number:'1.2-2' }} VES
           </p>
+
           <p *ngIf="account.saldoInicialDelDia != null">
             <small>Saldo inicial del día:
               {{ account.saldoInicialDelDia | number:'1.2-2' }} VES
             </small>
           </p>
+
+          <button
+  pButton
+  type="button"
+  label="Ver compras/ventas"
+  icon="pi pi-eye"
+  class="p-button-text p-button-sm"
+  (click)="$event.stopPropagation(); abrirDialogMovs(account)">
+</button>
         </div>
       </ng-template>
-
     </p-card>
+
   </div>
 </div>
 
 <!-- Dialog crear cuenta -->
-<p-dialog
-  header="Crear Cuenta VES"
-  [(visible)]="displayDialog"
-  [modal]="true"
-  [closable]="true">
+<p-dialog header="Crear Cuenta VES" [(visible)]="displayDialog" [modal]="true" [closable]="true">
 
   <div class="p-fluid">
     <div class="p-field">
@@ -70,31 +67,98 @@
 
     <div class="p-field">
       <label for="balance">Saldo inicial (VES)</label>
-      <p-inputNumber
-        id="balance"
-        [(ngModel)]="newAccount.balance"
-        [min]="0"
-        locale="es-VE"
-        [minFractionDigits]="2"
-  [maxFractionDigits]="2">>
+      <p-inputNumber id="balance" [(ngModel)]="newAccount.balance" [min]="0" locale="es-VE" [minFractionDigits]="2"
+        [maxFractionDigits]="2">
       </p-inputNumber>
+
     </div>
   </div>
 
   <ng-template pTemplate="footer">
-    <button
-      pButton
-      label="Cancelar"
-      class="p-button-text"
-      (click)="displayDialog = false">
+    <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false">
     </button>
 
-    <button
-      pButton
-      label="Crear"
-      icon="pi pi-check"
-      class="p-button-success"
-      (click)="crearCuenta()">
+    <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="crearCuenta()">
     </button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Movimientos VES - {{ cuentaSeleccionada?.name }}"
+  [(visible)]="displayMovsDialog"
+  [modal]="true"
+  [style]="{ width: '80vw' }"
+  [closable]="true">
+
+  <p-tabView>
+
+    <p-tabPanel header="Compras">
+      <ng-container *ngIf="!loadingCompras; else loadingC">
+        <p-table [value]="compras" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Bolívares</th>
+              <th>Tasa</th>
+              <th>Pesos (COP)</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.date | date:'short' }}</td>
+              <td>{{ row.bolivares | number:'1.2-2' }}</td>
+              <td>{{ row.tasa | number:'1.2-2' }}</td>
+              <td>{{ row.pesos | currency:'COP' }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="4" class="p-text-center">Sin compras</td></tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-template #loadingC>
+        <p-progressSpinner></p-progressSpinner>
+      </ng-template>
+    </p-tabPanel>
+
+    <p-tabPanel header="Ventas">
+      <ng-container *ngIf="!loadingVentas; else loadingV">
+        <p-table [value]="ventas" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>Bolívares</th>
+              <th>Tasa</th>
+              <th>Pesos (COP)</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.date | date:'short' }}</td>
+              <td>{{ row.bolivares | number:'1.2-2' }}</td>
+              <td>{{ row.tasa | number:'1.2-2' }}</td>
+              <td>{{ row.pesos | currency:'COP' }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="4" class="p-text-center">Sin ventas</td></tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-template #loadingV>
+        <p-progressSpinner></p-progressSpinner>
+      </ng-template>
+    </p-tabPanel>
+
+  </p-tabView>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cerrar" class="p-button-text" (click)="displayMovsDialog = false"></button>
   </ng-template>
 </p-dialog>

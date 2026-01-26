@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
-
+import { CompraVesDto } from './compra-ves.service';
+import { VentaVesDto } from './venta-ves.service';
 export interface AccountVes {
   id?: number;
   name: string;
@@ -50,4 +51,12 @@ export class AccountVesService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getCompras(id: number): Observable<CompraVesDto[]> {
+  return this.http.get<CompraVesDto[]>(`${this.apiUrl}/${id}/compras`);
+}
+
+getVentas(id: number): Observable<VentaVesDto[]> {
+  return this.http.get<VentaVesDto[]>(`${this.apiUrl}/${id}/ventas`);
+}
 }

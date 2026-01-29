@@ -55,6 +55,7 @@ export class ClientesComponent implements OnInit {
   nuevoCliente: Partial<Cliente> = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
   comprasCliente: BuyDollarsDto[] = [];
   displayPagoCPModal = false;
+  clienteSaldoTipo: 'DEBEMOS' | 'NOS_DEBEN' = 'DEBEMOS';
 
   displayPagoModal = false;
   displayTransferModal = false;
@@ -237,13 +238,17 @@ export class ClientesComponent implements OnInit {
     return this.clientes.reduce((acc, cliente) => acc + (cliente.saldo ?? 0), 0);
   }
 
-  abrirModal(): void {
-    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
-    this.displayModal = true;
-  }
 
   guardarCliente(): void {
-    this.clienteService.crear(this.nuevoCliente).subscribe({
+    const monto = Math.abs(Number(this.nuevoCliente.saldo || 0));
+    const saldoSigned = this.clienteSaldoTipo === 'DEBEMOS' ? monto : -monto;
+
+    const payload = {
+      ...this.nuevoCliente,
+      saldo: saldoSigned
+    };
+
+    this.clienteService.crear(payload).subscribe({
       next: () => {
         this.displayModal = false;
         this.cargarClientes();
@@ -251,6 +256,7 @@ export class ClientesComponent implements OnInit {
       error: () => alert('Error al guardar el cliente')
     });
   }
+
 
   abrirModalPago(): void {
     this.paymentMode = 'USDT';
@@ -626,4 +632,32 @@ export class ClientesComponent implements OnInit {
       error: (err) => console.error('Error al cargar ventas del cliente', err)
     });
   }
+  abrirModal(): void {
+    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
+    this.clienteSaldoTipo = 'DEBEMOS';
+    this.displayModal = true;
+  }
+
+  downloadExcelCliente(cliente: Cliente) {
+  if (!cliente?.id) return;
+
+  this.movimientoService.downloadExcelCliente(cliente.id).subscribe({
+    next: (blob) => {
+      const safeName = (cliente.nombre || 'cliente')
+        .replace(/[\\/:*?"<>|]/g, '')
+        .replace(/\s+/g, '_');
+
+      const fileName = `cliente_${cliente.id}_${safeName}.xlsx`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
+    error: (err) => console.error('Error descargando excel cliente', err)
+  });
+}
+
 }

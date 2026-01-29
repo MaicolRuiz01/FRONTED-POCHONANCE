@@ -59,12 +59,24 @@
     <div class="p-formgrid p-grid p-mb-4">
       <div class="p-field p-col-12 p-md-4">
         <label class="p-mb-1">Bolívares (VES)</label>
-        <p-inputNumber formControlName="bolivares" inputStyleClass="w-full"></p-inputNumber>
+        <p-inputNumber
+  formControlName="bolivares"
+  inputStyleClass="w-full"
+  locale="es-CO"
+  [minFractionDigits]="2"
+  [maxFractionDigits]="2"
+></p-inputNumber>
       </div>
 
       <div class="p-field p-col-12 p-md-4">
         <label class="p-mb-1">Tasa (COP)</label>
-        <p-inputNumber formControlName="tasa" inputStyleClass="w-full"></p-inputNumber>
+        <p-inputNumber
+  formControlName="tasa"
+  inputStyleClass="w-full"
+  locale="es-CO"
+  [minFractionDigits]="2"
+  [maxFractionDigits]="2"
+></p-inputNumber>
       </div>
 
       <div class="p-field p-col-12 p-md-4">

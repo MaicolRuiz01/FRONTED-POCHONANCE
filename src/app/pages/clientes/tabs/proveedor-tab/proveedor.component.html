@@ -1,514 +1,442 @@
 <div class="card">
-<div class="p-grid p-dir-col p-align-center">
-  <h2 class="section-title">Proveedores</h2>
+  <div class="p-grid p-dir-col p-align-center">
+    <h2 class="section-title">Proveedores</h2>
 
-  <!-- Botón para abrir el formulario de pago -->
-  <div class="p-col-12 p-md-10" style="text-align: center; margin-top: 20px; display: flex; justify-content: start; gap: 10px;">
-  <p-button label="Pago Proveedor" icon="pi pi-credit-card" (click)="togglePaymentForm()"
-    styleClass="p-button-raised p-button-info"></p-button>
-    <p-button
-  label="Pagar a Cliente (USDT)"
-  icon="pi pi-send"
-  styleClass="p-button-raised p-button-success"
-  (click)="abrirModalPagoProveedorCliente()">
-</p-button>
+    <!-- Botón para abrir el formulario de pago -->
+    <div class="p-col-12 p-md-10"
+      style="text-align: center; margin-top: 20px; display: flex; justify-content: start; gap: 10px;">
+      <p-button label="Pago Proveedor" icon="pi pi-credit-card" (click)="togglePaymentForm()"
+        styleClass="p-button-raised p-button-info"></p-button>
+      <p-button label="Pagar a Cliente (USDT)" icon="pi pi-send" styleClass="p-button-raised p-button-success"
+        (click)="abrirModalPagoProveedorCliente()">
+      </p-button>
 
 
-    <p-button label="Crear Proveedor" icon="pi pi-plus" (click)="showFormsupplier()"
-      styleClass="p-button-raised p-button-info"></p-button>
-  </div>
-<br>
-
-<div class="total-container">  
-<p-card styleClass="total-card">
-    <ng-template pTemplate="content">
-      <div class="total-content">
-        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total de proveedores:</strong> {{ totalProveedores | currency:'COP' }}
-      </div>
-    </ng-template>
-</p-card>
-</div>
-
-  <!-- Contenedor de las tarjetas de proveedor -->
-  <div class="p-grid p-justify-center p-card-container">
-  <div *ngFor="let supplier of suppliers" class="card-wrapper">
-    <p-card styleClass="account-card" (click)="onSelectSupplier(supplier)">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-user" style="margin-right: 8px;"></i> {{ supplier?.name }}
-        </div>
-      </ng-template>
-
-      <ng-template pTemplate="content">
-        <div class="saldo-inicial">
-        Saldo inicial del día:
-        <span>{{ supplier.saldoInicialDelDia | number:'1.2-2' }}</span>
+      <p-button label="Crear Proveedor" icon="pi pi-plus" (click)="showFormsupplier()"
+        styleClass="p-button-raised p-button-info"></p-button>
     </div>
-    <div class="resumen-dia">
+    <br>
 
-  <p *ngIf="(supplier.entradasHoy ?? 0) > 0">
-    <strong>Entradas hoy:</strong>
-    {{ supplier.entradasHoy | currency:'COP' }}
-  </p>
-
-  <p *ngIf="(supplier.salidasHoy ?? 0) > 0">
-    <strong>Salidas hoy:</strong>
-    {{ supplier.salidasHoy | currency:'COP' }}
-  </p>
-
-  <p *ngIf="(supplier.comprasHoy ?? 0) > 0">
-    <strong>Compras USDT hoy:</strong>
-    {{ supplier.comprasHoy | currency:'COP' }}
-  </p>
-
-  <p *ngIf="(supplier.ventasHoy ?? 0) > 0">
-    <strong>Ventas USDT hoy:</strong>
-    {{ supplier.ventasHoy | currency:'COP' }}
-  </p>
-
-  <p *ngIf="(supplier.ajustesHoy ?? 0) > 0">
-    <strong>Ajustes hoy:</strong>
-    {{ supplier.ajustesHoy | currency:'COP' }}
-  </p>
-
-</div>
-
-
-        <div class="account-details">
-          <div class="card-row">
-            
-  <span class="label">
-    {{ (supplier?.balance ?? 0) >= 0 ? 'Debemos:' : 'Debe:' }}
-  </span>
-  <span class="value">
-    {{ Math.abs(supplier?.balance ?? 0) | currency:'COP' }}
-  </span>
-  
-</div>
-
-          <div class="card-row">
-            <span class="label">Último pago:</span>
-            <span class="value">{{ supplier?.lastPaymentDate | date:'mediumDate' }}</span>
+    <div class="total-container">
+      <p-card styleClass="total-card">
+        <ng-template pTemplate="content">
+          <div class="total-content">
+            <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+            <strong>Total de proveedores:</strong> {{ totalProveedores | currency:'COP' }}
           </div>
-          
-        </div>
-        <div class="acciones-card">
-          <button
-    pButton
-    label="Excel"
-    icon="pi pi-file-excel"
-    class="p-button-text p-button-success p-button-sm"
-    (click)="downloadExcel(supplier, $event)">
-  </button>
-        <button
-          pButton
-          label="Ajustar saldo"
-          icon="pi pi-refresh"
-          class="p-button-text p-button-warning p-button-sm"
-          (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)">
-        </button>
-      </div>
-      </ng-template>
-      
-    </p-card>
-  </div>
-  
-</div>
+        </ng-template>
+      </p-card>
+    </div>
 
-  <p-dialog
-  header="{{ selectedSupplier?.name }}"
-  [(visible)]="showPagosDialog"
-  [modal]="true"
-  [style]="{width: '80vw'}"
-  [closable]="true"
-  (onHide)="showPagosDialog = false">
-
-  <p-tabView>
-
-    <!-- TAB 1: Movimientos -->
-    <p-tabPanel header="Movimientos">
-      <ng-container *ngIf="!loadingMovs; else movsLoading">
-        <app-lista-pagos [pagos]="movimientos"></app-lista-pagos>
-      </ng-container>
-      <ng-template #movsLoading>
-        <div class="p-3">Cargando movimientos...</div>
-      </ng-template>
-    </p-tabPanel>
-
-    <!-- TAB 2: Compras -->
-    <p-tabPanel header="Compras">
-      <ng-container *ngIf="!loadingCompras; else comprasLoading">
-        <p-table
-          [value]="comprasProveedor"
-          scrollable="true"
-          scrollHeight="400px"
-          [responsive]="true">
+    <!-- Contenedor de las tarjetas de proveedor -->
+    <div class="p-grid p-justify-center p-card-container">
+      <div *ngFor="let supplier of suppliers" class="card-wrapper">
+        <p-card styleClass="account-card" (click)="onSelectSupplier(supplier)">
           <ng-template pTemplate="header">
-            <tr>
-              <th>Fecha</th>
-              <th>Monto (Crypto)</th>
-              <th>Símbolo</th>
-              <th>Tasa</th>
-              <th>PESOS (COP)</th>
-              <th>Cuenta</th>
-              <th>Id Depósito</th>
-            </tr>
+            <div class="card-header">
+              <i class="pi pi-user" style="margin-right: 8px;"></i> {{ supplier?.name }}
+            </div>
           </ng-template>
-          <ng-template pTemplate="body" let-row>
-            <tr>
-              <td>{{ row.date | date:'short' }}</td>
-              <td>{{ row.amount }}</td>
-              <td>{{ row.cryptoSymbol || '-' }}</td>
-              <td>{{ row.tasa | number:'1.2-2' }}</td>
-              <td>{{ row.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ row.nameAccount || '-' }}</td>
-              <td>{{ row.idDeposit || '-' }}</td>
-            </tr>
+
+          <ng-template pTemplate="content">
+
+            <div class="resumen-dia">
+
+              <p *ngIf="(supplier.entradasHoy ?? 0) > 0">
+                <strong>Entradas hoy:</strong>
+                {{ supplier.entradasHoy | currency:'COP' }}
+              </p>
+
+              <p *ngIf="(supplier.salidasHoy ?? 0) > 0">
+                <strong>Salidas hoy:</strong>
+                {{ supplier.salidasHoy | currency:'COP' }}
+              </p>
+
+              <p *ngIf="(supplier.comprasHoy ?? 0) > 0">
+                <strong>Compras USDT hoy:</strong>
+                {{ supplier.comprasHoy | currency:'COP' }}
+              </p>
+
+              <p *ngIf="(supplier.ventasHoy ?? 0) > 0">
+                <strong>Ventas USDT hoy:</strong>
+                {{ supplier.ventasHoy | currency:'COP' }}
+              </p>
+
+              <p *ngIf="(supplier.ajustesHoy ?? 0) > 0">
+                <strong>Ajustes hoy:</strong>
+                {{ supplier.ajustesHoy | currency:'COP' }}
+              </p>
+
+            </div>
+
+
+            <div class="account-details">
+              <div class="card-row">
+
+                <span class="label">
+                  {{ (supplier?.balance ?? 0) >= 0 ? 'Debemos:' : 'Debe:' }}
+                </span>
+                <span class="value">
+                  {{ Math.abs(supplier?.balance ?? 0) | currency:'COP' }}
+                </span>
+
+              </div>
+
+            </div>
+            <div class="acciones-card">
+              <button pButton label="Excel" icon="pi pi-file-excel" class="p-button-text p-button-success p-button-sm"
+                (click)="downloadExcel(supplier, $event)">
+              </button>
+              <button pButton label="Ajustar saldo" icon="pi pi-refresh"
+                class="p-button-text p-button-warning p-button-sm"
+                (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)">
+              </button>
+            </div>
           </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="7" class="p-text-center">Sin compras asignadas a este proveedor.</td>
-            </tr>
+
+        </p-card>
+      </div>
+
+    </div>
+
+    <p-dialog header="{{ selectedSupplier?.name }}" [(visible)]="showPagosDialog" [modal]="true"
+      [style]="{width: '80vw'}" [closable]="true" (onHide)="showPagosDialog = false">
+
+      <p-tabView>
+
+        <!-- TAB 1: Movimientos -->
+        <p-tabPanel header="Movimientos">
+          <ng-container *ngIf="!loadingMovs; else movsLoading">
+            <app-lista-pagos [pagos]="movimientos"></app-lista-pagos>
+          </ng-container>
+          <ng-template #movsLoading>
+            <div class="p-3">Cargando movimientos...</div>
           </ng-template>
-        </p-table>
-      </ng-container>
-      <ng-template #comprasLoading>
-        <div class="p-3">Cargando compras...</div>
-      </ng-template>
-    </p-tabPanel>
+        </p-tabPanel>
+
+        <!-- TAB 2: Compras -->
+        <p-tabPanel header="Compras">
+          <ng-container *ngIf="!loadingCompras; else comprasLoading">
+            <p-table [value]="comprasProveedor" scrollable="true" scrollHeight="400px" [responsive]="true">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Monto (Crypto)</th>
+                  <th>Símbolo</th>
+                  <th>Tasa</th>
+                  <th>PESOS (COP)</th>
+                  <th>Cuenta</th>
+                  <th>Id Depósito</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-row>
+                <tr>
+                  <td>{{ row.date | date:'short' }}</td>
+                  <td>{{ row.amount }}</td>
+                  <td>{{ row.cryptoSymbol || '-' }}</td>
+                  <td>{{ row.tasa | number:'1.2-2' }}</td>
+                  <td>{{ row.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+                  <td>{{ row.nameAccount || '-' }}</td>
+                  <td>{{ row.idDeposit || '-' }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="7" class="p-text-center">Sin compras asignadas a este proveedor.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </ng-container>
+          <ng-template #comprasLoading>
+            <div class="p-3">Cargando compras...</div>
+          </ng-template>
+        </p-tabPanel>
         <!-- TAB 3: Ajustes de saldo -->
-    <p-tabPanel header="Ajustes de saldo">
-      <ng-container *ngIf="!loadingAjustes; else ajustesLoading">
-        <p-table
-          [value]="ajustesProveedor"
-          scrollable="true"
-          scrollHeight="400px"
-          [responsive]="true">
+        <p-tabPanel header="Ajustes de saldo">
+          <ng-container *ngIf="!loadingAjustes; else ajustesLoading">
+            <p-table [value]="ajustesProveedor" scrollable="true" scrollHeight="400px" [responsive]="true">
 
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Monto</th>
-              <th>Motivo</th>
-              <th>Actor</th>
-              <th>Saldo anterior</th>
-              <th>Saldo nuevo</th>
-              <th>Diferencia</th>
-            </tr>
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>Motivo</th>
+                  <th>Actor</th>
+                  <th>Saldo anterior</th>
+                  <th>Saldo nuevo</th>
+                  <th>Diferencia</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-aj>
+                <tr>
+                  <td>{{ aj.fecha | date:'short' }}</td>
+                  <td>{{ aj.tipo }}</td>
+                  <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+                  <td>{{ aj.motivo || '-' }}</td>
+                  <td>{{ aj.actor || '-' }}</td>
+                  <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+                  <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+                  <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+                    {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="8" class="p-text-center">Sin ajustes de saldo para este proveedor.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </ng-container>
+
+          <ng-template #ajustesLoading>
+            <div class="p-3">Cargando ajustes...</div>
           </ng-template>
+        </p-tabPanel>
 
-          <ng-template pTemplate="body" let-aj>
-            <tr>
-              <td>{{ aj.fecha | date:'short' }}</td>
-              <td>{{ aj.tipo }}</td>
-              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.motivo || '-' }}</td>
-              <td>{{ aj.actor || '-' }}</td>
-              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
-                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
-              </td>
-            </tr>
+        <!-- TAB 3: Ajustes -->
+        <p-tabPanel header="Ajustes">
+          <ng-container *ngIf="!loadingCompras; else comprasLoading">
+            <p-table [value]="comprasProveedor" scrollable="true" scrollHeight="400px" [responsive]="true">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Monto (Crypto)</th>
+                  <th>Símbolo</th>
+                  <th>Tasa</th>
+                  <th>PESOS (COP)</th>
+                  <th>Cuenta</th>
+                  <th>Id Depósito</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-row>
+                <tr>
+                  <td>{{ row.date | date:'short' }}</td>
+                  <td>{{ row.amount }}</td>
+                  <td>{{ row.cryptoSymbol || '-' }}</td>
+                  <td>{{ row.tasa | number:'1.2-2' }}</td>
+                  <td>{{ row.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+                  <td>{{ row.nameAccount || '-' }}</td>
+                  <td>{{ row.idDeposit || '-' }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="7" class="p-text-center">Sin compras asignadas a este proveedor.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </ng-container>
+          <ng-template #comprasLoading>
+            <div class="p-3">Cargando compras...</div>
           </ng-template>
+        </p-tabPanel>
 
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8" class="p-text-center">Sin ajustes de saldo para este proveedor.</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </ng-container>
-
-      <ng-template #ajustesLoading>
-        <div class="p-3">Cargando ajustes...</div>
-      </ng-template>
-    </p-tabPanel>
-
-     <!-- TAB 3: Ajustes -->
-    <p-tabPanel header="Ajustes">
-      <ng-container *ngIf="!loadingCompras; else comprasLoading">
-        <p-table
-          [value]="comprasProveedor"
-          scrollable="true"
-          scrollHeight="400px"
-          [responsive]="true">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Fecha</th>
-              <th>Monto (Crypto)</th>
-              <th>Símbolo</th>
-              <th>Tasa</th>
-              <th>PESOS (COP)</th>
-              <th>Cuenta</th>
-              <th>Id Depósito</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-row>
-            <tr>
-              <td>{{ row.date | date:'short' }}</td>
-              <td>{{ row.amount }}</td>
-              <td>{{ row.cryptoSymbol || '-' }}</td>
-              <td>{{ row.tasa | number:'1.2-2' }}</td>
-              <td>{{ row.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ row.nameAccount || '-' }}</td>
-              <td>{{ row.idDeposit || '-' }}</td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="7" class="p-text-center">Sin compras asignadas a este proveedor.</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </ng-container>
-      <ng-template #comprasLoading>
-        <div class="p-3">Cargando compras...</div>
-      </ng-template>
-    </p-tabPanel>
-
-  </p-tabView>
-</p-dialog>
+      </p-tabView>
+    </p-dialog>
 
 
 
-  <!-- Dialog de formulario de pago -->
-  <p-dialog header="Formulario de Pago" [(visible)]="showPaymentForm" [modal]="true" [closable]="false"
-  [style]="{width: '400px'}">
-  <div class="p-fluid">
-    <div class="p-grid">
-      <div class="p-col-12 p-md-12">
-        <label for="paymentMethod">Fuente de Pago:</label>
-        <p-dropdown 
-  [options]="paymentOptions"
-  [(ngModel)]="paymentMethod"
-  placeholder="Seleccione la fuente">
-</p-dropdown>
+    <!-- Dialog de formulario de pago -->
+    <p-dialog header="Formulario de Pago" [(visible)]="showPaymentForm" [modal]="true" [closable]="false"
+      [style]="{width: '400px'}">
+      <div class="p-fluid">
+        <div class="p-grid">
+          <div class="p-col-12 p-md-12">
+            <label for="paymentMethod">Fuente de Pago:</label>
+            <p-dropdown [options]="paymentOptions" [(ngModel)]="paymentMethod" placeholder="Seleccione la fuente">
+            </p-dropdown>
 
+          </div>
+
+          <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cuenta Bancaria'">
+            <label for="accountCop">Cuenta COP:</label>
+            <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop" optionLabel="name"
+              placeholder="Seleccione Cuenta COP"></p-dropdown>
+          </div>
+
+          <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Caja'">
+            <label for="caja">Caja:</label>
+            <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja" optionLabel="name" placeholder="Seleccione Caja">
+            </p-dropdown>
+          </div>
+
+          <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cliente'">
+            <label for="cliente">Cliente:</label>
+            <p-dropdown [options]="clientes" [(ngModel)]="selectedCliente" optionLabel="nombre"
+              placeholder="Seleccione Cliente">
+            </p-dropdown>
+          </div>
+
+
+          <!-- 🔹 Selección de proveedor origen (solo si el método es Proveedor) -->
+          <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Proveedor'">
+            <label for="proveedorOrigen">Proveedor Origen:</label>
+            <p-dropdown [options]="suppliers" [(ngModel)]="selectedProveedorOrigen" optionLabel="name"
+              placeholder="Seleccione Proveedor Origen">
+            </p-dropdown>
+          </div>
+
+
+          <div class="p-col-12 p-md-6">
+            <label for="supplier">Proveedor:</label>
+            <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier" optionLabel="name"
+              placeholder="Seleccione Proveedor"></p-dropdown>
+          </div>
+
+          <div class="p-col-12 p-md-6">
+            <label for="amount">Monto:</label>
+            <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="USD" [min]="0" [prefix]="'$'"
+              [showButtons]="true" placeholder="Monto a pagar" inputMode="decimal"> </p-inputNumber>
+          </div>
+
+          <div class="p-col-12" style="text-align: right; margin-top: 20px;">
+            <button pButton type="button" label="Realizar Pago" icon="pi pi-check" (click)="makePayment()"></button>
+            <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-secondary"
+              (click)="togglePaymentForm()"></button>
+          </div>
+        </div>
       </div>
+    </p-dialog>
+    <!-- Dialog de formulario para crear proveedor -->
+    <p-dialog header="Formulario de Proveedor" [(visible)]="showform" [modal]="true" [closable]="true"
+      [dismissableMask]="true" [style]="{ width: '420px' }" (onHide)="showform = false">
+      <div class="p-fluid">
+        <div class="p-grid">
+          <div class="p-col-12 p-md-12">
+            <label for="nombre">Nombre :</label>
+            <input pInputText id="nombre" [(ngModel)]="Supplier_name" placeholder="Ingrese el nombre" />
+          </div>
 
-      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cuenta Bancaria'">
-        <label for="accountCop">Cuenta COP:</label>
-        <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop" optionLabel="name"
-          placeholder="Seleccione Cuenta COP"></p-dropdown>
-      </div>
+          <div class="p-col-12 p-md-12">
+  <label class="p-d-block p-mb-2">Tipo de saldo inicial</label>
 
-      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Caja'">
-        <label for="caja">Caja:</label>
-        <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja" optionLabel="name" placeholder="Seleccione Caja">
-        </p-dropdown>
-      </div>
+  <p-selectButton
+    [options]="[
+      { label: 'Debemos', value: 'DEBEMOS' },
+      { label: 'Nos deben', value: 'NOS_DEBEN' }
+    ]"
+    [(ngModel)]="supplierSaldoTipo"
+    name="supplierSaldoTipo"
+  ></p-selectButton>
 
-      <div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Cliente'">
-  <label for="cliente">Cliente:</label>
-  <p-dropdown 
-    [options]="clientes" 
-    [(ngModel)]="selectedCliente" 
-    optionLabel="nombre" 
-    placeholder="Seleccione Cliente">
-  </p-dropdown>
+  <small class="text-500">
+    Debemos = saldo positivo • Nos deben = saldo negativo
+  </small>
 </div>
 
 
-      <!-- 🔹 Selección de proveedor origen (solo si el método es Proveedor) -->
-<div class="p-col-12 p-md-6" *ngIf="paymentMethod === 'Proveedor'">
-  <label for="proveedorOrigen">Proveedor Origen:</label>
-  <p-dropdown 
-    [options]="suppliers" 
-    [(ngModel)]="selectedProveedorOrigen" 
-    optionLabel="name" 
-    placeholder="Seleccione Proveedor Origen">
-  </p-dropdown>
+          <div class="p-col-12 p-md-12">
+  <label for="balance" class="p-d-block p-mb-2">Saldo inicial</label>
+  <p-inputNumber
+    id="balance"
+    [(ngModel)]="Supplier_balance"
+    name="Supplier_balance"
+    mode="decimal"
+    currency="COP"
+    [prefix]="'$'"
+    [showButtons]="true"
+    [min]="0"
+    placeholder="Ej: 1000"
+  ></p-inputNumber>
 </div>
 
 
-      <div class="p-col-12 p-md-6">
-        <label for="supplier">Proveedor:</label>
-        <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier" optionLabel="name"
-          placeholder="Seleccione Proveedor"></p-dropdown>
+
+        </div>
       </div>
 
-      <div class="p-col-12 p-md-6">
-        <label for="amount">Monto:</label>
-        <p-inputNumber id="amount" [(ngModel)]="amount" mode="decimal" currency="USD" [min]="0" [prefix]="'$'"
-          [showButtons]="true" placeholder="Monto a pagar" inputMode="decimal"> </p-inputNumber>
-      </div>
+      <!-- ✅ Footer del diálogo: botones alineados y bonitos -->
+      <ng-template pTemplate="footer">
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-text p-button-secondary"
+            (click)="showform = false"></button>
 
-      <div class="p-col-12" style="text-align: right; margin-top: 20px;">
-        <button pButton type="button" label="Realizar Pago" icon="pi pi-check" (click)="makePayment()"></button>
-        <button pButton type="button" label="Cancelar" icon="pi pi-times" class="p-button-secondary"
-          (click)="togglePaymentForm()"></button>
-      </div>
-    </div>
-  </div>
-</p-dialog>
-  <!-- Dialog de formulario para crear proveedor -->
-<p-dialog
-  header="Formulario de Proveedor"
-  [(visible)]="showform"
-  [modal]="true"
-  [closable]="true"
-  [dismissableMask]="true"
-  [style]="{ width: '420px' }"
-  (onHide)="showform = false"
->
-  <div class="p-fluid">
-    <div class="p-grid">
-      <div class="p-col-12 p-md-12">
-        <label for="nombre">Nombre :</label>
-        <input
-          pInputText
-          id="nombre"
-          [(ngModel)]="Supplier_name"
-          placeholder="Ingrese el nombre"
-        />
-      </div>
-
-      <div class="p-col-12 p-md-12">
-        <label for="balance" class="p-d-block p-mb-2">Balance inicial</label>
-        <p-inputNumber
-          id="balance"
-          [(ngModel)]="Supplier_balance"
-          mode="decimal"
-          currency="COP"
-          [prefix]="'$'"
-          [showButtons]="true"
-          placeholder="Ej: 1000"
-          class="decimal"
-        ></p-inputNumber>
-      </div>
-
-      
-    </div>
-  </div>
-
-  <!-- ✅ Footer del diálogo: botones alineados y bonitos -->
-  <ng-template pTemplate="footer">
-    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-      <button
-        pButton
-        type="button"
-        label="Cancelar"
-        icon="pi pi-times"
-        class="p-button-text p-button-secondary"
-        (click)="showform = false"
-      ></button>
-
-      <button
-        pButton
-        type="button"
-        label="Crear Proveedor"
-        icon="pi pi-check"
-        (click)="createSupplier({
+          <button pButton type="button" label="Crear Proveedor" icon="pi pi-check" (click)="createSupplier({
           name: Supplier_name,
           balance: Supplier_balance,
 
-        })"
-      ></button>
-    </div>
-  </ng-template>
-</p-dialog>
+        })"></button>
+        </div>
+      </ng-template>
+    </p-dialog>
 
 
-  <p-dialog header="Pago en USDT: Proveedor → Cliente"
-          [(visible)]="displayPagoPCModal"
-          [modal]="true"
-          [style]="{ width: '460px' }">
+    <p-dialog header="Pago en USDT: Proveedor → Cliente" [(visible)]="displayPagoPCModal" [modal]="true"
+      [style]="{ width: '460px' }">
 
-  <form class="p-fluid">
-    <!-- Proveedor Origen -->
-    <div class="p-field">
-      <label>Proveedor Origen</label>
-      <p-dropdown
-        [options]="suppliers"
-        [(ngModel)]="pagoPC.proveedorId"
-        name="pc_proveedor"
-        optionLabel="name"
-        optionValue="id"
-        placeholder="Seleccione proveedor">
-      </p-dropdown>
-    </div>
+      <form class="p-fluid">
+        <!-- Proveedor Origen -->
+        <div class="p-field">
+          <label>Proveedor Origen</label>
+          <p-dropdown [options]="suppliers" [(ngModel)]="pagoPC.proveedorId" name="pc_proveedor" optionLabel="name"
+            optionValue="id" placeholder="Seleccione proveedor">
+          </p-dropdown>
+        </div>
 
-    <!-- Cliente Destino -->
-    <div class="p-field">
-      <label>Cliente Destino</label>
-      <p-dropdown
-        [options]="clientes"
-        [(ngModel)]="pagoPC.clienteId"
-        name="pc_cliente"
-        optionLabel="nombre"
-        optionValue="id"
-        placeholder="Seleccione cliente">
-      </p-dropdown>
-    </div>
+        <!-- Cliente Destino -->
+        <div class="p-field">
+          <label>Cliente Destino</label>
+          <p-dropdown [options]="clientes" [(ngModel)]="pagoPC.clienteId" name="pc_cliente" optionLabel="nombre"
+            optionValue="id" placeholder="Seleccione cliente">
+          </p-dropdown>
+        </div>
 
-    <!-- Monto USDT -->
-    <div class="p-field">
-      <label>Monto (USDT)</label>
-      <p-inputNumber
-        [(ngModel)]="pagoPC.usdt" name="pc_usdt"
-        mode="decimal" [min]="0" [showButtons]="true">
-      </p-inputNumber>
-    </div>
+        <!-- Monto USDT -->
+        <div class="p-field">
+          <label>Monto (USDT)</label>
+          <p-inputNumber [(ngModel)]="pagoPC.usdt" name="pc_usdt" mode="decimal" [min]="0" [showButtons]="true">
+          </p-inputNumber>
+        </div>
 
-    <!-- Tasas + COP -->
-    <div class="p-field">
-      <label>Tasa Proveedor (COP/USDT)</label>
-      <p-inputNumber
-        [(ngModel)]="pagoPC.tasaProv" name="pc_tasaProv"
-        mode="currency" currency="COP">
-      </p-inputNumber>
-    </div>
-    <div class="p-field">
-      <label>COP (proveedor)</label>
-      <input pInputText [value]="pesosProvPC | currency:'COP'" readonly />
-    </div>
+        <!-- Tasas + COP -->
+        <div class="p-field">
+          <label>Tasa Proveedor (COP/USDT)</label>
+          <p-inputNumber [(ngModel)]="pagoPC.tasaProv" name="pc_tasaProv" mode="currency" currency="COP">
+          </p-inputNumber>
+        </div>
+        <div class="p-field">
+          <label>COP (proveedor)</label>
+          <input pInputText [value]="pesosProvPC | currency:'COP'" readonly />
+        </div>
 
-    <div class="p-field">
-      <label>Tasa Cliente (COP/USDT)</label>
-      <p-inputNumber
-        [(ngModel)]="pagoPC.tasaCli" name="pc_tasaCli"
-        mode="currency" currency="COP">
-      </p-inputNumber>
-    </div>
-    <div class="p-field">
-      <label>COP (cliente)</label>
-      <input pInputText [value]="pesosCliPC | currency:'COP'" readonly />
-    </div>
+        <div class="p-field">
+          <label>Tasa Cliente (COP/USDT)</label>
+          <p-inputNumber [(ngModel)]="pagoPC.tasaCli" name="pc_tasaCli" mode="currency" currency="COP">
+          </p-inputNumber>
+        </div>
+        <div class="p-field">
+          <label>COP (cliente)</label>
+          <input pInputText [value]="pesosCliPC | currency:'COP'" readonly />
+        </div>
 
-    <!-- Nota -->
-    <div class="p-field">
-      <label>Nota (opcional)</label>
-      <input pInputText [(ngModel)]="pagoPC.nota" name="pc_nota" />
-    </div>
-  </form>
+        <!-- Nota -->
+        <div class="p-field">
+          <label>Nota (opcional)</label>
+          <input pInputText [(ngModel)]="pagoPC.nota" name="pc_nota" />
+        </div>
+      </form>
 
-  <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" icon="pi pi-times"
-            class="p-button-text"
-            (click)="displayPagoPCModal = false"></button>
+      <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+          (click)="displayPagoPCModal = false"></button>
 
-    <button pButton label="Confirmar Pago" icon="pi pi-check"
-            class="p-button-success"
-            (click)="confirmarPagoProveedorCliente()"
-            [disabled]="!pagoPC.proveedorId || !pagoPC.clienteId || !pagoPC.usdt || !pagoPC.tasaProv || !pagoPC.tasaCli">
-    </button>
-  </ng-template>
-</p-dialog>
+        <button pButton label="Confirmar Pago" icon="pi pi-check" class="p-button-success"
+          (click)="confirmarPagoProveedorCliente()"
+          [disabled]="!pagoPC.proveedorId || !pagoPC.clienteId || !pagoPC.usdt || !pagoPC.tasaProv || !pagoPC.tasaCli">
+        </button>
+      </ng-template>
+    </p-dialog>
 
 
-  <p *ngIf="suppliers.length === 0">No hay proveedores registrados.</p>
+    <p *ngIf="suppliers.length === 0">No hay proveedores registrados.</p>
+  </div>
 </div>
-</div>
-<app-ajuste-saldo-dialog
-  *ngIf="proveedorAjuste"
-  [visible]="showAjusteProveedor"
-  (visibleChange)="showAjusteProveedor = $event"
-  [entidad]="'PROVEEDOR'"
-  [entidadId]="proveedorAjuste.id"
-  [nombreEntidad]="proveedorAjuste.name"
-  [saldoActual]="proveedorAjuste.balance ?? 0"
+<app-ajuste-saldo-dialog *ngIf="proveedorAjuste" [visible]="showAjusteProveedor"
+  (visibleChange)="showAjusteProveedor = $event" [entidad]="'PROVEEDOR'" [entidadId]="proveedorAjuste.id"
+  [nombreEntidad]="proveedorAjuste.name" [saldoActual]="proveedorAjuste.balance ?? 0"
   (ajusteRealizado)="onAjusteProveedorRealizado()">
 </app-ajuste-saldo-dialog>

@@ -19,6 +19,8 @@ import { TabViewModule } from 'primeng/tabview';
 import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-dollars.service';
 import { TableModule } from 'primeng/table';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
+import { SelectButtonModule } from 'primeng/selectbutton';
+
 
 export interface PagoProveedorDTO {
   id: number;
@@ -45,7 +47,8 @@ export interface PagoProveedorDTO {
     CalendarModule,
     TabViewModule,
     TableModule,
-    AjusteSaldoDialogComponent
+    AjusteSaldoDialogComponent,
+    SelectButtonModule
   ],
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']
@@ -63,7 +66,7 @@ export class ProveedorComponent implements OnInit {
   showPagosDialog: boolean = false; // nuevo
   showform: boolean = false; // nuevo
   selectedProveedorOrigen: Supplier | null = null;
-
+  supplierSaldoTipo: 'DEBEMOS' | 'NOS_DEBEN' = 'DEBEMOS';
   movimientos: any[] = [];
 
 
@@ -165,26 +168,28 @@ export class ProveedorComponent implements OnInit {
     this.loadSuppliers();
   }
 
-  showFormsupplier(): void {
-    this.showform = !this.showform; // Cambia el estado del formulario  
-  }
 
   createSupplier(data: any): void {
+  const monto = Math.abs(Number(data.balance || 0));
+
+  // Debemos = +monto, Nos deben = -monto
+  const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
+
   this.supplierService.createSupplier({
     name: data.name,
-    balance: data.balance || 0
-    // lastPaymentDate: <-- NO se envía al crear
+    balance: balanceSigned
   }).subscribe({
     next: (supplier) => {
       this.suppliers.push(supplier);
       this.showform = false;
-
       this.Supplier_name = '';
       this.Supplier_balance = 0;
+      this.supplierSaldoTipo = 'DEBEMOS';
     },
     error: (err) => console.error('Error creating supplier', err)
   });
 }
+
 
 
 
@@ -348,25 +353,33 @@ export class ProveedorComponent implements OnInit {
   }
 
   downloadExcel(supplier: Supplier, event?: Event) {
-  event?.stopPropagation(); // para que no abra el dialog al darle click
+    event?.stopPropagation(); // para que no abra el dialog al darle click
 
-  if (!supplier?.id) return;
+    if (!supplier?.id) return;
 
-  this.movimientoService.downloadExcelProveedor(supplier.id).subscribe({
-    next: (blob) => {
-      const fileName = `proveedor_${supplier.id}_${supplier.name}.xlsx`;
+    this.movimientoService.downloadExcelProveedor(supplier.id).subscribe({
+      next: (blob) => {
+        const fileName = `proveedor_${supplier.id}_${supplier.name}.xlsx`;
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
 
-      window.URL.revokeObjectURL(url);
-    },
-    error: (err) => console.error('Error descargando excel', err)
-  });
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Error descargando excel', err)
+    });
+  }
+
+  showFormsupplier(): void {
+  this.showform = !this.showform;
+  if (this.showform) {
+    this.Supplier_name = '';
+    this.Supplier_balance = 0;
+    this.supplierSaldoTipo = 'DEBEMOS';
+  }
 }
-
 
 }

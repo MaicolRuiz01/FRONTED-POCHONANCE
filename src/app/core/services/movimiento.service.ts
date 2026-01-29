@@ -288,9 +288,16 @@ export class MovimientoService {
   }
 
   downloadExcelProveedor(proveedorId: number): Observable<Blob> {
-  const url = `${this.apiUrl}/excel/proveedor/${proveedorId}`;
-  return this.http.get(url, { responseType: 'blob' });
-}
+    const url = `${this.apiUrl}/excel/proveedor/${proveedorId}`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
+  downloadExcelCliente(clienteId: number) {
+    return this.http.get(
+      `${environment.apiUrl}/movimiento/excel/cliente/${clienteId}`,
+      { responseType: 'blob' }
+    );
+  }
 
 
 }

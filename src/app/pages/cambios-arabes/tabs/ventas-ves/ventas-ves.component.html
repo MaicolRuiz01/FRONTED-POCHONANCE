@@ -2,57 +2,32 @@
 <div class="flex justify-content-between align-items-center mb-3">
   <div class="text-xl font-semibold">Ventas VES</div>
 
-  <button
-    pButton
-    icon="pi pi-plus"
-    label="Nueva venta"
-    (click)="new()"
-  ></button>
+  <button pButton icon="pi pi-plus" label="Nueva venta" (click)="new()"></button>
 </div>
 
 <!-- DIALOG -->
-<p-dialog
-  [(visible)]="showForm"
-  [modal]="true"
-  [dismissableMask]="true"
-  [style]="{ width: '52rem', maxWidth: '95vw' }"
-  [header]="editingId ? 'Editar venta VES' : 'Nueva venta VES'"
->
+<p-dialog [(visible)]="showForm" [modal]="true" [dismissableMask]="true" [style]="{ width: '52rem', maxWidth: '95vw' }"
+  [header]="editingId ? 'Editar venta VES' : 'Nueva venta VES'">
   <form [formGroup]="form" (ngSubmit)="submit()" class="p-fluid">
 
     <!-- GRID INPUTS -->
     <div class="grid">
       <div class="col-12 md:col-4">
         <label class="block mb-2">Bolívares (VES)</label>
-        <p-inputNumber
-          formControlName="bolivares"
-          [minFractionDigits]="2"
-          [useGrouping]="true"
-          placeholder="0"
-          styleClass="w-full"
-        ></p-inputNumber>
+        <p-inputNumber formControlName="bolivares" [minFractionDigits]="2" [useGrouping]="true" placeholder="0"
+          styleClass="w-full"></p-inputNumber>
       </div>
 
       <div class="col-12 md:col-4">
         <label class="block mb-2">Tasa (COP)</label>
-        <p-inputNumber
-          formControlName="tasa"
-          [minFractionDigits]="2"
-          [useGrouping]="true"
-          placeholder="0"
-          styleClass="w-full"
-        ></p-inputNumber>
+        <p-inputNumber formControlName="tasa" [minFractionDigits]="2" [useGrouping]="true" placeholder="0"
+          styleClass="w-full"></p-inputNumber>
       </div>
 
       <div class="col-12 md:col-4">
         <label class="block mb-2">Pesos (preview)</label>
-        <p-inputNumber
-          formControlName="pesosPreview"
-          [minFractionDigits]="0"
-          [useGrouping]="true"
-          [disabled]="true"
-          styleClass="w-full"
-        ></p-inputNumber>
+        <p-inputNumber formControlName="pesosPreview" [minFractionDigits]="0" [useGrouping]="true" [disabled]="true"
+          styleClass="w-full"></p-inputNumber>
       </div>
     </div>
 
@@ -73,7 +48,8 @@
       </div>
 
       <div class="flex align-items-center gap-2">
-        <p-radioButton inputId="rbProveedor" name="asignadoA" value="proveedor" formControlName="asignadoA"></p-radioButton>
+        <p-radioButton inputId="rbProveedor" name="asignadoA" value="proveedor"
+          formControlName="asignadoA"></p-radioButton>
         <label for="rbProveedor" class="cursor-pointer">Proveedor</label>
       </div>
     </div>
@@ -82,64 +58,30 @@
     <div class="grid">
       <div class="col-12" *ngIf="form.value.asignadoA === 'cuenta'">
         <label class="block mb-2">Cuenta COP</label>
-        <p-dropdown
-          [options]="cuentasCop"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Seleccione cuenta"
-          formControlName="cuentaCopId"
-          styleClass="w-full"
-          [filter]="true"
-          filterBy="name"
-        ></p-dropdown>
+        <p-dropdown [options]="cuentasCop" optionLabel="name" optionValue="id" placeholder="Seleccione cuenta"
+          formControlName="cuentaCopId" styleClass="w-full" appendTo="body" filterBy="name"></p-dropdown>
       </div>
 
       <div class="col-12" *ngIf="form.value.asignadoA === 'cliente'">
         <label class="block mb-2">Cliente</label>
-        <p-dropdown
-          [options]="clientes"
-          optionLabel="nombre"
-          optionValue="id"
-          placeholder="Seleccione cliente"
-          formControlName="clienteId"
-          styleClass="w-full"
-          [filter]="true"
-          filterBy="nombre"
-        ></p-dropdown>
+        <p-dropdown [options]="clientes" optionLabel="nombre" optionValue="id" placeholder="Seleccione cliente"
+          formControlName="clienteId" class="w-full" appendTo="body"></p-dropdown>
+
       </div>
 
       <div class="col-12" *ngIf="form.value.asignadoA === 'proveedor'">
         <label class="block mb-2">Proveedor</label>
-        <p-dropdown
-          [options]="suppliers"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Seleccione proveedor"
-          formControlName="proveedorId"
-          styleClass="w-full"
-          [filter]="true"
-          filterBy="name"
-        ></p-dropdown>
+        <p-dropdown [options]="suppliers" optionLabel="name" optionValue="id" placeholder="Seleccione proveedor"
+          formControlName="proveedorId" styleClass="w-full" appendTo="body" filterBy="name"></p-dropdown>
       </div>
     </div>
 
     <!-- FOOTER -->
     <ng-template pTemplate="footer">
       <div class="flex justify-content-end gap-2">
-        <button
-          pButton
-          type="button"
-          label="Cancelar"
-          class="p-button-text"
-          (click)="cancel()"
-        ></button>
+        <button pButton type="button" label="Cancelar" class="p-button-text" (click)="cancel()"></button>
 
-        <button
-          pButton
-          type="submit"
-          icon="pi pi-save"
-          [label]="editingId ? 'Actualizar' : 'Guardar'"
-        ></button>
+        <button pButton type="submit" icon="pi pi-save" [label]="editingId ? 'Actualizar' : 'Guardar'"></button>
       </div>
     </ng-template>
 
@@ -169,9 +111,9 @@
 
         <td>
           {{
-            r.cuentaCop?.id ? ('Cuenta COP #' + r.cuentaCop.id) :
-            r.cliente?.id ? ('Cliente #' + r.cliente.id) :
-            ('Proveedor #' + r.proveedor?.id)
+          r.cuentaCop?.id ? ('Cuenta COP #' + r.cuentaCop.id) :
+          r.cliente?.id ? ('Cliente #' + r.cliente.id) :
+          ('Proveedor #' + r.proveedor?.id)
           }}
         </td>
 

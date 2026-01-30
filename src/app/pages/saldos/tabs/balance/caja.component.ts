@@ -240,4 +240,12 @@ export class CajaComponent implements OnInit {
       return [];
     }
   }
+
+  totalClientesProveedores(b: BalanceGeneral): number {
+  return (b.saldoClientes ?? 0) + (b.proveedores ?? 0);
+}
+
+totalCuentasAgrupadas(b: BalanceGeneral): number {
+  return (b.cuentasCop ?? 0) + (b.saldoCuentasBinance ?? 0) + (b.saldosVES ?? 0);
+}
 }

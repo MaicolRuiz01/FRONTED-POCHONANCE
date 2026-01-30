@@ -7,12 +7,8 @@
 
   <!-- Grid de tarjetas dinámicas -->
   <div class="grid cards-container" *ngIf="balances.length > 0">
-    <article
-      class="card"
-      *ngFor="let b of balances; let i = index"
-      role="article"
-      [attr.aria-label]="'Balance ' + (b.date | date:'dd/MM/yyyy')"
-    >
+    <article class="card" *ngFor="let b of balances; let i = index" role="article"
+      [attr.aria-label]="'Balance ' + (b.date | date:'dd/MM/yyyy')">
       <div class="header">
         {{ b.date | date:'dd/MM/yyyy' }}
       </div>
@@ -25,78 +21,38 @@
           </div>
         </div>
 
+        <!-- 1) CLIENTES + PROVEEDORES -->
         <div class="field-row">
           <div class="field-label">
             {{
-              (b.saldoClientes ?? 0) < 0
-                ? 'Nos debe (Clientes)'
-                : ((b.saldoClientes ?? 0) > 0
-                  ? 'Debemos (Clientes)'
-                  : 'Clientes')
-            }}
+            totalClientesProveedores(b) < 0 ? 'Nos deben (Clientes/Proveedores)' : (totalClientesProveedores(b)> 0
+              ? 'Debemos (Clientes/Proveedores)'
+              : 'Clientes/Proveedores')
+              }}
           </div>
 
-          <div
-            class="field-value"
-            [ngClass]="{ 'negative': (b.saldoClientes ?? 0) < 0 }"
-          >
-            {{ Math.abs(b.saldoClientes ?? 0) | number:'1.0-0' }}
+          <div class="field-value" [ngClass]="{ 'negative': totalClientesProveedores(b) < 0 }">
+            {{ Math.abs(totalClientesProveedores(b)) | number:'1.0-0' }}
           </div>
         </div>
 
         <hr>
 
+        <!-- 2) CUENTAS = COP + CRIPTOS(PESOS) + VES(PESOS) -->
         <div class="field-row">
-          <div class="field-label">
-            {{
-              (b.proveedores ?? 0) < 0
-                ? 'Nos debe (Proveedores)'
-                : ((b.proveedores ?? 0) > 0
-                  ? 'Debemos (Proveedores)'
-                  : 'Proveedores')
-            }}
-          </div>
-
-          <div
-            class="field-value"
-            [ngClass]="{ 'negative': (b.proveedores ?? 0) < 0 }"
-          >
-            {{ Math.abs(b.proveedores ?? 0) | number:'1.0-0' }}
-          </div>
-        </div>
-
-        <hr>
-
-        <div class="field-row">
-          <div class="field-label">Cuentas COP</div>
+          <div class="field-label">CUENTAS</div>
           <div class="field-value">
-            {{ b.cuentasCop | number:'1.0-0' }}
-          </div>
-        </div>
-
-        <hr>
-        <div class="field-row">
-          <div class="field-label">Criptos Pesos</div>
-          <div class="field-value">
-            {{ b.saldoCuentasBinance| number:'1.0-0' }}
+            {{ totalCuentasAgrupadas(b) | number:'1.0-0' }}
           </div>
         </div>
         <hr>
 
         <div class="field-row">
-          <div class="field-label">VES (en pesos)</div>
-          <div class="field-value">
-            {{ b.saldosVES | number:'1.0-0' }}
+          <div class="field-label">No asignadas (USDT)</div>
+          <div class="field-value" [ngClass]="{ 'negative': b.netoNoAsignadasUsdt < 0 }">
+            {{ b.netoNoAsignadasUsdt | number:'1.2-2' }}
           </div>
         </div>
-        <hr>
-
-        <div class="field-row">
-  <div class="field-label">No asignadas (USDT)</div>
-  <div class="field-value" [ngClass]="{ 'negative': b.netoNoAsignadasUsdt < 0 }">
-    {{ b.netoNoAsignadasUsdt | number:'1.2-2' }}
-  </div>
-</div>
         <hr>
 
         <div class="field-row">
@@ -111,12 +67,10 @@
         <!-- Ganancia diaria: saldo hoy - saldo ayer -->
         <div class="clearfix"></div>
 
-        <div
-          [ngClass]="{
+        <div [ngClass]="{
             'gain-badge': true,
             'negative': getGain(i) < 0
-          }"
-        >
+          }">
           Ganancia:
           {{ (getGain(i) >= 0 ? '+' : '') + (getGain(i) | number:'1.0-0') }}
         </div>
@@ -125,34 +79,19 @@
         <div style="clear:both"></div>
 
         <div class="button-container">
-          <button
-            pButton
-            icon="pi pi-search"
-            class="p-button-sm"
+          <button pButton icon="pi pi-search" class="p-button-sm"
             style="background:#6f42c1;border-color:#6f42c1;color:white"
-            (click)="$event.stopPropagation(); prepareDetail(b)"
-          ></button>
+            (click)="$event.stopPropagation(); prepareDetail(b)"></button>
 
-          <button
-            pButton
-            icon="pi pi-refresh"
-            class="p-button-sm p-button-warning"
-            (click)="$event.stopPropagation(); syncCard(b)"
-          ></button>
+          <button pButton icon="pi pi-refresh" class="p-button-sm p-button-warning"
+            (click)="$event.stopPropagation(); syncCard(b)"></button>
         </div>
       </div>
     </article>
   </div>
 
-  <p-dialog
-    [(visible)]="showDetailsModal"
-    [modal]="true"
-    header="Detalle completo"
-    [style]="{ width: '760px' }"
-    [baseZIndex]="1100"
-    [closeOnEscape]="true"
-    [dismissableMask]="true"
-  >
+  <p-dialog [(visible)]="showDetailsModal" [modal]="true" header="Detalle completo" [style]="{ width: '760px' }"
+    [baseZIndex]="1100" [closeOnEscape]="true" [dismissableMask]="true">
 
     <!-- SOLO UN content -->
     <ng-template pTemplate="content">
@@ -206,7 +145,7 @@
             </div>
           </section>
 
-          <hr class="dm-sep"/>
+          <hr class="dm-sep" />
 
           <!-- P2P -->
           <section class="dm-section">
@@ -236,7 +175,7 @@
             </div>
           </section>
 
-          <hr class="dm-sep"/>
+          <hr class="dm-sep" />
 
           <!-- DEC -->
           <section class="dm-section">
@@ -266,7 +205,7 @@
             </div>
           </section>
 
-          <hr class="dm-sep"/>
+          <hr class="dm-sep" />
 
           <!-- RESUMEN -->
           <section class="dm-section">
@@ -317,7 +256,7 @@
             </div>
           </section>
 
-          <hr class="dm-sep"/>
+          <hr class="dm-sep" />
 
           <!-- GASTOS & AJUSTES -->
           <section class="dm-section">
@@ -363,7 +302,7 @@
             </div>
           </section>
 
-          <hr class="dm-sep"/>
+          <hr class="dm-sep" />
 
           <!-- TOTAL -->
           <div class="dm-total-wrap">
@@ -378,12 +317,7 @@
     </ng-template>
 
     <ng-template pTemplate="footer">
-      <button
-        pButton
-        label="Cerrar"
-        (click)="closeModal()"
-        class="p-button-danger"
-      ></button>
+      <button pButton label="Cerrar" (click)="closeModal()" class="p-button-danger"></button>
     </ng-template>
   </p-dialog>
 

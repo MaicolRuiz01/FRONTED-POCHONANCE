@@ -10,11 +10,7 @@ export interface AccountCop {
   id?: number;
   name: string;
   balance: number;
-
-  // backend
   saldoInicialDelDia?: number;
-
-  // solo UI / resumen
   entradasHoy?: number;
   salidasHoy?: number;
   ajustesHoy?: number;
@@ -22,9 +18,8 @@ export interface AccountCop {
   gastosHoy?: number;
   salidasRetirosHoy?: number;
   isFlipped?: boolean;
-
-  // ✅ nuevo
   bankType: BankTypeCop;
+  cupoDisponibleHoy?: number;
 }
 
 /**

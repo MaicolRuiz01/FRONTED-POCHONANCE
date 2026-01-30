@@ -41,7 +41,12 @@ export class CuentasTabComponent implements OnInit {
   clientes: Cliente[] = [];
   cajas: Caja[] = [];
   selectedCajaId?: number;
+showCupoDialog = false;
 
+cupoNequi = 0;
+cupoBancolombia = 0;
+cupoDaviplata = 0;
+cupoTotal = 0;
   bankTypes = [
   { label: 'Nequi', value: 'NEQUI' },
   { label: 'Daviplata', value: 'DAVIPLATA' },
@@ -253,8 +258,12 @@ setBankFilter(type: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null) {
 }
 
 get filteredCuentas(): AccountCop[] {
-  if (!this.selectedBankType) return this.cuentas;
-  return this.cuentas.filter(c => c.bankType === this.selectedBankType);
+  const base = !this.selectedBankType
+    ? this.cuentas
+    : this.cuentas.filter(c => c.bankType === this.selectedBankType);
+
+  // ordenar de mayor a menor balance
+  return [...base].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0));
 }
 
 bankLogo(type?: string | null): string {
@@ -268,8 +277,23 @@ bankLogo(type?: string | null): string {
   }
 }
 
+openCupoDialog(): void {
+  // Usa la lista que tengas para renderizar cards:
+  // si tus cards usan `filteredCuentas`, úsala; si no, usa `cuentas`.
+  const list = this.filteredCuentas ?? this.cuentas ?? [];
 
+  this.cupoNequi = this.sumCupoByBank(list, 'NEQUI');
+  this.cupoBancolombia = this.sumCupoByBank(list, 'BANCOLOMBIA');
+  this.cupoDaviplata = this.sumCupoByBank(list, 'DAVIPLATA');
 
+  this.cupoTotal = this.cupoNequi + this.cupoBancolombia + this.cupoDaviplata;
 
+  this.showCupoDialog = true;
+}
 
+private sumCupoByBank(list: any[], bankType: 'NEQUI'|'BANCOLOMBIA'|'DAVIPLATA'): number {
+  return list
+    .filter(a => (a.bankType || '').toUpperCase() === bankType)
+    .reduce((acc, a) => acc + (Number(a.cupoDisponibleHoy) || 0), 0);
+}
 }

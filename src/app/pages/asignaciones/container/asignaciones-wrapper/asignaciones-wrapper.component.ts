@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { TabViewModule } from 'primeng/tabview';
 import { MovimientosComponent } from "../../tabs/cajas-tab/cajas-tab.component";
 import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
+import { ContainerComponent } from '../../../cambios-arabes/container/container.component';
 
 @Component({
   selector: 'app-asignaciones-wrapper',
@@ -15,7 +16,8 @@ import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
     CommonModule,
     TabViewModule,
     MovimientosComponent,
-    GastosComponent
+    GastosComponent,
+    ContainerComponent
 ],
   templateUrl: './asignaciones-wrapper.component.html',
   styleUrls: ['./asignaciones-wrapper.component.css']

@@ -50,10 +50,10 @@ export class AppMenuComponent implements OnInit {
                     label: 'CLIENTES', icon: 'pi pi-fw pi-users',
                     routerLink: ['/clientes']
                 }, */
-                {
+               /*  {
                     label: 'CAMBIOS ARABES', icon: 'pi pi-fw pi-exchange-alt',
                     routerLink: ['/cambios-arabes']
-                }
+                } */
 
                 
 

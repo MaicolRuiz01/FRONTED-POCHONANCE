@@ -652,5 +652,13 @@ export class SaldosComponent implements OnInit {
       this.balanceTotalExternoCop = 0;
     }
   }
+  get totalUsdtGeneral(): number {
+  return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
+}
+
+/** Total general convertido a COP usando la tasa USDT→COP */
+get totalCopGeneral(): number {
+  return this.totalUsdtGeneral * (Number(this.latestRate) || 0);
+}
 
 }

@@ -27,10 +27,17 @@
   <h4 class="saldo-title">Saldo total</h4>
 
   <!-- USDT DIRECTOS -->
-  <p class="saldo-usdt">
-    {{ balanceTotalExterno | number:'1.2-2' }}
+  <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
+  <p class="saldo-usdt" style="margin:0;">
+    {{ totalUsdtGeneral | number:'1.2-2' }}
     <span class="saldo-unit">USDT</span>
   </p>
+
+  <p class="saldo-cop" *ngIf="latestRate > 0" style="margin:0;">
+    ≈ {{ totalCopGeneral | currency:'COP':'symbol':'1.0-0' }}
+    <span class="saldo-unit">(USDT→COP)</span>
+  </p>
+  </div>
 
   <!-- CRIPTOS EN USDT -->
   <p class="saldo-usdt" *ngIf="totalCriptosUsdt > 0">

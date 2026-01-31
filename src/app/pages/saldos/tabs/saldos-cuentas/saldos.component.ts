@@ -63,7 +63,7 @@ export interface DisplayAccount {
 })
 export class SaldosComponent implements OnInit {
   totalCriptosUsdt = 0;
-balanceTotalExternoCop = 0;
+  balanceTotalExternoCop = 0;
   totalBalanceUsd = 0;
   totalBalanceCop = 0;
   latestRate = 0;
@@ -81,10 +81,10 @@ balanceTotalExternoCop = 0;
   viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
 
 
-totalCuentasCop = 0;
-totalCuentasVes = 0;
-loadingCop = false;
-loadingVes = false;
+  totalCuentasCop = 0;
+  totalCuentasVes = 0;
+  loadingCop = false;
+  loadingVes = false;
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
@@ -566,91 +566,91 @@ loadingVes = false;
       });
   }
   verBinance() {
-  this.viewMode = 'BINANCE';
-}
-
-volverResumen() {
-  this.viewMode = 'RESUMEN';
-}
-
-loadTotalCop(): void {
-  this.loadingCop = true;
-
-  // tu servicio ya está inyectado como "cajaService" (AccountCopService)
-  this.cajaService.getAll()
-    .pipe(finalize(() => this.loadingCop = false))
-    .subscribe({
-      next: cuentas => {
-        this.totalCuentasCop = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
-      },
-      error: err => {
-        console.error('Error cargando total COP', err);
-        this.totalCuentasCop = 0;
-      }
-    });
-}
-
-loadTotalVes(): void {
-  this.loadingVes = true;
-
-  this.accountVesService.getAll()
-    .pipe(finalize(() => this.loadingVes = false))
-    .subscribe({
-      next: cuentas => {
-        this.totalCuentasVes = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
-      },
-      error: err => {
-        console.error('Error cargando total VES', err);
-        this.totalCuentasVes = 0;
-      }
-    });
-}
-verCop() {
-  this.viewMode = 'COP';
-}
-verVes() {
-  this.viewMode = 'VES';
-}
-get totalCuentasVesCop(): number {
-  const tasa = this.tasaVesPromedio ?? 0;
-  return (this.totalCuentasVes || 0) * tasa;
-}
-loadTasaVesPromedio(): void {
-  this.vesAverageRateApi.getUltima().subscribe({
-    next: (rate: VesAverageRateDto | null) => {
-      this.tasaVesPromedio = rate ? rate.tasaPromedioDia : null;
-    },
-    error: err => {
-      console.error('Error cargando tasa promedio VES', err);
-      this.tasaVesPromedio = null;
-    }
-  });
-}
-get totalCriptosCop(): number {
-  if (this.latestRate <= 0) return 0;
-  return (this.totalCriptosUsdt || 0) * this.latestRate;
-}
-
-
-// ===================== TOTAL FINAL EN COP =====================
-get saldoTotalCop(): number {
-  const cop = this.totalCuentasCop || 0;
-  const vesCop = this.totalCuentasVesCop || 0;
-
-  // Si no hay tasa USDT->COP, no podemos convertir USDT ni Criptos
-  if (this.latestRate <= 0) return cop + vesCop;
-
-  return cop + vesCop + (this.balanceTotalExternoCop || 0) + this.totalCriptosCop;
-}
-
-
-private recalculateExternalCop(): void {
-  // USDT directos -> COP (solo si hay tasa)
-  if (this.latestRate > 0) {
-    this.balanceTotalExternoCop = (this.balanceTotalExterno || 0) * this.latestRate;
-  } else {
-    this.balanceTotalExternoCop = 0;
+    this.viewMode = 'BINANCE';
   }
-}
+
+  volverResumen() {
+    this.viewMode = 'RESUMEN';
+  }
+
+  loadTotalCop(): void {
+    this.loadingCop = true;
+
+    // tu servicio ya está inyectado como "cajaService" (AccountCopService)
+    this.cajaService.getAll()
+      .pipe(finalize(() => this.loadingCop = false))
+      .subscribe({
+        next: cuentas => {
+          this.totalCuentasCop = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+        },
+        error: err => {
+          console.error('Error cargando total COP', err);
+          this.totalCuentasCop = 0;
+        }
+      });
+  }
+
+  loadTotalVes(): void {
+    this.loadingVes = true;
+
+    this.accountVesService.getAll()
+      .pipe(finalize(() => this.loadingVes = false))
+      .subscribe({
+        next: cuentas => {
+          this.totalCuentasVes = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+        },
+        error: err => {
+          console.error('Error cargando total VES', err);
+          this.totalCuentasVes = 0;
+        }
+      });
+  }
+  verCop() {
+    this.viewMode = 'COP';
+  }
+  verVes() {
+    this.viewMode = 'VES';
+  }
+  get totalCuentasVesCop(): number {
+    const tasa = this.tasaVesPromedio ?? 0;
+    return (this.totalCuentasVes || 0) * tasa;
+  }
+  loadTasaVesPromedio(): void {
+    this.vesAverageRateApi.getUltima().subscribe({
+      next: (rate: VesAverageRateDto | null) => {
+        this.tasaVesPromedio = rate ? rate.tasaPromedioDia : null;
+      },
+      error: err => {
+        console.error('Error cargando tasa promedio VES', err);
+        this.tasaVesPromedio = null;
+      }
+    });
+  }
+  get totalCriptosCop(): number {
+    if (this.latestRate <= 0) return 0;
+    return (this.totalCriptosUsdt || 0) * this.latestRate;
+  }
+
+
+  // ===================== TOTAL FINAL EN COP =====================
+  get saldoTotalCop(): number {
+    const cop = this.totalCuentasCop || 0;
+    const vesCop = this.totalCuentasVesCop || 0;
+
+    // Si no hay tasa USDT->COP, no podemos convertir USDT ni Criptos
+    if (this.latestRate <= 0) return cop + vesCop;
+
+    return cop + vesCop + (this.balanceTotalExternoCop || 0) + this.totalCriptosCop;
+  }
+
+
+  private recalculateExternalCop(): void {
+    // USDT directos -> COP (solo si hay tasa)
+    if (this.latestRate > 0) {
+      this.balanceTotalExternoCop = (this.balanceTotalExterno || 0) * this.latestRate;
+    } else {
+      this.balanceTotalExternoCop = 0;
+    }
+  }
 
 }

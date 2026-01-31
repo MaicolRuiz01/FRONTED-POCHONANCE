@@ -20,6 +20,9 @@ export interface AccountCop {
   isFlipped?: boolean;
   bankType: BankTypeCop;
   cupoDisponibleHoy?: number;
+  numeroCuenta?: string;
+cedula?: string;
+
 }
 
 /**
@@ -30,6 +33,8 @@ export interface AccountCopCreate {
   name: string;
   balance: number;
   bankType: BankTypeCop;
+  numeroCuenta?: string;
+cedula?: string;
 }
 
 @Injectable({ providedIn: 'root' })

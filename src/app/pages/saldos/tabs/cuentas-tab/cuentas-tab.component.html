@@ -12,15 +12,15 @@
 
 
   <div class="total-container">
-  <p-card styleClass="total-card" (click)="openCupoDialog()">
-    <ng-template pTemplate="content">
-      <div class="total-content" style="cursor:pointer;">
-        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        {{ totalCuentas | currency:'COP' }}
-      </div>
-    </ng-template>
-  </p-card>
-</div>
+    <p-card styleClass="total-card" (click)="openCupoDialog()">
+      <ng-template pTemplate="content">
+        <div class="total-content" style="cursor:pointer;">
+          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
+          {{ totalCuentas | currency:'COP' }}
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
 </div>
 <br>
 
@@ -85,6 +85,17 @@
                     {{ (account.cupoDisponibleHoy ?? 0) | currency:'COP':'symbol':'1.0-0' }}
                   </span>
                 </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
+  <button
+    pButton
+    type="button"
+    label="Copiar"
+    icon="pi pi-copy"
+    class="p-button-sm p-button-secondary"
+    (click)="copiarCuenta(account, $event)">
+  </button>
+</div>
+
 
                 <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
                   Click para ver resumen del día
@@ -101,6 +112,8 @@
                 <p>Saldo inicial del día:
                   {{ account.saldoInicialDelDia | number:'1.2-2' }}
                 </p>
+                <p>Numero de Cuenta: {{account.numeroCuenta | number: '1.2-2'}}</p>
+                <p>Cedula: {{account.cedula | number: '1.2-2'}}</p>
 
                 <div class="resumen-dia">
                   <p *ngIf="(account.entradasHoy ?? 0) > 0">
@@ -159,9 +172,6 @@
     </p-card>
   </div>
 </div>
-
-
-
 <!-- Formulario de creación de cuenta en un modal -->
 <p-dialog header="Crear Cuenta Colombiana" [(visible)]="displayDialog" [modal]="true" [closable]="true">
   <div class="p-grid p-fluid">
@@ -182,6 +192,16 @@
       <p-dropdown [options]="bankTypes" [(ngModel)]="newAccount.bankType" optionLabel="label" optionValue="value"
         placeholder="Seleccione" [appendTo]="'body'">
       </p-dropdown>
+    </div>
+
+    <div class="p-col-12 p-md-6">
+      <label for="numeroCuenta">Número de cuenta</label>
+      <input id="numeroCuenta" type="text" pInputText [(ngModel)]="newAccount.numeroCuenta" />
+    </div>
+
+    <div class="p-col-12 p-md-6">
+      <label for="cedula">Cédula</label>
+      <input id="cedula" type="text" pInputText [(ngModel)]="newAccount.cedula" />
     </div>
 
   </div>
@@ -294,13 +314,8 @@
   </p-footer>
 </p-dialog>
 
-<p-dialog
-  header="Cupo disponible por banco"
-  [(visible)]="showCupoDialog"
-  [modal]="true"
-  [style]="{ width: '360px' }"
-  [closable]="true"
->
+<p-dialog header="Cupo disponible por banco" [(visible)]="showCupoDialog" [modal]="true" [style]="{ width: '360px' }"
+  [closable]="true">
   <div class="p-fluid">
     <div style="display:flex; justify-content:space-between; padding:8px 0;">
       <strong>Nequi</strong>

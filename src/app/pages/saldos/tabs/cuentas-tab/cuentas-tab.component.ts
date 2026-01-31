@@ -15,6 +15,7 @@ import { ClienteService, Cliente } from '../../../../core/services/cliente.servi
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { GastoService } from '../../../../core/services/gasto.service';
+import { MessageService } from 'primeng/api';
 type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
 @Component({
@@ -36,7 +37,8 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 })
 export class CuentasTabComponent implements OnInit {
   cuentas: AccountCop[] = [];
-  newAccount: AccountCopCreate = { name: '', balance: 0, bankType: 'NEQUI' };
+  newAccount: AccountCopCreate = { name: '', balance: 0, bankType: 'NEQUI',numeroCuenta: '',
+  cedula: '' };
   displayDialog: boolean = false;
   clientes: Cliente[] = [];
   cajas: Caja[] = [];
@@ -74,6 +76,7 @@ cupoTotal = 0;
     private clienteService: ClienteService,
     private cajaService: CajaService,
     private gastoService: GastoService,
+    private messageService: MessageService,
     private router: Router) { }
 
   ngOnInit(): void {
@@ -148,7 +151,9 @@ cupoTotal = 0;
   this.accountService.create(this.newAccount).subscribe(account => {
     this.cuentas.push(account);
     this.displayDialog = false;
-    this.newAccount = { name: '', balance: 0, bankType: 'NEQUI' };
+    this.newAccount = { name: '', balance: 0, bankType: 'NEQUI',
+  numeroCuenta: '',
+  cedula: '' };
   }, error => {
     console.error('Error creating account', error);
   });
@@ -296,4 +301,67 @@ private sumCupoByBank(list: any[], bankType: 'NEQUI'|'BANCOLOMBIA'|'DAVIPLATA'):
     .filter(a => (a.bankType || '').toUpperCase() === bankType)
     .reduce((acc, a) => acc + (Number(a.cupoDisponibleHoy) || 0), 0);
 }
+private formatCop(n: any): string {
+  const value = Number(n ?? 0);
+  return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+}
+
+private buildAccountClipboardText(account: AccountCop): string {
+  // arma el texto como tu cliente lo quiere
+  // puedes cambiar el formato libremente
+  const lines = [
+    `Cuenta: ${account.name ?? ''}`,
+    `Banco: ${account.bankType ?? ''}`,
+    `Número de cuenta: ${account.numeroCuenta ?? ''}`,
+    `Cédula: ${account.cedula ?? ''}`,
+    `Balance: ${this.formatCop(account.balance)}`,
+    `Disponible (4x1000): ${this.formatCop(this.getDisponible(account.balance))}`,
+    `Cupo disponible hoy: ${this.formatCop(account.cupoDisponibleHoy ?? 0)}`
+  ];
+
+  return lines.join('\n');
+}
+
+async copiarCuenta(account: AccountCop, event?: Event) {
+  event?.stopPropagation(); // evita flip / clicks raros
+
+  const text = this.buildAccountClipboardText(account);
+
+  try {
+    // ✅ método moderno
+    await navigator.clipboard.writeText(text);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Copiado',
+      detail: 'La información de la cuenta quedó en el portapapeles.'
+    });
+  } catch (err) {
+    // ✅ fallback por si el navegador bloquea clipboard
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Copiado',
+        detail: 'La información de la cuenta quedó en el portapapeles.'
+      });
+    } catch (e) {
+      console.error('No se pudo copiar:', e);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo copiar al portapapeles.'
+      });
+    }
+  }
+}
+
 }

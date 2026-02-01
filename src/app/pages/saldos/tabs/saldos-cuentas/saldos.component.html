@@ -28,37 +28,11 @@
 
   <!-- USDT DIRECTOS -->
   <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
-  <p class="saldo-usdt" style="margin:0;">
-    {{ totalUsdtGeneral | number:'1.2-2' }}
-    <span class="saldo-unit">USDT</span>
-  </p>
-
   <p class="saldo-cop" *ngIf="latestRate > 0" style="margin:0;">
     ≈ {{ totalCopGeneral | currency:'COP':'symbol':'1.0-0' }}
     <span class="saldo-unit">(USDT→COP)</span>
   </p>
   </div>
-
-  <!-- CRIPTOS EN USDT -->
-  <p class="saldo-usdt" *ngIf="totalCriptosUsdt > 0">
-    {{ totalCriptosUsdt | number:'1.2-2' }}
-    <span class="saldo-unit">USDT (Criptos)</span>
-  </p>
-
-  <!-- COP (lo que ya tienes en la card COP) -->
-<p class="saldo-cop" *ngIf="totalCuentasCop > 0">
-  {{ totalCuentasCop | currency:'COP':'symbol':'1.0-0' }}
-  <span class="saldo-unit">(COP)</span>
-</p>
-
-
-<p class="saldo-cop" *ngIf="tasaVesPromedio !== null && totalCuentasVes > 0">
-  ≈ {{ totalCuentasVesCop | currency:'COP':'symbol':'1.0-0' }}
-  <span class="saldo-unit">(VES→COP)</span>
-</p>
-
-
-
   <p class="saldo-warning" *ngIf="latestRate === 0">
     Sin tasa USDT → COP disponible
   </p>
@@ -67,13 +41,11 @@
 
   <!-- 2) CRIPTOS HOY -->
   <div class="saldo-card saldo-card-crypto p-3 border rounded" style="cursor:pointer" (click)="verBinance()">
-
     <h4 class="saldo-title">Criptos</h4>
-
-    <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
-      <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
-    </div>
-
+    <p class="saldo-usdt" style="margin:0;">
+    {{ totalUsdtGeneral | number:'1.2-2' }}
+    <span class="saldo-unit">USDT</span>
+    </p>
     <ng-template #noCriptoData>
       <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
     </ng-template>

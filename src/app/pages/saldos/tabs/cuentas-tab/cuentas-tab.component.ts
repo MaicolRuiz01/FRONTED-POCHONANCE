@@ -37,23 +37,25 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 })
 export class CuentasTabComponent implements OnInit {
   cuentas: AccountCop[] = [];
-  newAccount: AccountCopCreate = { name: '', balance: 0, bankType: 'NEQUI',numeroCuenta: '',
-  cedula: '' };
+  newAccount: AccountCopCreate = {
+    name: '', balance: 0, bankType: 'NEQUI', numeroCuenta: '',
+    cedula: ''
+  };
   displayDialog: boolean = false;
   clientes: Cliente[] = [];
   cajas: Caja[] = [];
   selectedCajaId?: number;
-showCupoDialog = false;
+  showCupoDialog = false;
 
-cupoNequi = 0;
-cupoBancolombia = 0;
-cupoDaviplata = 0;
-cupoTotal = 0;
+  cupoNequi = 0;
+  cupoBancolombia = 0;
+  cupoDaviplata = 0;
+  cupoTotal = 0;
   bankTypes = [
-  { label: 'Nequi', value: 'NEQUI' },
-  { label: 'Daviplata', value: 'DAVIPLATA' },
-  { label: 'Bancolombia', value: 'BANCOLOMBIA' }
-];
+    { label: 'Nequi', value: 'NEQUI' },
+    { label: 'Daviplata', value: 'DAVIPLATA' },
+    { label: 'Bancolombia', value: 'BANCOLOMBIA' }
+  ];
 
 
   selectedCuentaOrigenId?: number;
@@ -69,6 +71,17 @@ cupoTotal = 0;
   montoPago?: number;
   showAjusteCuenta = false;
   cuentaAjuste: AccountCop | null = null;
+  // NUEVO: total por banco (sum(balance))
+totalNequi = 0;
+totalBancolombia = 0;
+totalDaviplata = 0;
+totalPorBancos = 0;
+
+// NUEVO: "se puede depositar" (bruto antes del 4x1000)
+depositableNequi = 0;
+depositableBancolombia = 0;
+depositableDaviplata = 0;
+depositableTotal = 0;
 
 
   constructor(private accountService: AccountCopService,
@@ -107,30 +120,30 @@ cupoTotal = 0;
   }
 
   loadCuentas() {
-  this.accountService.getAll().subscribe({
-    next: (cuentas: AccountCop[]) => {
-      this.cuentas = cuentas;
+    this.accountService.getAll().subscribe({
+      next: (cuentas: AccountCop[]) => {
+        this.cuentas = cuentas;
 
-      this.cuentas.forEach(c => {
-        c.isFlipped = false;  // 👈 arranca siempre de frente
+        this.cuentas.forEach(c => {
+          c.isFlipped = false;  // 👈 arranca siempre de frente
 
-        if (!c.id) return;
+          if (!c.id) return;
 
-        this.movimientoService.getResumenCuentaCop(c.id).subscribe(res => {
-          c.entradasHoy       = res.entradasHoy;
-          c.salidasHoy        = res.salidasHoy;
-          c.ajustesHoy        = res.ajustesHoy;
-          c.ventasDolaresHoy  = res.ventasDolaresHoy;
-          c.salidasRetirosHoy = res.salidasRetirosHoy;
+          this.movimientoService.getResumenCuentaCop(c.id).subscribe(res => {
+            c.entradasHoy = res.entradasHoy;
+            c.salidasHoy = res.salidasHoy;
+            c.ajustesHoy = res.ajustesHoy;
+            c.ventasDolaresHoy = res.ventasDolaresHoy;
+            c.salidasRetirosHoy = res.salidasRetirosHoy;
+          });
+
+          this.gastoService.getTotalGastosHoyCuentaCop(c.id).subscribe(total => {
+            c.gastosHoy = total;
+          });
         });
-
-        this.gastoService.getTotalGastosHoyCuentaCop(c.id).subscribe(total => {
-          c.gastosHoy = total;
-        });
-      });
-    }
-  });
-}
+      }
+    });
+  }
 
 
 
@@ -143,21 +156,23 @@ cupoTotal = 0;
   }
 
   createAccount() {
-  if (!this.newAccount.name || this.newAccount.balance == null || !this.newAccount.bankType) {
-    alert('Nombre, balance y tipo de banco son obligatorios');
-    return;
-  }
+    if (!this.newAccount.name || this.newAccount.balance == null || !this.newAccount.bankType) {
+      alert('Nombre, balance y tipo de banco son obligatorios');
+      return;
+    }
 
-  this.accountService.create(this.newAccount).subscribe(account => {
-    this.cuentas.push(account);
-    this.displayDialog = false;
-    this.newAccount = { name: '', balance: 0, bankType: 'NEQUI',
-  numeroCuenta: '',
-  cedula: '' };
-  }, error => {
-    console.error('Error creating account', error);
-  });
-}
+    this.accountService.create(this.newAccount).subscribe(account => {
+      this.cuentas.push(account);
+      this.displayDialog = false;
+      this.newAccount = {
+        name: '', balance: 0, bankType: 'NEQUI',
+        numeroCuenta: '',
+        cedula: ''
+      };
+    }, error => {
+      console.error('Error creating account', error);
+    });
+  }
 
 
   showCreateDialog() {
@@ -251,117 +266,136 @@ cupoTotal = 0;
     account.isFlipped = !account.isFlipped;
   }
   getDisponible(balance?: number | null): number {
-  const b = Number(balance ?? 0);
-  const comision = b * 0.004; // 4x1000
-  return b - comision;
-}
-
-selectedBankType: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null = null;
-
-setBankFilter(type: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null) {
-  this.selectedBankType = type;
-}
-
-get filteredCuentas(): AccountCop[] {
-  const base = !this.selectedBankType
-    ? this.cuentas
-    : this.cuentas.filter(c => c.bankType === this.selectedBankType);
-
-  // ordenar de mayor a menor balance
-  return [...base].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0));
-}
-
-bankLogo(type?: string | null): string {
-  const t = (type ?? '').toString().trim().toUpperCase();
-
-  switch (t as BankType) {
-    case 'NEQUI': return '/assets/layout/images/nequi.png';
-    case 'DAVIPLATA': return '/assets/layout/images/daviplata.png';
-    case 'BANCOLOMBIA': return '/assets/layout/images/bancolombia.png';
-    default: return '/assets/layout/images/nequi.png';
+    const b = Number(balance ?? 0);
+    const comision = b * 0.004; // 4x1000
+    return b - comision;
   }
-}
 
-openCupoDialog(): void {
-  // Usa la lista que tengas para renderizar cards:
-  // si tus cards usan `filteredCuentas`, úsala; si no, usa `cuentas`.
+  selectedBankType: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null = null;
+
+  setBankFilter(type: 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | null) {
+    this.selectedBankType = type;
+  }
+
+  get filteredCuentas(): AccountCop[] {
+    const base = !this.selectedBankType
+      ? this.cuentas
+      : this.cuentas.filter(c => c.bankType === this.selectedBankType);
+
+    // ordenar de mayor a menor balance
+    return [...base].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0));
+  }
+
+  bankLogo(type?: string | null): string {
+    const t = (type ?? '').toString().trim().toUpperCase();
+
+    switch (t as BankType) {
+      case 'NEQUI': return '/assets/layout/images/nequi.png';
+      case 'DAVIPLATA': return '/assets/layout/images/daviplata.png';
+      case 'BANCOLOMBIA': return '/assets/layout/images/bancolombia.png';
+      default: return '/assets/layout/images/nequi.png';
+    }
+  }
+
+  openCupoDialog(): void {
   const list = this.filteredCuentas ?? this.cuentas ?? [];
 
+  // 1) Cupo disponible por banco (ya lo hacías)
   this.cupoNequi = this.sumCupoByBank(list, 'NEQUI');
   this.cupoBancolombia = this.sumCupoByBank(list, 'BANCOLOMBIA');
   this.cupoDaviplata = this.sumCupoByBank(list, 'DAVIPLATA');
-
   this.cupoTotal = this.cupoNequi + this.cupoBancolombia + this.cupoDaviplata;
+
+  // 2) Total por banco (sum balance)
+  this.totalNequi = this.sumBalanceByBank(list, 'NEQUI');
+  this.totalBancolombia = this.sumBalanceByBank(list, 'BANCOLOMBIA');
+  this.totalDaviplata = this.sumBalanceByBank(list, 'DAVIPLATA');
+  this.totalPorBancos = this.totalNequi + this.totalBancolombia + this.totalDaviplata;
+
+  // 3) “Se puede depositar” (bruto para que al descontar 4x1000 quede el disponible)
+  this.depositableNequi = this.getDepositableFromNet(this.cupoNequi);
+  this.depositableBancolombia = this.getDepositableFromNet(this.cupoBancolombia);
+  this.depositableDaviplata = this.getDepositableFromNet(this.cupoDaviplata);
+  this.depositableTotal = this.depositableNequi + this.depositableBancolombia + this.depositableDaviplata;
 
   this.showCupoDialog = true;
 }
 
-private sumCupoByBank(list: any[], bankType: 'NEQUI'|'BANCOLOMBIA'|'DAVIPLATA'): number {
+  private sumCupoByBank(list: any[], bankType: 'NEQUI' | 'BANCOLOMBIA' | 'DAVIPLATA'): number {
+    return list
+      .filter(a => (a.bankType || '').toUpperCase() === bankType)
+      .reduce((acc, a) => acc + (Number(a.cupoDisponibleHoy) || 0), 0);
+  }
+  private formatCop(n: any): string {
+    const value = Number(n ?? 0);
+    return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+  }
+  private sumBalanceByBank(list: any[], bankType: 'NEQUI'|'BANCOLOMBIA'|'DAVIPLATA'): number {
   return list
     .filter(a => (a.bankType || '').toUpperCase() === bankType)
-    .reduce((acc, a) => acc + (Number(a.cupoDisponibleHoy) || 0), 0);
+    .reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
 }
-private formatCop(n: any): string {
-  const value = Number(n ?? 0);
-  return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-}
-
-private buildAccountClipboardText(account: AccountCop): string {
-  // arma el texto como tu cliente lo quiere
-  // puedes cambiar el formato libremente
-  const lines = [
-    `Cuenta: ${account.name ?? ''}`,
-    `Banco: ${account.bankType ?? ''}`,
-    `Número de cuenta: ${account.numeroCuenta ?? ''}`,
-    `Cédula: ${account.cedula ?? ''}`,
-    `Balance: ${this.formatCop(account.balance)}`,
-    `Disponible (4x1000): ${this.formatCop(this.getDisponible(account.balance))}`,
-    `Cupo disponible hoy: ${this.formatCop(account.cupoDisponibleHoy ?? 0)}`
-  ];
-
-  return lines.join('\n');
+private getDepositableFromNet(net: number): number {
+  const n = Number(net) || 0;
+  return n <= 0 ? 0 : (n / 0.996);
 }
 
-async copiarCuenta(account: AccountCop, event?: Event) {
-  event?.stopPropagation(); // evita flip / clicks raros
+  private buildAccountClipboardText(account: AccountCop): string {
+    // arma el texto como tu cliente lo quiere
+    // puedes cambiar el formato libremente
+    const lines = [
+      `Cuenta: ${account.name ?? ''}`,
+      `Banco: ${account.bankType ?? ''}`,
+      `Número de cuenta: ${account.numeroCuenta ?? ''}`,
+      `Cédula: ${account.cedula ?? ''}`,
+      `Balance: ${this.formatCop(account.balance)}`,
+      `Disponible (4x1000): ${this.formatCop(this.getDisponible(account.balance))}`,
+      `Cupo disponible hoy: ${this.formatCop(account.cupoDisponibleHoy ?? 0)}`
+    ];
 
-  const text = this.buildAccountClipboardText(account);
+    return lines.join('\n');
+  }
 
-  try {
-    // ✅ método moderno
-    await navigator.clipboard.writeText(text);
+  async copiarCuenta(account: AccountCop, event?: Event) {
+    event?.stopPropagation(); // evita flip / clicks raros
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Copiado',
-      detail: 'La información de la cuenta quedó en el portapapeles.'
-    });
-  } catch (err) {
-    // ✅ fallback por si el navegador bloquea clipboard
+    const text = this.buildAccountClipboardText(account);
+
     try {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.left = '-9999px';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
+      // ✅ método moderno
+      await navigator.clipboard.writeText(text);
 
       this.messageService.add({
         severity: 'success',
         summary: 'Copiado',
         detail: 'La información de la cuenta quedó en el portapapeles.'
       });
-    } catch (e) {
-      console.error('No se pudo copiar:', e);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudo copiar al portapapeles.'
-      });
+    } catch (err) {
+      // ✅ fallback por si el navegador bloquea clipboard
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Copiado',
+          detail: 'La información de la cuenta quedó en el portapapeles.'
+        });
+      } catch (e) {
+        console.error('No se pudo copiar:', e);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo copiar al portapapeles.'
+        });
+      }
     }
   }
-}
 
 }

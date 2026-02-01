@@ -86,15 +86,10 @@
                   </span>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
-  <button
-    pButton
-    type="button"
-    label="Copiar"
-    icon="pi pi-copy"
-    class="p-button-sm p-button-secondary"
-    (click)="copiarCuenta(account, $event)">
-  </button>
-</div>
+                  <button pButton type="button" label="Copiar" icon="pi pi-copy" class="p-button-sm p-button-secondary"
+                    (click)="copiarCuenta(account, $event)">
+                  </button>
+                </div>
 
 
                 <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
@@ -314,32 +309,72 @@
   </p-footer>
 </p-dialog>
 
-<p-dialog header="Cupo disponible por banco" [(visible)]="showCupoDialog" [modal]="true" [style]="{ width: '360px' }"
-  [closable]="true">
+<p-dialog
+  header="Cupo disponible por banco"
+  [(visible)]="showCupoDialog"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [closable]="true"
+>
   <div class="p-fluid">
-    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-      <strong>Nequi</strong>
-      <span>{{ cupoNequi | currency:'COP':'symbol':'1.0-0' }}</span>
-    </div>
 
-    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-      <strong>Bancolombia</strong>
-      <span>{{ cupoBancolombia | currency:'COP':'symbol':'1.0-0' }}</span>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-      <strong>Daviplata</strong>
-      <span>{{ cupoDaviplata | currency:'COP':'symbol':'1.0-0' }}</span>
+    <!-- Encabezados -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; font-weight:600; padding:6px 0; opacity:.85;">
+      <div></div>
+      <div style="text-align:right;">Cupo disponible</div>
+      <div style="text-align:right;">Total por banco</div>
+      <div style="text-align:right;">Se puede depositar</div>
     </div>
 
     <hr />
 
-    <div style="display:flex; justify-content:space-between; padding-top:8px;">
-      <strong>Total cupo</strong>
-      <span>{{ cupoTotal | currency:'COP':'symbol':'1.0-0' }}</span>
+    <!-- NEQUI -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('NEQUI')" alt="Nequi" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoNequi | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalNequi | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableNequi | currency:'COP':'symbol':'1.0-0' }}</div>
     </div>
+
+    <!-- BANCOLOMBIA -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('BANCOLOMBIA')" alt="Bancolombia" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <!-- DAVIPLATA -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('DAVIPLATA')" alt="Daviplata" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <hr />
+
+    <!-- TOTALES -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding-top:10px;">
+      <div style="font-weight:700;">Total</div>
+      <div style="text-align:right; font-weight:700;">{{ cupoTotal | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right; font-weight:700;">{{ totalPorBancos | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right; font-weight:700;">{{ depositableTotal | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <p style="margin-top:10px; font-size:.85rem; opacity:.75;">
+      * “Se puede depositar” = valor bruto antes del 4x1000 (neto = bruto − 0.4%).
+    </p>
+
   </div>
 </p-dialog>
+
 
 <app-ajuste-saldo-dialog *ngIf="cuentaAjuste" [visible]="showAjusteCuenta" (visibleChange)="showAjusteCuenta = $event"
   [entidad]="'CUENTACOP'" [entidadId]="cuentaAjuste.id!" [nombreEntidad]="cuentaAjuste.name"

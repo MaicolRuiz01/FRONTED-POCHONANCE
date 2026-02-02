@@ -201,12 +201,19 @@ loadNoAsignadas(): void {
 
   req$.subscribe({
     next: (sales) => {
-      this.allAccountsp2p = sales ?? [];
-      if (this.allAccountsp2p.length === 0) {
-        this.noSalesMessage = 'No hay ventas P2P no asignadas hoy.';
-      }
-      this.loading = false;
-    },
+  this.allAccountsp2p = (sales ?? []).sort((a, b) => {
+    const da = new Date(a.date as any).getTime();
+    const db = new Date(b.date as any).getTime();
+    return da - db ; // ✅ DESC: recientes primero
+  });
+
+  if (this.allAccountsp2p.length === 0) {
+    this.noSalesMessage = 'No hay ventas P2P no asignadas hoy.';
+  }
+
+  this.loading = false;
+},
+
     error: (err) => {
       console.error('Error al cargar ventas P2P no asignadas:', err);
       this.noSalesMessage = 'Error al obtener ventas';

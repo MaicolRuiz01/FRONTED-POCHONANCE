@@ -87,12 +87,19 @@ export class AsignacionesVentap2pComponent implements OnInit {
   });
 }
   openAssignDialog(sale: SaleP2PDto): void {
-    this.selectedSale = sale;
-    this.displayAssignDialog = true;
-    this.externalAccountName = '';
-    this.selectedAssignments = [];
-    this.isExternal = false;
-  }
+  this.selectedSale = sale;
+  this.displayAssignDialog = true;
+
+  this.externalAccountName = '';
+  this.externalAmount = 0;
+  this.selectedAssignments = [];
+  this.selectedAccounts = [];
+  this.isExternal = false;
+
+  // ✅ Cargar cuentas COP para el multiselect
+  this.loadCuentasCop();
+}
+
 
 
   handleAssignType(): void {
@@ -112,6 +119,18 @@ export class AsignacionesVentap2pComponent implements OnInit {
       };
     });
   }
+  private loadCuentasCop(): void {
+  this.accountCopService.getAll().subscribe({
+    next: (cuentas) => {
+      this.cuentasDisponibles = cuentas ?? [];
+    },
+    error: (err) => {
+      console.error('Error cargando cuentas COP:', err);
+      this.cuentasDisponibles = [];
+    }
+  });
+}
+
 
 
   assignAccounts(): void {

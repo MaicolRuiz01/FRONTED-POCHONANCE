@@ -1,4 +1,4 @@
-<div class="card p-p-4">
+<div class="card p-p-4" class="asig-scroll">
   <h2 class="p-mb-5 p-text-bold">Ventas de P2P Hoy</h2>
 
   <div *ngIf="loading" class="spinner-container">
@@ -17,21 +17,28 @@
   </app-mi-table>
 
   <div *ngIf="isMobile">
-    <app-card-list [data]="allAccountsp2p" [columns]="[
-    { label: 'id', field: 'N° de orden' },
-    { label: 'date', field: 'Fecha' },
-    { label: 'dollarsUs', field: 'Dolares' },
-    { label: 'pesosCop', field: 'Pesos COP' },
-    { label: 'commission', field: 'Comision' }
-      ]">
+  <app-card-list
+    [data]="allAccountsp2p"
+    [columns]="[
+      { label: 'N° de orden', field: 'id' },
+      { label: 'Fecha',       field: 'date' },
+      { label: 'Dólares',     field: 'dollarsUs' },
+      { label: 'Pesos COP',   field: 'pesosCop' },
+      { label: 'Comisión',    field: 'commission' }
+    ]"
+  >
+    <ng-template #cardActionTemplate let-sale>
+      <button
+        pButton
+        type="button"
+        label="Asignar"
+        class="p-button-sm p-button-success"
+        (click)="openAssignDialog(sale)"
+      ></button>
+    </ng-template>
+  </app-card-list>
+</div>
 
-      <ng-template #cardActionTemplate let-sale>
-        <button pButton type="button" label="Asignar" class="p-button-sm p-button-success"
-          (click)="openAssignDialog(sale)">
-        </button>
-      </ng-template>
-    </app-card-list>
-  </div>
 
   <!-- Modal para asignar cuentas -->
   <p-dialog header="Asignar cuenta(s) a la venta" [(visible)]="displayAssignDialog" [modal]="true" [closable]="true"

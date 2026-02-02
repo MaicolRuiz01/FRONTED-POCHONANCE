@@ -85,3 +85,8 @@ button[pButton]:not(:disabled):hover {
   background-color: green;
 }
 
+.asig-scroll{
+  height: calc(100vh - 140px); /* ajusta según tu header */
+  overflow-y: auto;
+  min-height: 0;
+}

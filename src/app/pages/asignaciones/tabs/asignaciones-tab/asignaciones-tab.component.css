@@ -21,3 +21,14 @@
   overflow-y: auto;
   min-height: 0; /* CLAVE si es flex */
 }
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.asig-scroll {
+  height: calc(100vh - 140px); /* ajusta 140px según tu header */
+  overflow-y: auto;
+  min-height: 0;
+}

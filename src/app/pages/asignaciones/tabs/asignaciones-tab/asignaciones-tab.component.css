@@ -15,12 +15,7 @@
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
 }
-:host {
-  display: block;
-  height: 100%;
-  overflow-y: auto;
-  min-height: 0; /* CLAVE si está dentro de flex */
-}
+
 .layout-main-content {
   height: calc(100vh - 64px); /* resta navbar/topbar si existe */
   overflow-y: auto;

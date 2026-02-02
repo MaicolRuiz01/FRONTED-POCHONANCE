@@ -1,4 +1,4 @@
-<div class="card p-p-4" class="asig-scroll">
+<div class="card p-p-4 asig-scroll">
   <h2 class="p-mb-5 p-text-bold">Ventas de P2P Hoy</h2>
 
   <div *ngIf="loading" class="spinner-container">
@@ -13,54 +13,43 @@
         (click)="openAssignDialog(sale)">
       </p-button>
     </ng-template>
-
   </app-mi-table>
 
   <div *ngIf="isMobile">
-  <app-card-list
-    [data]="allAccountsp2p"
-    [columns]="[
-      { label: 'N° de orden', field: 'id' },
-      { label: 'Fecha',       field: 'date' },
-      { label: 'Dólares',     field: 'dollarsUs' },
-      { label: 'Pesos COP',   field: 'pesosCop' },
-      { label: 'Comisión',    field: 'commission' }
-    ]"
-  >
-    <ng-template #cardActionTemplate let-sale>
-      <button
-        pButton
-        type="button"
-        label="Asignar"
-        class="p-button-sm p-button-success"
-        (click)="openAssignDialog(sale)"
-      ></button>
-    </ng-template>
-  </app-card-list>
-</div>
+    <app-card-list
+      [data]="allAccountsp2p"
+      [columns]="[
+        { label: 'N° de orden', field: 'id' },
+        { label: 'Fecha',       field: 'date' },
+        { label: 'Dólares',     field: 'dollarsUs' },
+        { label: 'Pesos COP',   field: 'pesosCop' },
+        { label: 'Comisión',    field: 'commission' }
+      ]"
+    >
+      <ng-template #cardActionTemplate let-sale>
+        <button pButton type="button" label="Asignar" class="p-button-sm p-button-success"
+          (click)="openAssignDialog(sale)"></button>
+      </ng-template>
+    </app-card-list>
+  </div>
 
-
-  <!-- Modal para asignar cuentas -->
   <p-dialog header="Asignar cuenta(s) a la venta" [(visible)]="displayAssignDialog" [modal]="true" [closable]="true"
     [style]="{ width: '450px' }" [breakpoints]="{ '960px': '95vw' }">
+    
     <div class="p-fluid p-formgrid p-grid">
-
-      <!-- Tipo de cuenta -->
       <div class="p-field p-col-12">
         <label>¿A qué tipo de cuenta desea asignar?</label>
         <div class="p-formgroup-inline">
           <p-radioButton name="accountType" [value]="true" [(ngModel)]="isExternal" inputId="external"
             (onChange)="handleAssignType()"></p-radioButton>
           <label for="external" class="p-mr-3">Cuenta Externa</label>
-          <br>
-          <br>
+          <br><br>
           <p-radioButton name="accountType" [value]="false" [(ngModel)]="isExternal" inputId="colombian"
             (onChange)="handleAssignType()"></p-radioButton>
           <label for="colombian">Cuenta Colombiana</label>
         </div>
       </div>
 
-      <!-- Si es cuenta externa -->
       <ng-container *ngIf="isExternal">
         <div class="p-field p-col-12">
           <label for="externalAccountName">Nombre de la Cuenta</label>
@@ -68,37 +57,33 @@
         </div>
         <div class="p-field p-col-12">
           <label for="amountExternal">Monto</label>
-          <input id="amountExternal" type="number" pInputText [(ngModel)]="externalAmount" />
+          <p-inputNumber id="amountExternal" [(ngModel)]="externalAmount" 
+            mode="decimal" locale="de-DE" [minFractionDigits]="2" [maxFractionDigits]="2">
+          </p-inputNumber>
         </div>
       </ng-container>
 
-      <!-- Si es cuenta colombiana -->
       <ng-container *ngIf="!isExternal">
         <div class="p-field p-col-12">
           <label for="account">Seleccionar cuenta colombiana</label>
           <p-multiSelect id="account" [options]="cuentasDisponibles" [(ngModel)]="selectedAccounts" optionLabel="name"
             placeholder="Seleccionar cuentas" [appendTo]="'body'" (onChange)="onAccountsChange()"></p-multiSelect>
-          <div class="p-field p-col-12" *ngFor="let assignment of selectedAssignments">
-            <label>{{ assignment.account.name }}</label>
-            <input type="number" pInputText [(ngModel)]="assignment.amount"
-              [placeholder]="'Monto para ' + assignment.account.name" />
+          
+          <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
+            <label class="p-text-bold">{{ assignment.account.name }}</label>
+            <p-inputNumber [(ngModel)]="assignment.amount" 
+              mode="decimal" locale="de-DE" [minFractionDigits]="2" [maxFractionDigits]="2"
+              [placeholder]="'Monto para ' + assignment.account.name">
+            </p-inputNumber>
           </div>
-
-
         </div>
-        <div class="p-field p-col-12" *ngIf="isExternal">
-          <label for="externalAmount">Monto</label>
-          <input type="number" pInputText id="externalAmount" [(ngModel)]="externalAmount" placeholder="Monto" />
-        </div>
-
       </ng-container>
-
     </div>
 
-    <!-- Footer del diálogo -->
     <ng-template pTemplate="footer">
       <button pButton label="Cancelar" icon="pi pi-times" (click)="displayAssignDialog = false"
         class="p-button-text"></button>
       <button pButton label="Asignar" icon="pi pi-check" class="p-button-success" (click)="assignAccounts()"></button>
     </ng-template>
   </p-dialog>
+</div>

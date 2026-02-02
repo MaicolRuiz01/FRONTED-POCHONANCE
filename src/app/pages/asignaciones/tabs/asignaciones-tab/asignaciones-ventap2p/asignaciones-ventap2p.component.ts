@@ -111,14 +111,22 @@ export class AsignacionesVentap2pComponent implements OnInit {
   }
 
   onAccountsChange(): void {
-    this.selectedAssignments = this.selectedAccounts.map(account => {
-      const existing = this.selectedAssignments.find(a => a.account.id === account.id);
-      return {
-        account,
-        amount: existing?.amount || 0
-      };
-    });
-  }
+  const ventaCop = Number(this.selectedSale?.pesosCop ?? 0);
+
+  // si hay 1 sola cuenta seleccionada => le ponemos TODO el valor de la venta
+  // si hay varias => por defecto quedan en 0 (para que el usuario reparta)
+  const defaultAmount = (this.selectedAccounts.length === 1) ? ventaCop : 0;
+
+  this.selectedAssignments = this.selectedAccounts.map(account => {
+    const existing = this.selectedAssignments.find(a => a.account.id === account.id);
+
+    return {
+      account,
+      amount: existing ? existing.amount : defaultAmount
+    };
+  });
+}
+
   private loadCuentasCop(): void {
   this.accountCopService.getAll().subscribe({
     next: (cuentas) => {

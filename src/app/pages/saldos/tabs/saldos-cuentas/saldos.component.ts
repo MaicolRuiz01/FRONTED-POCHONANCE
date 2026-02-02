@@ -79,7 +79,7 @@ export class SaldosComponent implements OnInit {
   noAverageRate: boolean = false;
   tasaVesPromedio: number | null = null;
   viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
-
+  selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | null = null;
 
   totalCuentasCop = 0;
   totalCuentasVes = 0;
@@ -204,6 +204,7 @@ export class SaldosComponent implements OnInit {
           id: c.id,
           accountType: c.name,
           saldoInterno: c.balance,
+          tipo: (c as any).tipo,
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
@@ -631,19 +632,6 @@ export class SaldosComponent implements OnInit {
     return (this.totalCriptosUsdt || 0) * this.latestRate;
   }
 
-
-  // ===================== TOTAL FINAL EN COP =====================
-  get saldoTotalCop(): number {
-    const cop = this.totalCuentasCop || 0;
-    const vesCop = this.totalCuentasVesCop || 0;
-
-    // Si no hay tasa USDT->COP, no podemos convertir USDT ni Criptos
-    if (this.latestRate <= 0) return cop + vesCop;
-
-    return cop + vesCop + (this.balanceTotalExternoCop || 0) + this.totalCriptosCop;
-  }
-
-
   private recalculateExternalCop(): void {
     // USDT directos -> COP (solo si hay tasa)
     if (this.latestRate > 0) {
@@ -660,5 +648,47 @@ export class SaldosComponent implements OnInit {
 get totalCopGeneral(): number {
   return this.totalUsdtGeneral * (Number(this.latestRate) || 0);
 }
+setWalletFilter(type: 'BINANCE' | 'TRUST' | 'SOLANA' | null) {
+  this.selectedWalletType = type;
+}
+
+get filteredAccounts(): DisplayAccount[] {
+  const base = !this.selectedWalletType
+    ? this.accounts
+    : this.accounts.filter(a => (a as any).tipo === this.selectedWalletType);
+
+  // opcional: ordenar por saldo externo desc (o interno si prefieres)
+  return [...base].sort((x, y) => (Number(y.saldoExterno) || 0) - (Number(x.saldoExterno) || 0));
+}
+
+walletLogo(type?: string | null): string {
+  const t = (type ?? '').toString().trim().toUpperCase();
+
+  switch (t) {
+    case 'BINANCE': return '/assets/layout/images/binance.png';
+    case 'TRUST': return '/assets/layout/images/trust.png';
+    case 'SOLANA': return '/assets/layout/images/solana.png';
+    default: return '/assets/layout/images/binance.png';
+  }
+}
+/** Criptos totales en USDT (USDT directos + otras criptos del día) */
+get totalCriptosGeneralUsdt(): number {
+  return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
+}
+
+/** Criptos totales en COP usando la tasa USDT→COP */
+get totalCriptosGeneralCop(): number {
+  const rate = Number(this.latestRate) || 0;
+  if (rate <= 0) return 0;
+  return this.totalCriptosGeneralUsdt * rate;
+}
+
+/** SALDO TOTAL = criptos en COP + COP + VES en COP */
+get saldoTotalCop(): number {
+  const cop = Number(this.totalCuentasCop) || 0;
+  const vesCop = Number(this.totalCuentasVesCop) || 0;
+  return cop + vesCop + this.totalCriptosGeneralCop;
+}
+
 
 }

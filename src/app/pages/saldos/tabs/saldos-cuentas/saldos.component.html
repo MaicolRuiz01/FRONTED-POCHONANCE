@@ -26,26 +26,34 @@
 <div class="saldo-card saldo-card-main p-3 border rounded">
   <h4 class="saldo-title">Saldo total</h4>
 
-  <!-- USDT DIRECTOS -->
-  <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
-  <p class="saldo-cop" *ngIf="latestRate > 0" style="margin:0;">
-    ≈ {{ totalCopGeneral | currency:'COP':'symbol':'1.0-0' }}
-    <span class="saldo-unit">(USDT→COP)</span>
+  <p class="saldo-cop" style="margin:0;">
+    {{ saldoTotalCop | currency:'COP':'symbol':'1.0-0' }}
   </p>
-  </div>
-  <p class="saldo-warning" *ngIf="latestRate === 0">
-    Sin tasa USDT → COP disponible
-  </p>
+  <p class="saldo-warning" *ngIf="latestRate <= 0" style="margin-top:6px;">
+  * No hay tasa USDT→COP, criptos no se incluyen.
+</p>
 </div>
+
 
 
   <!-- 2) CRIPTOS HOY -->
   <div class="saldo-card saldo-card-crypto p-3 border rounded" style="cursor:pointer" (click)="verBinance()">
     <h4 class="saldo-title">Criptos</h4>
     <p class="saldo-usdt" style="margin:0;">
-    {{ totalUsdtGeneral | number:'1.2-2' }}
-    <span class="saldo-unit">USDT</span>
-    </p>
+  {{ totalUsdtGeneral | number:'1.2-2' }}
+  <span class="saldo-unit">USDT</span>
+</p>
+
+<!-- 👇 COP equivalente -->
+<p class="saldo-cop" *ngIf="latestRate > 0" style="margin:4px 0 0 0;">
+  ≈ {{ totalCopGeneral | currency:'COP':'symbol':'1.0-0' }}
+  <span class="saldo-unit">(USDT→COP)</span>
+</p>
+
+<p class="saldo-warning" *ngIf="latestRate <= 0" style="margin:4px 0 0 0;">
+  Sin tasa USDT → COP disponible
+</p>
+
     <ng-template #noCriptoData>
       <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
     </ng-template>
@@ -113,13 +121,100 @@
 
   <br><br>
 
+
+
+  <div class="saldo-card saldo-card-crypto p-3 border rounded"
+     style="cursor:pointer"
+     (click)="verBinance()">
+
+  <h4 class="saldo-title">Resumen</h4>
+
+  <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
+    <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
+  </div>
+
+  <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+    <div class="crypto-list">
+      <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
+        <div class="crypto-flip-inner">
+
+          <div class="crypto-face front">
+            <span class="crypto-symbol">{{ t.cripto }}</span>
+            <span class="crypto-amount">
+              {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
+            </span>
+          </div>
+
+          <div class="crypto-face back">
+            <span class="crypto-symbol">{{ t.cripto }}</span>
+            <span class="crypto-extra">
+              Tasa: {{ t.tasaPromedioDia | number:'1.4-6' }} USDT
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
+      Click para ver cuentas Binance
+    </div>
+  </ng-container>
+
+  <ng-template #noCriptoData>
+    <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
+  </ng-template>
+</div>
+
+<br>
+
+
+<!-- ===== FILTRO POR TIPO DE CUENTA (LOGOS) ===== -->
+<div class="wallet-filter">
+  <button type="button"
+          class="wallet-chip"
+          [class.active]="selectedWalletType === null"
+          (click)="setWalletFilter(null)"
+          title="Todas">
+    <span class="wallet-chip-text">Todas</span>
+  </button>
+
+  <button type="button"
+          class="wallet-chip"
+          [class.active]="selectedWalletType === 'BINANCE'"
+          (click)="setWalletFilter('BINANCE')"
+          title="Binance">
+    <img class="wallet-logo" [src]="walletLogo('BINANCE')" alt="Binance">
+  </button>
+
+  <button type="button"
+          class="wallet-chip"
+          [class.active]="selectedWalletType === 'TRUST'"
+          (click)="setWalletFilter('TRUST')"
+          title="Trust Wallet">
+    <img class="wallet-logo" [src]="walletLogo('TRUST')" alt="Trust Wallet">
+  </button>
+
+  <button type="button"
+          class="wallet-chip"
+          [class.active]="selectedWalletType === 'SOLANA'"
+          (click)="setWalletFilter('SOLANA')"
+          title="Solana">
+    <img class="wallet-logo" [src]="walletLogo('SOLANA')" alt="Solana">
+  </button>
+</div>
+
+
+
+<br>
+
   <div *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
   </div>
   <p *ngIf="loading">Cargando cuentas...</p>
 
-  <div class="grid" *ngIf="accounts.length > 0">
-    <div *ngFor="let account of accounts" class="custom-card"
+  <div class="grid" *ngIf="filteredAccounts.length > 0">
+    <div *ngFor="let account of filteredAccounts" class="custom-card"
       style="--grad:#4cafef,#2196f3; --background:#fff; --text:#444;">
 
       <!-- Botones flotantes -->

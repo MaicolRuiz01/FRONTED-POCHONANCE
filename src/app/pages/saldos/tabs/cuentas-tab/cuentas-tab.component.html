@@ -52,8 +52,14 @@
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of filteredCuentas">
-
-    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card">
+    
+    <p-card class="account-card p-shadow-3" styleClass="account-card">
+  <ng-template pTemplate="header">
+    <div class="card-header-row">
+      <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
+      <span class="account-title">{{ account.name }}</span>
+    </div>
+  </ng-template>
 
       <ng-template pTemplate="content">
         <!-- Contenedor flip -->
@@ -64,10 +70,7 @@
             <div class="flip-face flip-front">
               <div class="account-details">
 
-                <div class="bank-row">
-                  <img class="bank-logo-card" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
-                  <span class="bank-name">{{ account.bankType }}</span>
-                </div>
+               
 
                 <p>
                   <strong>Balance:</strong>
@@ -85,17 +88,12 @@
                     {{ (account.cupoDisponibleHoy ?? 0) | currency:'COP':'symbol':'1.0-0' }}
                   </span>
                 </div>
+                <br>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
-                  <button pButton type="button" label="Copiar" icon="pi pi-copy" class="p-button-sm p-button-secondary"
+                  <button pButton type="button" label="" icon="pi pi-copy" class="p-button-sm p-button-secondary"
                     (click)="copiarCuenta(account, $event)">
                   </button>
                 </div>
-
-
-                <p style="font-size: 0.85rem; color:#666; margin-top: 4px;">
-                  Click para ver resumen del día
-                </p>
-
               </div>
             </div>
 

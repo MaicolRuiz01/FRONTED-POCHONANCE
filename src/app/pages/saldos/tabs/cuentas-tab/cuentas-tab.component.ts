@@ -344,13 +344,10 @@ private getDepositableFromNet(net: number): number {
     // arma el texto como tu cliente lo quiere
     // puedes cambiar el formato libremente
     const lines = [
-      `Cuenta: ${account.name ?? ''}`,
-      `Banco: ${account.bankType ?? ''}`,
-      `Número de cuenta: ${account.numeroCuenta ?? ''}`,
-      `Cédula: ${account.cedula ?? ''}`,
-      `Balance: ${this.formatCop(account.balance)}`,
-      `Disponible (4x1000): ${this.formatCop(this.getDisponible(account.balance))}`,
-      `Cupo disponible hoy: ${this.formatCop(account.cupoDisponibleHoy ?? 0)}`
+      `${account.name ?? ''}`,
+      `${account.bankType ?? ''}`,
+      `Cuenta: ${account.numeroCuenta ?? ''}`,
+      `Cédula: ${account.cedula ?? ''}`
     ];
 
     return lines.join('\n');

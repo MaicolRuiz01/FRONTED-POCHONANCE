@@ -110,7 +110,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 
   loadDeposits(): void {
     this.loading = true;
-    this.buyService.getComprasNoAsignadasHoy().subscribe({
+    this.buyService.getComprasNoAsignadas().subscribe({
       next: data => {
         this.allDeposits = data;
         this.filteredDeposits = [...this.allDeposits];

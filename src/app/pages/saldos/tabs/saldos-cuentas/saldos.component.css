@@ -497,4 +497,168 @@ body {
   }
 }
 
+/* ====== CARD CRIPTOS (VISTA BINANCE) ====== */
+.saldo-card-crypto {
+  background: #eef4ff;
+  border: 1px solid #d9e6ff !important;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  max-width: 560px;         /* para que quede como panel izquierdo */
+  margin-bottom: 18px;
+}
+
+/* Título + total */
+.saldo-card-crypto .saldo-title {
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #1b2b52;
+}
+
+.crypto-total strong {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #d9e6ff;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #111c3d;
+  margin-bottom: 12px;
+}
+
+/* ====== LISTA EN GRID ====== */
+.crypto-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 780px) {
+  .crypto-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ====== FLIP ITEMS ====== */
+.crypto-flip-row {
+  perspective: 900px;
+}
+
+.crypto-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 54px;
+  transform-style: preserve-3d;
+  transition: transform 0.55s ease;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #d9e6ff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.crypto-flip-row:hover .crypto-flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* caras */
+.crypto-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  backface-visibility: hidden;
+  border-radius: 14px;
+}
+
+/* front */
+.crypto-face.front {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+/* back */
+.crypto-face.back {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #f5f8ff 0%, #ffffff 100%);
+}
+
+/* textos */
+.crypto-symbol {
+  font-weight: 900;
+  font-size: 12.5px;
+  color: #1a2a55;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+.crypto-amount {
+  font-weight: 900;
+  font-size: 12.5px;
+  color: #0f1b3d;
+  white-space: nowrap;
+}
+
+.crypto-extra {
+  font-size: 12px;
+  color: #5b6e9a;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* estado sin data */
+.no-cripto-data {
+  margin: 0;
+  color: #5b6e9a;
+  font-size: 13px;
+  font-weight: 700;
+}
+.wallet-filter{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin: 10px 0 16px 0;
+}
+
+.wallet-chip{
+  border: 1px solid #d7dbe8;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: .15s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height: 44px;
+  min-width: 56px;
+}
+
+.wallet-chip:hover{
+  transform: translateY(-1px);
+}
+
+.wallet-chip.active{
+  border-color: #2f7cff;
+  box-shadow: 0 0 0 3px rgba(47,124,255,.12);
+}
+
+.wallet-logo{
+  height: 22px;
+  width: auto;
+  display:block;
+  object-fit: contain;
+}
+
+.wallet-chip-text{
+  font-weight: 800;
+  font-size: .9rem;
+  padding: 0 4px;
+}
+
+
 

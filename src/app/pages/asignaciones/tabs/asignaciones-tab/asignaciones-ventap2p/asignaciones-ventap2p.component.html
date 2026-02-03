@@ -16,16 +16,13 @@
   </app-mi-table>
 
   <div *ngIf="isMobile">
-    <app-card-list
-      [data]="allAccountsp2p"
-      [columns]="[
+    <app-card-list [data]="allAccountsp2p" [columns]="[
         { label: 'N° de orden', field: 'id' },
         { label: 'Fecha',       field: 'date' },
         { label: 'Dólares',     field: 'dollarsUs' },
         { label: 'Pesos COP',   field: 'pesosCop' },
         { label: 'Comisión',    field: 'commission' }
-      ]"
-    >
+      ]">
       <ng-template #cardActionTemplate let-sale>
         <button pButton type="button" label="Asignar" class="p-button-sm p-button-success"
           (click)="openAssignDialog(sale)"></button>
@@ -35,7 +32,7 @@
 
   <p-dialog header="Asignar cuenta(s) a la venta" [(visible)]="displayAssignDialog" [modal]="true" [closable]="true"
     [style]="{ width: '450px' }" [breakpoints]="{ '960px': '95vw' }">
-    
+
     <div class="p-fluid p-formgrid p-grid">
       <div class="p-field p-col-12">
         <label>¿A qué tipo de cuenta desea asignar?</label>
@@ -57,8 +54,8 @@
         </div>
         <div class="p-field p-col-12">
           <label for="amountExternal">Monto</label>
-          <p-inputNumber id="amountExternal" [(ngModel)]="externalAmount" 
-            mode="decimal" locale="de-DE" [minFractionDigits]="2" [maxFractionDigits]="2">
+          <p-inputNumber id="amountExternal" [(ngModel)]="externalAmount" mode="decimal" locale="de-DE"
+            [minFractionDigits]="2" [maxFractionDigits]="2">
           </p-inputNumber>
         </div>
       </ng-container>
@@ -68,12 +65,11 @@
           <label for="account">Seleccionar cuenta colombiana</label>
           <p-multiSelect id="account" [options]="cuentasDisponibles" [(ngModel)]="selectedAccounts" optionLabel="name"
             placeholder="Seleccionar cuentas" [appendTo]="'body'" (onChange)="onAccountsChange()"></p-multiSelect>
-          
+
           <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
             <label class="p-text-bold">{{ assignment.account.name }}</label>
-            <p-inputNumber [(ngModel)]="assignment.amount" 
-              mode="decimal" locale="de-DE" [minFractionDigits]="2" [maxFractionDigits]="2"
-              [placeholder]="'Monto para ' + assignment.account.name">
+            <p-inputNumber [(ngModel)]="assignment.amount" mode="decimal" locale="de-DE" [minFractionDigits]="2"
+              [maxFractionDigits]="2" [placeholder]="'Monto para ' + assignment.account.name">
             </p-inputNumber>
           </div>
         </div>

@@ -14,9 +14,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton'; // Asegúrate de importar el módulo adecuado
 import { InputTextModule } from 'primeng/inputtext';
-
-
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
+import { finalize } from 'rxjs/operators';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
@@ -65,12 +64,12 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
   //componnete reutilizable de la tabla
   columns: TableColumn[] = [
-  { campo: 'id', columna: 'N° de orden' },
- { campo: 'dateFmt', columna: 'Fecha' },
-  { campo: 'dollarsUsFmt', columna: 'Dolares' },
-  { campo: 'pesosCopFmt', columna: 'Pesos COP' },
-  { campo: 'commissionFmt', columna: 'Comision' }
-];
+    { campo: 'id', columna: 'N° de orden' },
+    { campo: 'dateFmt', columna: 'Fecha' },
+    { campo: 'dollarsUsFmt', columna: 'Dolares' },
+    { campo: 'pesosCopFmt', columna: 'Pesos COP' },
+    { campo: 'commissionFmt', columna: 'Comision' }
+  ];
 
 
 
@@ -79,28 +78,28 @@ export class AsignacionesVentap2pComponent implements OnInit {
     private accountBinanceService: AccountBinanceService,
     private accountCopService: AccountCopService,
     private supplierService: SupplierService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-  this.loadNoAsignadas();
-  this.isMobile = window.innerWidth <= 768;
-  window.addEventListener('resize', () => {
+    this.loadNoAsignadas();
     this.isMobile = window.innerWidth <= 768;
-  });
-}
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth <= 768;
+    });
+  }
   openAssignDialog(sale: SaleP2PDto): void {
-  this.selectedSale = sale;
-  this.displayAssignDialog = true;
+    this.selectedSale = sale;
+    this.displayAssignDialog = true;
 
-  this.externalAccountName = '';
-  this.externalAmount = 0;
-  this.selectedAssignments = [];
-  this.selectedAccounts = [];
-  this.isExternal = false;
+    this.externalAccountName = '';
+    this.externalAmount = 0;
+    this.selectedAssignments = [];
+    this.selectedAccounts = [];
+    this.isExternal = false;
 
-  // ✅ Cargar cuentas COP para el multiselect
-  this.loadCuentasCop();
-}
+    // ✅ Cargar cuentas COP para el multiselect
+    this.loadCuentasCop();
+  }
 
 
 
@@ -113,33 +112,33 @@ export class AsignacionesVentap2pComponent implements OnInit {
   }
 
   onAccountsChange(): void {
-  const ventaCop = Number(this.selectedSale?.pesosCop ?? 0);
+    const ventaCop = Number(this.selectedSale?.pesosCop ?? 0);
 
-  // si hay 1 sola cuenta seleccionada => le ponemos TODO el valor de la venta
-  // si hay varias => por defecto quedan en 0 (para que el usuario reparta)
-  const defaultAmount = (this.selectedAccounts.length === 1) ? ventaCop : 0;
+    // si hay 1 sola cuenta seleccionada => le ponemos TODO el valor de la venta
+    // si hay varias => por defecto quedan en 0 (para que el usuario reparta)
+    const defaultAmount = (this.selectedAccounts.length === 1) ? ventaCop : 0;
 
-  this.selectedAssignments = this.selectedAccounts.map(account => {
-    const existing = this.selectedAssignments.find(a => a.account.id === account.id);
+    this.selectedAssignments = this.selectedAccounts.map(account => {
+      const existing = this.selectedAssignments.find(a => a.account.id === account.id);
 
-    return {
-      account,
-      amount: existing ? existing.amount : defaultAmount
-    };
-  });
-}
+      return {
+        account,
+        amount: existing ? existing.amount : defaultAmount
+      };
+    });
+  }
 
   private loadCuentasCop(): void {
-  this.accountCopService.getAll().subscribe({
-    next: (cuentas) => {
-      this.cuentasDisponibles = cuentas ?? [];
-    },
-    error: (err) => {
-      console.error('Error cargando cuentas COP:', err);
-      this.cuentasDisponibles = [];
-    }
-  });
-}
+    this.accountCopService.getAll().subscribe({
+      next: (cuentas) => {
+        this.cuentasDisponibles = cuentas ?? [];
+      },
+      error: (err) => {
+        console.error('Error cargando cuentas COP:', err);
+        this.cuentasDisponibles = [];
+      }
+    });
+  }
 
 
 
@@ -149,105 +148,157 @@ export class AsignacionesVentap2pComponent implements OnInit {
       return;
     }
 
+    // ✅ EXTERNA
     if (this.isExternal) {
-      const accounts = [{
-        amount: this.externalAmount,
-        nameAccount: this.externalAccountName || '',
-        accountCop: null
-      }];
-      this.submitAssignRequest(accounts);
-    } else {
-      const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
-      if (total > this.selectedSale.pesosCop) {
-        alert("El total asignado excede el monto de la venta.");
+      if (!this.externalAccountName?.trim()) {
+        alert("Debes escribir el nombre de la cuenta externa.");
+        return;
+      }
+      if (!this.externalAmount || this.externalAmount <= 0) {
+        alert("El monto debe ser mayor a 0.");
         return;
       }
 
-      const accounts = this.selectedAssignments.map(a => ({
-        amount: a.amount,
-        nameAccount: a.account.name,
-        accountCop: a.account.id
-      }));
+      const accounts = [{
+        amount: this.externalAmount,
+        nameAccount: this.externalAccountName.trim(),
+        accountCop: null
+      }];
 
       this.submitAssignRequest(accounts);
+      return;
     }
+
+    // ✅ COLOMBIANA (COP)
+    if (!this.selectedAccounts || this.selectedAccounts.length === 0) {
+      alert("Debes seleccionar al menos una cuenta COP.");
+      return;
+    }
+
+    // si alguna asignación está en null/0
+    const hasInvalid = this.selectedAssignments.some(a => !a.amount || a.amount <= 0);
+    if (hasInvalid) {
+      alert("Todos los montos deben ser mayores a 0.");
+      return;
+    }
+
+    // ✅ valida que haya id (por si llega null)
+    const hasNullId = this.selectedAssignments.some(a => !a.account?.id);
+    if (hasNullId) {
+      alert("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
+      return;
+    }
+
+    const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
+    const ventaCop = Number(this.selectedSale.pesosCop ?? 0);
+
+    if (total > ventaCop) {
+      alert("El total asignado excede el monto de la venta.");
+      return;
+    }
+
+    const accounts = this.selectedAssignments.map(a => ({
+      amount: a.amount,
+      nameAccount: a.account.name,
+      accountCop: a.account.id
+    }));
+
+    this.submitAssignRequest(accounts);
   }
 
-// Función para enviar los datos al backend
-submitAssignRequest(accounts: any): void {
-  if (!this.selectedSale) {
-    alert("Por favor selecciona una venta.");
-    return;
-  }
 
-  this.saleService.assignAccounts(this.selectedSale.id, accounts).subscribe({
-  next: () => {
-    alert('Cuentas asignadas exitosamente.');  // ✅ Mensaje definido en el cliente
-    this.displayAssignDialog = false;
-    this.loadNoAsignadas();
-  },
-  error: (err) => {
-    console.error('Error al asignar cuentas:', err);
-    alert('Error al asignar las cuentas');
-  }
-});
-}
+  // Función para enviar los datos al backend
+  submitAssignRequest(accounts: any): void {
+    if (!this.selectedSale) {
+      alert("Por favor selecciona una venta.");
+      return;
+    }
 
-loadNoAsignadas(): void {
-  this.loading = true;
+    this.loading = true; // opcional: para bloquear UI mientras asigna
 
-  const req$ = this.selectedBinanceAccount
-    ? this.saleService.getTodayNoAsignadas(this.selectedBinanceAccount.name)
-    : this.saleService.getTodayNoAsignadasAllAccounts();
-
-  req$.subscribe({
-    next: (sales) => {
-      const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
-      const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-      // ✅ Fecha completa (con hora 24h)
-      const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
+    this.saleService.assignAccounts(this.selectedSale.id, accounts)
+      .pipe(finalize(() => {
+        // ✅ esto corre SIEMPRE (éxito o error)
+        this.loading = false;
+        this.displayAssignDialog = false;
+        this.resetAssignForm();
+      }))
+      .subscribe({
+        next: () => {
+          alert('Cuentas asignadas exitosamente.');
+          this.loadNoAsignadas(); // ✅ refresca tabla
+        },
+        error: (err) => {
+          console.error('Error al asignar cuentas:', err);
+          alert('Error al asignar las cuentas');
+        }
       });
+  }
 
-      // ✅ Solo hora (24h)
-      const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
 
-      const today = new Date();
-      const isSameDay = (a: Date, b: Date) =>
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate();
+  loadNoAsignadas(): void {
+    this.loading = true;
 
-      this.allAccountsp2p = (sales ?? []).map(s => {
-        const d = new Date(s.date as any);
+    const req$ = this.selectedBinanceAccount
+      ? this.saleService.getTodayNoAsignadas(this.selectedBinanceAccount.name)
+      : this.saleService.getTodayNoAsignadasAllAccounts();
 
-        return {
-          ...s,
-          // ✅ si es hoy -> solo hora, si no -> fecha completa
-          dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+    req$.subscribe({
+      next: (sales) => {
+        const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+        const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-          pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
-          dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
-          commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
-        };
-      }) as any;
+        // ✅ Fecha completa (con hora 24h)
+        const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
 
-      this.loading = false;
-    },
-    error: () => (this.loading = false),
-  });
-}
+        // ✅ Solo hora (24h)
+        const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
+
+        const today = new Date();
+        const isSameDay = (a: Date, b: Date) =>
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate();
+
+        this.allAccountsp2p = (sales ?? []).map(s => {
+          const d = new Date(s.date as any);
+
+          return {
+            ...s,
+            // ✅ si es hoy -> solo hora, si no -> fecha completa
+            dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+
+            pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
+            dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
+            commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
+          };
+        }) as any;
+
+        this.loading = false;
+      },
+      error: () => (this.loading = false),
+    });
+  }
+  private resetAssignForm(): void {
+    this.selectedSale = null;
+    this.externalAccountName = '';
+    this.externalAmount = 0;
+    this.selectedAssignments = [];
+    this.selectedAccounts = [];
+    this.isExternal = false;
+  }
 
 }

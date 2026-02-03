@@ -50,7 +50,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
   cuentasDisponibles: AccountCop[] = [];
   selectedSale: SaleP2PDto | null = null;
   externalAmount: number = 0;
-
+  saving = false;
   // Nuevo estado para la asignación
   isExternal: boolean = false;  // Si es externa o colombiana
   selectedAssignments: { account: AccountCop; amount: number }[] = [];
@@ -209,31 +209,29 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
   // Función para enviar los datos al backend
   submitAssignRequest(accounts: any): void {
-    if (!this.selectedSale) {
-      alert("Por favor selecciona una venta.");
-      return;
-    }
+  if (!this.selectedSale) return;
 
-    this.loading = true; // opcional: para bloquear UI mientras asigna
+  if (this.saving) return;      // ✅ evita doble click
+  this.saving = true;           // ✅ bloquea UI
 
-    this.saleService.assignAccounts(this.selectedSale.id, accounts)
-      .pipe(finalize(() => {
-        // ✅ esto corre SIEMPRE (éxito o error)
-        this.loading = false;
+  this.saleService.assignAccounts(this.selectedSale.id, accounts)
+    .pipe(finalize(() => {
+      this.saving = false;       // ✅ se libera SIEMPRE
+    }))
+    .subscribe({
+      next: () => {
+        alert('Cuentas asignadas exitosamente.');
         this.displayAssignDialog = false;
         this.resetAssignForm();
-      }))
-      .subscribe({
-        next: () => {
-          alert('Cuentas asignadas exitosamente.');
-          this.loadNoAsignadas(); // ✅ refresca tabla
-        },
-        error: (err) => {
-          console.error('Error al asignar cuentas:', err);
-          alert('Error al asignar las cuentas');
-        }
-      });
-  }
+        this.loadNoAsignadas();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error al asignar las cuentas');
+      }
+    });
+}
+
 
 
   loadNoAsignadas(): void {
@@ -245,50 +243,51 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
     req$.subscribe({
       next: (sales) => {
-        const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
-        const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const sorted = (sales ?? []).slice().sort((a, b) => {
+    return new Date(b.date as any).getTime() - new Date(a.date as any).getTime(); // ✅ DESC: más reciente primero
+  });
 
-        // ✅ Fecha completa (con hora 24h)
-        const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        });
+  const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+  const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // ✅ Solo hora (24h)
-        const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        });
+  const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
 
-        const today = new Date();
-        const isSameDay = (a: Date, b: Date) =>
-          a.getFullYear() === b.getFullYear() &&
-          a.getMonth() === b.getMonth() &&
-          a.getDate() === b.getDate();
+  const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
 
-        this.allAccountsp2p = (sales ?? []).map(s => {
-          const d = new Date(s.date as any);
+  const today = new Date();
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
 
-          return {
-            ...s,
-            // ✅ si es hoy -> solo hora, si no -> fecha completa
-            dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+  this.allAccountsp2p = sorted.map(s => {
+    const d = new Date(s.date as any);
 
-            pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
-            dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
-            commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
-          };
-        }) as any;
+    return {
+      ...s,
+      dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+      pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
+      dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
+      commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
+    };
+  }) as any;
 
-        this.loading = false;
-      },
+  this.loading = false;
+},
+
       error: () => (this.loading = false),
     });
   }

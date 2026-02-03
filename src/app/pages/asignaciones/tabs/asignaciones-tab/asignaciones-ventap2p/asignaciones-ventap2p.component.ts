@@ -65,12 +65,14 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
   //componnete reutilizable de la tabla
   columns: TableColumn[] = [
-    { campo: 'id', columna: 'N° de orden' },
-    { campo: 'date', columna: 'Fecha' },
-    { campo: 'dollarsUs', columna: 'Dolares' },
-    { campo: 'pesosCop', columna: 'Pesos COP' },
-    { campo: 'commission', columna: 'Comision' }
-  ];
+  { campo: 'id', columna: 'N° de orden' },
+ { campo: 'dateFmt', columna: 'Fecha' },
+  { campo: 'dollarsUsFmt', columna: 'Dolares' },
+  { campo: 'pesosCopFmt', columna: 'Pesos COP' },
+  { campo: 'commissionFmt', columna: 'Comision' }
+];
+
+
 
   constructor(
     private saleService: SaleP2PService,
@@ -193,7 +195,6 @@ submitAssignRequest(accounts: any): void {
 
 loadNoAsignadas(): void {
   this.loading = true;
-  this.noSalesMessage = '';
 
   const req$ = this.selectedBinanceAccount
     ? this.saleService.getTodayNoAsignadas(this.selectedBinanceAccount.name)
@@ -201,24 +202,51 @@ loadNoAsignadas(): void {
 
   req$.subscribe({
     next: (sales) => {
-  this.allAccountsp2p = (sales ?? []).sort((a, b) => {
-    const da = new Date(a.date as any).getTime();
-    const db = new Date(b.date as any).getTime();
-    return da - db ; // ✅ DESC: recientes primero
-  });
+      const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+      const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  if (this.allAccountsp2p.length === 0) {
-    this.noSalesMessage = 'No hay ventas P2P no asignadas hoy.';
-  }
+      // ✅ Fecha completa (con hora 24h)
+      const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
 
-  this.loading = false;
-},
+      // ✅ Solo hora (24h)
+      const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
 
-    error: (err) => {
-      console.error('Error al cargar ventas P2P no asignadas:', err);
-      this.noSalesMessage = 'Error al obtener ventas';
+      const today = new Date();
+      const isSameDay = (a: Date, b: Date) =>
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+
+      this.allAccountsp2p = (sales ?? []).map(s => {
+        const d = new Date(s.date as any);
+
+        return {
+          ...s,
+          // ✅ si es hoy -> solo hora, si no -> fecha completa
+          dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+
+          pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
+          dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
+          commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
+        };
+      }) as any;
+
       this.loading = false;
-    }
+    },
+    error: () => (this.loading = false),
   });
 }
 

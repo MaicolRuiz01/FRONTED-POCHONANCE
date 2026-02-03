@@ -122,6 +122,6 @@ export class ListaVentasComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/saldos'], { queryParams: { tab: 'cuentas-cop' } });
+    this.router.navigate(['/saldos'], { queryParams: { tab: 'cuentas' } });
   }
 }

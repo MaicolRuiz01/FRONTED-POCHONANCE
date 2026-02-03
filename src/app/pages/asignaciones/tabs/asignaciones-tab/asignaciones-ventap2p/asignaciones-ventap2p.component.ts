@@ -209,28 +209,28 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
   // Función para enviar los datos al backend
   submitAssignRequest(accounts: any): void {
-  if (!this.selectedSale) return;
+    if (!this.selectedSale) return;
 
-  if (this.saving) return;      // ✅ evita doble click
-  this.saving = true;           // ✅ bloquea UI
+    if (this.saving) return;      // ✅ evita doble click
+    this.saving = true;           // ✅ bloquea UI
 
-  this.saleService.assignAccounts(this.selectedSale.id, accounts)
-    .pipe(finalize(() => {
-      this.saving = false;       // ✅ se libera SIEMPRE
-    }))
-    .subscribe({
-      next: () => {
-        alert('Cuentas asignadas exitosamente.');
-        this.displayAssignDialog = false;
-        this.resetAssignForm();
-        this.loadNoAsignadas();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Error al asignar las cuentas');
-      }
-    });
-}
+    this.saleService.assignAccounts(this.selectedSale.id, accounts)
+      .pipe(finalize(() => {
+        this.saving = false;       // ✅ se libera SIEMPRE
+      }))
+      .subscribe({
+        next: () => {
+          alert('Cuentas asignadas exitosamente.');
+          this.displayAssignDialog = false;
+          this.resetAssignForm();
+          this.loadNoAsignadas();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error al asignar las cuentas');
+        }
+      });
+  }
 
 
 
@@ -243,50 +243,51 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
     req$.subscribe({
       next: (sales) => {
-  const sorted = (sales ?? []).slice().sort((a, b) => {
-    return new Date(b.date as any).getTime() - new Date(a.date as any).getTime(); // ✅ DESC: más reciente primero
-  });
+        const sorted = (sales ?? []).slice().sort((a, b) => {
+  return new Date(a.date as any).getTime() - new Date(b.date as any).getTime(); // ✅ ASC: viejas primero
+});
 
-  const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
-  const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
+        const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+        const fmtUsd = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
+        const fmtDateFull = new Intl.DateTimeFormat('es-CO', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
 
-  const today = new Date();
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+        const fmtTimeOnly = new Intl.DateTimeFormat('es-CO', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
 
-  this.allAccountsp2p = sorted.map(s => {
-    const d = new Date(s.date as any);
+        const today = new Date();
+        const isSameDay = (a: Date, b: Date) =>
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate();
 
-    return {
-      ...s,
-      dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
-      pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
-      dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
-      commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
-    };
-  }) as any;
+        this.allAccountsp2p = sorted.map(s => {
+          const d = new Date(s.date as any);
 
-  this.loading = false;
-},
+          return {
+            ...s,
+            dateFmt: isSameDay(d, today) ? fmtTimeOnly.format(d) : fmtDateFull.format(d),
+            pesosCopFmt: fmtCop.format(Number(s.pesosCop ?? 0)),
+            dollarsUsFmt: fmtUsd.format(Number(s.dollarsUs ?? 0)),
+            commissionFmt: fmtUsd.format(Number(s.commission ?? 0)),
+          };
+        }) as any;
+
+        this.loading = false;
+      },
 
       error: () => (this.loading = false),
     });

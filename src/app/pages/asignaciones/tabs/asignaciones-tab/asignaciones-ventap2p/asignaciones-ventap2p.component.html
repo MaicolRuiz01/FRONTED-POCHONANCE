@@ -15,7 +15,7 @@
     label="Asignar"
     icon="pi pi-check"
     class="p-button-success"
-    [disabled]="loading || saving"
+    [disabled]="loading"
     (click)="openAssignDialog(sale)">
   </button>
 </ng-template>
@@ -32,7 +32,7 @@
       ]">
       <ng-template #cardActionTemplate let-sale>
         <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success"
-          [disabled]="loading || saving" (click)="openAssignDialog(sale)">
+          [disabled]="loading" (click)="openAssignDialog(sale)">
         </button>
 
 

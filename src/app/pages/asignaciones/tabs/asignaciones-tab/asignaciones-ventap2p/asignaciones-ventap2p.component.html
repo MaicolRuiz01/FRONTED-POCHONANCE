@@ -9,16 +9,17 @@
 
   <app-mi-table [columns]="columns" [data]="allAccountsp2p" *ngIf="!isMobile">
     <ng-template #actionTemplate let-sale>
-      <button
-  pButton
-  label="Asignar"
-  icon="pi pi-check"
-  class="p-button-success"
-  [disabled]="saving"
-  (click)="assignAccounts()">
-</button>
+  <button
+    pButton
+    type="button"
+    label="Asignar"
+    icon="pi pi-check"
+    class="p-button-success"
+    [disabled]="loading || saving"
+    (click)="openAssignDialog(sale)">
+  </button>
+</ng-template>
 
-    </ng-template>
   </app-mi-table>
 
   <div *ngIf="isMobile">
@@ -30,14 +31,10 @@
         { label: 'Comisión',    field: 'commission' }
       ]">
       <ng-template #cardActionTemplate let-sale>
-        <button
-  pButton
-  type="button"
-  label="Asignar"
-  class="p-button-sm p-button-success"
-  [disabled]="loading || saving"
-  (click)="openAssignDialog(sale)">
-</button>
+        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success"
+          [disabled]="loading || saving" (click)="openAssignDialog(sale)">
+        </button>
+
 
       </ng-template>
     </app-card-list>
@@ -92,7 +89,10 @@
     <ng-template pTemplate="footer">
       <button pButton label="Cancelar" icon="pi pi-times" (click)="displayAssignDialog = false"
         class="p-button-text"></button>
-      <button pButton label="Asignar" icon="pi pi-check" class="p-button-success" (click)="assignAccounts()"></button>
+      <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="saving"
+        (click)="assignAccounts()">
+      </button>
+
     </ng-template>
   </p-dialog>
 </div>

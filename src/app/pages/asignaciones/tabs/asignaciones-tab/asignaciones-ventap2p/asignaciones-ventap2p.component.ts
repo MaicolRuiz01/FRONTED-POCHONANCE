@@ -88,6 +88,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
     });
   }
   openAssignDialog(sale: SaleP2PDto): void {
+    this.saving = false;
     this.selectedSale = sale;
     this.displayAssignDialog = true;
 
@@ -143,6 +144,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
 
   assignAccounts(): void {
+    if (this.saving) return; 
     if (!this.selectedSale) {
       alert("Por favor selecciona una venta.");
       return;

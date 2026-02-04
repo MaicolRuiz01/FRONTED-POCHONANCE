@@ -24,7 +24,7 @@ import { AjustesService } from '../../../../core/services/ajustes.service';
 import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-
+import { Output, EventEmitter } from '@angular/core';
 @Component({
   selector: 'app-clientes',
   standalone: true,
@@ -56,7 +56,7 @@ export class ClientesComponent implements OnInit {
   comprasCliente: BuyDollarsDto[] = [];
   displayPagoCPModal = false;
   clienteSaldoTipo: 'DEBEMOS' | 'NOS_DEBEN' = 'DEBEMOS';
-
+  @Output() totalChange = new EventEmitter<number>();
   displayPagoModal = false;
   displayTransferModal = false;
 
@@ -156,6 +156,7 @@ export class ClientesComponent implements OnInit {
     this.clienteService.listar().subscribe({
       next: data => {
         this.clientes = data;
+        this.emitTotal();
         this.clientes.forEach(c => {
           if (!c.id) return;
           this.movimientoService.getResumenCliente(c.id).subscribe({
@@ -658,6 +659,9 @@ export class ClientesComponent implements OnInit {
     },
     error: (err) => console.error('Error descargando excel cliente', err)
   });
+}
+private emitTotal() {
+  this.totalChange.emit(Number(this.totalClientes ?? 0));
 }
 
 }

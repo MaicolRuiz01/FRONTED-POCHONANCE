@@ -1,11 +1,125 @@
-<p-tabView>
-    
-    <p-tabPanel header="Clientes">
-      <app-clientes></app-clientes>
-    </p-tabPanel>
-    <p-tabPanel header="Proveedores">
-      <app-proveedor></app-proveedor>
-    </p-tabPanel>
-    
-  </p-tabView>
-  
+<!-- =======================
+     HOME: SOLO CARDS
+======================= -->
+<div class="switch-cards" *ngIf="view === 'HOME'">
+  <!-- CARD: TOTAL GENERAL (NO CLICKEABLE) -->
+<div class="switch-card switch-card--total" role="note">
+  <div class="switch-card__top">
+    <span class="title">
+      <i class="pi pi-chart-line"></i>
+      Total general
+    </span>
+
+    <span class="pill" [class.pos]="totalGeneral >= 0" [class.neg]="totalGeneral < 0">
+      {{ totalGeneralLabel }}
+    </span>
+  </div>
+
+  <div class="switch-card__value">
+    {{ abs(totalGeneral) | currency:'COP':'symbol':'1.0-0' }}
+  </div>
+
+  <div class="switch-card__hint">
+    {{ totalGeneralHint }}
+  </div>
+</div>
+
+
+  <!-- CARD: CLIENTES -->
+  <div class="switch-card" (click)="go('CLIENTES')">
+    <div class="switch-card__top">
+      <span class="title">
+        <i class="pi pi-users"></i>
+        Clientes
+      </span>
+
+      <span class="pill" [class.pos]="clientesTotal >= 0" [class.neg]="clientesTotal < 0">
+        {{ clientesLabel }}
+      </span>
+    </div>
+
+    <div class="switch-card__value">
+      {{ abs(clientesTotal) | currency:'COP':'symbol':'1.0-0' }}
+    </div>
+
+    <div class="switch-card__hint">
+      {{ clientesHint }}
+    </div>
+  </div>
+
+  <!-- CARD: PROVEEDORES -->
+  <div class="switch-card" (click)="go('PROVEEDORES')">
+    <div class="switch-card__top">
+      <span class="title">
+        <i class="pi pi-briefcase"></i>
+        Proveedores
+      </span>
+
+      <span class="pill" [class.pos]="proveedoresTotal >= 0" [class.neg]="proveedoresTotal < 0">
+        {{ proveedoresLabel }}
+      </span>
+    </div>
+
+    <div class="switch-card__value">
+      {{ abs(proveedoresTotal) | currency:'COP':'symbol':'1.0-0' }}
+    </div>
+
+    <div class="switch-card__hint">
+      {{ proveedoresHint }}
+    </div>
+  </div>
+
+</div>
+
+
+<!-- =======================
+     VISTA: CLIENTES
+======================= -->
+<div class="switch-content" *ngIf="view === 'CLIENTES'">
+  <div class="switch-topbar">
+  <button
+    pButton
+    type="button"
+    class="back-btn"
+    icon="pi pi-arrow-left"
+    label="Volver"
+    (click)="back()">
+  </button>
+
+  <!-- opcional: título a la derecha -->
+  <span class="switch-title">
+    {{ view === 'CLIENTES' ? 'Clientes' : 'Proveedores' }}
+  </span>
+</div>
+
+  <app-clientes (totalChange)="clientesTotal = $event"></app-clientes>
+</div>
+
+
+<!-- =======================
+     VISTA: PROVEEDORES
+======================= -->
+<div class="switch-content" *ngIf="view === 'PROVEEDORES'">
+  <div class="switch-topbar">
+  <button
+    pButton
+    type="button"
+    class="back-btn"
+    icon="pi pi-arrow-left"
+    label="Volver"
+    (click)="back()">
+  </button>
+
+  <!-- opcional: título a la derecha -->
+  <span class="switch-title">
+    {{ view === 'PROVEEDORES' ? 'Clientes' : 'Proveedores' }}
+  </span>
+</div>
+
+  <app-proveedor (totalChange)="proveedoresTotal = $event"></app-proveedor>
+</div>
+<!-- CARGA OCULTA SOLO PARA TRAER TOTALES (sin mostrar nada) -->
+<div style="display:none">
+  <app-clientes (totalChange)="clientesTotal = $event"></app-clientes>
+  <app-proveedor (totalChange)="proveedoresTotal = $event"></app-proveedor>
+</div>

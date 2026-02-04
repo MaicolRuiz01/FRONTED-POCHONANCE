@@ -20,7 +20,7 @@ import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-
 import { TableModule } from 'primeng/table';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { SelectButtonModule } from 'primeng/selectbutton';
-
+import { Output, EventEmitter } from '@angular/core';
 
 export interface PagoProveedorDTO {
   id: number;
@@ -68,7 +68,7 @@ export class ProveedorComponent implements OnInit {
   selectedProveedorOrigen: Supplier | null = null;
   supplierSaldoTipo: 'DEBEMOS' | 'NOS_DEBEN' = 'DEBEMOS';
   movimientos: any[] = [];
-
+  @Output() totalChange = new EventEmitter<number>();
 
   Supplier_name: string = '';
   Supplier_balance: number = 0; // nuevo, balance por defecto
@@ -142,6 +142,7 @@ export class ProveedorComponent implements OnInit {
     this.supplierService.getAllSuppliers().subscribe({
       next: (data) => {
         this.suppliers = data;
+        this.emitTotal();
         this.suppliers.forEach(s => {
           if (!s.id) return;
           this.movimientoService.getResumenProveedor(s.id).subscribe({
@@ -170,25 +171,25 @@ export class ProveedorComponent implements OnInit {
 
 
   createSupplier(data: any): void {
-  const monto = Math.abs(Number(data.balance || 0));
+    const monto = Math.abs(Number(data.balance || 0));
 
-  // Debemos = +monto, Nos deben = -monto
-  const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
+    // Debemos = +monto, Nos deben = -monto
+    const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
 
-  this.supplierService.createSupplier({
-    name: data.name,
-    balance: balanceSigned
-  }).subscribe({
-    next: (supplier) => {
-      this.suppliers.push(supplier);
-      this.showform = false;
-      this.Supplier_name = '';
-      this.Supplier_balance = 0;
-      this.supplierSaldoTipo = 'DEBEMOS';
-    },
-    error: (err) => console.error('Error creating supplier', err)
-  });
-}
+    this.supplierService.createSupplier({
+      name: data.name,
+      balance: balanceSigned
+    }).subscribe({
+      next: (supplier) => {
+        this.suppliers.push(supplier);
+        this.showform = false;
+        this.Supplier_name = '';
+        this.Supplier_balance = 0;
+        this.supplierSaldoTipo = 'DEBEMOS';
+      },
+      error: (err) => console.error('Error creating supplier', err)
+    });
+  }
 
 
 
@@ -374,12 +375,15 @@ export class ProveedorComponent implements OnInit {
   }
 
   showFormsupplier(): void {
-  this.showform = !this.showform;
-  if (this.showform) {
-    this.Supplier_name = '';
-    this.Supplier_balance = 0;
-    this.supplierSaldoTipo = 'DEBEMOS';
+    this.showform = !this.showform;
+    if (this.showform) {
+      this.Supplier_name = '';
+      this.Supplier_balance = 0;
+      this.supplierSaldoTipo = 'DEBEMOS';
+    }
   }
-}
+  private emitTotal() {
+    this.totalChange.emit(Number(this.totalProveedores ?? 0));
+  }
 
 }

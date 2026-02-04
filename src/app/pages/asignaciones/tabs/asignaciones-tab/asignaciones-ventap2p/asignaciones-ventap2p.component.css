@@ -79,14 +79,73 @@ button[pButton]:not(:disabled):hover {
   width: 1.8rem;
   height: 1.8rem;
   padding: 0;
-  font-size: 0.75rem; /* tamaño del ícono */
+  font-size: 0.75rem;
+  /* tamaño del ícono */
   display: flex;
   border-radius: 15px;
   background-color: green;
 }
 
-.asig-scroll{
-  height: calc(100vh - 140px); /* ajusta según tu header */
+.asig-scroll {
+  height: calc(100vh - 140px);
+  /* ajusta según tu header */
   overflow-y: auto;
   min-height: 0;
+}
+
+.bank-logos {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.bank-logo-btn {
+  width: 60px;
+  height: 44px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.bank-logo-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bank-logo-btn.active {
+  border: 2px solid #22c55e;
+  /* verde */
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.bank-clear-btn {
+  height: 44px;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-weight: 600;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .15s ease;
+}
+
+:host ::ng-deep .bank-clear-btn .p-button-icon {
+  font-size: 0.95rem;
+}
+
+.bank-clear-btn:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  transform: translateY(-1px);
+}
+
+.bank-clear-btn:active {
+  transform: translateY(0px);
 }

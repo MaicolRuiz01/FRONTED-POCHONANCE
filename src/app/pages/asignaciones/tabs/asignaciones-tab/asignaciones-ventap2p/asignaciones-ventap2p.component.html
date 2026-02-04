@@ -9,16 +9,10 @@
 
   <app-mi-table [columns]="columns" [data]="allAccountsp2p" *ngIf="!isMobile">
     <ng-template #actionTemplate let-sale>
-  <button
-    pButton
-    type="button"
-    label="Asignar"
-    icon="pi pi-check"
-    class="p-button-success"
-    [disabled]="loading"
-    (click)="openAssignDialog(sale)">
-  </button>
-</ng-template>
+      <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="loading"
+        (click)="openAssignDialog(sale)">
+      </button>
+    </ng-template>
 
   </app-mi-table>
 
@@ -31,8 +25,8 @@
         { label: 'Comisión',    field: 'commission' }
       ]">
       <ng-template #cardActionTemplate let-sale>
-        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success"
-          [disabled]="loading" (click)="openAssignDialog(sale)">
+        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="loading"
+          (click)="openAssignDialog(sale)">
         </button>
 
 
@@ -44,47 +38,55 @@
     [style]="{ width: '450px' }" [breakpoints]="{ '960px': '95vw' }">
 
     <div class="p-fluid p-formgrid p-grid">
+
+      <!--Selector de banco por LOGOS -->
       <div class="p-field p-col-12">
-        <label>¿A qué tipo de cuenta desea asignar?</label>
-        <div class="p-formgroup-inline">
-          <p-radioButton name="accountType" [value]="true" [(ngModel)]="isExternal" inputId="external"
-            (onChange)="handleAssignType()"></p-radioButton>
-          <label for="external" class="p-mr-3">Cuenta Externa</label>
-          <br><br>
-          <p-radioButton name="accountType" [value]="false" [(ngModel)]="isExternal" inputId="colombian"
-            (onChange)="handleAssignType()"></p-radioButton>
-          <label for="colombian">Cuenta Colombiana</label>
+        <label>Filtrar por banco</label>
+
+        <div class="bank-logos">
+          <button pButton type="button" class="bank-logo-btn" [ngClass]="{ 'active': selectedBankType === 'NEQUI' }"
+            (click)="setBankFilter('NEQUI')">
+            <img [src]="bankLogo('NEQUI')" alt="Nequi" />
+          </button>
+
+          <button pButton type="button" class="bank-logo-btn" [ngClass]="{ 'active': selectedBankType === 'DAVIPLATA' }"
+            (click)="setBankFilter('DAVIPLATA')">
+            <img [src]="bankLogo('DAVIPLATA')" alt="Daviplata" />
+          </button>
+
+          <button pButton type="button" class="bank-logo-btn"
+            [ngClass]="{ 'active': selectedBankType === 'BANCOLOMBIA' }" (click)="setBankFilter('BANCOLOMBIA')">
+            <img [src]="bankLogo('BANCOLOMBIA')" alt="Bancolombia" />
+          </button>
+
+          <!--opcional: botón "Todos" -->
+          <button pButton type="button" class="bank-clear-btn" icon="pi pi-filter-slash" label="Todos"
+            *ngIf="selectedBankType" (click)="setBankFilter(null)">
+          </button>
+
         </div>
       </div>
 
-      <ng-container *ngIf="isExternal">
-        <div class="p-field p-col-12">
-          <label for="externalAccountName">Nombre de la Cuenta</label>
-          <input id="externalAccountName" pInputText [(ngModel)]="externalAccountName" />
-        </div>
-        <div class="p-field p-col-12">
-          <label for="amountExternal">Monto</label>
-          <p-inputNumber id="amountExternal" [(ngModel)]="externalAmount" mode="decimal" locale="de-DE"
-            [minFractionDigits]="2" [maxFractionDigits]="2">
+      <!-- ✅ MultiSelect usa cuentasFiltradas -->
+      <div class="p-field p-col-12">
+        <label for="account">Seleccionar cuenta colombiana</label>
+
+        <p-multiSelect id="account" [options]="cuentasFiltradas" [(ngModel)]="selectedAccounts" optionLabel="name"
+          placeholder="Seleccionar cuentas" [appendTo]="'body'" (onChange)="onAccountsChange()">
+        </p-multiSelect>
+
+        <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
+          <label class="p-text-bold">{{ assignment.account.name }}</label>
+
+          <p-inputNumber [(ngModel)]="assignment.amount" mode="decimal" locale="de-DE" [minFractionDigits]="2"
+            [maxFractionDigits]="2" [placeholder]="'Monto para ' + assignment.account.name">
           </p-inputNumber>
         </div>
-      </ng-container>
+      </div>
 
-      <ng-container *ngIf="!isExternal">
-        <div class="p-field p-col-12">
-          <label for="account">Seleccionar cuenta colombiana</label>
-          <p-multiSelect id="account" [options]="cuentasDisponibles" [(ngModel)]="selectedAccounts" optionLabel="name"
-            placeholder="Seleccionar cuentas" [appendTo]="'body'" (onChange)="onAccountsChange()"></p-multiSelect>
-
-          <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
-            <label class="p-text-bold">{{ assignment.account.name }}</label>
-            <p-inputNumber [(ngModel)]="assignment.amount" mode="decimal" locale="de-DE" [minFractionDigits]="2"
-              [maxFractionDigits]="2" [placeholder]="'Monto para ' + assignment.account.name">
-            </p-inputNumber>
-          </div>
-        </div>
-      </ng-container>
     </div>
+
+
 
     <ng-template pTemplate="footer">
       <button pButton label="Cancelar" icon="pi pi-times" (click)="displayAssignDialog = false"

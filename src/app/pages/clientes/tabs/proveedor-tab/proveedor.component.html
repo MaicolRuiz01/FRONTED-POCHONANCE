@@ -312,37 +312,24 @@
           </div>
 
           <div class="p-col-12 p-md-12">
-  <label class="p-d-block p-mb-2">Tipo de saldo inicial</label>
+            <label class="p-d-block p-mb-2">Tipo de saldo inicial</label>
 
-  <p-selectButton
-    [options]="[
+            <p-selectButton [options]="[
       { label: 'Debemos', value: 'DEBEMOS' },
       { label: 'Nos deben', value: 'NOS_DEBEN' }
-    ]"
-    [(ngModel)]="supplierSaldoTipo"
-    name="supplierSaldoTipo"
-  ></p-selectButton>
+    ]" [(ngModel)]="supplierSaldoTipo" name="supplierSaldoTipo"></p-selectButton>
 
-  <small class="text-500">
-    Debemos = saldo positivo • Nos deben = saldo negativo
-  </small>
-</div>
+            <small class="text-500">
+              Debemos = saldo positivo • Nos deben = saldo negativo
+            </small>
+          </div>
 
 
           <div class="p-col-12 p-md-12">
-  <label for="balance" class="p-d-block p-mb-2">Saldo inicial</label>
-  <p-inputNumber
-    id="balance"
-    [(ngModel)]="Supplier_balance"
-    name="Supplier_balance"
-    mode="decimal"
-    currency="COP"
-    [prefix]="'$'"
-    [showButtons]="true"
-    [min]="0"
-    placeholder="Ej: 1000"
-  ></p-inputNumber>
-</div>
+            <label for="balance" class="p-d-block p-mb-2">Saldo inicial</label>
+            <p-inputNumber id="balance" [(ngModel)]="Supplier_balance" name="Supplier_balance" mode="decimal"
+              currency="COP" [prefix]="'$'" [showButtons]="true" [min]="0" placeholder="Ej: 1000"></p-inputNumber>
+          </div>
 
 
 

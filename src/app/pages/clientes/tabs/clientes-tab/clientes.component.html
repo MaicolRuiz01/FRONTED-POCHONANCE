@@ -82,7 +82,7 @@
     <div class="card" *ngFor="let cliente of clientes" (click)="onSelectCliente(cliente)">
 
       <h3>{{ cliente.nombre }}</h3>
-      
+
 
       <p>
         <strong>{{ cliente.saldo >= 0 ? 'Debemos:' : 'Debe:' }}</strong>

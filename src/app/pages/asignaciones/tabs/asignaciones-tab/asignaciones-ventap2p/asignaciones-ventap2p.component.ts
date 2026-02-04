@@ -20,6 +20,8 @@ import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
 
+type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
+
 
 @Component({
   selector: 'app-asignaciones-ventap2p',
@@ -60,8 +62,13 @@ export class AsignacionesVentap2pComponent implements OnInit {
   loading: boolean = false;
   isMobile: boolean = false;
   selectedAccounts: AccountCop[] = [];
+  selectedBank: string | null = null;
 
+  cuentasTodas: AccountCop[] = [];      // todas las cuentas
+  cuentasFiltradas: AccountCop[] = [];  // las que se ven en el multiselect
 
+  bankOptions: { label: string; value: string }[] = [];
+  selectedBankType: BankType | null = null;
   //componnete reutilizable de la tabla
   columns: TableColumn[] = [
     { campo: 'id', columna: 'N° de orden' },
@@ -88,21 +95,18 @@ export class AsignacionesVentap2pComponent implements OnInit {
     });
   }
   openAssignDialog(sale: SaleP2PDto): void {
-    this.saving = false;
-    this.selectedSale = sale;
-    this.displayAssignDialog = true;
+  this.saving = false;
+  this.selectedSale = sale;
+  this.displayAssignDialog = true;
 
-    this.externalAccountName = '';
-    this.externalAmount = 0;
-    this.selectedAssignments = [];
-    this.selectedAccounts = [];
-    this.isExternal = false;
+  this.selectedAssignments = [];
+  this.selectedAccounts = [];
 
-    // ✅ Cargar cuentas COP para el multiselect
-    this.loadCuentasCop();
-  }
+  // ✅ reset filtro por banco
+  this.selectedBankType = null;
 
-
+  this.loadCuentasCop();
+}
 
   handleAssignType(): void {
     if (this.isExternal) {
@@ -130,61 +134,52 @@ export class AsignacionesVentap2pComponent implements OnInit {
   }
 
   private loadCuentasCop(): void {
-    this.accountCopService.getAll().subscribe({
-      next: (cuentas) => {
-        this.cuentasDisponibles = cuentas ?? [];
-      },
-      error: (err) => {
-        console.error('Error cargando cuentas COP:', err);
-        this.cuentasDisponibles = [];
-      }
-    });
+  this.accountCopService.getAll().subscribe({
+    next: (cuentas) => {
+      this.cuentasTodas = cuentas ?? [];
+      this.applyBankFilter();
+    },
+    error: (err) => {
+      console.error('Error cargando cuentas COP:', err);
+      this.cuentasTodas = [];
+      this.cuentasFiltradas = [];
+    }
+  });
+}
+
+
+  applyBankFilter(): void {
+    this.cuentasFiltradas = !this.selectedBankType
+      ? this.cuentasTodas
+      : this.cuentasTodas.filter(c => (c.bankType ?? '').toUpperCase() === this.selectedBankType);
+
+    // si el usuario ya había seleccionado cuentas, elimina las que ya no aplican
+    const idsVisibles = new Set(this.cuentasFiltradas.map(c => c.id));
+    this.selectedAccounts = (this.selectedAccounts ?? []).filter(c => idsVisibles.has(c.id));
+
+    this.onAccountsChange();
   }
 
 
-
   assignAccounts(): void {
-    if (this.saving) return; 
+    if (this.saving) return;
+
     if (!this.selectedSale) {
       alert("Por favor selecciona una venta.");
       return;
     }
 
-    // ✅ EXTERNA
-    if (this.isExternal) {
-      if (!this.externalAccountName?.trim()) {
-        alert("Debes escribir el nombre de la cuenta externa.");
-        return;
-      }
-      if (!this.externalAmount || this.externalAmount <= 0) {
-        alert("El monto debe ser mayor a 0.");
-        return;
-      }
-
-      const accounts = [{
-        amount: this.externalAmount,
-        nameAccount: this.externalAccountName.trim(),
-        accountCop: null
-      }];
-
-      this.submitAssignRequest(accounts);
-      return;
-    }
-
-    // ✅ COLOMBIANA (COP)
     if (!this.selectedAccounts || this.selectedAccounts.length === 0) {
       alert("Debes seleccionar al menos una cuenta COP.");
       return;
     }
 
-    // si alguna asignación está en null/0
     const hasInvalid = this.selectedAssignments.some(a => !a.amount || a.amount <= 0);
     if (hasInvalid) {
       alert("Todos los montos deben ser mayores a 0.");
       return;
     }
 
-    // ✅ valida que haya id (por si llega null)
     const hasNullId = this.selectedAssignments.some(a => !a.account?.id);
     if (hasNullId) {
       alert("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
@@ -207,6 +202,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
     this.submitAssignRequest(accounts);
   }
+
 
 
   // Función para enviar los datos al backend
@@ -246,8 +242,8 @@ export class AsignacionesVentap2pComponent implements OnInit {
     req$.subscribe({
       next: (sales) => {
         const sorted = (sales ?? []).slice().sort((a, b) => {
-  return new Date(a.date as any).getTime() - new Date(b.date as any).getTime(); // ✅ ASC: viejas primero
-});
+          return new Date(a.date as any).getTime() - new Date(b.date as any).getTime(); // ✅ ASC: viejas primero
+        });
 
 
         const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
@@ -294,13 +290,26 @@ export class AsignacionesVentap2pComponent implements OnInit {
       error: () => (this.loading = false),
     });
   }
+  
   private resetAssignForm(): void {
     this.selectedSale = null;
-    this.externalAccountName = '';
-    this.externalAmount = 0;
     this.selectedAssignments = [];
     this.selectedAccounts = [];
-    this.isExternal = false;
+    this.selectedBank = null;
   }
+  bankLogo(type?: string | null): string {
+    const t = (type ?? '').toString().trim().toUpperCase();
 
+    switch (t as BankType) {
+      case 'NEQUI': return '/assets/layout/images/nequi.png';
+      case 'DAVIPLATA': return '/assets/layout/images/daviplata.png';
+      case 'BANCOLOMBIA': return '/assets/layout/images/bancolombia.png';
+      default: return '/assets/layout/images/nequi.png';
+    }
+  }
+  setBankFilter(type: BankType | null) {
+    // toggle: si vuelve a tocar el mismo logo, quita el filtro
+    this.selectedBankType = (this.selectedBankType === type) ? null : type;
+    this.applyBankFilter();
+  }
 }

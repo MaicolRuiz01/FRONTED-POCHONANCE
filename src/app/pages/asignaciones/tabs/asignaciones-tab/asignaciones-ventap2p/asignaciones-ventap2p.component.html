@@ -9,7 +9,7 @@
 
   <app-mi-table [columns]="columns" [data]="allAccountsp2p" *ngIf="!isMobile">
     <ng-template #actionTemplate let-sale>
-      <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="loading"
+      <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="saving"
         (click)="openAssignDialog(sale)">
       </button>
     </ng-template>
@@ -25,7 +25,7 @@
         { label: 'Comisión',    field: 'commission' }
       ]">
       <ng-template #cardActionTemplate let-sale>
-        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="loading"
+        <button pButton type="button" label="Asignar" icon="pi pi-check" class="p-button-success" [disabled]="saving"
           (click)="openAssignDialog(sale)">
         </button>
 

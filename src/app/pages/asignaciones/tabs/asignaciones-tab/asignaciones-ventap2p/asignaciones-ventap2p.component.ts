@@ -95,18 +95,18 @@ export class AsignacionesVentap2pComponent implements OnInit {
     });
   }
   openAssignDialog(sale: SaleP2PDto): void {
-  this.saving = false;
-  this.selectedSale = sale;
-  this.displayAssignDialog = true;
+    this.saving = false;
+    this.selectedSale = sale;
+    this.displayAssignDialog = true;
 
-  this.selectedAssignments = [];
-  this.selectedAccounts = [];
+    this.selectedAssignments = [];
+    this.selectedAccounts = [];
 
-  // ✅ reset filtro por banco
-  this.selectedBankType = null;
+    // ✅ reset filtro por banco
+    this.selectedBankType = null;
 
-  this.loadCuentasCop();
-}
+    this.loadCuentasCop();
+  }
 
   handleAssignType(): void {
     if (this.isExternal) {
@@ -134,18 +134,18 @@ export class AsignacionesVentap2pComponent implements OnInit {
   }
 
   private loadCuentasCop(): void {
-  this.accountCopService.getAll().subscribe({
-    next: (cuentas) => {
-      this.cuentasTodas = cuentas ?? [];
-      this.applyBankFilter();
-    },
-    error: (err) => {
-      console.error('Error cargando cuentas COP:', err);
-      this.cuentasTodas = [];
-      this.cuentasFiltradas = [];
-    }
-  });
-}
+    this.accountCopService.getAll().subscribe({
+      next: (cuentas) => {
+        this.cuentasTodas = cuentas ?? [];
+        this.applyBankFilter();
+      },
+      error: (err) => {
+        console.error('Error cargando cuentas COP:', err);
+        this.cuentasTodas = [];
+        this.cuentasFiltradas = [];
+      }
+    });
+  }
 
 
   applyBankFilter(): void {
@@ -219,14 +219,19 @@ export class AsignacionesVentap2pComponent implements OnInit {
       .subscribe({
         next: () => {
           alert('Cuentas asignadas exitosamente.');
+          const saleId = this.selectedSale!.id;
+
+          // 1) cerrar modal
           this.displayAssignDialog = false;
           this.resetAssignForm();
-          this.loadNoAsignadas();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error al asignar las cuentas');
+
+          //  2) QUITARLA de la lista sin recargar tabla completa
+          this.allAccountsp2p = (this.allAccountsp2p ?? []).filter(s => s.id !== saleId);
+
+          // quita esto:
+          // this.loadNoAsignadas();
         }
+
       });
   }
 
@@ -290,7 +295,7 @@ export class AsignacionesVentap2pComponent implements OnInit {
       error: () => (this.loading = false),
     });
   }
-  
+
   private resetAssignForm(): void {
     this.selectedSale = null;
     this.selectedAssignments = [];

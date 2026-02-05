@@ -21,7 +21,7 @@ export interface AccountCop {
   bankType: BankTypeCop;
   cupoDisponibleHoy?: number;
   numeroCuenta?: string;
-cedula?: string;
+  cedula?: string;
 
 }
 
@@ -34,14 +34,14 @@ export interface AccountCopCreate {
   balance: number;
   bankType: BankTypeCop;
   numeroCuenta?: string;
-cedula?: string;
+  cedula?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AccountCopService {
   private apiUrl = `${environment.apiUrl}/cuenta-cop`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<AccountCop[]> {
     return this.http.get<AccountCop[]>(this.apiUrl);
@@ -61,8 +61,8 @@ export class AccountCopService {
   }
 
   getSalesByAccountCopId(accountCopId: number): Observable<SaleP2PDto[]> {
-  return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/${accountCopId}/sales`);
-}
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/${accountCopId}/sales`);
+  }
 
   getTotalBalance(): Observable<number> {
     return this.http.get<number>(`${environment.apiUrl}/cuenta-binance/total-balance`);
@@ -75,4 +75,12 @@ export class AccountCopService {
   getById(id: number): Observable<AccountCop> {
     return this.http.get<AccountCop>(`${this.apiUrl}/${id}`);
   }
+
+  downloadExcel(accountCopId: number): Observable<Blob> {
+  // OJO: ajusta la ruta si tu backend usa otra (ej: /excel/cuenta-cop/{id})
+  return this.http.get(`${this.apiUrl}/excel/${accountCopId}`, {
+    responseType: 'blob'
+  });
+}
+
 }

@@ -19,6 +19,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
@@ -39,7 +40,8 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
     InputTextModule,
     ProgressSpinnerModule,
     MiTableComponent,
-    CardListComponent
+    CardListComponent,
+    InputSwitchModule
   ],
   templateUrl: './asignaciones-ventap2p.component.html',
   styleUrls: ['./asignaciones-ventap2p.component.css']
@@ -63,6 +65,10 @@ export class AsignacionesVentap2pComponent implements OnInit {
   isMobile: boolean = false;
   selectedAccounts: AccountCop[] = [];
   selectedBank: string | null = null;
+  multiMode = false;
+
+  // modo simple
+  selectedAccountSingle: AccountCop | null = null;
 
   cuentasTodas: AccountCop[] = [];      // todas las cuentas
   cuentasFiltradas: AccountCop[] = [];  // las que se ven en el multiselect
@@ -102,8 +108,11 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.selectedAssignments = [];
     this.selectedAccounts = [];
 
-    // ✅ reset filtro por banco
+    // reset filtro por banco
     this.selectedBankType = null;
+    this.multiMode = false;
+this.selectedAccountSingle = null;
+
 
     this.loadCuentasCop();
   }
@@ -162,49 +171,50 @@ export class AsignacionesVentap2pComponent implements OnInit {
 
 
   assignAccounts(): void {
-    if (this.saving) return;
+  if (this.saving) return;
 
-    if (!this.selectedSale) {
-      alert("Por favor selecciona una venta.");
-      return;
-    }
-
-    if (!this.selectedAccounts || this.selectedAccounts.length === 0) {
-      alert("Debes seleccionar al menos una cuenta COP.");
-      return;
-    }
-
-    const hasInvalid = this.selectedAssignments.some(a => !a.amount || a.amount <= 0);
-    if (hasInvalid) {
-      alert("Todos los montos deben ser mayores a 0.");
-      return;
-    }
-
-    const hasNullId = this.selectedAssignments.some(a => !a.account?.id);
-    if (hasNullId) {
-      alert("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
-      return;
-    }
-
-    const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
-    const ventaCop = Number(this.selectedSale.pesosCop ?? 0);
-
-    if (total > ventaCop) {
-      alert("El total asignado excede el monto de la venta.");
-      return;
-    }
-
-    const accounts = this.selectedAssignments.map(a => ({
-      amount: a.amount,
-      nameAccount: a.account.name,
-      accountCop: a.account.id
-    }));
-
-    this.submitAssignRequest(accounts);
+  if (!this.selectedSale) {
+    alert("Por favor selecciona una venta.");
+    return;
   }
 
+  const accountsSource = this.multiMode
+    ? (this.selectedAccounts ?? [])
+    : (this.selectedAccountSingle ? [this.selectedAccountSingle] : []);
 
+  if (accountsSource.length === 0) {
+    alert("Debes seleccionar al menos una cuenta COP.");
+    return;
+  }
 
+  const hasInvalid = this.selectedAssignments.some(a => !a.amount || a.amount <= 0);
+  if (hasInvalid) {
+    alert("Todos los montos deben ser mayores a 0.");
+    return;
+  }
+
+  const hasNullId = this.selectedAssignments.some(a => !a.account?.id);
+  if (hasNullId) {
+    alert("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
+    return;
+  }
+
+  const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
+  const ventaCop = Number(this.selectedSale.pesosCop ?? 0);
+
+  if (total > ventaCop) {
+    alert("El total asignado excede el monto de la venta.");
+    return;
+  }
+
+  const accounts = this.selectedAssignments.map(a => ({
+    amount: a.amount,
+    nameAccount: a.account.name,
+    accountCop: a.account.id
+  }));
+
+  this.submitAssignRequest(accounts);
+}
   // Función para enviar los datos al backend
   submitAssignRequest(accounts: any): void {
     if (!this.selectedSale) return;
@@ -317,4 +327,23 @@ export class AsignacionesVentap2pComponent implements OnInit {
     this.selectedBankType = (this.selectedBankType === type) ? null : type;
     this.applyBankFilter();
   }
+  onAccountSingleChange(): void {
+  if (!this.selectedAccountSingle) {
+    this.selectedAssignments = [];
+    this.selectedAccounts = [];
+    return;
+  }
+
+  const ventaCop = Number(this.selectedSale?.pesosCop ?? 0);
+
+  // forzamos una sola asignación con todo el valor
+  this.selectedAssignments = [{
+    account: this.selectedAccountSingle,
+    amount: ventaCop
+  }];
+
+  // por compatibilidad con tu assignAccounts()
+  this.selectedAccounts = [this.selectedAccountSingle];
+}
+
 }

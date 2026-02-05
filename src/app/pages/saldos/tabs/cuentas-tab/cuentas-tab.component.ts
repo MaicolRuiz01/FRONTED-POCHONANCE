@@ -72,16 +72,16 @@ export class CuentasTabComponent implements OnInit {
   showAjusteCuenta = false;
   cuentaAjuste: AccountCop | null = null;
   // NUEVO: total por banco (sum(balance))
-totalNequi = 0;
-totalBancolombia = 0;
-totalDaviplata = 0;
-totalPorBancos = 0;
+  totalNequi = 0;
+  totalBancolombia = 0;
+  totalDaviplata = 0;
+  totalPorBancos = 0;
 
-// NUEVO: "se puede depositar" (bruto antes del 4x1000)
-depositableNequi = 0;
-depositableBancolombia = 0;
-depositableDaviplata = 0;
-depositableTotal = 0;
+  // NUEVO: "se puede depositar" (bruto antes del 4x1000)
+  depositableNequi = 0;
+  depositableBancolombia = 0;
+  depositableDaviplata = 0;
+  depositableTotal = 0;
 
 
   constructor(private accountService: AccountCopService,
@@ -298,28 +298,28 @@ depositableTotal = 0;
   }
 
   openCupoDialog(): void {
-  const list = this.filteredCuentas ?? this.cuentas ?? [];
+    const list = this.filteredCuentas ?? this.cuentas ?? [];
 
-  // 1) Cupo disponible por banco (ya lo hacías)
-  this.cupoNequi = this.sumCupoByBank(list, 'NEQUI');
-  this.cupoBancolombia = this.sumCupoByBank(list, 'BANCOLOMBIA');
-  this.cupoDaviplata = this.sumCupoByBank(list, 'DAVIPLATA');
-  this.cupoTotal = this.cupoNequi + this.cupoBancolombia + this.cupoDaviplata;
+    // 1) Cupo disponible por banco (ya lo hacías)
+    this.cupoNequi = this.sumCupoByBank(list, 'NEQUI');
+    this.cupoBancolombia = this.sumCupoByBank(list, 'BANCOLOMBIA');
+    this.cupoDaviplata = this.sumCupoByBank(list, 'DAVIPLATA');
+    this.cupoTotal = this.cupoNequi + this.cupoBancolombia + this.cupoDaviplata;
 
-  // 2) Total por banco (sum balance)
-  this.totalNequi = this.sumBalanceByBank(list, 'NEQUI');
-  this.totalBancolombia = this.sumBalanceByBank(list, 'BANCOLOMBIA');
-  this.totalDaviplata = this.sumBalanceByBank(list, 'DAVIPLATA');
-  this.totalPorBancos = this.totalNequi + this.totalBancolombia + this.totalDaviplata;
+    // 2) Total por banco (sum balance)
+    this.totalNequi = this.sumBalanceByBank(list, 'NEQUI');
+    this.totalBancolombia = this.sumBalanceByBank(list, 'BANCOLOMBIA');
+    this.totalDaviplata = this.sumBalanceByBank(list, 'DAVIPLATA');
+    this.totalPorBancos = this.totalNequi + this.totalBancolombia + this.totalDaviplata;
 
-  // 3) “Se puede depositar” (bruto para que al descontar 4x1000 quede el disponible)
-  this.depositableNequi = this.getDepositableFromNet(this.cupoNequi);
-  this.depositableBancolombia = this.getDepositableFromNet(this.cupoBancolombia);
-  this.depositableDaviplata = this.getDepositableFromNet(this.cupoDaviplata);
-  this.depositableTotal = this.depositableNequi + this.depositableBancolombia + this.depositableDaviplata;
+    // 3) “Se puede depositar” (bruto para que al descontar 4x1000 quede el disponible)
+    this.depositableNequi = this.getDepositableFromNet(this.cupoNequi);
+    this.depositableBancolombia = this.getDepositableFromNet(this.cupoBancolombia);
+    this.depositableDaviplata = this.getDepositableFromNet(this.cupoDaviplata);
+    this.depositableTotal = this.depositableNequi + this.depositableBancolombia + this.depositableDaviplata;
 
-  this.showCupoDialog = true;
-}
+    this.showCupoDialog = true;
+  }
 
   private sumCupoByBank(list: any[], bankType: 'NEQUI' | 'BANCOLOMBIA' | 'DAVIPLATA'): number {
     return list
@@ -330,15 +330,15 @@ depositableTotal = 0;
     const value = Number(n ?? 0);
     return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
   }
-  private sumBalanceByBank(list: any[], bankType: 'NEQUI'|'BANCOLOMBIA'|'DAVIPLATA'): number {
-  return list
-    .filter(a => (a.bankType || '').toUpperCase() === bankType)
-    .reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
-}
-private getDepositableFromNet(net: number): number {
-  const n = Number(net) || 0;
-  return n <= 0 ? 0 : (n / 0.996);
-}
+  private sumBalanceByBank(list: any[], bankType: 'NEQUI' | 'BANCOLOMBIA' | 'DAVIPLATA'): number {
+    return list
+      .filter(a => (a.bankType || '').toUpperCase() === bankType)
+      .reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
+  }
+  private getDepositableFromNet(net: number): number {
+    const n = Number(net) || 0;
+    return n <= 0 ? 0 : (n / 0.996);
+  }
 
   private buildAccountClipboardText(account: AccountCop): string {
     // arma el texto como tu cliente lo quiere
@@ -394,5 +394,26 @@ private getDepositableFromNet(net: number): number {
       }
     }
   }
+  downloadExcelAccountCop(accountId: number) {
+  if (!accountId) return;
+
+  this.accountService.downloadExcel(accountId).subscribe({
+    next: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cuenta_cop_${accountId}_reporte.xlsx`; // nombre opcional
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    },
+    error: (err) => {
+      console.error('Error descargando Excel:', err);
+      alert('No se pudo descargar el Excel.');
+    }
+  });
+}
+
 
 }

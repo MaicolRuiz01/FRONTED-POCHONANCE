@@ -52,14 +52,14 @@
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
   <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of filteredCuentas">
-    
+
     <p-card class="account-card p-shadow-3" styleClass="account-card">
-  <ng-template pTemplate="header">
-    <div class="card-header-row">
-      <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
-      <span class="account-title">{{ account.name }}</span>
-    </div>
-  </ng-template>
+      <ng-template pTemplate="header">
+        <div class="card-header-row">
+          <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
+          <span class="account-title">{{ account.name }}</span>
+        </div>
+      </ng-template>
 
       <ng-template pTemplate="content">
         <!-- Contenedor flip -->
@@ -70,7 +70,7 @@
             <div class="flip-face flip-front">
               <div class="account-details">
 
-               
+
 
                 <p>
                   <strong>Balance:</strong>
@@ -154,6 +154,11 @@
                     class="p-button-warning p-button-text p-button-sm"
                     (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
                   </button>
+
+                  <button pButton label="" icon="pi pi-file-excel"
+    class="p-button-success p-button-text p-button-sm"
+    (click)="downloadExcelAccountCop(account.id!); $event.stopPropagation()">
+  </button>
                 </div>
 
               </div>
@@ -307,17 +312,13 @@
   </p-footer>
 </p-dialog>
 
-<p-dialog
-  header="Cupo disponible por banco"
-  [(visible)]="showCupoDialog"
-  [modal]="true"
-  [style]="{ width: '560px' }"
-  [closable]="true"
->
+<p-dialog header="Cupo disponible por banco" [(visible)]="showCupoDialog" [modal]="true" [style]="{ width: '560px' }"
+  [closable]="true">
   <div class="p-fluid">
 
     <!-- Encabezados -->
-    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; font-weight:600; padding:6px 0; opacity:.85;">
+    <div
+      style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; font-weight:600; padding:6px 0; opacity:.85;">
       <div></div>
       <div style="text-align:right;">Cupo disponible</div>
       <div style="text-align:right;">Total por banco</div>

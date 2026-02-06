@@ -641,54 +641,52 @@ export class SaldosComponent implements OnInit {
     }
   }
   get totalUsdtGeneral(): number {
-  return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
-}
-
-/** Total general convertido a COP usando la tasa USDT→COP */
-get totalCopGeneral(): number {
-  return this.totalUsdtGeneral * (Number(this.latestRate) || 0);
-}
-setWalletFilter(type: 'BINANCE' | 'TRUST' | 'SOLANA' | null) {
-  this.selectedWalletType = type;
-}
-
-get filteredAccounts(): DisplayAccount[] {
-  const base = !this.selectedWalletType
-    ? this.accounts
-    : this.accounts.filter(a => (a as any).tipo === this.selectedWalletType);
-
-  // opcional: ordenar por saldo externo desc (o interno si prefieres)
-  return [...base].sort((x, y) => (Number(y.saldoExterno) || 0) - (Number(x.saldoExterno) || 0));
-}
-
-walletLogo(type?: string | null): string {
-  const t = (type ?? '').toString().trim().toUpperCase();
-
-  switch (t) {
-    case 'BINANCE': return '/assets/layout/images/binance.png';
-    case 'TRUST': return '/assets/layout/images/trust.png';
-    case 'SOLANA': return '/assets/layout/images/solana.png';
-    default: return '/assets/layout/images/binance.png';
+    return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
   }
-}
-/** Criptos totales en USDT (USDT directos + otras criptos del día) */
-get totalCriptosGeneralUsdt(): number {
-  return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
-}
 
-/** Criptos totales en COP usando la tasa USDT→COP */
-get totalCriptosGeneralCop(): number {
-  const rate = Number(this.latestRate) || 0;
-  if (rate <= 0) return 0;
-  return this.totalCriptosGeneralUsdt * rate;
-}
+  /** Total general convertido a COP usando la tasa USDT→COP */
+  get totalCopGeneral(): number {
+    return this.totalUsdtGeneral * (Number(this.latestRate) || 0);
+  }
+  setWalletFilter(type: 'BINANCE' | 'TRUST' | 'SOLANA' | null) {
+    this.selectedWalletType = type;
+  }
 
-/** SALDO TOTAL = criptos en COP + COP + VES en COP */
-get saldoTotalCop(): number {
-  const cop = Number(this.totalCuentasCop) || 0;
-  const vesCop = Number(this.totalCuentasVesCop) || 0;
-  return cop + vesCop + this.totalCriptosGeneralCop;
-}
+  get filteredAccounts(): DisplayAccount[] {
+    const base = !this.selectedWalletType
+      ? this.accounts
+      : this.accounts.filter(a => (a as any).tipo === this.selectedWalletType);
 
+    // opcional: ordenar por saldo externo desc (o interno si prefieres)
+    return [...base].sort((x, y) => (Number(y.saldoExterno) || 0) - (Number(x.saldoExterno) || 0));
+  }
 
+  walletLogo(type?: string | null): string {
+    const t = (type ?? '').toString().trim().toUpperCase();
+
+    switch (t) {
+      case 'BINANCE': return '/assets/layout/images/binance.png';
+      case 'TRUST': return '/assets/layout/images/trust.png';
+      case 'SOLANA': return '/assets/layout/images/solana.png';
+      default: return '/assets/layout/images/binance.png';
+    }
+  }
+  /** Criptos totales en USDT (USDT directos + otras criptos del día) */
+  get totalCriptosGeneralUsdt(): number {
+    return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
+  }
+
+  /** Criptos totales en COP usando la tasa USDT→COP */
+  get totalCriptosGeneralCop(): number {
+    const rate = Number(this.latestRate) || 0;
+    if (rate <= 0) return 0;
+    return this.totalCriptosGeneralUsdt * rate;
+  }
+
+  /** SALDO TOTAL = criptos en COP + COP + VES en COP */
+  get saldoTotalCop(): number {
+    const cop = Number(this.totalCuentasCop) || 0;
+    const vesCop = Number(this.totalCuentasVesCop) || 0;
+    return cop + vesCop + this.totalCriptosGeneralCop;
+  }
 }

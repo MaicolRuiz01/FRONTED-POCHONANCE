@@ -171,29 +171,35 @@ export class ProveedorComponent implements OnInit {
 
 
   createSupplier(data: any): void {
-    const monto = Math.abs(Number(data.balance || 0));
+  const monto = Math.abs(Number(data.balance || 0));
+  const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
 
-    // Debemos = +monto, Nos deben = -monto
-    const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
+  this.supplierService.createSupplier({
+    name: data.name,
+    balance: balanceSigned
+  }).subscribe({
+    next: (supplier) => {
+      this.suppliers.push(supplier);
 
-    this.supplierService.createSupplier({
-      name: data.name,
-      balance: balanceSigned
-    }).subscribe({
-      next: (supplier) => {
-        this.suppliers.push(supplier);
-        this.showform = false;
-        this.Supplier_name = '';
-        this.Supplier_balance = 0;
-        this.supplierSaldoTipo = 'DEBEMOS';
-      },
-      error: (err) => console.error('Error creating supplier', err)
-    });
-  }
+      // reset
+      this.Supplier_name = '';
+      this.Supplier_balance = 0;
+      this.supplierSaldoTipo = 'DEBEMOS';
 
+      // actualiza total en wrapper
+      this.emitTotal();
 
+      // (opcional) si prefieres datos 100% frescos:
+      // this.loadSuppliers();
+    },
+    error: (err) => {
+      console.error('Error creating supplier', err);
 
-
+      // (opcional) si falló, reabre el dialog
+      // this.showform = true;
+    }
+  });
+}
   // Obtener los pagos asociados al proveedor seleccionado
   loadMovimientosBySupplier(): void {
     if (this.selectedSupplier) {
@@ -385,5 +391,16 @@ export class ProveedorComponent implements OnInit {
   private emitTotal() {
     this.totalChange.emit(Number(this.totalProveedores ?? 0));
   }
+  onCrearProveedorClick(): void {
+  // cierra de una
+  this.showform = false;
+
+  // llama tu creación
+  this.createSupplier({
+    name: this.Supplier_name,
+    balance: this.Supplier_balance
+  });
+}
+
 
 }

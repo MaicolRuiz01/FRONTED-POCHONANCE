@@ -42,6 +42,8 @@
     <p class="saldo-usdt" style="margin:0;">
   {{ totalUsdtGeneral | number:'1.2-2' }}
   <span class="saldo-unit">USDT</span>
+  
+  
 </p>
 
 <!-- 👇 COP equivalente -->
@@ -53,6 +55,11 @@
 <p class="saldo-warning" *ngIf="latestRate <= 0" style="margin:4px 0 0 0;">
   Sin tasa USDT → COP disponible
 </p>
+
+<p class="saldo-rate" *ngIf="latestRate > 0" style="margin:6px 0 0 0;">
+    <span class="label">Tasa promedio día</span>
+    <span class="value">{{ latestRate | number:'1.0-0' }} COP/USDT</span>
+  </p>
 
     <ng-template #noCriptoData>
       <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>

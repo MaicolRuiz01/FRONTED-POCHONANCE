@@ -69,20 +69,48 @@
 
       <!-- ✅ MultiSelect usa cuentasFiltradas -->
       <div class="p-field p-col-12">
-        <label for="account">Seleccionar cuenta colombiana</label>
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+    <label for="account">Seleccionar cuenta colombiana</label>
 
-        <p-multiSelect id="account" [options]="cuentasFiltradas" [(ngModel)]="selectedAccounts" optionLabel="name"
-          placeholder="Seleccionar cuentas" [appendTo]="'body'" (onChange)="onAccountsChange()">
-        </p-multiSelect>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:.85rem;">Dividir</span>
+      <p-inputSwitch [(ngModel)]="multiMode"></p-inputSwitch>
+    </div>
+  </div>
 
-        <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
-          <label class="p-text-bold">{{ assignment.account.name }}</label>
+  <!-- ✅ MODO SIMPLE: 1 cuenta -->
+  <p-dropdown
+    *ngIf="!multiMode"
+    [options]="cuentasFiltradas"
+    [(ngModel)]="selectedAccountSingle"
+    optionLabel="name"
+    placeholder="Seleccionar cuenta"
+    [appendTo]="'body'"
+    (onChange)="onAccountSingleChange()">
+  </p-dropdown>
 
-          <p-inputNumber [(ngModel)]="assignment.amount" mode="decimal" locale="de-DE" [minFractionDigits]="2"
-            [maxFractionDigits]="2" [placeholder]="'Monto para ' + assignment.account.name">
-          </p-inputNumber>
-        </div>
-      </div>
+  <!-- ✅ MODO AVANZADO: varias cuentas -->
+  <p-multiSelect
+    *ngIf="multiMode"
+    [options]="cuentasFiltradas"
+    [(ngModel)]="selectedAccounts"
+    optionLabel="name"
+    placeholder="Seleccionar cuentas"
+    [appendTo]="'body'"
+    (onChange)="onAccountsChange()">
+  </p-multiSelect>
+
+  <div class="p-field p-col-12 p-mt-3" *ngFor="let assignment of selectedAssignments">
+    <label class="p-text-bold">{{ assignment.account.name }}</label>
+
+    <p-inputNumber [(ngModel)]="assignment.amount"
+      mode="decimal" locale="de-DE"
+      [minFractionDigits]="2" [maxFractionDigits]="2"
+      [placeholder]="'Monto para ' + assignment.account.name">
+    </p-inputNumber>
+  </div>
+</div>
+
 
     </div>
 

@@ -256,9 +256,20 @@ this.selectedAccountSingle = null;
 
     req$.subscribe({
       next: (sales) => {
-        const sorted = (sales ?? []).slice().sort((a, b) => {
-          return new Date(a.date as any).getTime() - new Date(b.date as any).getTime(); // ✅ ASC: viejas primero
-        });
+
+  // ✅ FILTRO TEMPORAL URGENTE: solo mostrar desde HOY 6:00 PM en adelante
+  const from6pm = new Date();
+  from6pm.setHours(18, 0, 0, 0); // 18:00:00.000
+
+  const filtered = (sales ?? []).filter(s => {
+    const d = new Date(s.date as any);
+    return d.getTime() >= from6pm.getTime();
+  });
+
+  const sorted = filtered.slice().sort((a, b) => {
+    return new Date(a.date as any).getTime() - new Date(b.date as any).getTime();
+  });
+
 
 
         const fmtCop = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });

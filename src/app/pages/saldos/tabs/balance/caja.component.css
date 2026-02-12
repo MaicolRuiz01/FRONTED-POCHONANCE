@@ -239,3 +239,90 @@
   .dm-row-right { font-size:0.95rem; }
   .dm-total-value { padding:6px 10px; font-size:0.95rem; }
 }
+
+/* ======= FIX MOBILE NUMBERS ======= */
+
+/* Que los números no "bailen" y se vean uniformes */
+.field-value,
+.saldo-value,
+.gain-badge,
+.dm-row-right,
+.dm-total-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Ajuste general: evita que el flex explote cuando hay textos largos */
+.field-row {
+  gap: 12px;
+}
+
+/* Label puede partir línea, value se mantiene a la derecha sin salirse */
+.field-label {
+  flex: 1 1 auto;
+  min-width: 0;                 /* clave para permitir wrap en flex */
+  white-space: normal;
+  overflow-wrap: anywhere;      /* rompe textos largos si toca */
+  line-height: 1.15;
+}
+
+.field-value {
+  flex: 0 0 auto;
+  min-width: 120px;             /* reserva espacio para el número */
+  max-width: 55%;
+  text-align: right;
+  white-space: nowrap;          /* el número en una sola línea */
+  overflow: hidden;             /* si algo raro, que no se salga */
+  text-overflow: ellipsis;      /* evita desbordes feos */
+}
+
+/* Saldo grande: que sea responsive con clamp() */
+.field-value.saldo-value {
+  white-space: nowrap;
+  letter-spacing: 0;            /* en móvil letter-spacing estorba */
+  line-height: 1.05;
+  font-size: clamp(18px, 6vw, 26px);
+}
+
+/* Ganancia también responsiva */
+.gain-badge {
+  font-size: clamp(14px, 4.2vw, 16px);
+  float: none;                  /* float en móvil suele romper layout */
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* Botones centrados en móvil y que no se encimen */
+.button-container {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Menos padding en móvil */
+@media (max-width: 600px) {
+  .balance-root { padding: 10px 10px; }
+
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 8px 0;
+  }
+
+  .card .body { padding: 14px; }
+
+  /* Si tus valores son MUY grandes, baja un poco más */
+  .field-value { min-width: 110px; }
+}
+
+/* Extra para pantallas MUY pequeñas (iPhone SE / mini) */
+@media (max-width: 380px) {
+  .field-value { min-width: 96px; max-width: 52%; }
+  .field-value.saldo-value { font-size: clamp(16px, 6.5vw, 22px); }
+}
+@media (max-width: 600px) {
+  .saldo-row { flex-direction: column; align-items: flex-start; }
+  .saldo-row .field-value { max-width: 100%; min-width: 0; }
+}
+

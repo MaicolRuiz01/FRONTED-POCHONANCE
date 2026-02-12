@@ -13,7 +13,30 @@
 
     <div class="p-field">
       <label>Saldo actual</label>
-      <input pInputText [value]="saldoActual | currency:'COP'" readonly />
+      <p-inputNumber
+        [ngModel]="saldoBase"
+        mode="currency"
+        currency="COP"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [readonly]="true">
+      </p-inputNumber>
+    </div>
+
+    <div class="p-field">
+      <label>Saldo resultante (editable)</label>
+      <p-inputNumber
+        [(ngModel)]="saldoEdit"
+        (ngModelChange)="onSaldoEditChange()"
+        mode="currency"
+        currency="COP"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2">
+      </p-inputNumber>
+
+      <small style="opacity:.7">
+        Cambia este valor si quieres ajustar directo al saldo final.
+      </small>
     </div>
 
     <div class="p-field">

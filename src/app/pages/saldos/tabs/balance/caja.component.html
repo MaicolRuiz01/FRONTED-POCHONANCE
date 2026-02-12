@@ -14,12 +14,11 @@
       </div>
 
       <div class="body">
-        <div class="field-row">
-          <div class="field-label">Saldo</div>
-          <div class="field-value saldo-value">
-            {{ b.saldo | number:'1.0-0' }}
-          </div>
-        </div>
+        <div class="field-row saldo-row">
+  <div class="field-label">Saldo</div>
+  <div class="field-value saldo-value">{{ b.saldo | number:'1.0-0' }}</div>
+</div>
+
 
         <!-- 1) CLIENTES + PROVEEDORES -->
         <div class="field-row">

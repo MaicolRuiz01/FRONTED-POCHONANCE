@@ -1,26 +1,30 @@
-<!-- Botón para abrir el formulario de creación de cuenta -->
+<!-- Barra de acciones -->
 <div class="botones-container">
-  <button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success"
+
+  <button pButton label="Agregar" icon="pi pi-plus" class="btn-accion btn-agregar"
     (click)="showCreateDialog()"></button>
-  <button pButton label="Retiro" icon="pi pi-arrow-down" class="p-button-warning"
+
+  <button pButton label="Retiro" icon="pi pi-arrow-circle-down" class="btn-accion btn-retiro"
     (click)="abrirDialogRetiro()"></button>
-  <button pButton label="Depósito" icon="pi pi-arrow-up" class="p-button-info" (click)="abrirDialogDeposito()"></button>
-  <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help"
+
+  <button pButton label="Depósito" icon="pi pi-arrow-circle-up" class="btn-accion btn-deposito"
+    (click)="abrirDialogDeposito()"></button>
+
+  <button pButton label="Transferencia" icon="pi pi-sort-alt" class="btn-accion btn-transferencia"
     (click)="abrirDialogTransferencia()"></button>
-  <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success"
+
+  <button pButton label="Pago Cliente" icon="pi pi-wallet" class="btn-accion btn-pago"
     (click)="abrirDialogPago()"></button>
 
-
-  <div class="total-container">
-    <p-card styleClass="total-card" (click)="openCupoDialog()">
-      <ng-template pTemplate="content">
-        <div class="total-content" style="cursor:pointer;">
-          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-          {{ totalCuentas | currency:'COP' }}
-        </div>
-      </ng-template>
-    </p-card>
+  <div class="total-badge" (click)="openCupoDialog()" title="Ver cupo por banco">
+    <i class="pi pi-calculator total-badge-icon"></i>
+    <div class="total-badge-body">
+      <span class="total-badge-label">Total COP</span>
+      <span class="total-badge-value">{{ totalCuentas | currency:'COP':'symbol':'1.0-0' }}</span>
+    </div>
+    <i class="pi pi-chevron-right total-badge-arrow"></i>
   </div>
+
 </div>
 <br>
 

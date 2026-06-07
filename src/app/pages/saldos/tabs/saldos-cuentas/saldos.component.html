@@ -1,29 +1,13 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<p-toolbar *ngIf="viewMode === 'BINANCE' || viewMode === 'COP' || viewMode === 'VES'" styleClass="mb-4 saldos-toolbar">
-
-  <!-- IZQUIERDA: VOLVER -->
-  <ng-template pTemplate="left">
-    <button pButton icon="pi pi-arrow-left" label="Volver" class="p-button-text" (click)="volverResumen()">
-    </button>
-  </ng-template>
-
-  <!-- DERECHA: SOLO BINANCE TIENE BOTÓN AGREGAR (COP ya lo trae adentro) -->
-  <ng-template pTemplate="right">
-    <button *ngIf="viewMode === 'BINANCE'" pButton icon="pi pi-plus" label="AGREGAR CUENTA BINANCE"
-      class="p-button-success" (click)="openNew()">
-    </button>
-  </ng-template>
-
-</p-toolbar>
 
 
 <!-- ===== RESUMEN: 4 CARDS (AHORA FUERA DEL TOOLBAR) ===== -->
 <div class="saldo-header-cards" *ngIf="viewMode === 'RESUMEN'">
 
   <!-- 1) SALDO TOTAL -->
-<div class="saldo-card saldo-card-main p-3 border rounded">
+<div class="saldo-card saldo-card-main">
   <h4 class="saldo-title">Saldo total</h4>
 
   <p class="saldo-cop" style="margin:0;">
@@ -37,7 +21,7 @@
 
 
   <!-- 2) CRIPTOS HOY -->
-  <div class="saldo-card saldo-card-crypto p-3 border rounded" style="cursor:pointer" (click)="verBinance()">
+  <div class="saldo-card saldo-card-crypto" style="cursor:pointer" (click)="verBinance()">
     <h4 class="saldo-title">Criptos</h4>
     <p class="saldo-usdt" style="margin:0;">
   {{ totalUsdtGeneral | number:'1.2-2' }}
@@ -67,7 +51,7 @@
   </div>
 
   <!-- 3) COP -->
-  <div class="saldo-card p-3 border rounded" style="cursor:pointer" (click)="verCop()">
+  <div class="saldo-card saldo-card-cop" style="cursor:pointer" (click)="verCop()">
     <h4 class="saldo-title">Cuentas COP</h4>
 
     <p *ngIf="loadingCop">
@@ -86,7 +70,7 @@
 
 
   <!-- 4) VES -->
-  <div class="saldo-card p-3 border rounded" style="cursor:pointer" (click)="verVes()">
+  <div class="saldo-card saldo-card-ves" style="cursor:pointer" (click)="verVes()">
     <h4 class="saldo-title">Cuentas VES</h4>
 
     <p *ngIf="loadingVes">
@@ -123,171 +107,151 @@
 
 
 </div>
-<!-- ================= VISTA BINANCE (tus cards actuales) ================= -->
-<div *ngIf="viewMode === 'BINANCE'">
+<!-- ================= VISTA BINANCE ================= -->
+<div *ngIf="viewMode === 'BINANCE'" class="binance-view">
 
-  <br><br>
+  <!-- Fila superior: resumen + botón nueva cuenta -->
+  <div class="binance-top-row">
 
+    <!-- Resumen compacto -->
+    <div class="saldo-card saldo-card-crypto binance-resumen-card">
+      <h4 class="saldo-title">Resumen criptos</h4>
 
+      <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
+        <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
+      </div>
 
-  <div class="saldo-card saldo-card-crypto p-3 border rounded"
-     style="cursor:pointer"
-     (click)="verBinance()">
+      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
+        <div class="crypto-list">
+          <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
+            <div class="crypto-flip-inner">
+              <div class="crypto-face front">
+                <span class="crypto-symbol">{{ t.cripto }}</span>
+                <span class="crypto-amount">{{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT</span>
+              </div>
+              <div class="crypto-face back">
+                <span class="crypto-symbol">{{ t.cripto }}</span>
+                <span class="crypto-extra">Tasa: {{ t.tasaPromedioDia | number:'1.4-6' }} USDT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
 
-  <h4 class="saldo-title">Resumen</h4>
+      <ng-template #noCriptoData>
+        <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
+      </ng-template>
+    </div>
 
-  <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
-    <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
+    <!-- Botón nueva cuenta -->
+    <button pButton icon="pi pi-plus" label="Nueva cuenta"
+      class="btn-nueva-cuenta"
+      (click)="openNew()">
+    </button>
   </div>
 
-  <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
-    <div class="crypto-list">
-      <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
-        <div class="crypto-flip-inner">
+  <!-- Filtro por wallet -->
+  <div class="wallet-filter">
+    <button type="button" class="wallet-chip" [class.active]="selectedWalletType === null"
+      (click)="setWalletFilter(null)" title="Todas">
+      <span class="wallet-chip-text">Todas</span>
+    </button>
+    <button type="button" class="wallet-chip" [class.active]="selectedWalletType === 'BINANCE'"
+      (click)="setWalletFilter('BINANCE')" title="Binance">
+      <img class="wallet-logo" [src]="walletLogo('BINANCE')" alt="Binance">
+    </button>
+    <button type="button" class="wallet-chip" [class.active]="selectedWalletType === 'TRUST'"
+      (click)="setWalletFilter('TRUST')" title="Trust Wallet">
+      <img class="wallet-logo" [src]="walletLogo('TRUST')" alt="Trust Wallet">
+    </button>
+    <button type="button" class="wallet-chip" [class.active]="selectedWalletType === 'SOLANA'"
+      (click)="setWalletFilter('SOLANA')" title="Solana">
+      <img class="wallet-logo" [src]="walletLogo('SOLANA')" alt="Solana">
+    </button>
+  </div>
 
-          <div class="crypto-face front">
-            <span class="crypto-symbol">{{ t.cripto }}</span>
-            <span class="crypto-amount">
-              {{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT
-            </span>
-          </div>
-
-          <div class="crypto-face back">
-            <span class="crypto-symbol">{{ t.cripto }}</span>
-            <span class="crypto-extra">
-              Tasa: {{ t.tasaPromedioDia | number:'1.4-6' }} USDT
-            </span>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
-      Click para ver cuentas Binance
-    </div>
-  </ng-container>
-
-  <ng-template #noCriptoData>
-    <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
-  </ng-template>
-</div>
-
-<br>
-
-
-<!-- ===== FILTRO POR TIPO DE CUENTA (LOGOS) ===== -->
-<div class="wallet-filter">
-  <button type="button"
-          class="wallet-chip"
-          [class.active]="selectedWalletType === null"
-          (click)="setWalletFilter(null)"
-          title="Todas">
-    <span class="wallet-chip-text">Todas</span>
-  </button>
-
-  <button type="button"
-          class="wallet-chip"
-          [class.active]="selectedWalletType === 'BINANCE'"
-          (click)="setWalletFilter('BINANCE')"
-          title="Binance">
-    <img class="wallet-logo" [src]="walletLogo('BINANCE')" alt="Binance">
-  </button>
-
-  <button type="button"
-          class="wallet-chip"
-          [class.active]="selectedWalletType === 'TRUST'"
-          (click)="setWalletFilter('TRUST')"
-          title="Trust Wallet">
-    <img class="wallet-logo" [src]="walletLogo('TRUST')" alt="Trust Wallet">
-  </button>
-
-  <button type="button"
-          class="wallet-chip"
-          [class.active]="selectedWalletType === 'SOLANA'"
-          (click)="setWalletFilter('SOLANA')"
-          title="Solana">
-    <img class="wallet-logo" [src]="walletLogo('SOLANA')" alt="Solana">
-  </button>
-</div>
-
-
-
-<br>
-
+  <!-- Loading -->
   <div *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
   </div>
-  <p *ngIf="loading">Cargando cuentas...</p>
 
-  <div class="grid" *ngIf="filteredAccounts.length > 0">
-    <div *ngFor="let account of filteredAccounts" class="custom-card"
-      style="--grad:#4cafef,#2196f3; --background:#fff; --text:#444;">
+  <!-- Grid de cuentas -->
+  <div class="binance-grid" *ngIf="!loading && filteredAccounts.length > 0">
+    <div *ngFor="let account of filteredAccounts" class="bc-card">
 
-      <!-- Botones flotantes -->
-      <div class="multi-button">
-        <button class="fas fa-pen" title="Editar" (click)="editarCuenta(account)"></button>
-        <button class="fas fa-trash" title="Eliminar" (click)="confirmDelete(account)"></button>
-      </div>
-
-      <div class="card-header">
-        {{ account.accountType }}
-      </div>
-
-      <div class="icon">
-        <i class="fa-thin fa-wallet"></i>
-      </div>
-
-      <!-- Contenido clickable -->
-      <div class="card-body" (click)="toggleText(account)">
-        <div class="button-container">
-          <!-- Solo dejamos el botón de sincronizar interno -->
-          <button pButton icon="pi pi-refresh" severity="warning" variant="outlined" [raised]="true" size="small"
-            [loading]="account.syncing" title="Sincronizar saldos internos"
+      <!-- Cabecera: nombre + acciones -->
+      <div class="bc-card-header">
+        <span class="bc-card-name">{{ account.accountType }}</span>
+        <div class="bc-card-actions">
+          <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm bc-btn"
+            pTooltip="Editar" tooltipPosition="top"
+            (click)="editarCuenta(account); $event.stopPropagation()">
+          </button>
+          <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm bc-btn bc-btn-sync"
+            pTooltip="Sincronizar saldos" tooltipPosition="top"
+            [loading]="account.syncing"
             (click)="syncInternalAccount(account, $event)">
           </button>
+          <button pButton icon="pi pi-trash" class="p-button-text p-button-sm bc-btn bc-btn-danger"
+            pTooltip="Eliminar" tooltipPosition="top"
+            (click)="confirmDelete(account); $event.stopPropagation()">
+          </button>
         </div>
+      </div>
 
-        <ng-container *ngIf="!account.isFlipped; else detalles">
-          <!-- saldo externo es lo principal -->
-          <p><strong>Saldo</strong>: {{ account.saldoExterno | number:'1.2-2' }}</p>
+      <!-- Cuerpo clickable (flip) -->
+      <div class="bc-card-body" (click)="toggleText(account)">
 
-          <div class="crypto-detail">
-            <!-- loading local por card -->
-            <p *ngIf="account.loadingBalances">
-              <i class="pi pi-spin pi-spinner"></i> Cargando criptos...
-            </p>
-
-            <ng-container *ngIf="!account.loadingBalances">
-              <table *ngIf="account.balances && account.balances.length > 0; else sinCriptos">
-                <thead>
-                  <tr>
-                    <th>Cripto</th>
-                    <th>Cantidad</th>
-                    <th>≈ USDT</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let b of account.balances">
-                    <td>{{ b.symbol }}</td>
-                    <td>{{ b.quantity | number:'1.4-8' }}</td>
-                    <td>{{ b.usdtValue | number:'1.2-2' }} USDT</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <ng-template #sinCriptos>
-                <p class="muted">Sin criptos registradas.</p>
-              </ng-template>
-            </ng-container>
+        <ng-container *ngIf="!account.isFlipped; else bcDetalles">
+          <!-- Vista principal: saldo + tabla criptos -->
+          <div class="bc-saldo-row">
+            <span class="bc-saldo-value">{{ account.saldoExterno | number:'1.2-2' }}</span>
+            <span class="bc-saldo-unit">USDT</span>
           </div>
 
+          <div *ngIf="account.loadingBalances" class="bc-loading">
+            <i class="pi pi-spin pi-spinner"></i> Cargando criptos...
+          </div>
+
+          <table *ngIf="!account.loadingBalances && account.balances && account.balances.length > 0"
+            class="bc-table">
+            <thead>
+              <tr>
+                <th>Cripto</th>
+                <th>Cantidad</th>
+                <th>≈ USDT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of account.balances">
+                <td class="bc-symbol">{{ b.symbol }}</td>
+                <td>{{ b.quantity | number:'1.4-8' }}</td>
+                <td>{{ b.usdtValue | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p *ngIf="!account.loadingBalances && (!account.balances || account.balances.length === 0)"
+            class="bc-empty">Sin criptos registradas.</p>
         </ng-container>
 
-        <ng-template #detalles>
-          <p><strong>Correo:</strong> {{ account.correo }}</p>
-          <p><strong>Wallet:</strong> {{ account.address }}</p>
+        <ng-template #bcDetalles>
+          <!-- Vista detalle: correo y wallet -->
+          <div class="bc-detail-row">
+            <span class="bc-detail-label">Correo</span>
+            <span class="bc-detail-value">{{ account.correo }}</span>
+          </div>
+          <div class="bc-detail-row">
+            <span class="bc-detail-label">Wallet</span>
+            <span class="bc-detail-value bc-address">{{ account.address }}</span>
+          </div>
         </ng-template>
+      </div>
+
+      <!-- Pie -->
+      <div class="bc-card-footer">
+        <i class="pi" [class.pi-eye]="!account.isFlipped" [class.pi-eye-slash]="account.isFlipped"></i>
+        <span>{{ account.isFlipped ? 'Ver saldo' : 'Ver detalles' }}</span>
       </div>
 
     </div>

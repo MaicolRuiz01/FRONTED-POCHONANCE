@@ -18,7 +18,7 @@ export class ListaPagosComponent {
   pagosOrdenados: any[] = [];
 
   constructor(private movimientoService: MovimientoService,
-    private notificationService: NotificationService) {}
+  , private notificationService: NotificationService) {}
 
   ngOnChanges() {
     this.pagosOrdenados = [...this.pagos].sort(

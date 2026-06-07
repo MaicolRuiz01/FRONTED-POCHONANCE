@@ -14,42 +14,30 @@ import { ActivadestabComponent } from './pages/activadades/activadestab/activade
 import { MovimientosComponent } from './pages/movimientos/movimientos.component';
 import { AsignadasComponent } from './pages/historial/container/asignadas/asignadas.component';
 import { ContainerComponent } from './pages/cambios-arabes/container/container.component';
+import { P2PWrapperComponent } from './pages/p2p/p2p-wrapper.component';
 
-
-export const routes: Routes = [  {
-  path:'',
-  component:AppLayoutComponent,
-  children:[
-    {path:'', component:SaldosTabComponent,},
-
-    {
-      path: 'asignaciones',
-      component: AsignacionesWrapperComponent
-    },
-    {
-      path: 'actividades',
-      component: ActivadestabComponent
-    },
-    {
-      path: 'saldos',
-      component: SaldosTabComponent
-    },
-    
-    {path:'cuentas/asignacion', component:TabAsignacionComponent},
-    {
+export const routes: Routes = [
+  {
+    path: '',
+    component: AppLayoutComponent,
+    children: [
+      { path: '', component: SaldosTabComponent },
+      { path: 'asignaciones', component: AsignacionesWrapperComponent },
+      { path: 'actividades', component: ActivadestabComponent },
+      { path: 'saldos', component: SaldosTabComponent },
+      { path: 'cuentas/asignacion', component: TabAsignacionComponent },
+      {
         path: 'cuentas/:id/ventas',
         loadComponent: () =>
           import('./pages/saldos/tabs/cuentas-tab/lista-ventas/lista-ventas.component')
             .then(m => m.ListaVentasComponent)
       },
-      {
-        path: 'movimientos',
-        component: MovimientosComponent
-      },
-      {path: 'clientes', component: ClientesComponentW},
-      {path: 'historial', component: AsignadasComponent},
-      {path: 'cambios-arabes', component: ContainerComponent},
-
-  ]
-}, // Nueva ruta
-  { path: '**', redirectTo: 'nueva-vista' } ];
+      { path: 'movimientos', component: MovimientosComponent },
+      { path: 'clientes', component: ClientesComponentW },
+      { path: 'historial', component: AsignadasComponent },
+      { path: 'cambios-arabes', component: ContainerComponent },
+      { path: 'p2p', component: P2PWrapperComponent },
+    ]
+  },
+  { path: '**', redirectTo: 'saldos' }
+];

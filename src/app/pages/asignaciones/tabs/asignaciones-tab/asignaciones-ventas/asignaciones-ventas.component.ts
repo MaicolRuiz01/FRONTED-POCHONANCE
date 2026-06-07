@@ -19,6 +19,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -76,7 +77,9 @@ export class AsignacionesVentasComponent implements OnInit {
   constructor(private sellService: SellDollarsService,
     private supplierService: SupplierService,
     private accountCopService: AccountCopService,
-    private clienteService: ClienteService) { }
+    private clienteService: ClienteService,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadSales();
@@ -90,12 +93,12 @@ export class AsignacionesVentasComponent implements OnInit {
 
     this.accountCopService.getAll().subscribe({
       next: (accounts) => this.accountCops = accounts,
-      error: () => alert('Error cargando cuentas COP')
+      error: () => this.notificationService.error('Error cargando cuentas COP')
     });
 
     this.clienteService.listar().subscribe({
       next: (data) => this.clientes = data,
-      error: () => alert('Error cargando clientes especiales')
+      error: () => this.notificationService.error('Error cargando clientes especiales')
     });
 
     this.sellService.importarVentasAutomaticamente().subscribe({
@@ -104,7 +107,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: err => {
         console.error('Error al importar ventas automáticas', err);
-        alert('Error al registrar automáticamente las ventas');
+        this.notificationService.error('Error al registrar automáticamente las ventas');
         this.loadSales();  // Igual carga las compras en caso de error
       }
     })
@@ -121,7 +124,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error cargando ventas', err);
-        alert('No se pudieron cargar las ventas');
+        this.notificationService.error('No se pudieron cargar las ventas');
       }
     });
   }
@@ -134,7 +137,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando proveedores', err);
-        alert('No se pudieron cargar los proveedores');
+        this.notificationService.error('No se pudieron cargar los proveedores');
       }
     });
   }
@@ -195,7 +198,7 @@ export class AsignacionesVentasComponent implements OnInit {
     if (!this.selected || !this.saleRate ||
       (this.isSpecialClient && !this.selectedClientId) ||
       (!this.isSpecialClient && !this.selectedSupplierId)) {
-      alert('Faltan datos obligatorios');
+      this.notificationService.warn('Faltan datos obligatorios');
       return;
     }
 
@@ -221,13 +224,13 @@ export class AsignacionesVentasComponent implements OnInit {
     // ✅ Llama al servicio con el objeto corregido
     this.sellService.asignarVenta(this.selected.id!, assignDto).subscribe({
       next: () => {
-        alert('Venta asignada con éxito');
+        this.notificationService.success('Venta asignada con éxito');
         this.closeModal();
         this.loadSales();
       },
       error: (err) => {
         console.error('Error al asignar venta', err);
-        alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+        this.notificationService.error('Error al asignar la venta: ' + (err.error?.message || err.statusText));
       }
     });
   }
@@ -241,27 +244,27 @@ export class AsignacionesVentasComponent implements OnInit {
   }
   saveSaleSolana(): void {
     if (!this.selected || this.accounts.length === 0) {
-      alert('Debe agregar al menos una cuenta COP con monto');
+      this.notificationService.warn('Debe agregar al menos una cuenta COP con monto');
       return;
     }
 
     // Validar que todas las cuentas tengan cuenta COP y monto
     const invalid = this.accounts.some(acc => !acc.accountCop || !acc.amount || acc.amount <= 0);
     if (invalid) {
-      alert('Todas las cuentas deben tener una cuenta COP seleccionada y un monto mayor a 0');
+      this.notificationService.warn('Todas las cuentas deben tener una cuenta COP seleccionada y un monto mayor a 0');
       return;
     }
 
     // Llamar al servicio con solo las cuentas (sin tasa, sin proveedor)
     this.sellService.asignarVentaSolana(this.selected.id!, this.accounts).subscribe({
       next: () => {
-        alert('Venta Solana asignada con éxito');
+        this.notificationService.success('Venta Solana asignada con éxito');
         this.closeModal();
         this.loadSales();
       },
       error: (err) => {
         console.error('Error al asignar venta Solana', err);
-        alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+        this.notificationService.error('Error al asignar la venta: ' + (err.error?.message || err.statusText));
       }
     });
   }

@@ -18,6 +18,7 @@ import { CardListComponent } from '../../../../../shared/mi-card/mi-card.compone
 import { BuyP2PService, BuyP2PDto } from '../../../../../core/services/buy-p2p.service';
 import { AccountCopService, AccountCop } from '../../../../../core/services/account-cop.service';
 import { AccountBinanceService, AccountBinance } from '../../../../../core/services/account-binance.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-asignaciones-comprap2p',
@@ -75,7 +76,9 @@ export class AsignacionesComprap2pComponent implements OnInit {
     private buyService: BuyP2PService,
     private accountBinanceService: AccountBinanceService,
     private accountCopService: AccountCopService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     this.isMobile = window.innerWidth <= 768;
@@ -175,13 +178,13 @@ export class AsignacionesComprap2pComponent implements OnInit {
 
   assignAccounts(): void {
     if (!this.selectedBuy) {
-      alert('Por favor selecciona una compra.');
+      this.notificationService.warn('Por favor selecciona una compra.');
       return;
     }
 
     if (this.isExternal) {
       if (!this.externalAmount || this.externalAmount <= 0) {
-        alert('Ingresa un monto válido.');
+        this.notificationService.warn('Ingresa un monto válido.');
         return;
       }
 
@@ -198,7 +201,7 @@ export class AsignacionesComprap2pComponent implements OnInit {
     // colombianas
     const total = this.selectedAssignments.reduce((sum, a) => sum + (a.amount || 0), 0);
     if (total > (this.selectedBuy.pesosCop || 0)) {
-      alert('El total asignado excede el monto de la compra.');
+      this.notificationService.warn('El total asignado excede el monto de la compra.');
       return;
     }
 
@@ -218,13 +221,13 @@ export class AsignacionesComprap2pComponent implements OnInit {
 
     this.buyService.assignAccounts(this.selectedBuy.id, accounts).subscribe({
       next: () => {
-        alert('Cuentas asignadas exitosamente.');
+        this.notificationService.success('Cuentas asignadas exitosamente.');
         this.displayAssignDialog = false;
         this.loadNoAsignadas();
       },
       error: (err: any) => {
         console.error('Error al asignar cuentas:', err);
-        alert('Error al asignar las cuentas');
+        this.notificationService.error('Error al asignar las cuentas');
       }
     });
   }

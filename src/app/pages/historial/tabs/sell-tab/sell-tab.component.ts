@@ -12,6 +12,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { DropdownModule } from 'primeng/dropdown';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-sell-tab',
@@ -50,7 +51,9 @@ accountCops: any[] = []; // Cuentas COP que puedes asignar
     private clienteService: ClienteService,
     private supplierService: SupplierService,
     private accountCopService: AccountCopService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     this.loadClients();
@@ -140,13 +143,13 @@ saveEdit() {
 
   this.sellService.updateSellDollar(payload.id, payload).subscribe({
     next: () => {
-      alert('✅ Venta actualizada exitosamente');
+      this.notificationService.success('✅ Venta actualizada exitosamente');
       this.displayEditDialog = false;
       this.loadSales();
     },
     error: (err) => {
       console.error('❌ Error actualizando venta', err);
-      alert('Hubo un error actualizando la venta');
+      this.notificationService.error('Hubo un error actualizando la venta');
     }
   });
 }

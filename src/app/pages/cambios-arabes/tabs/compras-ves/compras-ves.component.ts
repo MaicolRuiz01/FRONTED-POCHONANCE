@@ -12,6 +12,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
 import { VesAverageRateApiService } from '../../../../core/services/ves-average-rate.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-compras-ves',
@@ -51,7 +52,9 @@ export class ComprasVesComponent implements OnInit {
     private supplierApi: SupplierService,
     private clienteApi: ClienteService,
     private vesRateApi: VesAverageRateApiService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     // form de la compra
@@ -112,7 +115,7 @@ export class ComprasVesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error guardando tasa inicial VES', err);
-        alert('No se pudo guardar la tasa inicial VES');
+        this.notificationService.error('No se pudo guardar la tasa inicial VES');
       }
     });
   }

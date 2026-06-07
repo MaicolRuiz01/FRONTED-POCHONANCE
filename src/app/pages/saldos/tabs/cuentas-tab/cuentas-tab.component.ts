@@ -16,6 +16,7 @@ import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { GastoService } from '../../../../core/services/gasto.service';
 import { MessageService } from 'primeng/api';
+import { NotificationService } from '../../../../core/services/notification.service';
 type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
 @Component({
@@ -90,14 +91,16 @@ export class CuentasTabComponent implements OnInit {
     private cajaService: CajaService,
     private gastoService: GastoService,
     private messageService: MessageService,
-    private router: Router) { }
+    private router: Router,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadCuentas();
     this.loadClientes();
     this.cajaService.listar().subscribe({
       next: data => this.cajas = data,
-      error: () => alert('Error al cargar cajas')
+      error: () => this.notificationService.error('Error al cargar cajas')
     });
   }
 
@@ -151,13 +154,13 @@ export class CuentasTabComponent implements OnInit {
   loadClientes() {
     this.clienteService.listar().subscribe({
       next: data => this.clientes = data,
-      error: () => alert('Error al cargar clientes')
+      error: () => this.notificationService.error('Error al cargar clientes')
     });
   }
 
   createAccount() {
     if (!this.newAccount.name || this.newAccount.balance == null || !this.newAccount.bankType) {
-      alert('Nombre, balance y tipo de banco son obligatorios');
+      this.notificationService.warn('Nombre, balance y tipo de banco son obligatorios');
       return;
     }
 
@@ -217,7 +220,7 @@ export class CuentasTabComponent implements OnInit {
         this.displayDialogRetiro = false;
         this.loadCuentas();
       },
-      error: () => alert('Error al registrar retiro')
+      error: () => this.notificationService.error('Error al registrar retiro')
     });
   }
 
@@ -230,7 +233,7 @@ export class CuentasTabComponent implements OnInit {
         this.displayDialogDeposito = false;
         this.loadCuentas();
       },
-      error: () => alert('Error al registrar depósito')
+      error: () => this.notificationService.error('Error al registrar depósito')
     });
   }
 
@@ -257,7 +260,7 @@ export class CuentasTabComponent implements OnInit {
         this.loadCuentas();
         this.loadClientes();
       },
-      error: () => alert('Error al registrar pago')
+      error: () => this.notificationService.error('Error al registrar pago')
     });
   }
 
@@ -410,7 +413,7 @@ export class CuentasTabComponent implements OnInit {
     },
     error: (err) => {
       console.error('Error descargando Excel:', err);
-      alert('No se pudo descargar el Excel.');
+      this.notificationService.error('No se pudo descargar el Excel.');
     }
   });
 }

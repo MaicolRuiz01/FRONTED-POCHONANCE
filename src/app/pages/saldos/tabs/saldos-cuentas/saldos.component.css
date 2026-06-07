@@ -6,118 +6,275 @@ body {
   padding: 2rem;
 }
 
-/* GRID estilo moderno */
-.grid {
-  width: min(75rem, 100%);
-  margin-inline: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
-  gap: 2rem;
+/* ===== VISTA BINANCE ===== */
+
+.binance-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Tarjeta estilo degradado */
-.custom-card {
-  --grad: #4cafef, #2196f3; /* degradado por defecto */
-  --background: #ffffff;
-  --text: #444447;
-
-  position: relative;
-  padding: 2.5rem;
-  background-image: linear-gradient(to bottom left, #e0e4e5, #f2f6f9);
-  border-radius: 2rem;
-  gap: 1.5rem;
-  display: grid;
-  grid-template:
-    'title icon'
-    'content content'
-    'bar bar'
-    / 1fr auto;
-  font-family: system-ui, sans-serif;
-  color: var(--text);
-  box-shadow:
-    inset -2px 2px hsl(0 0% 100% / 1),
-    -20px 20px 40px hsl(0 0% 0% / 0.25);
+/* Fila superior: resumen + botón */
+.binance-top-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-/* Título */
-.custom-card .card-header {
-  font-size: 1.5rem;
-  grid-area: title;
-  align-self: end;
+.binance-resumen-card {
+  flex: 0 0 300px !important;
+  width: 300px;
+  min-width: 0 !important;
+  max-width: 300px;
+}
+
+/* Botón nueva cuenta — alineado a la derecha */
+.btn-nueva-cuenta.p-button {
+  align-self: flex-start;
+  margin-left: auto;
+  background: #4f46e5 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 10px 18px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  box-shadow: 0 2px 8px rgba(79,70,229,.25);
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.btn-nueva-cuenta.p-button:hover {
+  background: #4338ca !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(79,70,229,.3);
+}
+
+/* Grid de cards de cuentas */
+.binance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card individual ── */
+.bc-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+  transition: box-shadow .2s, transform .15s;
+}
+.bc-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  transform: translateY(-2px);
+}
+
+/* Acento superior en indigo */
+.bc-card::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+}
+
+/* Cabecera */
+.bc-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.bc-card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
   text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.bc-card-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.bc-btn.p-button {
+  color: #6b7280 !important;
+  padding: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+}
+.bc-btn.p-button:hover {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+.bc-btn-sync.p-button:hover { color: #f59e0b !important; }
+.bc-btn-danger.p-button:hover { color: #ef4444 !important; }
+
+/* Cuerpo clickable */
+.bc-card-body {
+  padding: 14px 16px;
+  flex: 1;
+  cursor: pointer;
+}
+
+/* Saldo prominente */
+.bc-saldo-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.bc-saldo-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+.bc-saldo-unit {
+  font-size: 0.8rem;
+  color: #9ca3af;
   font-weight: 500;
-  word-break: break-word;
-  padding: 0;
 }
 
-/* Icono grande con degradado */
-.custom-card .icon {
-  grid-area: icon;
-  font-size: 3rem;
+/* Tabla de criptos */
+.bc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
 }
-.custom-card .icon > i {
-  color: transparent;
-  background: linear-gradient(to right, var(--grad));
-  -webkit-background-clip: text;
-  background-clip: text;
+.bc-table thead tr {
+  background: #f9fafb;
 }
-
-/* Contenido */
-.custom-card .card-body {
-  grid-area: content;
+.bc-table th {
+  text-align: left;
+  padding: 5px 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #9ca3af;
+  border-bottom: 1px solid #f3f4f6;
 }
-.custom-card .card-body > *:first-child {
-  margin-top: 0rem;
+.bc-table td {
+  padding: 5px 6px;
+  color: #374151;
+  border-bottom: 1px solid #f9fafb;
 }
-.custom-card .card-body > *:last-child {
-  margin-bottom: 0rem;
-}
-
-/* Barra inferior decorativa */
-.custom-card::after {
-  content: "";
-  grid-area: bar;
-  height: 2px;
-  background-image: linear-gradient(90deg, var(--grad));
+.bc-symbol {
+  font-weight: 700;
+  color: #111827;
 }
 
-/* ---- Cards superiores (saldo total / criptos) ---- */
+/* Loading y empty */
+.bc-loading {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+.bc-empty {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Detalle (flip back) */
+.bc-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.bc-detail-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #9ca3af;
+}
+.bc-detail-value {
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+}
+.bc-address {
+  font-size: 0.75rem;
+  word-break: break-all;
+  font-family: monospace;
+  color: #6366f1;
+}
+
+/* Pie de card */
+.bc-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 0.72rem;
+  color: #9ca3af;
+  background: #fafafa;
+}
+.bc-card-footer .pi {
+  font-size: 0.75rem;
+}
+
+/* ---- Cards superiores — 4 columnas iguales ---- */
+
 .saldo-card {
-  background-color: #e8f1ff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 0;
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #e9ecef !important;
+  border-radius: 16px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .2s ease, transform .15s ease;
   text-align: left;
 }
 
-/* Card pequeña: saldo total */
-.saldo-card-main {
-  width: 250px;
+/* Barra de acento en la parte superior, color por tipo */
+.saldo-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.saldo-card-main::before   { background: #6366f1; }
+.saldo-card-crypto::before { background: #f59e0b; }
+.saldo-card-cop::before    { background: #10b981; }
+.saldo-card-ves::before    { background: #3b82f6; }
+
+/* Hover en cards clickables */
+.saldo-card-crypto:hover,
+.saldo-card-cop:hover,
+.saldo-card-ves:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.1), 0 8px 28px rgba(0,0,0,.06);
+  transform: translateY(-2px);
 }
 
-/* Card ancha: criptos (hoy) */
-.saldo-card-crypto {
-  min-width: 360px;
-  max-width: 480px;
-  overflow-x: auto; /* evita que el contenido se salga */
+/* Título de card — consistente en todas */
+.saldo-card h4,
+.saldo-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin: 0 0 10px;
 }
 
-.saldo-card h4 {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 0 0 6px 0;
-}
-
-.saldo-valor {
-  color: #28a745;
-  font-size: 24px;
-  font-weight: bold;
-  margin: 5px 0;
-}
-
+/* Kill the old green override on <p> */
 .saldo-card p {
-  color: #28a745;
-  font-size: 14px;
+  color: inherit;
+  font-size: inherit;
   margin: 0;
 }
 
@@ -187,60 +344,7 @@ body {
   position: fixed !important;
 }
 
-/* ----------- Botones flotantes tipo Tile Hover ----------- */
-.custom-card .multi-button {
-  z-index: 0;
-  position: absolute;
-  top: 1.25rem;
-  left: 1.25rem;
-  border-radius: 100%;
-  width: 0rem;
-  height: 0rem;
-  transform: translate(-50%, -50%);
-  transition: 0.25s cubic-bezier(0.25, 0, 0, 1);
-}
-
-.custom-card .multi-button button {
-  display: grid;
-  place-items: center;
-  position: absolute;
-  width: 2rem;
-  height: 2rem;
-  border: none;
-  border-radius: 100%;
-  background: var(--background);
-  color: var(--text);
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  transition: 0.25s cubic-bezier(0.25, 0, 0, 1);
-  box-shadow: 0 0 0rem -0.25rem var(--background);
-}
-
-.custom-card .multi-button button:hover {
-  background: var(--text);
-  color: var(--background);
-  box-shadow: 0 0 1rem -0.25rem var(--background);
-}
-
-/* Posiciones para 2 botones */
-.custom-card .multi-button button:first-child:nth-last-child(2),
-.custom-card .multi-button button:first-child:nth-last-child(2) ~ * {
-  &:nth-child(1) {
-    left: 37.5%;
-    top: 18.75%;
-  }
-  &:nth-child(2) {
-    left: 18.75%;
-    top: 37.5%;
-  }
-}
-
-/* Hover: expandir para mostrar botones */
-.custom-card:hover .multi-button,
-.custom-card .multi-button:focus-within {
-  width: 6rem;
-  height: 6rem;
-}
+/* multi-button legacy — reemplazado por bc-card-actions */
 
 /* ---------- Tabla de resumen de criptos en la card ---------- */
 
@@ -379,80 +483,72 @@ body {
   align-items: flex-start;
 }
 
-/* Contenedor de las 2 cards de resumen */
+/* Contenedor de las 4 cards de resumen */
 .saldo-header-cards {
   display: flex;
-  gap: 1rem;
-  flex: 1 1 auto;
+  gap: 14px;
+  flex-wrap: wrap;
   align-items: stretch;
 }
 
-/* Card genérica */
-.saldo-card {
-  background-color: #e8f1ff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-/* Texto dentro de la card de saldo */
-.saldo-title {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #6b7280;
-  margin: 0 0 4px;
-}
-
+/* Valores principales */
 .saldo-usdt {
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 700;
-  color: #16a34a;
+  color: #111827;
   margin: 0;
+  line-height: 1.2;
 }
 
 .saldo-unit {
-  font-size: 0.85rem;
-  margin-left: 4px;
-  color: #6b7280;
+  font-size: 0.78rem;
+  margin-left: 3px;
+  color: #9ca3af;
+  font-weight: 400;
 }
 
 .saldo-rate {
-  margin: 4px 0 0;
-  font-size: 0.85rem;
+  margin: 8px 0 0;
+  font-size: 0.78rem;
   display: flex;
-  gap: 4px;
+  gap: 5px;
   align-items: baseline;
+  flex-wrap: wrap;
 }
 
 .saldo-rate .label {
   text-transform: uppercase;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: .04em;
   color: #9ca3af;
 }
 
 .saldo-rate .value {
-  font-weight: 600;
-  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #3b82f6;
 }
 
 .saldo-cop {
-  margin: 2px 0 0;
-  font-size: 0.9rem;
+  font-size: 1.45rem;
+  font-weight: 700;
   color: #111827;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .saldo-warning {
-  margin: 4px 0 0;
-  font-size: 0.8rem;
-  color: #c0392b;
-  font-weight: 600;
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #f59e0b;
 }
 
-/* Card de criptos */
+/* crypto card: quita min/max-width legados */
 .saldo-card-crypto {
-  min-width: 320px;
-  max-width: 420px;
+  min-width: 0 !important;
+  max-width: none !important;
   overflow: hidden;
 }
 
@@ -473,10 +569,9 @@ body {
     flex-direction: column;
   }
 
-  .saldo-card-main,
-  .saldo-card-crypto {
+  .saldo-card {
+    min-width: 0 !important;
     width: 100%;
-    min-width: 0;
   }
 
   /* Botones del toolbar ocupan ancho completo y se separan un poco */
@@ -497,35 +592,27 @@ body {
   }
 }
 
-/* ====== CARD CRIPTOS (VISTA BINANCE) ====== */
-.saldo-card-crypto {
-  background: #eef4ff;
-  border: 1px solid #d9e6ff !important;
+/* ====== CARD CRIPTOS (VISTA BINANCE — panel independiente) ====== */
+.saldo-card-crypto.standalone {
+  background: #fff;
+  border: 1px solid #e9ecef !important;
   border-radius: 16px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-  max-width: 560px;         /* para que quede como panel izquierdo */
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  max-width: 560px;
   margin-bottom: 18px;
-}
-
-/* Título + total */
-.saldo-card-crypto .saldo-title {
-  margin: 0 0 10px 0;
-  font-weight: 800;
-  letter-spacing: .2px;
-  color: #1b2b52;
 }
 
 .crypto-total strong {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  background: #ffffff;
-  border: 1px solid #d9e6ff;
-  padding: 7px 10px;
-  border-radius: 12px;
+  background: #f8faff;
+  border: 1px solid #e9ecef;
+  padding: 6px 10px;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 900;
-  color: #111c3d;
+  font-weight: 700;
+  color: #111827;
   margin-bottom: 12px;
 }
 

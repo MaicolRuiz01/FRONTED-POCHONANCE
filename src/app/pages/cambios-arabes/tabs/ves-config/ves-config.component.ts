@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-ves-config',
@@ -44,7 +45,9 @@ export class VesConfigComponent implements OnInit {
     private fb: FormBuilder,
     private api: VesConfigService,
     private balanceService: BalanceGeneralService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -160,7 +163,7 @@ export class VesConfigComponent implements OnInit {
     };
 
     this.api.updateConfig(dto).subscribe(() => {
-      alert('Configuración guardada');
+      this.notificationService.success('Configuración guardada');
     });
   }
 

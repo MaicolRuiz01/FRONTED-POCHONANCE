@@ -311,11 +311,13 @@ export class SaldosComponent implements OnInit {
         this.createAccountDialog = false;
         this.loadAccounts();
       },
-      error: () => {
+      error: (err) => {
+        console.error('[crearCuentaBinance] HTTP error:', err?.status, err?.error ?? err);
+        const detail = err?.error?.message ?? err?.message ?? 'No se pudo crear la cuenta';
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo crear la cuenta'
+          detail
         });
       }
     });

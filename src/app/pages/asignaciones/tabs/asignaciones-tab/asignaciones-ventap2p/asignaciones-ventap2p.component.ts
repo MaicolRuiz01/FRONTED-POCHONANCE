@@ -20,6 +20,7 @@ import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
@@ -91,7 +92,9 @@ export class AsignacionesVentap2pComponent implements OnInit {
     private accountBinanceService: AccountBinanceService,
     private accountCopService: AccountCopService,
     private supplierService: SupplierService
-  ) { }
+  ,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadNoAsignadas();
@@ -174,7 +177,7 @@ this.selectedAccountSingle = null;
   if (this.saving) return;
 
   if (!this.selectedSale) {
-    alert("Por favor selecciona una venta.");
+    this.notificationService.warn("Por favor selecciona una venta.");
     return;
   }
 
@@ -183,19 +186,19 @@ this.selectedAccountSingle = null;
     : (this.selectedAccountSingle ? [this.selectedAccountSingle] : []);
 
   if (accountsSource.length === 0) {
-    alert("Debes seleccionar al menos una cuenta COP.");
+    this.notificationService.warn("Debes seleccionar al menos una cuenta COP.");
     return;
   }
 
   const hasInvalid = this.selectedAssignments.some(a => !a.amount || a.amount <= 0);
   if (hasInvalid) {
-    alert("Todos los montos deben ser mayores a 0.");
+    this.notificationService.warn("Todos los montos deben ser mayores a 0.");
     return;
   }
 
   const hasNullId = this.selectedAssignments.some(a => !a.account?.id);
   if (hasNullId) {
-    alert("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
+    this.notificationService.warn("Hay una cuenta inválida seleccionada. Vuelve a seleccionar.");
     return;
   }
 
@@ -203,7 +206,7 @@ this.selectedAccountSingle = null;
   const ventaCop = Number(this.selectedSale.pesosCop ?? 0);
 
   if (total > ventaCop) {
-    alert("El total asignado excede el monto de la venta.");
+    this.notificationService.warn("El total asignado excede el monto de la venta.");
     return;
   }
 
@@ -228,7 +231,7 @@ this.selectedAccountSingle = null;
       }))
       .subscribe({
         next: () => {
-          alert('Cuentas asignadas exitosamente.');
+          this.notificationService.success('Cuentas asignadas exitosamente.');
           const saleId = this.selectedSale!.id;
 
           // 1) cerrar modal

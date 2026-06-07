@@ -6,13 +6,20 @@ import { environment } from '../../../environment/environment';
 export interface SaleP2PDto {
   id: number;
   numberOrder: string;
-  date: string;          // normalmente llega como string ISO
+  date: string;
   pesosCop: number;
   dollarsUs: number;
   commission: number;
+  tasa?: number;
+  asignado?: boolean;
   nameAccountBinance?: string;
-  // si lo agregaste en backend:
-  // asignado?: boolean;
+  accountCopsDetails?: { nameAccount: string; amount: number }[];
+  // formatted fields (added client-side)
+  dateFmt?: string;
+  pesosCopFmt?: string;
+  dollarsUsFmt?: string;
+  commissionFmt?: string;
+  tasaFmt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,25 +28,33 @@ export class SaleP2PService {
 
   constructor(private http: HttpClient) {}
 
-  /** ✅ HOY no asignadas de 1 cuenta (importa+guarda y lista no asignadas) */
+  /** HOY no asignadas de 1 cuenta */
   getTodayNoAsignadas(account: string): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today/no-asignadas?account=${encodeURIComponent(account)}`;
-    return this.http.get<SaleP2PDto[]>(url);
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today/no-asignadas?account=${encodeURIComponent(account)}`);
   }
 
-  /** ✅ HOY no asignadas de TODAS las cuentas BINANCE */
+  /** HOY no asignadas de TODAS las cuentas BINANCE */
   getTodayNoAsignadasAllAccounts(): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today/no-asignadas/all-binance`;
-    return this.http.get<SaleP2PDto[]>(url);
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today/no-asignadas/all-binance`);
   }
 
-  /** asignación igual que antes */
+  /** Ventas asignadas entre fechas */
+  getAsignadasByRange(inicio: string, fin: string): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/range?inicio=${inicio}&fin=${fin}`);
+  }
+
+  /** Todas las ventas de hoy (asignadas y no asignadas) */
+  getTodayAll(): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today`);
+  }
+
+  /** Asignación manual de cuentas COP a una venta */
   assignAccounts(
     saleId: number,
     accounts: { amount: number; nameAccount: string; accountCop: number | null }[]
   ): Observable<any> {
-    const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
-    return this.http.post(url, accounts, { responseType: 'text' as 'json' });
+    return this.http.post(`${this.apiUrl}/assign-account-cop?saleId=${saleId}`, accounts, {
+      responseType: 'text' as 'json'
+    });
   }
 }
-

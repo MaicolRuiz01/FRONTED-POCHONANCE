@@ -19,6 +19,7 @@ import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.compon
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
 import { Cliente, ClienteService } from '../../../../../core/services/cliente.service';
 import { AverageRateService } from '../../../../../core/services/average-rate.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-asignaciones-compras',
@@ -91,7 +92,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     { campo: 'date', columna: 'Fecha' },
   ];
 
-  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService, private clienteService: ClienteService, private averageRateService: AverageRateService,) { }
+  constructor(private buyService: BuyDollarsService, private supplierService: SupplierService, private clienteService: ClienteService, private averageRateService: AverageRateService, private notificationService: NotificationService) { }
 
   ngOnInit(): void {
     this.loading = true;
@@ -118,7 +119,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
       },
       error: err => {
         console.error('Error cargando depósitos no asignados', err);
-        alert('No se pudieron cargar las compras no asignadas');
+        this.notificationService.error('No se pudieron cargar las compras no asignadas');
         this.loading = false;
       }
     });
@@ -179,13 +180,13 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     } else if (this.assignType === 'cliente' && this.selectedClienteId) {
       buyData.clienteId = this.selectedClienteId;
     } else {
-      alert('Selecciona un proveedor o un cliente válido');
+      this.notificationService.warn('Selecciona un proveedor o un cliente válido');
       return;
     }
 
     this.buyService.asignarCompra(this.selectedDeposit.id!, buyData).subscribe({
       next: () => {
-        alert('Compra asignada correctamente');
+        this.notificationService.success('Compra asignada correctamente');
         this.closeModal();
         this.loadDeposits();
       },
@@ -194,7 +195,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
           ? err.error
           : (err.error?.message || err.statusText || 'Error desconocido');
         console.error('Error asignando compra', err);
-        alert('Error al asignar la compra: ' + msg);
+        this.notificationService.error('Error al asignar la compra: ' + msg);
       }
     });
   }
@@ -239,7 +240,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
       next: () => this.loadDeposits(),
       error: err => {
         console.error('Error al importar compras automáticas', err);
-        alert('Error al registrar automáticamente las compras');
+        this.notificationService.error('Error al registrar automáticamente las compras');
         this.loadDeposits();
       }
     });
@@ -260,7 +261,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
 
     this.averageRateService.inicializarTasa(this.initialRate).subscribe({
       next: () => {
-        alert('Tasa promedio inicial configurada correctamente');
+        this.notificationService.success('Tasa promedio inicial configurada correctamente');
         this.showInitialRateModal = false;
         // Ahora sí cargamos datos normales
         this.initDataAfterRate();
@@ -270,7 +271,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
         const msg = (typeof err.error === 'string' && err.error.trim().length)
           ? err.error
           : (err.error?.message || err.statusText || 'Error desconocido');
-        alert('Error al configurar la tasa inicial: ' + msg);
+        this.notificationService.success('Error al configurar la tasa inicial: ' + msg);
         this.loading = false;
       }
     });

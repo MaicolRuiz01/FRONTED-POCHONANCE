@@ -6,6 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../core/services/notification.service';
 import {
   MovimientoService,
   AjusteSaldoDto,
@@ -56,7 +57,7 @@ export class AjusteSaldoDialogComponent implements OnChanges {
     { label: 'Salida (-)', value: false }
   ];
 
-  constructor(private movimientoService: MovimientoService) {}
+  constructor(private movimientoService: MovimientoService, private notificationService: NotificationService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     // Cuando se abre el modal o cambia el saldoActual, reiniciamos
@@ -125,11 +126,11 @@ export class AjusteSaldoDialogComponent implements OnChanges {
 
     const m = Number(this.monto ?? 0);
     if (!m || m <= 0) {
-      alert('Ingrese un monto mayor a 0');
+      this.notificationService.warn('Ingrese un monto mayor a 0');
       return;
     }
     if (!this.motivo.trim()) {
-      alert('El motivo es obligatorio');
+      this.notificationService.warn('El motivo es obligatorio');
       return;
     }
 
@@ -145,14 +146,14 @@ export class AjusteSaldoDialogComponent implements OnChanges {
     this.loading = true;
     this.movimientoService.ajustarSaldo(dto).subscribe({
       next: () => {
-        alert('Ajuste registrado correctamente');
+        this.notificationService.success('Ajuste registrado correctamente');
         this.loading = false;
         this.ajusteRealizado.emit();
         this.cerrar();
       },
       error: (err) => {
         console.error('Error al registrar el ajuste', err);
-        alert('Error al registrar el ajuste');
+        this.notificationService.error('Error al registrar el ajuste');
         this.loading = false;
       }
     });

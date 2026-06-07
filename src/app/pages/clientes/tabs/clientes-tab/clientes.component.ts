@@ -25,6 +25,7 @@ import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Output, EventEmitter } from '@angular/core';
+import { NotificationService } from '../../../../core/services/notification.service';
 @Component({
   selector: 'app-clientes',
   standalone: true,
@@ -135,7 +136,9 @@ export class ClientesComponent implements OnInit {
     private buyDollarsService: BuyDollarsService,
     private sellDollarsService: SellDollarsService,
     private ajustesService: AjustesService
-  ) { }
+  ,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.cargarClientes();
@@ -147,7 +150,7 @@ export class ClientesComponent implements OnInit {
       next: (data: AccountCop[]) => this.cuentasCop = data,
       error: (err: any) => {
         console.error('Error al cargar cuentas COP', err);
-        alert('Error al cargar cuentas COP');
+        this.notificationService.error('Error al cargar cuentas COP');
       }
     });
   }
@@ -171,7 +174,7 @@ export class ClientesComponent implements OnInit {
         });
 
       },
-      error: () => alert('Error al cargar los clientes')
+      error: () => this.notificationService.error('Error al cargar los clientes')
     });
   }
 
@@ -198,7 +201,7 @@ export class ClientesComponent implements OnInit {
   cargarProveedores(): void {
     this.supplierService.getAllSuppliers().subscribe({
       next: data => this.proveedores = data,
-      error: () => alert('Error al cargar los proveedores')
+      error: () => this.notificationService.error('Error al cargar los proveedores')
     });
   }
   abrirModalEditar(cliente: Cliente): void {
@@ -212,7 +215,7 @@ export class ClientesComponent implements OnInit {
 
     // Solo exigir Nombre (correo opcional)
     if (!this.editCliente.nombre?.trim()) {
-      alert('El nombre es obligatorio');
+      this.notificationService.warn('El nombre es obligatorio');
       return;
     }
 
@@ -224,7 +227,7 @@ export class ClientesComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error al actualizar cliente', err);
-        alert('No se pudo actualizar el cliente');
+        this.notificationService.error('No se pudo actualizar el cliente');
       }
     });
   }
@@ -254,7 +257,7 @@ export class ClientesComponent implements OnInit {
         this.displayModal = false;
         this.cargarClientes();
       },
-      error: () => alert('Error al guardar el cliente')
+      error: () => this.notificationService.error('Error al guardar el cliente')
     });
   }
 
@@ -273,16 +276,16 @@ export class ClientesComponent implements OnInit {
   confirmarPago(): void {
     const origen = this.clientes.find(c => c.id === this.pago.origenId);
     const destino = this.clientes.find(c => c.id === this.pago.destinoId);
-    if (!origen || !destino) { alert('Debe seleccionar ambos clientes'); return; }
-    if (origen.id === destino.id) { alert('El origen y destino no pueden ser el mismo'); return; }
+    if (!origen || !destino) { this.notificationService.warn('Debe seleccionar ambos clientes'); return; }
+    if (origen.id === destino.id) { this.notificationService.warn('El origen y destino no pueden ser el mismo'); return; }
 
     this.loadingPago = true;
 
     if (this.paymentMode === 'USDT') {
       // Validaciones USDT
-      if (!this.pagoUsdt || this.pagoUsdt <= 0) { alert('Ingrese el monto en USDT'); this.loadingPago = false; return; }
-      if (!this.tasaOrigen || this.tasaOrigen <= 0) { alert('Tasa de Origen inválida'); this.loadingPago = false; return; }
-      if (!this.tasaDestino || this.tasaDestino <= 0) { alert('Tasa de Destino inválida'); this.loadingPago = false; return; }
+      if (!this.pagoUsdt || this.pagoUsdt <= 0) { this.notificationService.warn('Ingrese el monto en USDT'); this.loadingPago = false; return; }
+      if (!this.tasaOrigen || this.tasaOrigen <= 0) { this.notificationService.warn('Tasa de Origen inválida'); this.loadingPago = false; return; }
+      if (!this.tasaDestino || this.tasaDestino <= 0) { this.notificationService.warn('Tasa de Destino inválida'); this.loadingPago = false; return; }
 
       this.movimientoService.pagoClienteACliente({
         clienteOrigenId: origen.id!,
@@ -293,7 +296,7 @@ export class ClientesComponent implements OnInit {
         nota: this.pago.nota || ''
       }).subscribe({
         next: () => {
-          alert('Pago C2C (USDT) realizado con éxito');
+          this.notificationService.warn('Pago C2C (USDT) realizado con éxito');
           this.displayPagoModal = false;
           this.loadingPago = false;
           this.cargarClientes();
@@ -301,20 +304,20 @@ export class ClientesComponent implements OnInit {
         error: (err: any) => {
           this.loadingPago = false;
           const msg = err?.error?.message || 'Error al procesar el pago C2C (USDT)';
-          alert(msg);
+          this.notificationService.warn(msg);
           console.error(err);
         }
       });
 
     } else {
       // Modo COP
-      if (!this.pagoCop || this.pagoCop <= 0) { alert('Ingrese el monto en COP'); this.loadingPago = false; return; }
+      if (!this.pagoCop || this.pagoCop <= 0) { this.notificationService.warn('Ingrese el monto en COP'); this.loadingPago = false; return; }
 
       this.movimientoService
         .pagoClienteAClienteCop(origen.id!, destino.id!, this.pagoCop!)
         .subscribe({
           next: () => {
-            alert('Pago C2C (COP) realizado con éxito');
+            this.notificationService.warn('Pago C2C (COP) realizado con éxito');
             this.displayPagoModal = false;
             this.loadingPago = false;
             this.cargarClientes();
@@ -322,7 +325,7 @@ export class ClientesComponent implements OnInit {
           error: (err: any) => {
             this.loadingPago = false;
             const msg = err?.error?.message || 'Error al procesar el pago C2C (COP)';
-            alert(msg);
+            this.notificationService.warn(msg);
             console.error(err);
           }
         });
@@ -337,7 +340,7 @@ export class ClientesComponent implements OnInit {
 
   confirmarTransferencia(): void {
     if (!this.transferencia.clientId || !this.transferencia.supplierId || !this.transferencia.amount) {
-      alert('Debe completar todos los campos');
+      this.notificationService.warn('Debe completar todos los campos');
       return;
     }
 
@@ -347,13 +350,13 @@ export class ClientesComponent implements OnInit {
       amount: this.transferencia.amount!
     }).subscribe({
       next: () => {
-        alert('Transferencia realizada con éxito');
+        this.notificationService.success('Transferencia realizada con éxito');
         this.displayTransferModal = false;
         this.cargarClientes();
       },
       error: (err) => {
         const msg = typeof err?.error === 'string' ? err.error : 'Error al procesar la transferencia';
-        alert(msg);
+        this.notificationService.warn(msg);
         console.log(err);
       }
     });
@@ -424,7 +427,7 @@ export class ClientesComponent implements OnInit {
         this.clienteAjustes = data;
         this.ajustesSeleccionado = [];
       },
-      error: () => alert('Error al cargar los ajustes del cliente')
+      error: () => this.notificationService.error('Error al cargar los ajustes del cliente')
     });
 
 
@@ -484,10 +487,10 @@ export class ClientesComponent implements OnInit {
   confirmarPagoClienteProveedor(): void {
     const { clienteId, proveedorId, usdt, tasaCliente, tasaProveedor } = this.pagoCP;
 
-    if (!clienteId || !proveedorId) { alert('Seleccione cliente y proveedor'); return; }
-    if (!usdt || usdt <= 0) { alert('Ingrese monto USDT > 0'); return; }
-    if (!tasaCliente || tasaCliente <= 0) { alert('Tasa cliente inválida'); return; }
-    if (!tasaProveedor || tasaProveedor <= 0) { alert('Tasa proveedor inválida'); return; }
+    if (!clienteId || !proveedorId) { this.notificationService.warn('Seleccione cliente y proveedor'); return; }
+    if (!usdt || usdt <= 0) { this.notificationService.warn('Ingrese monto USDT > 0'); return; }
+    if (!tasaCliente || tasaCliente <= 0) { this.notificationService.warn('Tasa cliente inválida'); return; }
+    if (!tasaProveedor || tasaProveedor <= 0) { this.notificationService.warn('Tasa proveedor inválida'); return; }
 
     this.loadingPago = true;
 
@@ -500,7 +503,7 @@ export class ClientesComponent implements OnInit {
       nota: this.pagoCP.nota || ''
     }).subscribe({
       next: () => {
-        alert('Pago Cliente → Proveedor realizado con éxito');
+        this.notificationService.success('Pago Cliente → Proveedor realizado con éxito');
         this.displayPagoCPModal = false;
         this.loadingPago = false;
         this.cargarClientes(); // refresca saldos
@@ -508,7 +511,7 @@ export class ClientesComponent implements OnInit {
       error: (err) => {
         this.loadingPago = false;
         const msg = err?.error?.message || 'Error al procesar el pago Cliente → Proveedor';
-        alert(msg);
+        this.notificationService.warn(msg);
         console.error(err);
       }
     });
@@ -522,7 +525,7 @@ export class ClientesComponent implements OnInit {
         this.comprasCliente = this.comprasCliente.filter(m => m.id !== movimiento.id);
         this.ventasCliente = this.ventasCliente.filter(m => m.id !== movimiento.id);
       },
-      error: () => alert('Error al eliminar el movimiento')
+      error: () => this.notificationService.error('Error al eliminar el movimiento')
     });
   }
 
@@ -530,7 +533,7 @@ export class ClientesComponent implements OnInit {
     const { cuentaId, clienteDestinoId, monto } = this.pagoCuentaCop;
 
     if (!cuentaId || !clienteDestinoId || !monto || monto <= 0) {
-      alert('Complete todos los campos correctamente');
+      this.notificationService.success('Complete todos los campos correctamente');
       return;
     }
 
@@ -538,13 +541,13 @@ export class ClientesComponent implements OnInit {
       .pagoCuentaCopACliente(cuentaId, clienteDestinoId, monto)
       .subscribe({
         next: () => {
-          alert('Pago desde Cuenta COP realizado con éxito');
+          this.notificationService.success('Pago desde Cuenta COP realizado con éxito');
           this.displayPagoCuentaCopModal = false;
           this.cargarClientes();  // refresca saldos
         },
         error: (err) => {
           const msg = err?.error?.message || 'Error al procesar el pago desde Cuenta COP';
-          alert(msg);
+          this.notificationService.warn(msg);
           console.error(err);
         }
       });

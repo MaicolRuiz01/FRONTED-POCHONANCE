@@ -15,6 +15,7 @@ import { CompletadaComponent } from './criptos/listadocripto/completada.componen
 import { Movimiento } from '../../core/services/pago-proveedor.service';
 import { BuyTapComponent } from '../historial/tabs/buy-tap/buy-tap.component';
 import { SellTabComponent } from '../historial/tabs/sell-tab/sell-tab.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 
 @Component({
@@ -52,7 +53,9 @@ export class MovimientosComponent implements OnInit {
   constructor(private movimientoService: MovimientoService,
     private cajaService: CajaService,
     private traspasosService: TraspasosService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
 
   ngOnInit(): void {
@@ -80,7 +83,7 @@ export class MovimientosComponent implements OnInit {
         this.displayCajaDialog = false;
         this.nuevaCaja = { name: '', saldo: 0 };
       },
-      error: () => alert('Error al guardar caja')
+      error: () => this.notificationService.error('Error al guardar caja')
     });
   }
 
@@ -127,7 +130,7 @@ guardarEdicion() {
     
       this.cerrarDialogo();
     },
-    error: () => alert('Error al actualizar el movimiento')
+    error: () => this.notificationService.error('Error al actualizar el movimiento')
   });
 }
 
@@ -149,7 +152,7 @@ eliminarMovimiento(movimiento: Movimiento) {
       this.depositos = this.depositos.filter(m => m.id !== movimiento.id);
       this.traspasos = this.traspasos.filter(m => m.idtransaccion !== movimiento.idtransaccion);
     },
-    error: () => alert('Error al eliminar el movimiento')
+    error: () => this.notificationService.error('Error al eliminar el movimiento')
   });
 }
 }

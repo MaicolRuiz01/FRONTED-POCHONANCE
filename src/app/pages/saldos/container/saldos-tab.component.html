@@ -1,6 +1,9 @@
 <p-tabView [(activeIndex)]="selectedIndex">
-  <p-tabPanel header="CUENTAS">
-    <app-saldos></app-saldos>
+  <p-tabPanel>
+    <ng-template pTemplate="header">
+      <span (click)="onCuentasHeaderClick()">CUENTAS</span>
+    </ng-template>
+    <app-saldos #saldosComp></app-saldos>
   </p-tabPanel>
 
   <p-tabPanel header="CAJAS">

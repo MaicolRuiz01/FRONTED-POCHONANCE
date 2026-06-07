@@ -31,7 +31,7 @@ export interface AccountCop {
 @Injectable({ providedIn: 'root' })
 export class AccountCopService {
   private api = `${environment.apiUrl}/account-cop`; // AJUSTA tu endpoint real
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private notificationService: NotificationService) {}
   list(): Observable<AccountCop[]> {
     return this.http.get<AccountCop[]>(`${this.api}/listar`); // AJUSTA si tu ruta es diferente
   }
@@ -72,8 +72,7 @@ export class VentasVesComponent implements OnInit {
     private api: VentaVesService,
     private clienteService: ClienteService,
     private supplierService: SupplierService,
-        private accountCopService: AccountCopService,
-    private notificationService: NotificationService
+    private accountCopService: AccountCopService
   ) {}
 
   ngOnInit(): void {

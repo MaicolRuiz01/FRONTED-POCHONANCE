@@ -14,6 +14,7 @@ import { AjustesService, AjustesDto} from "../../../core/services/ajustes.servic
 import { MovimientoDto, MovimientoService } from "../../../core/services/movimiento.service";
 import { ClienteService } from "../../../core/services/cliente.service";
 import { SupplierService } from "../../../core/services/supplier.service";
+import { NotificationService } from '../../../core/services/notification.service';
 
 
 
@@ -64,7 +65,9 @@ proveedores: any[] = [];
       private movimientoService: MovimientoService,
       private clienteService: ClienteService,
       private proveedorService: SupplierService
-    ) {}
+    ,
+      private notificationService: NotificationService
+) {}
 
     ngOnInit(): void {
         this.cargarAjustes();
@@ -98,7 +101,7 @@ abrirCrearDialog(): void {
 cargarAjustes() {
     this.ajustesService.listar().subscribe({
       next: (data: AjustesDto[]) => this.ajustes = data,
-      error: () => alert('Error al cargar los clientes')
+      error: () => this.notificationService.error('Error al cargar los clientes')
     });
   }
 
@@ -122,7 +125,7 @@ crearAjuste(data: any): void  {
             this.ajusteSeleccionado = null;
             this.cerrarCrearDialog();
         },
-        error: () => alert('Error al crear el ajuste')
+        error: () => this.notificationService.error('Error al crear el ajuste')
     });
 }
 
@@ -132,7 +135,7 @@ if (this.ajusteSeleccionado?.usuariocl_id) {
 
 this.ajustesService.obtenerporcliente(id).subscribe({
     next: data => this.ajustes = data,
-    error: () => alert('Error al buscar ajustes por cliente')
+    error: () => this.notificationService.error('Error al buscar ajustes por cliente')
 });
 }
 
@@ -144,7 +147,7 @@ if (this.ajusteSeleccionado?.usuariopr_id) {
 
 this.ajustesService.obtenerporproveedor(id).subscribe({
     next: data => this.ajustes = data,
-    error: () => alert('Error al buscar ajustes por proveedor')
+    error: () => this.notificationService.error('Error al buscar ajustes por proveedor')
 });
 }
 

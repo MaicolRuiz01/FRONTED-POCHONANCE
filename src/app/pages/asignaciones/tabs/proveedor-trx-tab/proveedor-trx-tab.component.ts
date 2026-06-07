@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-proveedor-trx-tab',
@@ -37,7 +38,9 @@ export class ProveedorTRXTabComponent implements OnInit {
   constructor(
     private spotOrdersService: SpotOrdersService,
     private sellDollarsService: SellDollarsService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     this.loadTrades();
@@ -51,7 +54,7 @@ export class ProveedorTRXTabComponent implements OnInit {
       },
       error: err => {
         console.error('Error loading trades', err);
-        alert('Error loading trades');
+        this.notificationService.error('Error loading trades');
       }
     });
   }
@@ -82,7 +85,7 @@ export class ProveedorTRXTabComponent implements OnInit {
 
   saveSale() {
     if (!this.selectedTrade || !this.saleRate || this.saleRate <= 0) {
-      alert('Ingrese una tasa válida');
+      this.notificationService.warn('Ingrese una tasa válida');
       return;
     }
 
@@ -100,13 +103,13 @@ export class ProveedorTRXTabComponent implements OnInit {
 
     this.sellDollarsService.createSellDollar(sellDollar).subscribe({
       next: () => {
-        alert('Venta asignada correctamente');
+        this.notificationService.success('Venta asignada correctamente');
         this.closeModal();
         this.loadTrades();
       },
       error: err => {
         console.error('Error saving sale', err);
-        alert('Error al guardar la venta');
+        this.notificationService.error('Error al guardar la venta');
       }
     });
   }

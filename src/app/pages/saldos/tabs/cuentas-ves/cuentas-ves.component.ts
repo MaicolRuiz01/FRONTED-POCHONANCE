@@ -11,6 +11,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CompraVesDto } from '../../../../core/services/compra-ves.service';
 import { VentaVesDto } from '../../../../core/services/venta-ves.service';
 import { TabViewModule } from 'primeng/tabview';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 import {
   AccountVesService,
@@ -64,7 +65,9 @@ export class CuentasVesComponent implements OnInit {
   constructor(
     private accountVesService: AccountVesService,
     private vesRateApi: VesAverageRateApiService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
   ngOnInit(): void {
     this.loadCuentas();
@@ -74,7 +77,7 @@ export class CuentasVesComponent implements OnInit {
   loadCuentas(): void {
     this.accountVesService.getAll().subscribe({
       next: cuentas => this.cuentas = cuentas,
-      error: () => alert('Error al cargar cuentas VES')
+      error: () => this.notificationService.error('Error al cargar cuentas VES')
     });
   }
 
@@ -102,7 +105,7 @@ export class CuentasVesComponent implements OnInit {
 
   crearCuenta(): void {
     if (!this.newAccount.name || this.newAccount.balance == null) {
-      alert('Nombre y balance son obligatorios');
+      this.notificationService.warn('Nombre y balance son obligatorios');
       return;
     }
 
@@ -111,7 +114,7 @@ export class CuentasVesComponent implements OnInit {
         this.displayDialog = false;
         this.loadCuentas();
       },
-      error: () => alert('Error al crear cuenta VES')
+      error: () => this.notificationService.error('Error al crear cuenta VES')
     });
   }
   abrirDialogMovs(cuenta: AccountVes) {

@@ -12,6 +12,7 @@ import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { GastoService } from '../../../../core/services/gasto.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-cajas-tab',
@@ -45,7 +46,9 @@ export class CajasComponent implements OnInit {
     private movimientoService: MovimientoService,
     private cajaService: CajaService,
     private gastoService: GastoService
-  ) { }
+  ,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadCajas();
@@ -79,7 +82,7 @@ export class CajasComponent implements OnInit {
         this.displayCajaDialog = false;
         this.nuevaCaja = { name: '', saldo: 0 };
       },
-      error: () => alert('Error al guardar caja')
+      error: () => this.notificationService.error('Error al guardar caja')
     });
   }
 

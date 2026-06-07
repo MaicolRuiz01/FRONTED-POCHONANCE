@@ -72,9 +72,9 @@ export class VentasVesComponent implements OnInit {
     private api: VentaVesService,
     private clienteService: ClienteService,
     private supplierService: SupplierService,
-        private accountCopService: AccountCopService,
-    private notificationService: NotificationService
+    private accountCopService: AccountCopService
   ) {}
+  notificationService!: NotificationService;
 
   ngOnInit(): void {
     this.form = this.fb.group({

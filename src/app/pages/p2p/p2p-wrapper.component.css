@@ -1,0 +1,56 @@
+/* ── Header P2P ── */
+.p2p-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.p2p-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.p2p-header-left h2 {
+  font-size: 1.3rem;
+  white-space: nowrap;
+}
+
+.sync-states {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Tabs: scroll horizontal en mobile ── */
+:host ::ng-deep .p2p-tabs .p-tabview-nav {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+:host ::ng-deep .p2p-tabs .p-tabview-nav::-webkit-scrollbar {
+  display: none;
+}
+:host ::ng-deep .p2p-tabs .p-tabview-nav li {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .p2p-header-left h2 {
+    font-size: 1.1rem;
+  }
+
+  /* Ocultar texto del sync state, solo mostrar ícono de reloj */
+  .sync-state-text {
+    display: none;
+  }
+
+  /* Botón sync: solo ícono */
+  .sync-btn-label {
+    display: none;
+  }
+}

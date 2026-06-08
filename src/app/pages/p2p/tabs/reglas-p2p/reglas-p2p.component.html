@@ -19,64 +19,86 @@
     No hay reglas configuradas. Crea una para que las ventas se asignen automáticamente.
   </p>
 
-  <p-table *ngIf="!loading && reglas.length > 0"
-    [value]="reglas"
-    styleClass="p-datatable-sm p-datatable-striped">
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width:200px">Cuenta Binance</th>
-        <th style="width:160px">Cuenta COP destino</th>
-        <th style="width:140px">Saldo COP</th>
-        <th style="width:90px">Estado</th>
-        <th style="width:130px">Actualizado</th>
-        <th></th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-regla>
-      <tr>
-        <td>
-          <span class="font-semibold">{{ binanceName(regla) }}</span>
-        </td>
-        <td>
+  <!-- ── TABLA (desktop) ── -->
+  <div class="table-view">
+    <p-table *ngIf="!loading && reglas.length > 0"
+      [value]="reglas"
+      styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width:200px">Cuenta Binance</th>
+          <th style="width:160px">Cuenta COP destino</th>
+          <th style="width:140px">Saldo COP</th>
+          <th style="width:90px">Estado</th>
+          <th style="width:130px">Actualizado</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-regla>
+        <tr>
+          <td><span class="font-semibold">{{ binanceName(regla) }}</span></td>
+          <td><span>{{ copName(regla) }}</span></td>
+          <td>
+            <span class="font-semibold" style="color:#10b981">
+              {{ copBalance(regla) | currency:'COP':'symbol':'1.0-0' }}
+            </span>
+          </td>
+          <td>
+            <p-tag [value]="regla.active ? 'Activa' : 'Pausada'"
+              [severity]="regla.active ? 'success' : 'warning'">
+            </p-tag>
+          </td>
+          <td class="text-sm text-color-secondary">{{ regla.updatedAt | date:'dd/MM/yy HH:mm' }}</td>
+          <td class="text-right">
+            <div class="flex gap-2 justify-content-end">
+              <button pButton icon="pi pi-pencil" class="p-button-outlined p-button-sm"
+                pTooltip="Editar" tooltipPosition="top" (click)="openEditDialog(regla)"></button>
+              <button pButton [icon]="regla.active ? 'pi pi-pause' : 'pi pi-play'"
+                class="p-button-outlined p-button-sm"
+                [class.p-button-warning]="regla.active" [class.p-button-success]="!regla.active"
+                [pTooltip]="regla.active ? 'Pausar' : 'Reanudar'" tooltipPosition="top"
+                (click)="regla.active ? pauseRule(regla) : resumeRule(regla)"></button>
+              <button pButton icon="pi pi-trash" class="p-button-danger p-button-outlined p-button-sm"
+                pTooltip="Eliminar" tooltipPosition="top" (click)="deleteRule(regla)"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── CARDS (mobile) ── -->
+  <div class="cards-view" *ngIf="!loading && reglas.length > 0">
+    <div class="regla-card" *ngFor="let regla of reglas">
+      <div class="regla-card-row">
+        <div class="regla-accounts">
+          <i class="pi pi-bitcoin" style="color:#f59e0b;font-size:0.9rem;"></i>
+          <span>{{ binanceName(regla) }}</span>
+          <span class="arrow">→</span>
           <span>{{ copName(regla) }}</span>
-        </td>
-        <td>
-          <span class="font-semibold" style="color:#10b981">
-            {{ copBalance(regla) | currency:'COP':'symbol':'1.0-0' }}
-          </span>
-        </td>
-        <td>
-          <p-tag
-            [value]="regla.active ? 'Activa' : 'Pausada'"
-            [severity]="regla.active ? 'success' : 'warning'">
-          </p-tag>
-        </td>
-        <td class="text-sm text-color-secondary">{{ regla.updatedAt | date:'dd/MM/yy HH:mm' }}</td>
-        <td class="text-right">
-          <div class="flex gap-2 justify-content-end">
-            <button pButton icon="pi pi-pencil"
-              class="p-button-outlined p-button-sm"
-              pTooltip="Editar" tooltipPosition="top"
-              (click)="openEditDialog(regla)">
-            </button>
-            <button pButton
-              [icon]="regla.active ? 'pi pi-pause' : 'pi pi-play'"
-              class="p-button-outlined p-button-sm"
-              [class.p-button-warning]="regla.active"
-              [class.p-button-success]="!regla.active"
-              [pTooltip]="regla.active ? 'Pausar' : 'Reanudar'" tooltipPosition="top"
-              (click)="regla.active ? pauseRule(regla) : resumeRule(regla)">
-            </button>
-            <button pButton icon="pi pi-trash"
-              class="p-button-danger p-button-outlined p-button-sm"
-              pTooltip="Eliminar" tooltipPosition="top"
-              (click)="deleteRule(regla)">
-            </button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+        </div>
+        <p-tag [value]="regla.active ? 'Activa' : 'Pausada'"
+          [severity]="regla.active ? 'success' : 'warning'">
+        </p-tag>
+      </div>
+
+      <div class="regla-meta">
+        <span class="regla-saldo">{{ copBalance(regla) | currency:'COP':'symbol':'1.0-0' }}</span>
+        <span class="regla-date">{{ regla.updatedAt | date:'dd/MM/yy HH:mm' }}</span>
+      </div>
+
+      <div class="regla-actions">
+        <button pButton icon="pi pi-pencil" class="p-button-outlined p-button-sm"
+          (click)="openEditDialog(regla)"></button>
+        <button pButton [icon]="regla.active ? 'pi pi-pause' : 'pi pi-play'"
+          class="p-button-outlined p-button-sm"
+          [class.p-button-warning]="regla.active" [class.p-button-success]="!regla.active"
+          (click)="regla.active ? pauseRule(regla) : resumeRule(regla)"></button>
+        <button pButton icon="pi pi-trash" class="p-button-danger p-button-outlined p-button-sm"
+          (click)="deleteRule(regla)"></button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Dialog nueva/editar regla -->

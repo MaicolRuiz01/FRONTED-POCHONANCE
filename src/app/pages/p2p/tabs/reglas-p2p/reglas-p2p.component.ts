@@ -22,7 +22,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
     CommonModule, FormsModule, TableModule, ButtonModule, DialogModule,
     DropdownModule, ProgressSpinnerModule, TagModule, TooltipModule
   ],
-  templateUrl: './reglas-p2p.component.html'
+  templateUrl: './reglas-p2p.component.html',
+  styleUrls: ['./reglas-p2p.component.css']
 })
 export class ReglasP2pComponent implements OnInit {
   reglas: P2PAssignmentRule[] = [];

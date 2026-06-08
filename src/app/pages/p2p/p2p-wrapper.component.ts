@@ -28,7 +28,8 @@ import { P2PSyncService, P2PSyncState } from '../../core/services/p2p-sync.servi
     ReglasP2pComponent
   ],
   providers: [MessageService],
-  templateUrl: './p2p-wrapper.component.html'
+  templateUrl: './p2p-wrapper.component.html',
+  styleUrls: ['./p2p-wrapper.component.css']
 })
 export class P2PWrapperComponent implements OnInit, OnDestroy {
   syncStates: P2PSyncState[] = [];

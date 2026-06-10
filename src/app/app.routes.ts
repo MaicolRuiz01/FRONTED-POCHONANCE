@@ -15,6 +15,7 @@ import { MovimientosComponent } from './pages/movimientos/movimientos.component'
 import { AsignadasComponent } from './pages/historial/container/asignadas/asignadas.component';
 import { ContainerComponent } from './pages/cambios-arabes/container/container.component';
 import { P2PWrapperComponent } from './pages/p2p/p2p-wrapper.component';
+import { RetiradoresComponent } from './pages/retiradores/retiradores.component';
 
 export const routes: Routes = [
   {
@@ -37,6 +38,7 @@ export const routes: Routes = [
       { path: 'historial', component: AsignadasComponent },
       { path: 'cambios-arabes', component: ContainerComponent },
       { path: 'p2p', component: P2PWrapperComponent },
+      { path: 'retiradores', component: RetiradoresComponent },
     ]
   },
   { path: '**', redirectTo: 'saldos' }

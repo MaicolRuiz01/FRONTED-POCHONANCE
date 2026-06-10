@@ -1,0 +1,210 @@
+/* ── Grid de cards ── */
+.retiradores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card retirador ── */
+.ret-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+  transition: box-shadow .2s, transform .15s;
+}
+.ret-card:hover {
+  box-shadow: 0 4px 18px rgba(0,0,0,.1);
+  transform: translateY(-2px);
+}
+
+.ret-card-accent {
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+}
+
+.ret-card-body {
+  padding: 18px 20px 14px;
+}
+
+.ret-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ret-nombre {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.ret-caja {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.ret-card-actions-top {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Stats row ── */
+.ret-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ret-stat {
+  flex: 1;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.ret-stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #9ca3af;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ret-stat-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.ret-stat-value.green { color: #10b981; }
+
+/* ── Botón hacer retiro ── */
+.btn-retiro {
+  width: 100%;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+/* ── Modal retiro: lista de cuentas ── */
+.cuenta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  transition: border-color .15s, background .15s;
+}
+.cuenta-row.activa {
+  border-color: #6366f1;
+  background: #f5f3ff;
+}
+
+.cuenta-row-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cuenta-row-top label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #111827;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cuenta-row-inputs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-left: 28px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.input-group label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: .04em;
+}
+
+/* ── Resumen retiro ── */
+.retiro-summary {
+  background: #f9fafb;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-item .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #9ca3af;
+  font-weight: 600;
+  letter-spacing: .04em;
+  display: block;
+}
+
+.summary-item .value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+.summary-item .value.green { color: #10b981; }
+.summary-item .value.indigo { color: #6366f1; }
+
+/* ── Historial ── */
+.hist-item {
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.hist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.hist-fecha { font-size: 0.78rem; color: #9ca3af; }
+.hist-montos {
+  display: flex;
+  gap: 16px;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.hist-cuentas { font-size: 0.78rem; color: #6b7280; }
+
+@media (max-width: 600px) {
+  .retiradores-grid { grid-template-columns: 1fr; }
+  .ret-stats { flex-direction: column; }
+}

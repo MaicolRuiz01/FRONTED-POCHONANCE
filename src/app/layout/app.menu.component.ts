@@ -30,6 +30,10 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/p2p']
                     },
                     {
+                        label: 'RETIRADORES', icon: 'pi pi-fw pi-users',
+                        routerLink: ['/retiradores']
+                    },
+                    {
                         label: 'MOVIMIENTOS', icon: 'pi pi-fw pi-arrow-right-arrow-left',
                         routerLink: ['/movimientos']
                     },

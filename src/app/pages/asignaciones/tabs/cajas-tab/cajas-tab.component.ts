@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 
 @Component({
@@ -45,7 +46,9 @@ export class MovimientosComponent implements OnInit {
 
   constructor(private movimientoService: MovimientoService,
     private cajaService: CajaService
-  ) {}
+  ,
+    private notificationService: NotificationService
+) {}
 
 
   ngOnInit(): void {
@@ -73,7 +76,7 @@ export class MovimientosComponent implements OnInit {
         this.displayCajaDialog = false;
         this.nuevaCaja = { name: '', saldo: 0 };
       },
-      error: () => alert('Error al guardar caja')
+      error: () => this.notificationService.error('Error al guardar caja')
     });
   }
 // Al hacer clic en una caja, abrimos modal y cargamos sus movimientos

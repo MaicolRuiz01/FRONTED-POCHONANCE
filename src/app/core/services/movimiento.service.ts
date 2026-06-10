@@ -6,14 +6,24 @@ import { Movimiento } from './pago-proveedor.service';
 
 export interface MovimientoDto {
   id: number;
-  tipo: string; // 'retiro', 'deposito', 'transferencia', 'pago'
+  tipo: string;
   monto: number;
   cuentaFromId: number;
-  cuentaToId?: number; // Solo para transferencias
+  cuentaToId?: number;
   fecha: Date;
   descripcion?: string;
   caja?: number;
-  
+
+}
+
+export interface MovimientoVistaCuentaCopDto {
+  id: number;
+  tipo: string;
+  fecha: Date;
+  montoSigned: number;
+  entrada: boolean;
+  salida: boolean;
+  detalle: string;
 }
 
 export interface PagoClienteAClienteDto {
@@ -26,7 +36,7 @@ export interface PagoClienteAClienteDto {
 }
 
 export interface MovimientoVistaDto {
-  id?: number; // 🔹 importante para poder editar
+  id?: number;
   tipo: string;
   fecha: Date;
   monto: number;
@@ -38,27 +48,50 @@ export interface PagoClienteAProveedorDto {
   clienteOrigenId: number;
   proveedorDestinoId: number;
   usdt: number;
-  tasaCliente: number;    // COP/USDT del cliente
-  tasaProveedor: number;  // COP/USDT del proveedor
+  tasaCliente: number;
+  tasaProveedor: number;
   nota?: string;
 }
 export interface PagoProveedorAClienteDto {
   proveedorOrigenId: number;
   clienteDestinoId: number;
   usdt: number;
-  tasaProveedor: number; // COP/USDT (origen)
-  tasaCliente: number;   // COP/USDT (destino)
+  tasaProveedor: number;
+  tasaCliente: number;
   nota?: string;
 }
 
-export type EntidadAjuste = 'CLIENTE' | 'PROVEEDOR' | 'CUENTACOP';
+
+export type EntidadAjuste = 'CLIENTE' | 'PROVEEDOR' | 'CUENTACOP' | 'CAJA';
 
 export interface AjusteSaldoDto {
   entidad: EntidadAjuste;
   entidadId: number;
-  nuevoSaldo: number;
+  monto: number;
+  entrada: boolean;
   motivo: string;
   actor?: string;
+}
+
+export interface ResumenDiario {
+  comprasDolaresHoy: number;
+  ventasDolaresHoy: number;
+  ajustesHoy: number;
+  entradasHoy: number;
+  salidasHoy: number;
+  salidasRetirosHoy: number;
+}
+
+export interface MovimientoAjusteDto {
+  id: number;
+  tipo: string;
+  fecha: Date;
+  monto: number;
+  motivo?: string;
+  actor?: string;
+  saldoAnterior?: number;
+  saldoNuevo?: number;
+  diferencia?: number;
 }
 
 
@@ -74,10 +107,10 @@ export class MovimientoService {
     return this.http.post<MovimientoDto>(this.apiUrl, movimiento);
   }
 
-actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<MovimientoVistaDto> {
-  const url = `${this.apiUrl}/${id}`;
-  return this.http.put<MovimientoVistaDto>(url, movimiento);
-}
+  actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<MovimientoVistaDto> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.put<MovimientoVistaDto>(url, movimiento);
+  }
 
   getMovimientosByCuenta(cuentaId: number): Observable<MovimientoDto[]> {
     const url = `${this.apiUrl}/cuenta/${cuentaId}`;
@@ -85,7 +118,7 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   }
 
   getAllMovimientos(): Observable<MovimientoDto[]> {
-    return this.http.get<MovimientoDto[]>(this.apiUrl);
+    return this.http.get<MovimientoDto[]>(`${this.apiUrl}/listar`);
   }
 
   registrarRetiro(idCuentaOrigen: number, monto: number) {
@@ -122,24 +155,24 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
     return this.http.post<MovimientoVistaDto>(url, {});
   }
   registrarPagoProveedor(
-  cuentaId: number | null,
-  cajaId: number | null,
-  proveedorOrigenId: number | null,
-  proveedorDestinoId: number,
-  monto: number,
-  clienteId?: number | null
-): Observable<any> {
+    cuentaId: number | null,
+    cajaId: number | null,
+    proveedorOrigenId: number | null,
+    proveedorDestinoId: number,
+    monto: number,
+    clienteId?: number | null
+  ): Observable<any> {
 
-  let params = new HttpParams()
-    .set('monto', monto.toString())
-    .set('proveedor', proveedorDestinoId.toString());
+    let params = new HttpParams()
+      .set('monto', monto.toString())
+      .set('proveedor', proveedorDestinoId.toString());
 
-  if (cuentaId !== null) params = params.set('cuentaId', cuentaId.toString());
-  if (cajaId !== null) params = params.set('caja', cajaId.toString());
-  if (proveedorOrigenId !== null) params = params.set('proveedorOrigen', proveedorOrigenId.toString());
-  if (clienteId) params = params.set('clienteId', clienteId.toString());
-  return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params });
-}
+    if (cuentaId !== null) params = params.set('cuentaId', cuentaId.toString());
+    if (cajaId !== null) params = params.set('caja', cajaId.toString());
+    if (proveedorOrigenId !== null) params = params.set('proveedorOrigen', proveedorOrigenId.toString());
+    if (clienteId) params = params.set('clienteId', clienteId.toString());
+    return this.http.post(`${this.apiUrl}/pago-proveedor`, {}, { params });
+  }
 
 
   actualizarMovimiento(id: number, movimiento: Partial<MovimientoDto>): Observable<MovimientoDto> {
@@ -147,48 +180,124 @@ actualizarMovimientoVista(id: number, movimiento: MovimientoDto): Observable<Mov
   }
 
   getMovimientosPorCliente(clienteId: number): Observable<MovimientoVistaDto[]> {
-  const url = `${this.apiUrl}/cliente/${clienteId}`;
-  return this.http.get<MovimientoVistaDto[]>(url);
-}
+    const url = `${this.apiUrl}/cliente/${clienteId}`;
+    return this.http.get<MovimientoVistaDto[]>(url);
+  }
 
-getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
-  return this.http.get<MovimientoVistaDto[]>(
-    `${this.apiUrl}/pagos-cuenta/${cuentaId}`
-  );
-}
-pagoClienteACliente(dto: PagoClienteAClienteDto): Observable<any> {
-  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente`, dto);
-}
-getMovimientosPorCaja(cajaId: number) {
-  return this.http.get<any[]>(
-    `${environment.apiUrl}/movimiento/caja/${cajaId}`
-  );
-}
+  getPagosPorCuenta(cuentaId: number): Observable<MovimientoVistaDto[]> {
+    return this.http.get<MovimientoVistaDto[]>(
+      `${this.apiUrl}/pagos-cuenta/${cuentaId}`
+    );
+  }
+  pagoClienteACliente(dto: PagoClienteAClienteDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente`, dto);
+  }
+  getMovimientosPorCaja(cajaId: number) {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/movimiento/caja/${cajaId}`
+    );
+  }
 
-pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
+  pagoClienteAProveedor(dto: PagoClienteAProveedorDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/pago-cliente-a-proveedor`, dto);
   }
-  
+
   pagoClienteAClienteCop(clienteOrigenId: number, clienteDestinoId: number, montoCop: number): Observable<any> {
-  const params = new HttpParams()
-    .set('clienteOrigenId', clienteOrigenId)
-    .set('clienteDestinoId', clienteDestinoId)
-    .set('montoCop', montoCop);
-  return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente-cop`, {}, { params });
-}
-eliminarMovimiento(movimiento: Movimiento): Observable<void> {
+    const params = new HttpParams()
+      .set('clienteOrigenId', clienteOrigenId)
+      .set('clienteDestinoId', clienteDestinoId)
+      .set('montoCop', montoCop);
+    return this.http.post(`${this.apiUrl}/pago-cliente-a-cliente-cop`, {}, { params });
+  }
+  eliminarMovimiento(movimiento: Movimiento): Observable<void> {
     const url = `${this.apiUrl}/eliminar/${movimiento.id}`;
     return this.http.delete<void>(url);
   }
 
   pagoProveedorACliente(dto: PagoProveedorAClienteDto): Observable<any> {
-  return this.http.post(`${this.apiUrl}/pago-proveedor-a-cliente`, dto);
-}
-ajustarSaldo(dto: AjusteSaldoDto) {
-  return this.http.post(`${this.apiUrl}/ajuste-saldo`, dto);
-}
-}
+    return this.http.post(`${this.apiUrl}/pago-proveedor-a-cliente`, dto);
+  }
+  ajustarSaldo(dto: AjusteSaldoDto) {
+    return this.http.post(`${this.apiUrl}/ajuste-saldo`, dto);
+  }
 
-  
+  getVistaCuentaCop(cuentaId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+    return this.http.get<MovimientoVistaCuentaCopDto[]>(
+      `${this.apiUrl}/vista/cuenta-cop/${cuentaId}`
+    );
+  }
+
+  getVistaCliente(clienteId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+    return this.http.get<MovimientoVistaCuentaCopDto[]>(
+      `${this.apiUrl}/vista/cliente/${clienteId}`
+    );
+  }
+
+  getVistaProveedor(proveedorId: number): Observable<MovimientoVistaCuentaCopDto[]> {
+    return this.http.get<MovimientoVistaCuentaCopDto[]>(
+      `${this.apiUrl}/vista/proveedor/${proveedorId}`
+    );
+  }
+  getResumenCliente(clienteId: number): Observable<ResumenDiario> {
+    return this.http.get<ResumenDiario>(
+      `${this.apiUrl}/resumen/cliente/${clienteId}`
+    );
+  }
+  getResumenProveedor(proveedorId: number): Observable<ResumenDiario> {
+    return this.http.get<ResumenDiario>(
+      `${this.apiUrl}/resumen/proveedor/${proveedorId}`
+    );
+  }
+  getResumenCuentaCop(cuentaId: number): Observable<ResumenDiario> {
+    return this.http.get<ResumenDiario>(
+      `${this.apiUrl}/resumen/cuenta-cop/${cuentaId}`
+    );
+  }
+
+  pagoCuentaCopACliente(cuentaId: number, clienteId: number, monto: number) {
+    const params = new HttpParams()
+      .set("cuentaId", cuentaId)
+      .set("clienteId", clienteId)
+      .set("monto", monto);
+
+    return this.http.post(`${this.apiUrl}/pago-cuenta-cop-a-cliente`, {}, { params });
+  }
+
+  getAjustesCliente(clienteId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/cliente/${clienteId}`
+    );
+  }
+
+  getAjustesProveedor(proveedorId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/proveedor/${proveedorId}`
+    );
+  }
+
+  getAjustesCuentaCop(cuentaId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/cuenta-cop/${cuentaId}`
+    );
+  }
+
+  getAjustesCaja(cajaId: number): Observable<MovimientoAjusteDto[]> {
+    return this.http.get<MovimientoAjusteDto[]>(
+      `${this.apiUrl}/ajustes/caja/${cajaId}`
+    );
+  }
+
+  downloadExcelProveedor(proveedorId: number): Observable<Blob> {
+    const url = `${this.apiUrl}/excel/proveedor/${proveedorId}`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
+  downloadExcelCliente(clienteId: number) {
+    return this.http.get(
+      `${environment.apiUrl}/movimiento/excel/cliente/${clienteId}`,
+      { responseType: 'blob' }
+    );
+  }
 
 
+}

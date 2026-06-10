@@ -1,0 +1,68 @@
+/* ── Tabla: solo desktop ── */
+.table-view  { display: block; }
+.cards-view  { display: none;  }
+
+/* ── Card mobile de cada regla ── */
+.regla-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+.regla-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.regla-accounts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.regla-accounts .arrow {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.regla-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.regla-saldo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.regla-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.regla-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .table-view { display: none;  }
+  .cards-view  { display: block; }
+}

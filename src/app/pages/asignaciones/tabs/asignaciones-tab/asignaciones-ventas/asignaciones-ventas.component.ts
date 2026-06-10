@@ -19,6 +19,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { TableColumn } from '../../../../../shared/mi-table/mi-table.component';
 import { MiTableComponent } from '../../../../../shared/mi-table/mi-table.component';
 import { CardListComponent } from '../../../../../shared/mi-card/mi-card.component';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-asignaciones-ventas',
@@ -67,7 +68,7 @@ export class AsignacionesVentasComponent implements OnInit {
   //campo es el nombre de donde tomo el dato y columna como quiero que se muestre
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
-    { campo: 'cryptoSymbol', columna: 'Cripto' }, 
+    { campo: 'cryptoSymbol', columna: 'Cripto' },
     { campo: 'dollars', columna: 'Monto' },
     { campo: 'date', columna: 'Fecha' },
     { campo: 'getClienteById(sale.clienteId)?.nombre ?? "----"', columna: 'Cliente' }
@@ -76,7 +77,9 @@ export class AsignacionesVentasComponent implements OnInit {
   constructor(private sellService: SellDollarsService,
     private supplierService: SupplierService,
     private accountCopService: AccountCopService,
-    private clienteService: ClienteService) { }
+    private clienteService: ClienteService,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadSales();
@@ -90,12 +93,12 @@ export class AsignacionesVentasComponent implements OnInit {
 
     this.accountCopService.getAll().subscribe({
       next: (accounts) => this.accountCops = accounts,
-      error: () => alert('Error cargando cuentas COP')
+      error: () => this.notificationService.error('Error cargando cuentas COP')
     });
 
     this.clienteService.listar().subscribe({
       next: (data) => this.clientes = data,
-      error: () => alert('Error cargando clientes especiales')
+      error: () => this.notificationService.error('Error cargando clientes especiales')
     });
 
     this.sellService.importarVentasAutomaticamente().subscribe({
@@ -104,7 +107,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: err => {
         console.error('Error al importar ventas automáticas', err);
-        alert('Error al registrar automáticamente las ventas');
+        this.notificationService.error('Error al registrar automáticamente las ventas');
         this.loadSales();  // Igual carga las compras en caso de error
       }
     })
@@ -121,7 +124,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error cargando ventas', err);
-        alert('No se pudieron cargar las ventas');
+        this.notificationService.error('No se pudieron cargar las ventas');
       }
     });
   }
@@ -134,7 +137,7 @@ export class AsignacionesVentasComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando proveedores', err);
-        alert('No se pudieron cargar los proveedores');
+        this.notificationService.error('No se pudieron cargar los proveedores');
       }
     });
   }
@@ -149,29 +152,29 @@ export class AsignacionesVentasComponent implements OnInit {
   }
 
   openAssignModal(sale: SellDollar): void {
-  this.selected = sale;
-  this.saleRate = null;
-  this.selectedSupplierId = null;
-  this.accounts = [];
-
-  const tipo = (sale.tipoCuenta || '').toUpperCase();
-  this.isSolanaSale = (tipo === 'SOLANA' || tipo === 'PHANTOM');
-
-  if (this.isSolanaSale) {
-    this.isSpecialClient = null;
-    this.selectedClientId = null;
+    this.selected = sale;
+    this.saleRate = null;
     this.selectedSupplierId = null;
-    if (this.accounts.length === 0) {
-      this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
-    }
-  } else {
-    // comportamiento anterior
-    this.isSpecialClient = !!sale.clienteId;
-    this.selectedClientId = sale.clienteId ?? null;
-  }
+    this.accounts = [];
 
-  this.displayModal = true;
-}
+    const tipo = (sale.tipoCuenta || '').toUpperCase();
+    this.isSolanaSale = (tipo === 'SOLANA' || tipo === 'PHANTOM');
+
+    if (this.isSolanaSale) {
+      this.isSpecialClient = null;
+      this.selectedClientId = null;
+      this.selectedSupplierId = null;
+      if (this.accounts.length === 0) {
+        this.accounts.push({ amount: 0, nameAccount: '', accountCop: null! });
+      }
+    } else {
+      // comportamiento anterior
+      this.isSpecialClient = !!sale.clienteId;
+      this.selectedClientId = sale.clienteId ?? null;
+    }
+
+    this.displayModal = true;
+  }
 
   closeModal(): void {
     this.displayModal = false;
@@ -189,49 +192,49 @@ export class AsignacionesVentasComponent implements OnInit {
 
   // src/app/pages/asignaciones/tabs/asignaciones-tab/asignaciones-ventas/asignaciones-ventas.component.ts
 
-// ... (código existente)
+  // ... (código existente)
 
-saveSale(): void {
+  saveSale(): void {
     if (!this.selected || !this.saleRate ||
-        (this.isSpecialClient && !this.selectedClientId) ||
-        (!this.isSpecialClient && !this.selectedSupplierId)) {
-        alert('Faltan datos obligatorios');
-        return;
+      (this.isSpecialClient && !this.selectedClientId) ||
+      (!this.isSpecialClient && !this.selectedSupplierId)) {
+      this.notificationService.warn('Faltan datos obligatorios');
+      return;
     }
 
     const pesos = this.selected.dollars * this.saleRate;
 
     // ✅ CORRECCIÓN: Creamos un objeto limpio con solo los datos a asignar.
     const assignDto: Partial<SellDollar> = {
-        tasa: this.saleRate,
-        pesos: pesos,
-        dollars: this.selected.dollars,
-        accounts: this.accounts,
+      tasa: this.saleRate,
+      pesos: pesos,
+      dollars: this.selected.dollars,
+      accounts: this.accounts,
     };
 
     // ✅ CORRECCIÓN: Asigna el cliente o el proveedor de forma segura.
     if (this.isSpecialClient) {
-        // Asignamos el ID si existe, de lo contrario es undefined.
-        assignDto.clienteId = this.selectedClientId ?? undefined;
+      // Asignamos el ID si existe, de lo contrario es undefined.
+      assignDto.clienteId = this.selectedClientId ?? undefined;
     } else {
-        // Asignamos el ID si existe, de lo contrario es undefined.
-        assignDto.supplier = this.selectedSupplierId ?? undefined;
+      // Asignamos el ID si existe, de lo contrario es undefined.
+      assignDto.supplier = this.selectedSupplierId ?? undefined;
     }
 
     // ✅ Llama al servicio con el objeto corregido
     this.sellService.asignarVenta(this.selected.id!, assignDto).subscribe({
-        next: () => {
-            alert('Venta asignada con éxito');
-            this.closeModal();
-            this.loadSales();
-        },
-        error: (err) => {
-            console.error('Error al asignar venta', err);
-            alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
-        }
+      next: () => {
+        this.notificationService.success('Venta asignada con éxito');
+        this.closeModal();
+        this.loadSales();
+      },
+      error: (err) => {
+        console.error('Error al asignar venta', err);
+        this.notificationService.error('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+      }
     });
-}
-  
+  }
+
 
   getClienteById(id: number | undefined): Cliente | undefined {
     return this.clientes.find(c => c.id === id);
@@ -240,49 +243,54 @@ saveSale(): void {
     return sale.clienteId ? 'special-client-row' : '';
   }
   saveSaleSolana(): void {
-  if (!this.selected || this.accounts.length === 0) {
-    alert('Debe agregar al menos una cuenta COP con monto');
-    return;
-  }
-
-  // Validar que todas las cuentas tengan cuenta COP y monto
-  const invalid = this.accounts.some(acc => !acc.accountCop || !acc.amount || acc.amount <= 0);
-  if (invalid) {
-    alert('Todas las cuentas deben tener una cuenta COP seleccionada y un monto mayor a 0');
-    return;
-  }
-
-  // Llamar al servicio con solo las cuentas (sin tasa, sin proveedor)
-  this.sellService.asignarVentaSolana(this.selected.id!, this.accounts).subscribe({
-    next: () => {
-      alert('Venta Solana asignada con éxito');
-      this.closeModal();
-      this.loadSales();
-    },
-    error: (err) => {
-      console.error('Error al asignar venta Solana', err);
-      alert('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+    if (!this.selected || this.accounts.length === 0) {
+      this.notificationService.warn('Debe agregar al menos una cuenta COP con monto');
+      return;
     }
-  });
-}
-// src/.../asignaciones-ventas.component.ts (dentro de la clase)
 
-onAccountAmountChange(): void {
-  // Normaliza montos y evita NaN
-  this.accounts = this.accounts.map(a => ({
-    ...a,
-    amount: Math.max(0, Number(a.amount || 0))
-  }));
-}
+    // Validar que todas las cuentas tengan cuenta COP y monto
+    const invalid = this.accounts.some(acc => !acc.accountCop || !acc.amount || acc.amount <= 0);
+    if (invalid) {
+      this.notificationService.warn('Todas las cuentas deben tener una cuenta COP seleccionada y un monto mayor a 0');
+      return;
+    }
 
-get totalPesosSolana(): number {
-  return this.accounts.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
-}
+    // Llamar al servicio con solo las cuentas (sin tasa, sin proveedor)
+    this.sellService.asignarVentaSolana(this.selected.id!, this.accounts).subscribe({
+      next: () => {
+        this.notificationService.success('Venta Solana asignada con éxito');
+        this.closeModal();
+        this.loadSales();
+      },
+      error: (err) => {
+        console.error('Error al asignar venta Solana', err);
+        this.notificationService.error('Error al asignar la venta: ' + (err.error?.message || err.statusText));
+      }
+    });
+  }
+  // src/.../asignaciones-ventas.component.ts (dentro de la clase)
 
-calcularTasaSolana(): number {
-  const usd = this.selected?.dollars ?? 0;
-  return usd > 0 ? this.totalPesosSolana / usd : 0;
-}
+  onAccountAmountChange(index: number): void {
+    const value = Number(this.accounts[index].amount);
+
+    if (isNaN(value) || value < 0) {
+      this.accounts[index].amount = 0;
+      return;
+    }
+
+    // Solo actualizamos el item, NO recreamos el array.
+    this.accounts[index].amount = value;
+  }
+
+
+  get totalPesosSolana(): number {
+    return this.accounts.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+  }
+
+  calcularTasaSolana(): number {
+    const usd = this.selected?.dollars ?? 0;
+    return usd > 0 ? this.totalPesosSolana / usd : 0;
+  }
 
 
 }

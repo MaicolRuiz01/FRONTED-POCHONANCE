@@ -6,50 +6,55 @@ import { environment } from '../../../environment/environment';
 export interface SaleP2PDto {
   id: number;
   numberOrder: string;
-  date: Date;
-  taxType: string;
+  date: string;
   pesosCop: number;
+  dollarsUs: number;
   commission: number;
-  accountCopIds: number[];
-  nameAccount: string;
-  nameAccountBinance: string;
-  accountAmounts: { [key: number]: number }; // Nuevo campo para montos por cuenta
-  dollarsUs:number;
+  tasa?: number;
+  asignado?: boolean;
+  nameAccountBinance?: string;
+  accountCopsDetails?: { nameAccount: string; amount: number }[];
+  // formatted fields (added client-side)
+  dateFmt?: string;
+  pesosCopFmt?: string;
+  dollarsUsFmt?: string;
+  commissionFmt?: string;
+  tasaFmt?: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class SaleP2PService {
   private apiUrl = `${environment.apiUrl}/saleP2P`;
-  private apiUrlgetallsales = `http://localhost:8080/saleP2P/all`;
-
 
   constructor(private http: HttpClient) {}
 
-  createSale(saleDto: SaleP2PDto): Observable<SaleP2PDto> {
-    return this.http.post<SaleP2PDto>(this.apiUrl, saleDto);
+  /** HOY no asignadas de 1 cuenta */
+  getTodayNoAsignadas(account: string): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today/no-asignadas?account=${encodeURIComponent(account)}`);
   }
 
+  /** HOY no asignadas de TODAS las cuentas BINANCE */
+  getTodayNoAsignadasAllAccounts(): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today/no-asignadas/all-binance`);
+  }
+
+  /** Ventas asignadas entre fechas */
+  getAsignadasByRange(inicio: string, fin: string): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/range?inicio=${inicio}&fin=${fin}`);
+  }
+
+  /** Todas las ventas de hoy (asignadas y no asignadas) */
+  getTodayAll(): Observable<SaleP2PDto[]> {
+    return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/today`);
+  }
+
+  /** Asignación manual de cuentas COP a una venta */
   assignAccounts(
     saleId: number,
-    accounts: { amount: number, nameAccount: string, accountCop: number | null }[]): Observable<any> {
-    const url = `${this.apiUrl}/assign-account-cop?saleId=${saleId}`;
-    return this.http.post(url, accounts, { responseType: 'text' as 'json' });
-  }
-
-  getAllSales(): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today/all-binance`;
-    console.log('Fetching all sales from:', url);
-    return this.http.get<SaleP2PDto[]>(url);
-  }
-
-  getsalesp2p(): Observable<SaleP2PDto[]> {
-    return this.http.get<SaleP2PDto[]>(this.apiUrlgetallsales);
-  }
-
-  getAllSalesToday(account: string): Observable<SaleP2PDto[]> {
-    const url = `${this.apiUrl}/today?account=${account}`;
-    return this.http.get<SaleP2PDto[]>(url);
+    accounts: { amount: number; nameAccount: string; accountCop: number | null }[]
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/assign-account-cop?saleId=${saleId}`, accounts, {
+      responseType: 'text' as 'json'
+    });
   }
 }

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Movimiento } from '../../../../../core/services/pago-proveedor.service';
 import { MovimientoService } from '../../../../../core/services/movimiento.service';
 import { ButtonModule } from 'primeng/button';
+import { NotificationService } from '../../../../../core/services/notification.service';
 @Component({
   selector: 'app-lista-pagos',
   standalone: true,
@@ -17,7 +18,7 @@ export class ListaPagosComponent {
   pagosOrdenados: any[] = [];
 
   constructor(private movimientoService: MovimientoService,
-  ) {}
+    private notificationService: NotificationService) {}
 
   ngOnChanges() {
     this.pagosOrdenados = [...this.pagos].sort(
@@ -32,7 +33,7 @@ export class ListaPagosComponent {
     next: () => {
       this.pagosOrdenados = this.pagosOrdenados.filter(p => p !== movimiento);
     },
-    error: () => alert('Error al eliminar el movimiento')
+    error: () => this.notificationService.error('Error al eliminar el movimiento')
   });
 }
   }

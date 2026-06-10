@@ -36,7 +36,7 @@ export class GastosComponent implements OnInit {
   gastos: Gasto[] = [];
   productDialog = false;
   nuevoGasto: Gasto = { descripcion: '', monto: 0 };
-
+  gastosView: (Gasto & { origen: string })[] = [];
   cuentas: AccountCop[] = [];
   cajas: { id: number, name: string, saldo: number }[] = [];
 
@@ -47,23 +47,49 @@ export class GastosComponent implements OnInit {
   columns: TableColumn[] = [
     { campo: 'fecha', columna: 'Fecha' },
     { campo: 'descripcion', columna: 'Descripción' },
+    { campo: 'origen', columna: 'Origen' },
     { campo: 'monto', columna: 'Monto' }
   ];
+
 
   constructor(
     private gastoService: GastoService,
     private accountService: AccountCopService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    this.accountService.getAll().subscribe(data => {
+      this.cuentas = data;
+      this.refreshGastosView();
+    });
+
+    this.accountService.getAllCajas().subscribe(data => {
+      this.cajas = data;
+      this.refreshGastosView();
+    });
+
     this.cargarGastos();
-    this.accountService.getAll().subscribe(data => this.cuentas = data);
-    this.accountService.getAllCajas().subscribe(data => this.cajas = data);
   }
 
   cargarGastos(): void {
-    this.gastoService.listar().subscribe(data => this.gastos = data);
+    this.gastoService.listar().subscribe(data => {
+      this.gastos = data;
+      this.refreshGastosView();
+    });
   }
+
+  private refreshGastosView(): void {
+    // si aún no han cargado gastos, no hace nada
+    if (!this.gastos) return;
+
+    this.gastosView = this.gastos.map(g => ({
+      ...g,
+      origen: this.buildOrigen(g)
+    }));
+  }
+
+
+
 
   openNew(): void {
     this.nuevoGasto = { descripcion: '', monto: 0 };
@@ -87,4 +113,17 @@ export class GastosComponent implements OnInit {
       this.cargarGastos();
     });
   }
+
+  private buildOrigen(g: Gasto): string {
+    if (g.cuentaPago?.id) {
+      const c = this.cuentas.find(x => x.id === g.cuentaPago!.id);
+      return c ? `Cuenta COP: ${c.name}` : `Cuenta COP: #${g.cuentaPago.id}`;
+    }
+    if (g.pagoEfectivo?.id) {
+      const caja = this.cajas.find(x => x.id === g.pagoEfectivo!.id);
+      return caja ? `Caja: ${caja.name}` : `Caja: #${g.pagoEfectivo.id}`;
+    }
+    return '—';
+  }
+
 }

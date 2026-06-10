@@ -1,4 +1,3 @@
-// src/app/core/services/ordenes-cripto.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,17 +5,18 @@ import { environment } from '../../../environment/environment';
 
 export interface OrdenSpotDTO {
   id: number;
-  idOrden: number;        // (=orderId de Binance)
-  cuenta: string;         // nombre de la cuenta
-  simbolo: string;        // TRXUSDT, BTCUSDT...
-  lado: string;           // BUY / SELL
-  estado: string;         // FILLED, CANCELED...
-  precio: number;         // avgPrice
-  cantidadBase: number;   // executedBaseQty
-  cantidadQuote: number;  // executedQuoteQty
-  comisionUsdt: number;   // feeTotalUsdt
-  fecha: string;          // ISO (filledAt)
+  idOrdenBinance: number; // = idOrdenBinance en la entidad
+  cuenta: string;         // nombre de la cuenta Binance
+  simbolo: string;        // BTCUSDT, TRXUSDT...
+  cripto: string;         // BTC, TRX, SOL...
+  tipoOperacion: string;  // COMPRA / VENTA
+  cantidadCripto: number; // unidades de cripto
+  tasaUsdt: number;       // precio unitario USDT
+  totalUsdt: number;      // total USDT
+  comisionUsdt: number;   // comisión total USDT
+  fechaOperacion: string; // ISO
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class OrdenesCriptoService {

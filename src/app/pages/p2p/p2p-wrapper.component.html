@@ -1,0 +1,73 @@
+<p-toast></p-toast>
+
+<div class="grid">
+  <div class="col-12">
+    <!-- Header con sync status -->
+    <div class="card mb-2 p-3">
+      <div class="p2p-header">
+        <div class="p2p-header-left">
+          <h2 class="m-0">
+            <i class="pi pi-bitcoin mr-2 text-yellow-500"></i>P2P Binance
+          </h2>
+          <div class="sync-states" *ngIf="syncStates.length > 0">
+            <span *ngFor="let s of syncStates"
+              class="text-xs border-round px-2 py-1 surface-200 text-color-secondary">
+              <i class="pi pi-clock mr-1"></i>
+              <span class="sync-state-text">{{ s.binanceAccountName }}: </span>{{ formatSyncTime(s) }}
+            </span>
+          </div>
+          <span *ngIf="syncStates.length === 0" class="text-sm text-color-secondary sync-state-text">
+            Sin datos de sync aún
+          </span>
+        </div>
+
+        <button pButton
+          icon="pi pi-refresh"
+          class="p-button-outlined p-button-sm"
+          [loading]="syncing"
+          (click)="triggerSync()"
+          pTooltip="Sincronizar ahora"
+          tooltipPosition="left">
+          <span class="sync-btn-label ml-2">Sincronizar ahora</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabView styleClass="p2p-tabs">
+
+      <p-tabPanel>
+        <ng-template pTemplate="header">
+          <i class="pi pi-bolt mr-2 text-yellow-500"></i>
+          <span>Auto-Asignación</span>
+        </ng-template>
+        <app-reglas-p2p></app-reglas-p2p>
+      </p-tabPanel>
+
+      <p-tabPanel>
+        <ng-template pTemplate="header">
+          <i class="pi pi-arrow-up-right mr-2 text-green-500"></i>
+          <span>Ventas Pendientes</span>
+        </ng-template>
+        <app-ventas-pendientes (sseRefresh)="onSseRefresh()"></app-ventas-pendientes>
+      </p-tabPanel>
+
+      <p-tabPanel>
+        <ng-template pTemplate="header">
+          <i class="pi pi-check-circle mr-2 text-blue-500"></i>
+          <span>Ventas Asignadas</span>
+        </ng-template>
+        <app-ventas-asignadas></app-ventas-asignadas>
+      </p-tabPanel>
+
+      <p-tabPanel>
+        <ng-template pTemplate="header">
+          <i class="pi pi-arrow-down-left mr-2 text-purple-500"></i>
+          <span>Compras</span>
+        </ng-template>
+        <app-compras-p2p></app-compras-p2p>
+      </p-tabPanel>
+
+    </p-tabView>
+  </div>
+</div>

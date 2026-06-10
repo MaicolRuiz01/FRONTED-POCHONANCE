@@ -1,17 +1,21 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// PrimeNG OrdenesCriptoService, OrdenSpotDTO   AccountBinanceService, AccountBinance
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-import { OrdenesCriptoService,OrdenSpotDTO } from '../../../../core/services/ordenes-cripto.service';
-import { AccountBinance,AccountBinanceService } from '../../../../core/services/account-binance.service';
-import { finalize} from 'rxjs';
+import {
+  OrdenesCriptoService,
+  OrdenSpotDTO
+} from '../../../../core/services/ordenes-cripto.service';
+import {
+  AccountBinance,
+  AccountBinanceService
+} from '../../../../core/services/account-binance.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-ordenes-cripto',
@@ -31,12 +35,12 @@ import { finalize} from 'rxjs';
 export class OrdenesCriptoComponent implements OnInit {
   @ViewChild('dt') dt!: Table;
 
-  loadingTable = false;   // carga del listado
-  importing    = false;   // spinner pequeño de importación en 2º plano
+  loadingTable = false;
+  importing = false;
 
   ordenes: OrdenSpotDTO[] = [];
-  filtroCuenta = '';      // se manda al backend
-  filtroGlobal = '';      // filtro frontend
+  filtroCuenta = '';
+  filtroGlobal = '';
 
   cuentas: AccountBinance[] = [];
   limiteImport = 50;
@@ -47,49 +51,35 @@ export class OrdenesCriptoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 1) pintar lo que YA hay guardado
     this.listar();
-
-    // 2) correr la importación en segundo plano y refrescar al terminar
-    this.importarEnSegundoPlano();
-
-    // opcional: cargar cuentas para dropdown o filtros más adelante
-    this.cuentasSrv.traerCuentas().subscribe({
-      next: (cs) => (this.cuentas = cs.filter(c => c.tipo?.toUpperCase() === 'BINANCE')),
-      error: () => {}
-    });
   }
 
-  /** Solo lista (no importa). */
   listar(): void {
     this.loadingTable = true;
-    this.ordenesSrv.listar(this.filtroCuenta || undefined)
+    this.ordenesSrv
+      .listar(this.filtroCuenta || undefined)
       .pipe(finalize(() => (this.loadingTable = false)))
       .subscribe({
-        next: (data) => (this.ordenes = data.map(d => this.adapt(d))),
+        next: (data) => (this.ordenes = data.map((d) => this.adapt(d))),
         error: () => (this.ordenes = [])
       });
   }
 
-  /** Importa TODO en 2º plano y luego refresca la tabla, sin bloquearla. */
   importarEnSegundoPlano(): void {
     this.importing = true;
-    this.ordenesSrv.importarTodas(this.limiteImport)
+    this.ordenesSrv
+      .importarTodas(this.limiteImport)
       .pipe(finalize(() => (this.importing = false)))
       .subscribe({
         next: () => this.listar(),
-        error: () => {
-          // si falla, no rompemos la UI; mantenemos lo ya listado
-        }
+        error: () => {}
       });
   }
 
-  /** Re-importar (2º plano) + refrescar cuando termine. */
   refrescar(): void {
     this.importarEnSegundoPlano();
   }
 
-  /** Re-lista por cuenta (sin re-importar). */
   buscarPorCuenta(): void {
     this.listar();
   }
@@ -99,26 +89,40 @@ export class OrdenesCriptoComponent implements OnInit {
     this.dt?.filterGlobal(value, 'contains');
   }
 
-  tagSeverity(lado: string) {
-    if (!lado) return 'info';
-    return lado.toUpperCase() === 'BUY' ? 'success' : 'danger';
+  tagSeverity(tipo: string) {
+    if (!tipo) return 'info';
+    const up = tipo.toUpperCase();
+    // COMPRA = verde, VENTA = rojo
+    return up === 'COMPRA' ? 'success' : 'danger';
   }
 
-  // Adaptador defensivo por si cambian nombres en el backend
+  // Adaptador defensivo: acepta tanto DTO nuevo (SpotOrder) como posibles nombres viejos
   private adapt(d: any): OrdenSpotDTO {
-    const num = (v: any) => (v == null ? 0 : typeof v === 'string' ? parseFloat(v) : Number(v));
+    const num = (v: any) =>
+      v == null ? 0 : typeof v === 'string' ? parseFloat(v) : Number(v);
+
     return {
       id: d.id ?? d.ID ?? 0,
-      idOrden: d.idOrden ?? d.orderId ?? 0,
-      cuenta: d.cuenta ?? d.accountName ?? d.account ?? '',
+      idOrdenBinance:
+        d.idOrdenBinance ?? d.idOrden ?? d.orderId ?? 0,
+      cuenta:
+        d.cuenta ??
+        d.cuentaBinanceNombre ??
+        d.accountName ??
+        d.account ??
+        '',
       simbolo: d.simbolo ?? d.symbol ?? '',
-      lado: d.lado ?? d.side ?? '',
-      estado: d.estado ?? d.status ?? '',
-      precio: num(d.precio ?? d.price ?? d.avgPrice),
-      cantidadBase: num(d.cantidadBase ?? d.baseQty ?? d.executedBaseQty),
-      cantidadQuote: num(d.cantidadQuote ?? d.quoteQty ?? d.executedQuoteQty),
-      comisionUsdt: num(d.comisionUsdt ?? d.commission ?? d.feeTotalUsdt),
-      fecha: d.fecha ?? d.time ?? d.filledAt ?? null
+      cripto: d.cripto ?? '',
+      tipoOperacion: d.tipoOperacion ?? d.lado ?? d.side ?? '',
+      cantidadCripto:
+        num(d.cantidadCripto ?? d.baseQty ?? d.executedBaseQty),
+      tasaUsdt: num(d.tasaUsdt ?? d.price ?? d.avgPrice),
+      totalUsdt:
+        num(d.totalUsdt ?? d.quoteQty ?? d.executedQuoteQty),
+      comisionUsdt:
+        num(d.comisionUsdt ?? d.commission ?? d.feeTotalUsdt),
+      fechaOperacion:
+        d.fechaOperacion ?? d.fecha ?? d.time ?? d.filledAt ?? null
     };
   }
 }

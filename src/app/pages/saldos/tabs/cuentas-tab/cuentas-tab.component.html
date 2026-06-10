@@ -1,68 +1,224 @@
-<!-- Botón para abrir el formulario de creación de cuenta -->
+<!-- Barra de acciones -->
 <div class="botones-container">
-  <button pButton label="Agregar Cuenta" icon="pi pi-plus" class="p-button-success"
+
+  <button pButton label="Agregar" icon="pi pi-plus" class="btn-accion btn-agregar"
     (click)="showCreateDialog()"></button>
-  <button pButton label="Retiro" icon="pi pi-arrow-down" class="p-button-warning"
+
+  <button pButton label="Retiro" icon="pi pi-arrow-circle-down" class="btn-accion btn-retiro"
     (click)="abrirDialogRetiro()"></button>
-  <button pButton label="Depósito" icon="pi pi-arrow-up" class="p-button-info" (click)="abrirDialogDeposito()"></button>
-  <button pButton label="Transferencia" icon="pi pi-exchange" class="p-button-help"
+
+  <button pButton label="Depósito" icon="pi pi-arrow-circle-up" class="btn-accion btn-deposito"
+    (click)="abrirDialogDeposito()"></button>
+
+  <button pButton label="Transferencia" icon="pi pi-sort-alt" class="btn-accion btn-transferencia"
     (click)="abrirDialogTransferencia()"></button>
-  <button pButton label="Pago Cliente" icon="pi pi-money-bill" class="p-button-success"
+
+  <button pButton label="Pago Cliente" icon="pi pi-wallet" class="btn-accion btn-pago"
     (click)="abrirDialogPago()"></button>
 
-
-  <div class="total-container">
-    <p-card styleClass="total-card">
-      <ng-template pTemplate="content">
-        <div class="total-content">
-          <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-          <strong>Total Cuentas:</strong> {{ totalCuentas | currency:'COP' }}
-        </div>
-      </ng-template>
-    </p-card>
+  <div class="total-badge" (click)="openCupoDialog()" title="Ver cupo por banco">
+    <i class="pi pi-calculator total-badge-icon"></i>
+    <div class="total-badge-body">
+      <span class="total-badge-label">Total COP</span>
+      <span class="total-badge-value">{{ totalCuentas | currency:'COP':'symbol':'1.0-0' }}</span>
+    </div>
+    <i class="pi pi-chevron-right total-badge-arrow"></i>
   </div>
+
 </div>
 <br>
 
 <hr>
+
+<!-- ===== FILTRO POR BANCO (LOGOS) ===== -->
+<div class="bank-filter">
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === null" (click)="setBankFilter(null)"
+    title="Todas">
+    <span class="bank-chip-text">Todas</span>
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'NEQUI'" (click)="setBankFilter('NEQUI')"
+    title="Nequi">
+    <img class="bank-logo" [src]="bankLogo('NEQUI')" alt="Nequi">
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'DAVIPLATA'"
+    (click)="setBankFilter('DAVIPLATA')" title="Daviplata">
+    <img class="bank-logo" [src]="bankLogo('DAVIPLATA')" alt="Daviplata">
+  </button>
+
+  <button type="button" class="bank-chip" [class.active]="selectedBankType === 'BANCOLOMBIA'"
+    (click)="setBankFilter('BANCOLOMBIA')" title="Bancolombia">
+    <img class="bank-logo" [src]="bankLogo('BANCOLOMBIA')" alt="Bancolombia">
+
+  </button>
+</div>
 <!-- Tarjetas para mostrar las cuentas -->
 <div class="p-grid p-dir-col p-align-start">
-  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of cuentas">
-    <p-card class="account-card p-shadow-3" [header]="account.name" styleClass="account-card"
-      (click)="goToVentas(account.id!)">
-      <ng-template pTemplate="content">
-        <div class="account-details">
-          <p><strong>Balance: </strong>{{ account.balance | currency:'COP' }}</p>
+  <div class="p-col-12 p-md-4 p-lg-3" *ngFor="let account of filteredCuentas">
+
+    <p-card class="account-card p-shadow-3" styleClass="account-card">
+      <ng-template pTemplate="header">
+        <div class="card-header-row">
+          <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
+          <span class="account-title">{{ account.name }}</span>
         </div>
       </ng-template>
+
+      <ng-template pTemplate="content">
+        <!-- Contenedor flip -->
+        <div class="account-flip" [class.is-flipped]="account.isFlipped" (click)="toggleFlip(account, $event)">
+
+          <div class="flip-inner">
+            <!-- 🔹 FRONT: solo balance -->
+            <div class="flip-face flip-front">
+              <div class="account-details">
+
+
+
+                <p>
+                  <strong>Balance:</strong>
+                  {{ account.balance | currency:'COP' }}
+                </p>
+
+                <p style="margin-top: 4px;">
+                  <strong>Disponible:</strong>
+                  {{ getDisponible(account.balance) | currency:'COP' }}
+                </p>
+
+                <div class="cupo-row">
+                  <span class="label">Cupo disponible hoy:</span>
+                  <span class="value">
+                    {{ (account.cupoDisponibleHoy ?? 0) | currency:'COP':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+                <br>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
+                  <button pButton type="button" label="" icon="pi pi-copy" class="p-button-sm p-button-secondary"
+                    (click)="copiarCuenta(account, $event)">
+                  </button>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- 🔹 BACK: todos los detalles -->
+            <div class="flip-face flip-back">
+              <div class="account-details">
+
+                <p>Saldo inicial del día:
+                  {{ account.saldoInicialDelDia | number:'1.2-2' }}
+                </p>
+                <p>Numero de Cuenta: {{account.numeroCuenta | number: '1.2-2'}}</p>
+                <p>Cedula: {{account.cedula | number: '1.2-2'}}</p>
+
+                <div class="resumen-dia">
+                  <p *ngIf="(account.entradasHoy ?? 0) > 0">
+                    <strong>Entradas hoy:</strong>
+                    {{ account.entradasHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.salidasHoy ?? 0) > 0">
+                    <strong>Salidas hoy:</strong>
+                    {{ account.salidasHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.salidasRetirosHoy ?? 0) > 0">
+                    <strong>Retiros hoy:</strong>
+                    {{ account.salidasRetirosHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.ventasDolaresHoy ?? 0) > 0">
+                    <strong>Ventas USDT hoy:</strong>
+                    {{ account.ventasDolaresHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.ajustesHoy ?? 0) > 0">
+                    <strong>Ajustes hoy:</strong>
+                    {{ account.ajustesHoy | currency:'COP' }}
+                  </p>
+
+                  <p *ngIf="(account.gastosHoy ?? 0) > 0">
+                    <strong>Gastos hoy:</strong>
+                    {{ account.gastosHoy | currency:'COP' }}
+                  </p>
+                </div>
+
+                <p style="margin-top: 8px;">
+                  <strong>Balance:</strong>
+                  {{ account.balance | currency:'COP' }}
+                </p>
+
+                <div class="back-actions">
+                  <button pButton label="Ver ventas" icon="pi pi-eye" class="p-button-text p-button-sm"
+                    (click)="goToVentas(account.id!); $event.stopPropagation()">
+                  </button>
+
+                  <button pButton label="Ajustar saldo" icon="pi pi-refresh"
+                    class="p-button-warning p-button-text p-button-sm"
+                    (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
+                  </button>
+
+                  <button pButton label="" icon="pi pi-file-excel" class="p-button-success p-button-text p-button-sm"
+                    (click)="downloadExcelAccountCop(account.id!); $event.stopPropagation()">
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
     </p-card>
   </div>
 </div>
-
 <!-- Formulario de creación de cuenta en un modal -->
 <p-dialog header="Crear Cuenta Colombiana" [(visible)]="displayDialog" [modal]="true" [closable]="true">
   <div class="p-grid p-fluid">
+
     <div class="p-col-12 p-md-6">
       <label for="name">Nombre de la Cuenta</label>
       <input id="name" pInputText [(ngModel)]="newAccount.name" />
     </div>
+
     <div class="p-col-12 p-md-6">
       <label for="balance">Balance</label>
-  <p-inputNumber
-    [(ngModel)]="newAccount.balance"
-    name="balance"
-    mode="currency"
-    currency="COP"
-    [min]="0">
-  </p-inputNumber>
+      <p-inputNumber [(ngModel)]="newAccount.balance" name="balance" mode="currency" currency="COP" [min]="0">
+      </p-inputNumber>
     </div>
+
+    <div class="p-col-12">
+      <label>Tipo de banco</label>
+      <p-dropdown [options]="bankTypes" [(ngModel)]="newAccount.bankType" optionLabel="label" optionValue="value"
+        placeholder="Seleccione" [appendTo]="'body'">
+      </p-dropdown>
+    </div>
+
+    <div class="p-col-12 p-md-6">
+      <label for="numeroCuenta">Número de cuenta</label>
+      <input id="numeroCuenta" type="text" pInputText [(ngModel)]="newAccount.numeroCuenta" />
+    </div>
+
+    <div class="p-col-12 p-md-6">
+      <label for="cedula">Cédula</label>
+      <input id="cedula" type="text" pInputText [(ngModel)]="newAccount.cedula" />
+    </div>
+
   </div>
 
-  <p-footer>
-    <button pButton label="Cancelar" icon="pi pi-times" (click)="displayDialog = false" class="p-button-text"></button>
-    <button pButton label="Crear" icon="pi pi-check" (click)="createAccount()" class="p-button-success"></button>
-  </p-footer>
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false">
+      </button>
+
+      <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="createAccount()">
+      </button>
+    </div>
+  </ng-template>
+
 </p-dialog>
+
 <!-- RETIRO -->
 <p-dialog header="Registrar Retiro" [(visible)]="displayDialogRetiro" [modal]="true">
   <div class="p-fluid">
@@ -149,7 +305,7 @@
     </p-dropdown>
 
     <label>Monto (COP)</label>
-    <p-inputNumber [(ngModel)]="montoPago" name="montoPago" mode="currency" currency="COP" [min]="0">
+    <p-inputNumber [(ngModel)]="montoPago" name="montoPago" mode="currency" currency="COP">
     </p-inputNumber>
   </div>
 
@@ -158,3 +314,71 @@
     <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
   </p-footer>
 </p-dialog>
+
+<p-dialog header="Cupo disponible por banco" [(visible)]="showCupoDialog" [modal]="true" [style]="{ width: '560px' }"
+  [closable]="true">
+  <div class="p-fluid">
+
+    <!-- Encabezados -->
+    <div
+      style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; font-weight:600; padding:6px 0; opacity:.85;">
+      <div></div>
+      <div style="text-align:right;">Cupo disponible</div>
+      <div style="text-align:right;">Total por banco</div>
+      <div style="text-align:right;">Se puede depositar</div>
+    </div>
+
+    <hr />
+
+    <!-- NEQUI -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('NEQUI')" alt="Nequi" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoNequi | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalNequi | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableNequi | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <!-- BANCOLOMBIA -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('BANCOLOMBIA')" alt="Bancolombia" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableBancolombia | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <!-- DAVIPLATA -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding:10px 0;">
+      <div style="display:flex; justify-content:center;">
+        <img [src]="bankLogo('DAVIPLATA')" alt="Daviplata" style="height:28px; width:auto;" />
+      </div>
+      <div style="text-align:right;">{{ cupoDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ totalDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right;">{{ depositableDaviplata | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <hr />
+
+    <!-- TOTALES -->
+    <div style="display:grid; grid-template-columns: 80px 1fr 1fr 1fr; gap:10px; align-items:center; padding-top:10px;">
+      <div style="font-weight:700;">Total</div>
+      <div style="text-align:right; font-weight:700;">{{ cupoTotal | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right; font-weight:700;">{{ totalPorBancos | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div style="text-align:right; font-weight:700;">{{ depositableTotal | currency:'COP':'symbol':'1.0-0' }}</div>
+    </div>
+
+    <p style="margin-top:10px; font-size:.85rem; opacity:.75;">
+      * “Se puede depositar” = valor bruto antes del 4x1000 (neto = bruto − 0.4%).
+    </p>
+
+  </div>
+</p-dialog>
+
+
+<app-ajuste-saldo-dialog *ngIf="cuentaAjuste" [visible]="showAjusteCuenta" (visibleChange)="showAjusteCuenta = $event"
+  [entidad]="'CUENTACOP'" [entidadId]="cuentaAjuste.id!" [nombreEntidad]="cuentaAjuste.name"
+  [saldoActual]="cuentaAjuste.balance ?? 0" (ajusteRealizado)="onAjusteCuentaRealizado()">
+</app-ajuste-saldo-dialog>

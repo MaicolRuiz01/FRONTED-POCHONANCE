@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountBinanceService, AccountBinance } from '../../../../core/services/account-binance.service';
+import { AccountBinanceService, AccountBinance, CryptoBalanceDetail } from '../../../../core/services/account-binance.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -14,9 +14,15 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { AccountCopService } from '../../../../core/services/account-cop.service';
 import { BalanceService } from '../../../../core/services/balance.service';
-import { ConfirmDialogModule } from "primeng/confirmdialog";
-import { finalize } from 'rxjs/operators';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core/services/crypto-average-rate.service';
+import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
+import { finalize, switchMap } from 'rxjs/operators';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { AccountVesService } from '../../../../core/services/AccountVes.service';
+import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
+import { CuentasVesComponent } from '../cuentas-ves/cuentas-ves.component';
+import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 
 
 export interface DisplayAccount {
@@ -28,6 +34,8 @@ export interface DisplayAccount {
   address?: string;
   isFlipped: boolean;
   syncing: boolean;
+  balances?: CryptoBalanceDetail[];
+  loadingBalances?: boolean;
 }
 
 @Component({
@@ -48,30 +56,40 @@ export interface DisplayAccount {
     InputTextModule,
     InputNumberModule,
     ConfirmDialogModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    CuentasTabComponent,
+    CuentasVesComponent
   ]
 })
 export class SaldosComponent implements OnInit {
+  totalCriptosUsdt = 0;
+  balanceTotalExternoCop = 0;
   totalBalanceUsd = 0;
   totalBalanceCop = 0;
   latestRate = 0;
   balanceTotalExterno = 0;
-
+  tasasCriptoHoy: CryptoAverageRateDto[] = [];
   createAccountDialog = false;
   modalVisible = false;
-  cajas: { id: number, name: string, saldo: number }[] = [];
-
-  // NUEVO: modo edición y referencia al ID seleccionado
   editMode = false;
   selectedAccountId: number | null = null;
   loading: boolean = true;
-  selectAccountTypeDialog: boolean = false; // Controla el nuevo dialog de selección
-  selectedAccountType: string | null = null; // Almacena el tipo de cuenta seleccionado temporalmente
-  
+  selectAccountTypeDialog: boolean = false;
+  selectedAccountType: string | null = null;
+  noAverageRate: boolean = false;
+  tasaVesPromedio: number | null = null;
+  viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
+  selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | null = null;
+
+  totalCuentasCop = 0;
+  totalCuentasVes = 0;
+  loadingCop = false;
+  loadingVes = false;
+
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'TRUST', value: 'TRUST' },
-    {label: 'SOLANA', value: 'SOLANA' }
+    { label: 'SOLANA', value: 'SOLANA' }
   ];
 
   accounts: DisplayAccount[] = [];
@@ -90,8 +108,7 @@ export class SaldosComponent implements OnInit {
     apiSecret: ''
   };
 
-  totalCajasCop: number = 0;
-  syncingAll = false; 
+  syncingAll = false;
 
   constructor(
     private accountService: AccountBinanceService,
@@ -99,20 +116,38 @@ export class SaldosComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private http: HttpClient,
-    private balanceService: BalanceService
+    private balanceService: BalanceService,
+    private cryptoRateService: CryptoAverageRateService,
+    private averageRateService: AverageRateService,
+    private accountVesService: AccountVesService,
+    private vesAverageRateApi: VesAverageRateApiService
   ) { }
 
   ngOnInit() {
-    this.loadAccounts();
-    this.getTotalBalance();
-    this.getLatestPurchaseRate();
-    this.getBalanceTotalInterno();
-    this.getBalanceTotalExterno();
-    this.loadCajas();
-    this.getTotalCajas();
+    // 1) Inicializar criptos del día (sincroniza y crea snapshots si hace falta)
+    this.cryptoRateService.initDia()
+      .pipe(finalize(() => {
+        // 2) Una vez hecho (o aunque falle), cargamos todo lo demás
+        this.loadAccounts();
+        this.getTotalBalance();
+        this.getBalanceTotalInterno();
+        this.getBalanceTotalExterno();
+        this.loadCryptoRatesToday();
+        this.loadAverageRate();
+        this.loadTotalCop();
+        this.loadTotalVes();
+        this.loadTasaVesPromedio();
+      }))
+      .subscribe({
+        next: () => {
+          // ok, no hace falta hacer nada
+        },
+        error: err => {
+          console.error('Error inicializando criptos del día:', err);
+        }
+      });
   }
 
-  // ---------- Totales ----------
   getTotalBalance() {
     this.accountService.getTotalBalance().subscribe({
       next: res => this.totalBalanceCop = res,
@@ -120,12 +155,38 @@ export class SaldosComponent implements OnInit {
     });
   }
 
+  loadCryptoRatesToday(): void {
+    this.cryptoRateService.getTasasDelDia().subscribe({
+      next: (data: CryptoAverageRateDto[]) => {
+        this.tasasCriptoHoy = data || [];
+
+        // 👉 total de TODAS las criptos en USDT (interno)
+        this.totalCriptosUsdt = this.tasasCriptoHoy.reduce((acc, t) => {
+          const saldo = t.saldoFinalCripto || 0;
+          const tasa = t.tasaPromedioDia || 0;
+          return acc + saldo * tasa;
+        }, 0);
+      },
+      error: (e: any) => {
+        console.error('Error cargando tasas cripto del día', e);
+        this.tasasCriptoHoy = [];
+        this.totalCriptosUsdt = 0;
+      }
+    });
+  }
+
+
+
   getBalanceTotalExterno() {
-    this.accountService.getBalanceTotalExterno().subscribe({
-      next: res => this.balanceTotalExterno = res,
+    this.accountService.getBalanceTotalInterno().subscribe({
+      next: res => {
+        this.balanceTotalExterno = res;
+        this.recalculateExternalCop();      // 👈 recalcular COP
+      },
       error: err => console.error('Error obteniendo saldo total externo:', err)
     });
   }
+
 
   getBalanceTotalInterno() {
     this.accountService.getBalanceTotalInterno().subscribe({
@@ -134,42 +195,56 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  // ---------- Cajas ----------
-  loadCajas() {
-    this.cajaService.getAllCajas().subscribe({
-      next: res => {
-        this.cajas = res;
-        this.loading = false; // Oculta el spinner cuando los datos están cargados
-      },
-      error: err => console.error('Error cargando cajas:', err)
-    });
-  }
-
-  getTotalCajas() {
-    this.balanceService.getTotalCajas().subscribe({
-      next: res => this.totalCajasCop = res.total,
-      error: err => console.error('Error obteniendo total de cajas:', err)
-    });
-  }
-
-  // ---------- Cuentas ----------
   loadAccounts() {
+    this.loading = true;  // 👈 empieza la carga
+
     this.accountService.traerCuentas().subscribe({
       next: res => {
         this.accounts = res.map(c => ({
           id: c.id,
           accountType: c.name,
           saldoInterno: c.balance,
+          tipo: (c as any).tipo,
           correo: c.correo || '–',
           address: c.address || '–',
           isFlipped: false,
-          saldoExterno: undefined, // se consultará solo con botón
-          syncing: false 
+          saldoExterno: 0,
+          syncing: false,
+          loadingBalances: false,
+          balances: []
         }));
+
+
+        // cargar saldo externo automáticamente
+        this.accounts.forEach(acc => {
+          this.cargarSaldoExternoInicial(acc);
+          this.cargarCriptosInicial(acc);   // 👈 NUEVO
+        });
+
+
+        this.loading = false; // 👈 ya terminó
       },
-      error: err => console.error(err)
+      error: err => {
+        console.error(err);
+        this.loading = false; // 👈 aunque falle, quita el spinner
+      }
     });
   }
+
+  private cargarSaldoExternoInicial(account: DisplayAccount): void {
+    this.accountService.getUSDTBalanceBinance(account.accountType)
+      .subscribe({
+        next: saldo => {
+          account.saldoExterno = parseFloat(saldo) || 0;
+        },
+        error: _ => {
+          console.error(`No se pudo obtener el saldo externo de ${account.accountType}`);
+          // Si quieres, aquí NO mostramos toast para no spamear, solo error en consola.
+        }
+      });
+  }
+
+
 
   consultarSaldoExterno(account: DisplayAccount, event: Event) {
     event.stopPropagation(); // evita que se voltee la card
@@ -236,11 +311,13 @@ export class SaldosComponent implements OnInit {
         this.createAccountDialog = false;
         this.loadAccounts();
       },
-      error: () => {
+      error: (err) => {
+        console.error('[crearCuentaBinance] HTTP error:', err?.status, err?.error ?? err);
+        const detail = err?.error?.message ?? err?.message ?? 'No se pudo crear la cuenta';
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo crear la cuenta'
+          detail
         });
       }
     });
@@ -378,7 +455,6 @@ export class SaldosComponent implements OnInit {
     });
   }
 
-  // ---------- Util ----------
   private resetForm() {
     this.newAccount = {
       name: '',
@@ -393,12 +469,30 @@ export class SaldosComponent implements OnInit {
     };
   }
 
-  getLatestPurchaseRate() {
-    this.accountService.getLatestPurchaseRate().subscribe({
-      next: res => this.latestRate = res,
-      error: err => console.error('Error obteniendo tasa de compra:', err)
+  loadAverageRate() {
+    this.averageRateService.getUltimaTasa().subscribe({
+      next: (res) => {
+        if (!res) {
+          this.noAverageRate = true;
+          this.latestRate = 0;
+        } else {
+          this.noAverageRate = false;
+          this.latestRate = res.averageRate;
+        }
+
+        this.recalculateExternalCop();
+      },
+      error: (err) => {
+        console.error('Error obteniendo tasa promedio:', err);
+        this.noAverageRate = true;
+        this.latestRate = 0;
+        this.recalculateExternalCop();
+      }
     });
   }
+
+
+
 
   syncAllBalances() {
     this.syncingAll = true;
@@ -426,35 +520,175 @@ export class SaldosComponent implements OnInit {
       });
   }
   syncInternalAccount(account: DisplayAccount, event: Event) {
-  event.stopPropagation();             // evita voltear la card al hacer click
-  account.syncing = true;
+    event.stopPropagation();             // evita voltear la card al hacer click
+    account.syncing = true;
 
-  this.accountService.syncInternalByName(account.accountType)
-    .pipe(finalize(() => account.syncing = false))
-    .subscribe({
-      next: (snapshot) => {
-        // Mensaje con resumen del snapshot
-        const resumen = Object.entries(snapshot)
-          .map(([k, v]) => `${k}: ${(v ?? 0).toFixed(2)}`)
-          .join(', ');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sincronizado',
-          detail: resumen || `Saldos actualizados para ${account.accountType}`
-        });
+    this.accountService.syncInternalByName(account.accountType)
+      .pipe(finalize(() => account.syncing = false))
+      .subscribe({
+        next: (snapshot) => {
+          // Mensaje con resumen del snapshot
+          const resumen = Object.entries(snapshot)
+            .map(([k, v]) => `${k}: ${(v ?? 0).toFixed(2)}`)
+            .join(', ');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sincronizado',
+            detail: resumen || `Saldos actualizados para ${account.accountType}`
+          });
 
-        // refresca tarjetas y totales internos
-        this.loadAccounts();
-        this.getBalanceTotalInterno();
-        this.getTotalBalance();
+          // refresca tarjetas y totales internos
+          this.loadAccounts();
+          this.getBalanceTotalInterno();
+          this.getTotalBalance();
+        },
+        error: _ => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `No se pudo sincronizar ${account.accountType}`
+          });
+        }
+      });
+  }
+
+
+  private cargarCriptosInicial(account: DisplayAccount): void {
+    account.loadingBalances = true;
+
+    this.accountService.getInternalBalances(account.accountType)
+      .pipe(finalize(() => account.loadingBalances = false))
+      .subscribe({
+        next: (balances) => {
+          account.balances = balances || [];
+        },
+        error: _ => {
+          console.error(`No se pudieron cargar las criptos de ${account.accountType}`);
+          account.balances = [];
+        }
+      });
+  }
+  verBinance() {
+    this.viewMode = 'BINANCE';
+  }
+
+  volverResumen() {
+    this.viewMode = 'RESUMEN';
+  }
+
+  loadTotalCop(): void {
+    this.loadingCop = true;
+
+    // tu servicio ya está inyectado como "cajaService" (AccountCopService)
+    this.cajaService.getAll()
+      .pipe(finalize(() => this.loadingCop = false))
+      .subscribe({
+        next: cuentas => {
+          this.totalCuentasCop = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+        },
+        error: err => {
+          console.error('Error cargando total COP', err);
+          this.totalCuentasCop = 0;
+        }
+      });
+  }
+
+  loadTotalVes(): void {
+    this.loadingVes = true;
+
+    this.accountVesService.getAll()
+      .pipe(finalize(() => this.loadingVes = false))
+      .subscribe({
+        next: cuentas => {
+          this.totalCuentasVes = (cuentas || []).reduce((acc, c: any) => acc + (c.balance || 0), 0);
+        },
+        error: err => {
+          console.error('Error cargando total VES', err);
+          this.totalCuentasVes = 0;
+        }
+      });
+  }
+  verCop() {
+    this.viewMode = 'COP';
+  }
+  verVes() {
+    this.viewMode = 'VES';
+  }
+  get totalCuentasVesCop(): number {
+    const tasa = this.tasaVesPromedio ?? 0;
+    return (this.totalCuentasVes || 0) * tasa;
+  }
+  loadTasaVesPromedio(): void {
+    this.vesAverageRateApi.getUltima().subscribe({
+      next: (rate: VesAverageRateDto | null) => {
+        this.tasaVesPromedio = rate ? rate.tasaPromedioDia : null;
       },
-      error: _ => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: `No se pudo sincronizar ${account.accountType}`
-        });
+      error: err => {
+        console.error('Error cargando tasa promedio VES', err);
+        this.tasaVesPromedio = null;
       }
     });
-}
+  }
+  get totalCriptosCop(): number {
+    if (this.latestRate <= 0) return 0;
+    return (this.totalCriptosUsdt || 0) * this.latestRate;
+  }
+
+  private recalculateExternalCop(): void {
+    // USDT directos -> COP (solo si hay tasa)
+    if (this.latestRate > 0) {
+      this.balanceTotalExternoCop = (this.balanceTotalExterno || 0) * this.latestRate;
+    } else {
+      this.balanceTotalExternoCop = 0;
+    }
+  }
+  get totalUsdtGeneral(): number {
+    return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
+  }
+
+  /** Total general convertido a COP usando la tasa USDT→COP */
+  get totalCopGeneral(): number {
+    return this.totalUsdtGeneral * (Number(this.latestRate) || 0);
+  }
+  setWalletFilter(type: 'BINANCE' | 'TRUST' | 'SOLANA' | null) {
+    this.selectedWalletType = type;
+  }
+
+  get filteredAccounts(): DisplayAccount[] {
+    const base = !this.selectedWalletType
+      ? this.accounts
+      : this.accounts.filter(a => (a as any).tipo === this.selectedWalletType);
+
+    // opcional: ordenar por saldo externo desc (o interno si prefieres)
+    return [...base].sort((x, y) => (Number(y.saldoExterno) || 0) - (Number(x.saldoExterno) || 0));
+  }
+
+  walletLogo(type?: string | null): string {
+    const t = (type ?? '').toString().trim().toUpperCase();
+
+    switch (t) {
+      case 'BINANCE': return '/assets/layout/images/binance.png';
+      case 'TRUST': return '/assets/layout/images/trust.png';
+      case 'SOLANA': return '/assets/layout/images/solana.png';
+      default: return '/assets/layout/images/binance.png';
+    }
+  }
+  /** Criptos totales en USDT (USDT directos + otras criptos del día) */
+  get totalCriptosGeneralUsdt(): number {
+    return (Number(this.balanceTotalExterno) || 0) + (Number(this.totalCriptosUsdt) || 0);
+  }
+
+  /** Criptos totales en COP usando la tasa USDT→COP */
+  get totalCriptosGeneralCop(): number {
+    const rate = Number(this.latestRate) || 0;
+    if (rate <= 0) return 0;
+    return this.totalCriptosGeneralUsdt * rate;
+  }
+
+  /** SALDO TOTAL = criptos en COP + COP + VES en COP */
+  get saldoTotalCop(): number {
+    const cop = Number(this.totalCuentasCop) || 0;
+    const vesCop = Number(this.totalCuentasVesCop) || 0;
+    return cop + vesCop + this.totalCriptosGeneralCop;
+  }
 }

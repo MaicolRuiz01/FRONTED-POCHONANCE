@@ -16,6 +16,7 @@ export interface BuyDollarsDto {
   clienteName?: string;
   idDeposit: string;
   pesos: number;
+  cryptoSymbol?: string;
 }
 
 @Injectable({
@@ -56,6 +57,10 @@ getComprasNoAsignadasHoy(): Observable<BuyDollarsDto[]> {
   return this.http.get<BuyDollarsDto[]>(`${this.apiUrl}/no-asignadas-hoy`);
 }
 
+getComprasNoAsignadas(): Observable<BuyDollarsDto[]>{
+  return this.http.get<BuyDollarsDto[]>(`${this.apiUrl}/no-asignadas`);
+}
+
 /** Asigna una compra existente (asignar proveedor + tasa) */
 asignarCompra(id: number, dto: Partial<BuyDollarsDto>): Observable<any> {
   return this.http.put(`${this.apiUrl}/asignar/${id}`, dto);
@@ -74,7 +79,4 @@ getComprasPorProveedor(supplierId: number): Observable<BuyDollarsDto[]> {
     `${environment.apiUrl}/supplier/${supplierId}/compras`
   );
 }
-
-
-
 }

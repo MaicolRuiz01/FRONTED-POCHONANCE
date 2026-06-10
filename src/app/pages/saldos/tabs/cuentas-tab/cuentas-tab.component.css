@@ -44,60 +44,288 @@
   margin-bottom: 15px;
 }
 
-/* Ajuste del botón "Agregar Cuenta" */
-button.p-button-success {
-  margin-bottom: 20px;
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1rem;
-}
-
 /* Estilos del modal */
 .p-dialog .p-inputtext {
   width: 100%;
 }
 
-.p-button-success {
-  background-color: #007BFF;
-  border-color: #007BFF;
-}
-
-.p-button-success:hover {
-  background-color: #0056b3;
-}
-
-.p-button-text {
-  color: #555;
-}
-
-.p-button-text:hover {
-  color: #007BFF;
-}
-
+/* ===== BARRA DE ACCIONES ===== */
 .botones-container {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.botones-container button {
-    min-width: 160px;
+/* Base compartido para todos los botones de acción */
+.btn-accion.p-button {
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 9px 16px !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .02em;
+  min-width: 0 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
-.total-container{
-  width: auto !important;
-  display: inline-block !important;
-  background: #e3f2fd;
-  border: 1px solid black;
-  border-radius: 8px;
-  padding: 1px 1px;
+.btn-accion.p-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
 }
 
+.btn-accion.p-button:active {
+  transform: translateY(0);
+}
 
-.total-content {
+/* Colores individuales */
+.btn-agregar.p-button      { background: #4f46e5; }
+.btn-agregar.p-button:hover{ background: #4338ca; }
+
+.btn-retiro.p-button       { background: #f59e0b; }
+.btn-retiro.p-button:hover { background: #d97706; }
+
+.btn-deposito.p-button       { background: #06b6d4; }
+.btn-deposito.p-button:hover { background: #0891b2; }
+
+.btn-transferencia.p-button       { background: #8b5cf6; }
+.btn-transferencia.p-button:hover { background: #7c3aed; }
+
+.btn-pago.p-button       { background: #10b981; }
+.btn-pago.p-button:hover { background: #059669; }
+
+/* ===== TOTAL BADGE ===== */
+.total-badge {
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  transition: box-shadow .15s, transform .15s;
+  min-width: 180px;
+}
+
+.total-badge:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  transform: translateY(-1px);
+}
+
+.total-badge-icon {
+  font-size: 1.2rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.total-badge-body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  flex: 1;
+}
+
+.total-badge-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #9ca3af;
+}
+
+.total-badge-value {
   font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.total-badge-arrow {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* ========== Flip card para cuentas COP ========== */
+
+.account-card {
+  margin-bottom: 30px; 
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9fafb;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.account-card .p-card-header {
+  background-color: #007BFF;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 15px;
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+/* Contenedor del flip */
+.account-flip {
+  perspective: 1000px;
+}
+
+/* Elemento que rota */
+.flip-inner {
+  position: relative;
+  width: 100%;
+  min-height: 150px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+/* Estado volteado */
+.account-flip.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* Caras */
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-front {
+  /* cara frontal, no rota */
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+/* Contenido interno */
+.account-card .account-details {
+  padding: 16px;
+  text-align: center;
+}
+
+.account-card .account-details p {
+  font-size: 1rem;
+  color: #333;
+  margin: 4px 0;
+}
+
+.resumen-dia p {
+  font-size: 0.9rem;
+}
+
+/* Acciones del reverso */
+.back-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Grid para las cards */
+.p-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.bank-filter{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin: 8px 0 14px;
+  flex-wrap: wrap;
+}
+
+.bank-chip{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition: .15s ease;
+}
+
+.bank-chip:hover{
+  transform: translateY(-1px);
+}
+
+.bank-chip.active{
+  border-color:#2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.bank-logo{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.bank-chip-text{
+  font-weight:600;
+  font-size:.9rem;
+}
+
+.bank-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom: 6px;
+}
+
+.bank-logo-card{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+}
+
+.bank-name{
+  font-weight:600;
+  font-size:.9rem;
+  opacity:.9;
+}
+
+/* footer dialog alineado */
+.dialog-footer{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:10px;
+}
+.card-header-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+}
+
+.bank-logo-header{
+  height:24px;
+  width:auto;
+  object-fit:contain;
+}
+
+.account-title{
+  font-weight:700;
+  font-size:1rem;
+  line-height:1.2;
 }

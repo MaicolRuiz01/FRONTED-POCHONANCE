@@ -1,0 +1,44 @@
+.account-card {
+  margin-bottom: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background-color: #f9fafb;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.account-card .p-card-header {
+  background-color: #8e44ad; /* morado para diferenciar VES */
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 12px;
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+.account-details {
+  padding: 16px;
+  text-align: center;
+}
+
+.botones-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.total-container {
+  display: inline-block;
+}
+
+.total-content {
+  display: flex;
+  align-items: center;
+}

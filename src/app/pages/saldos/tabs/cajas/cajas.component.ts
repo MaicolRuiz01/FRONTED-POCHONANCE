@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Caja, CajaService } from '../../../../core/services/caja.service';
-import { MovimientoService } from '../../../../core/services/movimiento.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -10,13 +10,17 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
+import { GastoService } from '../../../../core/services/gasto.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-cajas-tab',
   standalone: true,
   imports: [
     FormsModule, ButtonModule, InputTextModule, DialogModule, TabViewModule,
-    TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule
+    TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule,
+    AjusteSaldoDialogComponent
   ],
   templateUrl: './cajas.component.html',
   styleUrls: ['./cajas.component.css']   // 👈 corregido (plural)
@@ -26,6 +30,8 @@ export class CajasComponent implements OnInit {
   cajas: Caja[] = [];
   displayCajaDialog = false;
   nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
+  showAjusteCaja = false;
+  cajaAjuste: Caja | null = null;
 
   // 🔹 NUEVO: estado para ver movimientos de una caja
   showMovsDialog = false;
@@ -33,18 +39,35 @@ export class CajasComponent implements OnInit {
   movimientosCaja: any[] = [];
   loadingMovs = false;
 
+  ajustesCaja: MovimientoAjusteDto[] = [];
+  loadingAjustesCaja = false;
+
   constructor(
     private movimientoService: MovimientoService,
-    private cajaService: CajaService
-  ) {}
+    private cajaService: CajaService,
+    private gastoService: GastoService
+  ,
+    private notificationService: NotificationService
+) { }
 
   ngOnInit(): void {
     this.loadCajas();
   }
 
   loadCajas() {
-    this.cajaService.listar().subscribe(data => this.cajas = data);
+    this.cajaService.listar().subscribe(data => {
+      this.cajas = data;
+
+      this.cajas.forEach(caja => {
+        if (!caja.id) return;
+
+        this.gastoService.getTotalGastosHoyCaja(caja.id).subscribe(total => {
+          caja.gastosHoy = total;
+        });
+      });
+    });
   }
+
 
   get totalCajas(): number {
     return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
@@ -59,8 +82,17 @@ export class CajasComponent implements OnInit {
         this.displayCajaDialog = false;
         this.nuevaCaja = { name: '', saldo: 0 };
       },
-      error: () => alert('Error al guardar caja')
+      error: () => this.notificationService.error('Error al guardar caja')
     });
+  }
+
+  abrirAjusteCaja(caja: Caja) {
+    this.cajaAjuste = caja;
+    this.showAjusteCaja = true;
+  }
+
+  onAjusteCajaRealizado() {
+    this.loadCajas(); // refresca saldos después del ajuste
   }
 
   // 🔹 NUEVO: abrir modal y cargar movimientos por caja
@@ -80,6 +112,16 @@ export class CajasComponent implements OnInit {
       },
       error: e => console.error('Error al cargar movimientos de caja', e),
       complete: () => this.loadingMovs = false
+    });
+
+    this.movimientoService.getAjustesCaja(caja.id).subscribe({
+      next: ajustes => {
+        this.ajustesCaja = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: e => console.error('Error al cargar ajustes de caja', e),
+      complete: () => this.loadingAjustesCaja = false
     });
   }
 }

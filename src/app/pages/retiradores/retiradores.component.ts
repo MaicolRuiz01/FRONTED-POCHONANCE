@@ -14,7 +14,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { finalize } from 'rxjs/operators';
 
-import { RetiradorService, Retirador, SolicitudRetiro, TipoRetiro } from '../../core/services/retirador.service';
+import { RetiradorService, Retirador, SolicitudRetiro, TipoRetiro, FuentePago, PagoRetiradorRequest } from '../../core/services/retirador.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 
 interface CuentaSeleccionada {
@@ -60,6 +60,21 @@ export class RetiradoresComponent implements OnInit {
   historialRetirador: Retirador | null = null;
   historial: SolicitudRetiro[] = [];
   loadingHistorial = false;
+
+  // ── Modal pago retirador ──
+  showPagoDialog = false;
+  pagoRetirador: Retirador | null = null;
+  pagoFuente: FuentePago = 'COP';
+  pagoCuentaCopId: number | null = null;
+  pagoCajaId: number | null = null;
+  pagoMonto: number | null = null;
+  savingPago = false;
+  cajaOptionsAll: { label: string; value: number }[] = [];
+
+  fuenteOptions = [
+    { label: 'Cuenta COP', value: 'COP' as FuentePago },
+    { label: 'Caja / Efectivo', value: 'CAJA' as FuentePago },
+  ];
 
   tipoOptions = [
     { label: 'Cajero ($ 2.000)', value: 'CAJERO' as TipoRetiro },
@@ -240,6 +255,63 @@ export class RetiradoresComponent implements OnInit {
         });
       }
     });
+  }
+
+  // ── Pago retirador ────────────────────────────────────────────
+
+  openPago(r: Retirador): void {
+    this.pagoRetirador = r;
+    this.pagoFuente = 'COP';
+    this.pagoCuentaCopId = null;
+    this.pagoCajaId = null;
+    this.pagoMonto = r.saldoPendiente ?? 0;
+    // cargar cajas si no están cargadas
+    this.copSvc.getAllCajas().subscribe({
+      next: cajas => this.cajaOptionsAll = cajas.map(c => ({ label: c.name, value: c.id! }))
+    });
+    this.showPagoDialog = true;
+  }
+
+  get copOptions(): { label: string; value: number }[] {
+    return this.cuentasCop.map(c => ({
+      label: `${c.name}  ·  Saldo: ${(c.balance ?? 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}`,
+      value: c.id!
+    }));
+  }
+
+  enviarPago(): void {
+    if (!this.pagoRetirador || !this.pagoMonto || this.pagoMonto <= 0) return;
+    if (this.pagoFuente === 'COP' && !this.pagoCuentaCopId) {
+      this.msgSvc.add({ severity: 'warn', summary: 'Selecciona una cuenta COP', detail: '' });
+      return;
+    }
+    if (this.pagoFuente === 'CAJA' && !this.pagoCajaId) {
+      this.msgSvc.add({ severity: 'warn', summary: 'Selecciona una caja', detail: '' });
+      return;
+    }
+
+    const req: PagoRetiradorRequest = {
+      fuente: this.pagoFuente,
+      cuentaCopId: this.pagoFuente === 'COP' ? this.pagoCuentaCopId : null,
+      cajaId: this.pagoFuente === 'CAJA' ? this.pagoCajaId : null,
+      monto: this.pagoMonto
+    };
+
+    this.savingPago = true;
+    this.retiradorSvc.pagar(this.pagoRetirador.id!, req)
+      .pipe(finalize(() => this.savingPago = false))
+      .subscribe({
+        next: updated => {
+          const idx = this.retiradores.findIndex(r => r.id === updated.id);
+          if (idx > -1) this.retiradores[idx] = updated;
+          this.showPagoDialog = false;
+          this.msgSvc.add({ severity: 'success', summary: 'Pago registrado', detail: `Se pagaron $${this.pagoMonto!.toLocaleString('es-CO')} a ${updated.nombre}.`, life: 4000 });
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'No se pudo registrar el pago.';
+          this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+        }
+      });
   }
 
   bankIcon(bankType: string): string {

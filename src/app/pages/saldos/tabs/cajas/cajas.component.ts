@@ -11,6 +11,8 @@ import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
 import { GastoService } from '../../../../core/services/gasto.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 
@@ -20,6 +22,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
   imports: [
     FormsModule, ButtonModule, InputTextModule, DialogModule, TabViewModule,
     TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule,
+    ProgressSpinnerModule, TooltipModule,
     AjusteSaldoDialogComponent
   ],
   templateUrl: './cajas.component.html',

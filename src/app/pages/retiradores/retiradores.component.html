@@ -73,12 +73,19 @@
           </div>
         </div>
 
-        <!-- Botón retiro -->
-        <button pButton icon="pi pi-arrow-down" label="Hacer retiro"
-          class="btn-retiro p-button-outlined"
-          style="border-color:#6366f1;color:#6366f1;"
-          (click)="openRetiro(r)">
-        </button>
+        <!-- Botones acción -->
+        <div class="ret-action-btns">
+          <button pButton icon="pi pi-arrow-down" label="Hacer retiro"
+            class="btn-retiro p-button-outlined"
+            style="border-color:#6366f1;color:#6366f1;flex:1;"
+            (click)="openRetiro(r)">
+          </button>
+          <button pButton icon="pi pi-dollar" label="Pagar"
+            class="btn-pagar"
+            [disabled]="!r.saldoPendiente || r.saldoPendiente <= 0"
+            (click)="openPago(r)">
+          </button>
+        </div>
 
       </div>
     </div>
@@ -195,6 +202,71 @@
       [loading]="savingRetiro"
       [disabled]="cuentasSeleccionadas.length === 0"
       (click)="enviarRetiro()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     DIALOG: Pagar retirador
+═══════════════════════════════════════════════════════════ -->
+<p-dialog [header]="'Pagar a ' + (pagoRetirador?.nombre ?? '')"
+  [(visible)]="showPagoDialog" [modal]="true"
+  [style]="{width:'420px'}" [breakpoints]="{'600px':'95vw'}">
+
+  <div *ngIf="showPagoDialog" class="p-fluid">
+
+    <!-- Saldo pendiente -->
+    <div class="pago-saldo-badge">
+      <span class="label">Le debemos</span>
+      <span class="value">{{ pagoRetirador?.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}</span>
+    </div>
+
+    <!-- Fuente del pago -->
+    <div class="field mb-3">
+      <label class="block mb-2 font-semibold">Pagar desde</label>
+      <p-dropdown [options]="fuenteOptions" [(ngModel)]="pagoFuente"
+        (ngModelChange)="pagoCuentaCopId = null; pagoCajaId = null"
+        [appendTo]="'body'" styleClass="w-full">
+      </p-dropdown>
+    </div>
+
+    <!-- Cuenta COP -->
+    <div class="field mb-3" *ngIf="pagoFuente === 'COP'">
+      <label class="block mb-2 font-semibold">Cuenta COP</label>
+      <p-dropdown [options]="copOptions" [(ngModel)]="pagoCuentaCopId"
+        placeholder="Seleccionar cuenta" [appendTo]="'body'" styleClass="w-full">
+      </p-dropdown>
+    </div>
+
+    <!-- Caja -->
+    <div class="field mb-3" *ngIf="pagoFuente === 'CAJA'">
+      <label class="block mb-2 font-semibold">Caja</label>
+      <p-dropdown [options]="cajaOptionsAll" [(ngModel)]="pagoCajaId"
+        placeholder="Seleccionar caja" [appendTo]="'body'" styleClass="w-full">
+      </p-dropdown>
+    </div>
+
+    <!-- Monto -->
+    <div class="field">
+      <label class="block mb-2 font-semibold">Monto a pagar</label>
+      <p-inputNumber [(ngModel)]="pagoMonto"
+        mode="currency" currency="COP" locale="es-CO"
+        [min]="1" [max]="pagoRetirador?.saldoPendiente ?? 0"
+        styleClass="w-full">
+      </p-inputNumber>
+      <small class="text-color-secondary">Máximo: {{ pagoRetirador?.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}</small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      (click)="showPagoDialog = false"></button>
+    <button pButton label="Registrar pago" icon="pi pi-check"
+      style="background:#10b981;border:none;"
+      [loading]="savingPago"
+      [disabled]="!pagoMonto || pagoMonto <= 0"
+      (click)="enviarPago()">
     </button>
   </ng-template>
 </p-dialog>

@@ -86,12 +86,55 @@
 
 .ret-stat-value.green { color: #10b981; }
 
-/* ── Botón hacer retiro ── */
+/* ── Botones acción de la card ── */
+.ret-action-btns {
+  display: flex;
+  gap: 8px;
+}
+
 .btn-retiro {
-  width: 100%;
   border-radius: 10px !important;
   font-weight: 600 !important;
   font-size: 0.85rem !important;
+}
+
+.btn-pagar {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  background: #10b981 !important;
+  border: none !important;
+  color: #fff !important;
+  white-space: nowrap;
+}
+.btn-pagar:disabled {
+  background: #d1fae5 !important;
+  color: #6ee7b7 !important;
+  cursor: not-allowed;
+}
+
+/* ── Badge saldo pendiente en dialog pago ── */
+.pago-saldo-badge {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #6ee7b7;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.pago-saldo-badge .label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #059669;
+  letter-spacing: .05em;
+}
+.pago-saldo-badge .value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #065f46;
 }
 
 /* ── Modal retiro: lista de cuentas ── */

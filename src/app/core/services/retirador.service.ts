@@ -25,6 +25,15 @@ export interface SolicitudRetiroRequest {
   detalles: DetalleRetiroDto[];
 }
 
+export type FuentePago = 'COP' | 'CAJA';
+
+export interface PagoRetiradorRequest {
+  fuente: FuentePago;
+  cuentaCopId?: number | null;
+  cajaId?: number | null;
+  monto: number;
+}
+
 export interface DetalleRetiro {
   id: number;
   cuentaCop: { id: number; name: string; bankType: string };
@@ -75,5 +84,9 @@ export class RetiradorService {
 
   historial(retiradorId: number): Observable<SolicitudRetiro[]> {
     return this.http.get<SolicitudRetiro[]>(`${this.base}/${retiradorId}/solicitudes`);
+  }
+
+  pagar(retiradorId: number, req: PagoRetiradorRequest): Observable<Retirador> {
+    return this.http.post<Retirador>(`${this.base}/${retiradorId}/pagar`, req);
   }
 }

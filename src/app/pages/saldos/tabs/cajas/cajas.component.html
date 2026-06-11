@@ -1,101 +1,121 @@
-<div class="button-container">
-  <button pButton title="Agregar Caja" icon="pi pi-plus"
-          class="p-button-success p-button-sm p-button-rounded"
-          (click)="displayCajaDialog = true"></button>
+<!-- Header -->
+<div class="flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="m-0" style="font-size:1.3rem;font-weight:700;">
+      <i class="pi pi-box mr-2" style="color:#0891b2;"></i>Cajas
+    </h2>
+    <p class="text-color-secondary text-sm mt-1 m-0">
+      Gestiona las cajas de efectivo del negocio.
+    </p>
+  </div>
+  <button pButton icon="pi pi-plus" label="Nueva caja"
+    style="background:#0891b2;border:none;border-radius:10px;"
+    (click)="displayCajaDialog = true">
+  </button>
 </div>
-<br>
 
-<div class="total-container">
-  <p-card styleClass="total-card">
-    <ng-template pTemplate="content">
-      <div class="total-content">
-        <i class="pi pi-calculator" style="margin-right: 6px;"></i>
-        <strong>Total Cajas:</strong> {{ totalCajas | currency:'COP' }}
-      </div>
-    </ng-template>
-  </p-card>
+<!-- Barra de totales -->
+<div class="cajas-total-bar mb-4">
+  <div class="total-item">
+    <span class="label"><i class="pi pi-calculator mr-1"></i> Total en cajas</span>
+    <span class="value">{{ totalCajas | currency:'COP':'symbol':'1.0-0' }}</span>
+  </div>
+  <div class="total-item">
+    <span class="label"><i class="pi pi-box mr-1"></i> Cajas activas</span>
+    <span class="value neutral">{{ cajas.length }}</span>
+  </div>
 </div>
-<br><br>
 
-<!-- Cartas de cajas -->
-<div class="p-grid p-justify-center p-card-container">
-  <div *ngFor="let caja of cajas" class="card-wrapper">
-    <p-card styleClass="account-card" (click)="verMovimientos(caja)">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-briefcase" style="margin-right: 8px;"></i> {{ caja?.name }}
+<!-- Grid de cards -->
+<div class="cajas-grid">
+  <div class="caja-card" *ngFor="let caja of cajas" (click)="verMovimientos(caja)">
+    <div class="caja-card-accent"></div>
+    <div class="caja-card-body">
+
+      <!-- Nombre + botón ajustar -->
+      <div class="caja-card-header">
+        <div class="caja-nombre">
+          <i class="pi pi-box mr-2" style="color:#0891b2;font-size:0.9rem;"></i>{{ caja.name }}
         </div>
-      </ng-template>
+        <button pButton icon="pi pi-refresh"
+          class="p-button-text p-button-sm p-button-secondary"
+          pTooltip="Ajustar saldo"
+          (click)="abrirAjusteCaja(caja); $event.stopPropagation()">
+        </button>
+      </div>
 
-      <ng-template pTemplate="content">
-  <div class="account-details">
-    <p>Saldo inicial del dia: {{caja.saldoInicialDelDia | number:'1.2-2'}}</p>
-    <p><strong>Gastos hoy:</strong> {{ caja.gastosHoy || 0 | currency:'COP' }}</p>
+      <!-- Saldo principal -->
+      <div class="caja-saldo">
+        {{ caja.saldo | currency:'COP':'symbol':'1.0-0' }}
+      </div>
 
-    <div class="card-row">
-      <span class="label">Saldo:</span>
-      <span class="value">{{ caja?.saldo | currency:'COP' }}</span>
+      <!-- Stats -->
+      <div class="caja-stats">
+        <div class="caja-stat">
+          <span class="stat-label">Inicial del día</span>
+          <span class="stat-value">{{ caja.saldoInicialDelDia | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+        <div class="caja-stat">
+          <span class="stat-label">Gastos hoy</span>
+          <span class="stat-value red">{{ caja.gastosHoy || 0 | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+
     </div>
-
-    <button
-      pButton
-      label="Ajustar saldo"
-      icon="pi pi-refresh"
-      class="p-button-warning p-button-text p-button-sm"
-      (click)="abrirAjusteCaja(caja); $event.stopPropagation()">
-    </button>
-  </div>
-</ng-template>
-
-    </p-card>
   </div>
 </div>
+
 
 <!-- Dialog: crear caja -->
-<p-dialog header="Crear Nueva Caja" [(visible)]="displayCajaDialog" [modal]="true">
+<p-dialog header="Nueva caja" [(visible)]="displayCajaDialog" [modal]="true"
+  [style]="{width:'380px'}" [breakpoints]="{'600px':'95vw'}">
   <div class="p-fluid">
-    <label>Nombre de Caja</label>
-    <input type="text" pInputText [(ngModel)]="nuevaCaja.name" />
-
-    <label>Saldo Inicial</label>
-    <p-inputNumber [(ngModel)]="nuevaCaja.saldo" name="saldoInicial"
-                   mode="currency" currency="COP" [min]="0"></p-inputNumber>
+    <div class="field mb-3">
+      <label class="block mb-2 font-semibold">Nombre*</label>
+      <input type="text" pInputText [(ngModel)]="nuevaCaja.name" placeholder="Ej: Caja principal" />
+    </div>
+    <div class="field">
+      <label class="block mb-2 font-semibold">Saldo inicial</label>
+      <p-inputNumber [(ngModel)]="nuevaCaja.saldo" name="saldoInicial"
+        mode="currency" currency="COP" [min]="0" styleClass="w-full">
+      </p-inputNumber>
+    </div>
   </div>
-
-  <p-footer>
-    <button pButton label="Cancelar" (click)="displayCajaDialog = false" class="p-button-text"></button>
-    <button pButton label="Guardar" class="p-button-success" (click)="guardarCaja()"></button>
-  </p-footer>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      (click)="displayCajaDialog = false"></button>
+    <button pButton label="Guardar" icon="pi pi-check"
+      style="background:#0891b2;border:none;"
+      (click)="guardarCaja()">
+    </button>
+  </ng-template>
 </p-dialog>
 
+
 <!-- Dialog: movimientos por caja -->
-<p-dialog header="Movimientos de Caja: {{ cajaSeleccionada?.name }}"
-          [(visible)]="showMovsDialog"
-          [modal]="true"
-          [style]="{ width: '80vw' }"
-          [closable]="true">
+<p-dialog [header]="'Movimientos — ' + (cajaSeleccionada?.name ?? '')"
+  [(visible)]="showMovsDialog" [modal]="true"
+  [style]="{ width: '85vw' }" [breakpoints]="{'800px':'98vw'}">
 
   <p-tabView>
-    <!-- TAB 1: Movimientos -->
     <p-tabPanel header="Movimientos">
       <ng-container *ngIf="!loadingMovs; else loadingMovsTpl">
-        <p-table [value]="movimientosCaja" scrollable="true" scrollHeight="420px" [responsive]="true">
+        <p-table [value]="movimientosCaja" scrollable="true" scrollHeight="420px">
           <ng-template pTemplate="header">
             <tr>
               <th>Fecha</th>
               <th>Tipo</th>
-              <th>Monto (COP)</th>
-              <th>Cuenta Origen</th>
-              <th>Cuenta Destino</th>
+              <th>Monto</th>
+              <th>Origen</th>
+              <th>Destino</th>
               <th>Caja</th>
               <th>Cliente</th>
               <th>Proveedor</th>
             </tr>
           </ng-template>
-
           <ng-template pTemplate="body" let-mov>
             <tr>
-              <td>{{ mov.fecha | date:'short' }}</td>
+              <td>{{ mov.fecha | date:'dd/MM/yy HH:mm' }}</td>
               <td>{{ mov.tipo }}</td>
               <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
               <td>{{ mov.cuentaOrigen || '-' }}</td>
@@ -105,29 +125,21 @@
               <td>{{ mov.pagoProveedor || '-' }}</td>
             </tr>
           </ng-template>
-
           <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8" class="p-text-center">Sin movimientos para esta caja.</td>
-            </tr>
+            <tr><td colspan="8" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
           </ng-template>
         </p-table>
       </ng-container>
-
       <ng-template #loadingMovsTpl>
-        <div class="p-3">Cargando movimientos...</div>
+        <div class="flex justify-content-center p-4">
+          <p-progressSpinner strokeWidth="4" [style]="{'width':'36px','height':'36px'}"></p-progressSpinner>
+        </div>
       </ng-template>
     </p-tabPanel>
 
-    <!-- TAB 2: Ajustes de saldo -->
     <p-tabPanel header="Ajustes de saldo">
       <ng-container *ngIf="!loadingAjustesCaja; else loadingAjustesTpl">
-        <p-table
-          [value]="ajustesCaja"
-          scrollable="true"
-          scrollHeight="420px"
-          [responsive]="true">
-
+        <p-table [value]="ajustesCaja" scrollable="true" scrollHeight="420px">
           <ng-template pTemplate="header">
             <tr>
               <th>Fecha</th>
@@ -140,32 +152,29 @@
               <th>Diferencia</th>
             </tr>
           </ng-template>
-
           <ng-template pTemplate="body" let-aj>
             <tr>
-              <td>{{ aj.fecha | date:'short' }}</td>
+              <td>{{ aj.fecha | date:'dd/MM/yy HH:mm' }}</td>
               <td>{{ aj.tipo }}</td>
               <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
               <td>{{ aj.motivo || '-' }}</td>
               <td>{{ aj.actor || '-' }}</td>
               <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
               <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
+              <td [ngClass]="{ 'text-green-500': aj.diferencia > 0, 'text-red-500': aj.diferencia < 0 }">
                 {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
               </td>
             </tr>
           </ng-template>
-
           <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8" class="p-text-center">Sin ajustes de saldo para esta caja.</td>
-            </tr>
+            <tr><td colspan="8" class="p-text-center text-color-secondary">Sin ajustes.</td></tr>
           </ng-template>
         </p-table>
       </ng-container>
-
       <ng-template #loadingAjustesTpl>
-        <div class="p-3">Cargando ajustes de saldo...</div>
+        <div class="flex justify-content-center p-4">
+          <p-progressSpinner strokeWidth="4" [style]="{'width':'36px','height':'36px'}"></p-progressSpinner>
+        </div>
       </ng-template>
     </p-tabPanel>
   </p-tabView>
@@ -182,4 +191,3 @@
   [saldoActual]="cajaAjuste.saldo ?? 0"
   (ajusteRealizado)="onAjusteCajaRealizado()">
 </app-ajuste-saldo-dialog>
-

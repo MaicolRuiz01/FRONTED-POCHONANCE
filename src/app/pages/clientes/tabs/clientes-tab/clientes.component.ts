@@ -26,6 +26,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Output, EventEmitter } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-clientes',
   standalone: true,
@@ -41,7 +42,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
     TabViewModule,
     TableModule,
     SelectButtonModule,
-    AjusteSaldoDialogComponent
+    AjusteSaldoDialogComponent,
+    TooltipModule
   ],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css'],

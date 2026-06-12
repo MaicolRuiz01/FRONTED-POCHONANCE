@@ -1,64 +1,264 @@
-.contenedor-clientes {
-  padding: 2rem;
-}
-
-.header {
+/* ── Page header ── */
+.cli-page-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.grid-clientes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+.cli-page-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
 }
 
-.card {
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #fafafa;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05);
+/* ── New client button ── */
+.cli-btn-new {
+  background: linear-gradient(135deg, #2563eb, #60a5fa) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+.cli-btn-new:hover {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
 }
 
-.total-container{
-  width: auto !important;
-  display: inline-block !important;
-  background: #e3f2fd;
-  border: 1px solid black;
-  border-radius: 8px;
-  padding: 1px 1px;
-}
-
-.botones-acciones {
+/* ── Actions bar ── */
+.cli-actions-bar {
   display: flex;
-  flex-wrap: wrap; /* Permite que se acomoden uno debajo del otro si no caben */
-  gap: 0.5rem; /* Espacio entre botones */
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-/* Si este CSS va en el .scss del componente: */
+.cli-btn-action.p-button-outlined {
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+  border-radius: 10px !important;
+  font-size: 0.85rem !important;
+}
+.cli-btn-action.p-button-outlined:hover {
+  background: #eff6ff !important;
+}
+
+.cli-btn-danger.p-button-outlined {
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+}
+.cli-btn-danger.p-button-outlined:hover {
+  background: #fef2f2 !important;
+}
+
+.cli-btn-success.p-button-outlined {
+  border-color: #059669 !important;
+  color: #059669 !important;
+}
+.cli-btn-success.p-button-outlined:hover {
+  background: #ecfdf5 !important;
+}
+
+.cli-btn-excel.p-button-outlined {
+  border-color: #16a34a !important;
+  color: #16a34a !important;
+}
+.cli-btn-excel.p-button-outlined:hover {
+  background: #f0fdf4 !important;
+}
+
+/* ── Total bar ── */
+.cli-total-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  color: #1d4ed8;
+}
+
+.cli-total-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  flex: 1;
+}
+
+.cli-total-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+/* ── Grid ── */
+.cli-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card ── */
+.cli-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+  transition: box-shadow .2s, transform .15s;
+  cursor: pointer;
+}
+.cli-card:hover {
+  box-shadow: 0 4px 20px rgba(37,99,235,.12);
+  transform: translateY(-2px);
+}
+
+.cli-card-accent {
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+.cli-card-body {
+  padding: 16px 18px 14px;
+}
+
+.cli-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cli-nombre {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.cli-card-actions-top {
+  display: flex;
+  gap: 2px;
+}
+
+.cli-icon-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+}
+
+/* ── Balance block ── */
+.cli-balance-block {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.cli-balance-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+}
+
+.cli-balance-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ── Stats del día ── */
+.cli-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cli-stat {
+  flex: 1;
+  min-width: 80px;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 7px 10px;
+  text-align: center;
+}
+
+.cli-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #9ca3af;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cli-stat-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ── Color helpers ── */
+.cli-green { color: #10b981 !important; }
+.cli-red   { color: #ef4444 !important; }
+
+/* ── Empty state ── */
+.cli-empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #9ca3af;
+}
+
+/* ── Loading ── */
+.cli-loading {
+  padding: 16px;
+  color: #6b7280;
+}
+
+/* ── Hint text ── */
+.cli-hint {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── Dialog full height (movimientos) ── */
 :host ::ng-deep .dialog-full-vert.p-dialog {
   top: 0 !important;
-  bottom: 0 !important;                 /* asegura que “llegue” al fondo */
-  transform: none !important;           /* sin centrado vertical */
-  height: 100dvh !important;            /* dvh = viewport real en móvil */
+  bottom: 0 !important;
+  transform: none !important;
+  height: 100dvh !important;
   max-height: 100dvh !important;
   margin: 0;
   display: flex;
   flex-direction: column;
-  padding-bottom: env(safe-area-inset-bottom); /* iOS notch */
+  padding-bottom: env(safe-area-inset-bottom);
   padding-top: env(safe-area-inset-top);
 }
-
 :host ::ng-deep .dialog-full-vert .p-dialog-header,
 :host ::ng-deep .dialog-full-vert .p-dialog-footer {
-  flex: 0 0 auto;                       /* tamaño natural */
+  flex: 0 0 auto;
+}
+:host ::ng-deep .dialog-full-vert .p-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
-:host ::ng-deep .dialog-full-vert .p-dialog-content {
-  flex: 1 1 auto;                       /* ocupa todo el alto disponible */
-  min-height: 0;                        /* evita overflow por flex */
-  overflow: auto;                       /* scroll interno del contenido */
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .cli-grid { grid-template-columns: 1fr; }
+  .cli-page-header { flex-direction: column; align-items: flex-start; }
+  .cli-stats { flex-direction: column; }
+  .cli-actions-bar { flex-direction: column; }
 }

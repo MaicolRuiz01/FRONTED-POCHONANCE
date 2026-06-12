@@ -14,7 +14,10 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { finalize } from 'rxjs/operators';
 
-import { RetiradorService, Retirador, SolicitudRetiro, TipoRetiro, FuentePago, PagoRetiradorRequest } from '../../core/services/retirador.service';
+import {
+  RetiradorService, Retirador, SolicitudRetiro, TipoRetiro,
+  FuentePago, PagoRetiradorRequest, RankingRetirador, EstadoSolicitud
+} from '../../core/services/retirador.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 
 interface CuentaSeleccionada {
@@ -49,11 +52,23 @@ export class RetiradoresComponent implements OnInit {
   retiradorForm: Retirador = { nombre: '' };
   cajaOptions: { label: string; value: any }[] = [];
 
-  // ── Modal hacer retiro ──
+  // ── Modal hacer retiro (con retirador asignado) ──
   showRetiroDialog = false;
   retiradorActivo: Retirador | null = null;
   cuentasParaRetiro: CuentaSeleccionada[] = [];
   savingRetiro = false;
+
+  // ── Modal solicitud general ──
+  showGeneralDialog = false;
+  cuentasParaGeneral: CuentaSeleccionada[] = [];
+  savingGeneral = false;
+
+  // ── Solicitudes sin asignar ──
+  solicitudesSinAsignar: SolicitudRetiro[] = [];
+  loadingSinAsignar = false;
+  showAsignarDialog = false;
+  solicitudParaAsignar: SolicitudRetiro | null = null;
+  retiradorAsignarId: number | null = null;
 
   // ── Modal historial ──
   showHistorialDialog = false;
@@ -70,6 +85,10 @@ export class RetiradoresComponent implements OnInit {
   pagoMonto: number | null = null;
   savingPago = false;
   cajaOptionsAll: { label: string; value: number }[] = [];
+
+  // ── Ranking ──
+  ranking: RankingRetirador[] = [];
+  loadingRanking = false;
 
   fuenteOptions = [
     { label: 'Cuenta COP', value: 'COP' as FuentePago },
@@ -92,6 +111,8 @@ export class RetiradoresComponent implements OnInit {
   ngOnInit(): void {
     this.loadAll();
     this.copSvc.getAll().subscribe({ next: c => this.cuentasCop = c ?? [] });
+    this.loadSinAsignar();
+    this.loadRanking();
   }
 
   loadAll(): void {
@@ -100,6 +121,20 @@ export class RetiradoresComponent implements OnInit {
       next: r => this.retiradores = r ?? [],
       error: () => this.retiradores = []
     });
+  }
+
+  loadSinAsignar(): void {
+    this.loadingSinAsignar = true;
+    this.retiradorSvc.getSolicitudesSinAsignar()
+      .pipe(finalize(() => this.loadingSinAsignar = false))
+      .subscribe({ next: s => this.solicitudesSinAsignar = s ?? [] });
+  }
+
+  loadRanking(): void {
+    this.loadingRanking = true;
+    this.retiradorSvc.getRankingSemana()
+      .pipe(finalize(() => this.loadingRanking = false))
+      .subscribe({ next: r => this.ranking = r ?? [] });
   }
 
   // ── CRUD retirador ────────────────────────────────────────────
@@ -113,16 +148,14 @@ export class RetiradoresComponent implements OnInit {
 
   openEdit(r: Retirador): void {
     this.editingRetirador = r;
-    this.retiradorForm = { nombre: r.nombre, efectivo: r.efectivo };
+    this.retiradorForm = { nombre: r.nombre, efectivo: r.efectivo, telegramUsername: r.telegramUsername };
     this.loadCajaOptions();
     this.showRetiradorDialog = true;
   }
 
   loadCajaOptions(): void {
     this.copSvc.getAllCajas().subscribe({
-      next: cajas => {
-        this.cajaOptions = cajas.map(c => ({ label: c.name, value: c }));
-      }
+      next: cajas => { this.cajaOptions = cajas.map(c => ({ label: c.name, value: c })); }
     });
   }
 
@@ -158,18 +191,86 @@ export class RetiradoresComponent implements OnInit {
     });
   }
 
-  // ── Modal retiro ──────────────────────────────────────────────
+  // ── Modal retiro pre-asignado ─────────────────────────────────
 
   openRetiro(r: Retirador): void {
     this.retiradorActivo = r;
-    this.cuentasParaRetiro = this.cuentasCop.map(c => ({
+    this.cuentasParaRetiro = this.buildCuentasSeleccion();
+    this.showRetiroDialog = true;
+  }
+
+  // ── Modal solicitud general ───────────────────────────────────
+
+  openGeneral(): void {
+    this.cuentasParaGeneral = this.buildCuentasSeleccion();
+    this.showGeneralDialog = true;
+  }
+
+  get cuentasSeleccionadasGeneral(): CuentaSeleccionada[] {
+    return this.cuentasParaGeneral.filter(c => c.seleccionada);
+  }
+
+  enviarSolicitudGeneral(): void {
+    const sel = this.cuentasSeleccionadasGeneral;
+    if (!sel.length) return;
+
+    this.savingGeneral = true;
+    this.retiradorSvc.crearSolicitudGeneral({
+      detalles: sel.map(c => ({
+        cuentaCopId: c.cuenta.id!,
+        tipoRetiro: c.tipoRetiro,
+        montoCajero: this.requiresCajero(c.tipoRetiro) ? c.montoCajero : null,
+        montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
+      }))
+    }).pipe(finalize(() => this.savingGeneral = false)).subscribe({
+      next: () => {
+        this.showGeneralDialog = false;
+        this.loadSinAsignar();
+        this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'Se publicó en Telegram. El primero que la tome queda asignado.', life: 5000 });
+      },
+      error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la solicitud.' })
+    });
+  }
+
+  // ── Asignar retirador a solicitud general ─────────────────────
+
+  openAsignar(s: SolicitudRetiro): void {
+    this.solicitudParaAsignar = s;
+    this.retiradorAsignarId = null;
+    this.showAsignarDialog = true;
+  }
+
+  get retiradorOptions(): { label: string; value: number }[] {
+    return this.retiradores.map(r => ({ label: r.nombre, value: r.id! }));
+  }
+
+  confirmarAsignacion(): void {
+    if (!this.solicitudParaAsignar || !this.retiradorAsignarId) return;
+    this.retiradorSvc.asignarRetirador(this.solicitudParaAsignar.id, { retiradorId: this.retiradorAsignarId })
+      .subscribe({
+        next: () => {
+          this.showAsignarDialog = false;
+          this.loadSinAsignar();
+          this.loadAll();
+          this.msgSvc.add({ severity: 'success', summary: 'Asignado', detail: 'El retirador fue asignado.', life: 3000 });
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'No se pudo asignar.';
+          this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+        }
+      });
+  }
+
+  // ── Helpers cuentas ───────────────────────────────────────────
+
+  private buildCuentasSeleccion(): CuentaSeleccionada[] {
+    return this.cuentasCop.map(c => ({
       cuenta: c,
       seleccionada: false,
-      tipoRetiro: 'CAJERO',
+      tipoRetiro: 'CAJERO' as TipoRetiro,
       montoCajero: null,
       montoCorresponsal: null
     }));
-    this.showRetiroDialog = true;
   }
 
   get cuentasSeleccionadas(): CuentaSeleccionada[] {
@@ -193,6 +294,22 @@ export class RetiradoresComponent implements OnInit {
 
   get totalEstimado(): number {
     return this.cuentasSeleccionadas.reduce((sum, c) => {
+      let t = 0;
+      if (c.montoCajero) t += c.montoCajero;
+      if (c.montoCorresponsal) t += c.montoCorresponsal;
+      return sum + t;
+    }, 0);
+  }
+
+  get pagoEstimadoGeneral(): number {
+    return this.cuentasSeleccionadasGeneral.reduce((sum, c) => {
+      const pago = c.tipoRetiro === 'CAJERO' ? 2000 : c.tipoRetiro === 'CORRESPONSAL' ? 3000 : 4000;
+      return sum + pago;
+    }, 0);
+  }
+
+  get totalEstimadoGeneral(): number {
+    return this.cuentasSeleccionadasGeneral.reduce((sum, c) => {
       let t = 0;
       if (c.montoCajero) t += c.montoCajero;
       if (c.montoCorresponsal) t += c.montoCorresponsal;
@@ -265,7 +382,6 @@ export class RetiradoresComponent implements OnInit {
     this.pagoCuentaCopId = null;
     this.pagoCajaId = null;
     this.pagoMonto = r.saldoPendiente ?? 0;
-    // cargar cajas si no están cargadas
     this.copSvc.getAllCajas().subscribe({
       next: cajas => this.cajaOptionsAll = cajas.map(c => ({ label: c.name, value: c.id! }))
     });
@@ -312,6 +428,16 @@ export class RetiradoresComponent implements OnInit {
           this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
         }
       });
+  }
+
+  // ── Ranking ───────────────────────────────────────────────────
+
+  medalIcon(pos: number): string {
+    return pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}.`;
+  }
+
+  estadoSeverity(estado: EstadoSolicitud): 'warning' | 'info' | 'success' {
+    return estado === 'COMPLETADO' ? 'success' : estado === 'PENDIENTE' ? 'warning' : 'info';
   }
 
   bankIcon(bankType: string): string {

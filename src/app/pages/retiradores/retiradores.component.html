@@ -3,7 +3,7 @@
 
 <div class="card">
 
-  <!-- Header -->
+  <!-- ── Header ── -->
   <div class="flex align-items-center justify-content-between mb-4">
     <div>
       <h2 class="m-0" style="font-size:1.3rem;font-weight:700;">
@@ -13,39 +13,87 @@
         Gestiona los retiradores y sus solicitudes de retiro en efectivo.
       </p>
     </div>
-    <button pButton icon="pi pi-plus" label="Nuevo retirador"
-      style="background:#4f46e5;border:none;border-radius:10px;"
-      (click)="openNew()">
-    </button>
+    <div style="display:flex;gap:8px;">
+      <button pButton icon="pi pi-send" label="Solicitud general"
+        style="background:#0891b2;border:none;border-radius:10px;"
+        pTooltip="Publicar en Telegram sin asignar retirador"
+        (click)="openGeneral()">
+      </button>
+      <button pButton icon="pi pi-plus" label="Nuevo retirador"
+        style="background:#4f46e5;border:none;border-radius:10px;"
+        (click)="openNew()">
+      </button>
+    </div>
   </div>
 
-  <!-- Loading -->
+  <!-- ── Solicitudes sin asignar ── -->
+  <div *ngIf="solicitudesSinAsignar.length > 0" class="sin-asignar-banner mb-4">
+    <div class="sin-asignar-title">
+      <i class="pi pi-clock mr-2"></i>
+      Solicitudes sin retirador ({{ solicitudesSinAsignar.length }})
+    </div>
+    <div class="sin-asignar-list">
+      <div class="sin-asignar-item" *ngFor="let s of solicitudesSinAsignar">
+        <div class="sin-asignar-info">
+          <span class="sin-asignar-id">#{{ s.id }}</span>
+          <span class="sin-asignar-monto">{{ s.totalMonto | currency:'COP':'symbol':'1.0-0' }}</span>
+          <span class="sin-asignar-fecha">{{ s.fechaCreacion | date:'dd/MM HH:mm' }}</span>
+          <span class="sin-asignar-cuentas">
+            <span *ngFor="let d of s.detalles; let last = last">
+              {{ d.cuentaCop.name }}<span *ngIf="!last">, </span>
+            </span>
+          </span>
+        </div>
+        <button pButton icon="pi pi-user-plus" label="Asignar manual"
+          class="p-button-sm p-button-outlined"
+          style="border-color:#0891b2;color:#0891b2;white-space:nowrap;"
+          (click)="openAsignar(s)">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Ranking semanal ── -->
+  <div *ngIf="ranking.length > 0" class="ranking-bar mb-4">
+    <div class="ranking-title">
+      <i class="pi pi-trophy mr-2" style="color:#f59e0b;"></i>
+      Top retiradores esta semana
+      <span style="font-size:0.73rem;color:#9ca3af;font-weight:400;margin-left:8px;">
+        bono $20.000 al 1° cada lunes
+      </span>
+    </div>
+    <div class="ranking-list">
+      <div class="ranking-item" *ngFor="let r of ranking" [class.top1]="r.posicion === 1">
+        <span class="ranking-medal">{{ medalIcon(r.posicion) }}</span>
+        <span class="ranking-nombre">{{ r.nombre }}</span>
+        <span class="ranking-monto">{{ r.totalRetirado | currency:'COP':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
   <div *ngIf="loading" class="flex justify-content-center p-5">
     <p-progressSpinner strokeWidth="4" [style]="{'width':'48px','height':'48px'}"></p-progressSpinner>
   </div>
 
-  <!-- Estado vacío -->
+  <!-- ── Estado vacío ── -->
   <div *ngIf="!loading && retiradores.length === 0" class="text-center p-5 text-color-secondary">
     <i class="pi pi-user-plus" style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:12px;"></i>
     No hay retiradores registrados. Crea el primero.
   </div>
 
-  <!-- Grid de cards -->
+  <!-- ── Grid de cards ── -->
   <div class="retiradores-grid" *ngIf="!loading && retiradores.length > 0">
     <div class="ret-card" *ngFor="let r of retiradores">
       <div class="ret-card-accent"></div>
       <div class="ret-card-body">
-
-        <!-- Nombre + acciones -->
         <div class="ret-card-header">
           <div>
             <div class="ret-nombre">{{ r.nombre }}</div>
             <div class="ret-caja" *ngIf="r.efectivo">
               <i class="pi pi-box mr-1"></i>{{ r.efectivo.name }}
             </div>
-            <div class="ret-caja" *ngIf="!r.efectivo" style="color:#f59e0b;">
-              Sin caja asignada
-            </div>
+            <div class="ret-caja" *ngIf="!r.efectivo" style="color:#f59e0b;">Sin caja asignada</div>
           </div>
           <div class="ret-card-actions-top">
             <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm p-button-secondary"
@@ -56,24 +104,16 @@
               pTooltip="Eliminar" (click)="deleteRetirador(r)"></button>
           </div>
         </div>
-
-        <!-- Stats -->
         <div class="ret-stats">
           <div class="ret-stat">
             <span class="ret-stat-label">Caja</span>
-            <span class="ret-stat-value">
-              {{ r.efectivo?.saldo | currency:'COP':'symbol':'1.0-0' }}
-            </span>
+            <span class="ret-stat-value">{{ r.efectivo?.saldo | currency:'COP':'symbol':'1.0-0' }}</span>
           </div>
           <div class="ret-stat">
             <span class="ret-stat-label">Le debemos</span>
-            <span class="ret-stat-value green">
-              {{ r.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}
-            </span>
+            <span class="ret-stat-value green">{{ r.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}</span>
           </div>
         </div>
-
-        <!-- Botones acción -->
         <div class="ret-action-btns">
           <button pButton icon="pi pi-arrow-down" label="Hacer retiro"
             class="btn-retiro p-button-outlined"
@@ -86,57 +126,48 @@
             (click)="openPago(r)">
           </button>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     DIALOG: Crear / Editar Retirador
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══ DIALOG: Crear / Editar Retirador ═══ -->
 <p-dialog [header]="editingRetirador ? 'Editar retirador' : 'Nuevo retirador'"
   [(visible)]="showRetiradorDialog" [modal]="true"
-  [style]="{width:'400px'}" [breakpoints]="{'600px':'95vw'}">
-
+  [style]="{width:'420px'}" [breakpoints]="{'600px':'95vw'}">
   <div class="p-fluid">
     <div class="field mb-3">
       <label class="block mb-2 font-semibold">Nombre*</label>
       <input pInputText [(ngModel)]="retiradorForm.nombre" placeholder="Ej: Julio el retirador" />
     </div>
+    <div class="field mb-3">
+      <label class="block mb-2 font-semibold">Usuario Telegram</label>
+      <input pInputText [(ngModel)]="retiradorForm.telegramUsername" placeholder="sin @ · Ej: julioretira" />
+      <small class="text-color-secondary">Para asignación automática vía botón Telegram.</small>
+    </div>
     <div class="field">
       <label class="block mb-2 font-semibold">Caja asignada</label>
       <p-dropdown [options]="cajaOptions" [(ngModel)]="retiradorForm.efectivo"
-        placeholder="Seleccionar caja" [appendTo]="'body'" [showClear]="true">
+        placeholder="Se crea automáticamente si se deja vacío" [appendTo]="'body'" [showClear]="true">
       </p-dropdown>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
       (click)="showRetiradorDialog = false"></button>
     <button pButton label="Guardar" icon="pi pi-check" class="p-button-primary"
-      [disabled]="!retiradorForm.nombre?.trim()"
-      (click)="saveRetirador()"></button>
+      [disabled]="!retiradorForm.nombre?.trim()" (click)="saveRetirador()"></button>
   </ng-template>
 </p-dialog>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     DIALOG: Hacer Retiro
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══ DIALOG: Hacer Retiro (retirador pre-asignado) ═══ -->
 <p-dialog [header]="'Solicitar retiro — ' + (retiradorActivo?.nombre ?? '')"
   [(visible)]="showRetiroDialog" [modal]="true"
   [style]="{width:'560px'}" [breakpoints]="{'600px':'98vw'}">
-
   <div *ngIf="showRetiroDialog">
-
-    <p class="text-sm text-color-secondary mb-3">
-      Selecciona las cuentas y el tipo de retiro para cada una.
-    </p>
-
-    <!-- Lista de cuentas -->
+    <p class="text-sm text-color-secondary mb-3">Selecciona las cuentas y el tipo de retiro.</p>
     <div *ngFor="let item of cuentasParaRetiro" class="cuenta-row" [class.activa]="item.seleccionada">
       <div class="cuenta-row-top">
         <input type="checkbox" [(ngModel)]="item.seleccionada" style="cursor:pointer;">
@@ -148,36 +179,27 @@
           </span>
         </label>
       </div>
-
       <ng-container *ngIf="item.seleccionada">
-        <!-- Tipo de retiro -->
         <div style="padding-left:28px;">
           <p-dropdown [options]="tipoOptions" [(ngModel)]="item.tipoRetiro"
-            [appendTo]="'body'" styleClass="w-full">
-          </p-dropdown>
+            [appendTo]="'body'" styleClass="w-full"></p-dropdown>
         </div>
-
-        <!-- Montos -->
         <div class="cuenta-row-inputs">
           <div class="input-group" *ngIf="requiresCajero(item.tipoRetiro)">
             <label>Monto cajero</label>
             <p-inputNumber [(ngModel)]="item.montoCajero"
-              mode="currency" currency="COP" locale="es-CO"
-              [min]="0" placeholder="$ 0">
+              mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
           </div>
           <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
             <label>Monto corresponsal</label>
             <p-inputNumber [(ngModel)]="item.montoCorresponsal"
-              mode="currency" currency="COP" locale="es-CO"
-              [min]="0" placeholder="$ 0">
+              mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
           </div>
         </div>
       </ng-container>
     </div>
-
-    <!-- Resumen -->
     <div class="retiro-summary" *ngIf="cuentasSeleccionadas.length > 0">
       <div class="summary-item">
         <span class="label">Cuentas</span>
@@ -193,111 +215,178 @@
       </div>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
       (click)="showRetiroDialog = false"></button>
     <button pButton label="Enviar solicitud" icon="pi pi-send"
       style="background:#4f46e5;border:none;"
-      [loading]="savingRetiro"
-      [disabled]="cuentasSeleccionadas.length === 0"
+      [loading]="savingRetiro" [disabled]="cuentasSeleccionadas.length === 0"
       (click)="enviarRetiro()">
     </button>
   </ng-template>
 </p-dialog>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     DIALOG: Pagar retirador
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══ DIALOG: Solicitud General ═══ -->
+<p-dialog header="Solicitud general de retiro"
+  [(visible)]="showGeneralDialog" [modal]="true"
+  [style]="{width:'560px'}" [breakpoints]="{'600px':'98vw'}">
+  <div *ngIf="showGeneralDialog">
+    <div style="background:#e0f2fe;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.85rem;">
+      <i class="pi pi-telegram mr-1" style="color:#0891b2;"></i>
+      Se publicará en el grupo de Telegram. El primero en presionar el botón queda asignado.
+      También puedes asignarlo manualmente desde el panel superior.
+    </div>
+    <div *ngFor="let item of cuentasParaGeneral" class="cuenta-row" [class.activa]="item.seleccionada">
+      <div class="cuenta-row-top">
+        <input type="checkbox" [(ngModel)]="item.seleccionada" style="cursor:pointer;">
+        <label (click)="item.seleccionada = !item.seleccionada">
+          <img [src]="bankIcon(item.cuenta.bankType)" style="height:18px;width:auto;" alt="">
+          {{ item.cuenta.name }}
+          <span style="font-size:0.78rem;color:#9ca3af;font-weight:400;">
+            — {{ item.cuenta.balance | currency:'COP':'symbol':'1.0-0' }}
+          </span>
+        </label>
+      </div>
+      <ng-container *ngIf="item.seleccionada">
+        <div style="padding-left:28px;">
+          <p-dropdown [options]="tipoOptions" [(ngModel)]="item.tipoRetiro"
+            [appendTo]="'body'" styleClass="w-full"></p-dropdown>
+        </div>
+        <div class="cuenta-row-inputs">
+          <div class="input-group" *ngIf="requiresCajero(item.tipoRetiro)">
+            <label>Monto cajero</label>
+            <p-inputNumber [(ngModel)]="item.montoCajero"
+              mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
+            </p-inputNumber>
+          </div>
+          <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
+            <label>Monto corresponsal</label>
+            <p-inputNumber [(ngModel)]="item.montoCorresponsal"
+              mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
+            </p-inputNumber>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="retiro-summary" *ngIf="cuentasSeleccionadasGeneral.length > 0">
+      <div class="summary-item">
+        <span class="label">Total a retirar</span>
+        <span class="value green">{{ totalEstimadoGeneral | currency:'COP':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Pago retirador</span>
+        <span class="value indigo">{{ pagoEstimadoGeneral | currency:'COP':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      (click)="showGeneralDialog = false"></button>
+    <button pButton label="Publicar en Telegram" icon="pi pi-send"
+      style="background:#0891b2;border:none;"
+      [loading]="savingGeneral" [disabled]="cuentasSeleccionadasGeneral.length === 0"
+      (click)="enviarSolicitudGeneral()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+
+<!-- ═══ DIALOG: Asignar manual ═══ -->
+<p-dialog header="Asignar retirador manualmente"
+  [(visible)]="showAsignarDialog" [modal]="true"
+  [style]="{width:'360px'}" [breakpoints]="{'600px':'95vw'}">
+  <div class="p-fluid" *ngIf="solicitudParaAsignar">
+    <div class="mb-3 p-3" style="background:#f9fafb;border-radius:10px;">
+      <div style="font-size:0.78rem;color:#9ca3af;">Solicitud #{{ solicitudParaAsignar.id }}</div>
+      <div style="font-size:1.15rem;font-weight:700;">
+        {{ solicitudParaAsignar.totalMonto | currency:'COP':'symbol':'1.0-0' }}
+      </div>
+    </div>
+    <div class="field">
+      <label class="block mb-2 font-semibold">Retirador</label>
+      <p-dropdown [options]="retiradorOptions" [(ngModel)]="retiradorAsignarId"
+        placeholder="Seleccionar retirador" [appendTo]="'body'" styleClass="w-full">
+      </p-dropdown>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      (click)="showAsignarDialog = false"></button>
+    <button pButton label="Asignar" icon="pi pi-check"
+      style="background:#0891b2;border:none;"
+      [disabled]="!retiradorAsignarId"
+      (click)="confirmarAsignacion()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+
+<!-- ═══ DIALOG: Pagar retirador ═══ -->
 <p-dialog [header]="'Pagar a ' + (pagoRetirador?.nombre ?? '')"
   [(visible)]="showPagoDialog" [modal]="true"
   [style]="{width:'420px'}" [breakpoints]="{'600px':'95vw'}">
-
   <div *ngIf="showPagoDialog" class="p-fluid">
-
-    <!-- Saldo pendiente -->
     <div class="pago-saldo-badge">
       <span class="label">Le debemos</span>
       <span class="value">{{ pagoRetirador?.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}</span>
     </div>
-
-    <!-- Fuente del pago -->
     <div class="field mb-3">
       <label class="block mb-2 font-semibold">Pagar desde</label>
       <p-dropdown [options]="fuenteOptions" [(ngModel)]="pagoFuente"
         (ngModelChange)="pagoCuentaCopId = null; pagoCajaId = null"
-        [appendTo]="'body'" styleClass="w-full">
-      </p-dropdown>
+        [appendTo]="'body'" styleClass="w-full"></p-dropdown>
     </div>
-
-    <!-- Cuenta COP -->
     <div class="field mb-3" *ngIf="pagoFuente === 'COP'">
       <label class="block mb-2 font-semibold">Cuenta COP</label>
       <p-dropdown [options]="copOptions" [(ngModel)]="pagoCuentaCopId"
-        placeholder="Seleccionar cuenta" [appendTo]="'body'" styleClass="w-full">
-      </p-dropdown>
+        placeholder="Seleccionar cuenta" [appendTo]="'body'" styleClass="w-full"></p-dropdown>
     </div>
-
-    <!-- Caja -->
     <div class="field mb-3" *ngIf="pagoFuente === 'CAJA'">
       <label class="block mb-2 font-semibold">Caja</label>
       <p-dropdown [options]="cajaOptionsAll" [(ngModel)]="pagoCajaId"
-        placeholder="Seleccionar caja" [appendTo]="'body'" styleClass="w-full">
-      </p-dropdown>
+        placeholder="Seleccionar caja" [appendTo]="'body'" styleClass="w-full"></p-dropdown>
     </div>
-
-    <!-- Monto -->
     <div class="field">
       <label class="block mb-2 font-semibold">Monto a pagar</label>
       <p-inputNumber [(ngModel)]="pagoMonto"
         mode="currency" currency="COP" locale="es-CO"
-        [min]="1" [max]="pagoRetirador?.saldoPendiente ?? 0"
-        styleClass="w-full">
+        [min]="1" [max]="pagoRetirador?.saldoPendiente ?? 0" styleClass="w-full">
       </p-inputNumber>
       <small class="text-color-secondary">Máximo: {{ pagoRetirador?.saldoPendiente | currency:'COP':'symbol':'1.0-0' }}</small>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
       (click)="showPagoDialog = false"></button>
     <button pButton label="Registrar pago" icon="pi pi-check"
       style="background:#10b981;border:none;"
-      [loading]="savingPago"
-      [disabled]="!pagoMonto || pagoMonto <= 0"
+      [loading]="savingPago" [disabled]="!pagoMonto || pagoMonto <= 0"
       (click)="enviarPago()">
     </button>
   </ng-template>
 </p-dialog>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     DIALOG: Historial de solicitudes
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══ DIALOG: Historial ═══ -->
 <p-dialog [header]="'Historial — ' + (historialRetirador?.nombre ?? '')"
   [(visible)]="showHistorialDialog" [modal]="true"
   [style]="{width:'540px'}" [breakpoints]="{'600px':'98vw'}">
-
   <div *ngIf="loadingHistorial" class="flex justify-content-center p-4">
     <p-progressSpinner strokeWidth="4" [style]="{'width':'36px','height':'36px'}"></p-progressSpinner>
   </div>
-
   <div *ngIf="!loadingHistorial && historial.length === 0" class="text-center text-color-secondary p-4">
     Sin solicitudes registradas.
   </div>
-
   <div *ngIf="!loadingHistorial && historial.length > 0">
     <div class="hist-item" *ngFor="let s of historial">
       <div class="hist-header">
         <div>
-          <p-tag [value]="s.estado" [severity]="s.estado === 'COMPLETADO' ? 'success' : 'warning'"></p-tag>
+          <p-tag [value]="s.estado" [severity]="estadoSeverity(s.estado)"></p-tag>
           <span class="hist-fecha ml-2">{{ s.fechaCreacion | date:'dd/MM/yy HH:mm' }}</span>
         </div>
         <button pButton icon="pi pi-check" label="Confirmar" class="p-button-sm p-button-success"
-          *ngIf="s.estado === 'PENDIENTE'"
-          (click)="confirmarSolicitud(s)">
-        </button>
+          *ngIf="s.estado === 'PENDIENTE'" (click)="confirmarSolicitud(s)"></button>
       </div>
       <div class="hist-montos">
         <span>Total: <strong>{{ s.totalMonto | currency:'COP':'symbol':'1.0-0' }}</strong></span>
@@ -305,13 +394,11 @@
       </div>
       <div class="hist-cuentas">
         <span *ngFor="let d of s.detalles; let last = last">
-          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }})
-          <span *ngIf="!last"> · </span>
+          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }})<span *ngIf="!last"> · </span>
         </span>
       </div>
     </div>
   </div>
-
   <ng-template pTemplate="footer">
     <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text"
       (click)="showHistorialDialog = false"></button>

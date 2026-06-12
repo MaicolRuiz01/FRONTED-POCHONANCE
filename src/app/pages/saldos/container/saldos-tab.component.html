@@ -10,8 +10,11 @@
     <app-cajas-tab></app-cajas-tab>
   </p-tabPanel>
 
-  <p-tabPanel header="CLIENTES">
-    <app-clientes-wrapper></app-clientes-wrapper>
+  <p-tabPanel>
+    <ng-template pTemplate="header">
+      <span (click)="onClientesHeaderClick()">CLIENTES</span>
+    </ng-template>
+    <app-clientes-wrapper #clientesWrapperComp></app-clientes-wrapper>
   </p-tabPanel>
 
   <p-tabPanel header="BALANCE">

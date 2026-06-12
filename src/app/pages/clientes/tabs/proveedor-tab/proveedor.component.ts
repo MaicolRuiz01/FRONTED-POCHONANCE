@@ -20,6 +20,7 @@ import { BuyDollarsService, BuyDollarsDto } from '../../../../core/services/buy-
 import { TableModule } from 'primeng/table';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { TooltipModule } from 'primeng/tooltip';
 import { Output, EventEmitter } from '@angular/core';
 
 export interface PagoProveedorDTO {
@@ -48,7 +49,8 @@ export interface PagoProveedorDTO {
     TabViewModule,
     TableModule,
     AjusteSaldoDialogComponent,
-    SelectButtonModule
+    SelectButtonModule,
+    TooltipModule
   ],
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']

@@ -148,7 +148,7 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   }
 
   validateRate(): void {
-    this.isRateInvalid = !this.purchaseRate || this.purchaseRate < 3500;
+    this.isRateInvalid = !this.purchaseRate || this.purchaseRate <= 0;
   }
 
 

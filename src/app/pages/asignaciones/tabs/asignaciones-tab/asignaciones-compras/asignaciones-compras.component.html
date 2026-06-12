@@ -51,7 +51,7 @@
           [ngClass]="{ 'p-invalid': isRateInvalid }" placeholder="Ingrese tasa" style="width:100%" inputmode="numeric"
           (ngModelChange)="validateRate()" />
         <small *ngIf="isRateInvalid" class="p-error">
-          La tasa debe ser mayor o igual a 3500
+          Ingresa una tasa válida
         </small>
       </div>
 

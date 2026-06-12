@@ -1,84 +1,221 @@
-.section-title {
-  font-size: 2rem;
-  margin: 20px;
-  color: #333;
-  font-weight: bold;
+/* ── Page header ── */
+.prov-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.prov-page-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.prov-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Button overrides */
+.prov-btn-pay.p-button-outlined {
+  border-color: #7c3aed !important;
+  color: #7c3aed !important;
+}
+.prov-btn-pay.p-button-outlined:hover {
+  background: #f5f3ff !important;
+}
+
+.prov-btn-usdt.p-button-outlined {
+  border-color: #059669 !important;
+  color: #059669 !important;
+}
+.prov-btn-usdt.p-button-outlined:hover {
+  background: #ecfdf5 !important;
+}
+
+.prov-btn-new {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+.prov-btn-new:hover {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
+}
+
+/* ── Total bar ── */
+.prov-total-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #c4b5fd;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  color: #5b21b6;
+}
+
+.prov-total-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  flex: 1;
+}
+
+.prov-total-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4c1d95;
+}
+
+/* ── Grid ── */
+.prov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+/* ── Card ── */
+.prov-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+  transition: box-shadow .2s, transform .15s;
+  cursor: pointer;
+}
+.prov-card:hover {
+  box-shadow: 0 4px 20px rgba(124,58,237,.12);
+  transform: translateY(-2px);
+}
+
+.prov-card-accent {
+  height: 4px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.prov-card-body {
+  padding: 16px 18px 14px;
+}
+
+/* Card header row */
+.prov-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.prov-nombre {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.prov-card-actions-top {
+  display: flex;
+  gap: 2px;
+}
+
+.prov-icon-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+}
+
+/* ── Balance prominente ── */
+.prov-balance-block {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.prov-balance-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+}
+
+.prov-balance-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ── Stats del día ── */
+.prov-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prov-stat {
+  flex: 1;
+  min-width: 80px;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 7px 10px;
   text-align: center;
 }
 
-/* Estilo del contenedor */
-.p-card-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 2rem;
-  background-color: #f5f7fa;
-}
-
-/* Contenedor individual de cada tarjeta */
-.card-wrapper {
-  flex: 0 0 auto;
-  width: 250px;
-}
-
-/* Estilo visual mejorado para tarjetas */
-.account-card {
-  height: 250px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  overflow: hidden;
-  background: linear-gradient(135deg, #ffffff, #f7f9fb);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.account-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.card-header {
-  background-color: #007ad9;
-  color: #fff;
-  padding: 12px 16px;
-  font-weight: bold;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-}
-
-.account-details {
-  padding: 16px;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.card-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.card-row .label {
+.prov-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #9ca3af;
   font-weight: 600;
-  color: #555;
+  margin-bottom: 2px;
 }
 
-.card-row .value {
-  color: #222;
+.prov-stat-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #111827;
 }
 
-.total-container{
-  width: auto !important;
-  display: inline-block !important;
-  background: #e3f2fd;
-  border: 1px solid black;
-  border-radius: 8px;
-  padding: 1px 1px;
+/* ── Color helpers ── */
+.prov-green { color: #10b981 !important; }
+.prov-red   { color: #ef4444 !important; }
+
+/* ── Empty state ── */
+.prov-empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #9ca3af;
+}
+
+/* ── Loading in dialog ── */
+.prov-loading {
+  padding: 16px;
+  color: #6b7280;
+}
+
+/* ── Hint text ── */
+.prov-hint {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .prov-grid { grid-template-columns: 1fr; }
+  .prov-page-header { flex-direction: column; align-items: flex-start; }
+  .prov-stats { flex-direction: column; }
 }

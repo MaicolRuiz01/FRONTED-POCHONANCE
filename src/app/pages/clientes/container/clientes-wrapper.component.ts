@@ -22,7 +22,8 @@ export class ClientesComponentW {
   abs(n: number) { return Math.abs(Number(n ?? 0)); }
 
   go(view: ViewType) { this.view = view; }
-  back() { this.view = 'HOME'; }
+  back()   { this.view = 'HOME'; }
+  goHome() { this.view = 'HOME'; }   // llamado desde el tab padre al hacer clic en el header
 
   get clientesLabel() { return this.clientesTotal >= 0 ? 'Debemos' : 'Nos deben'; }
   get proveedoresLabel() { return this.proveedoresTotal >= 0 ? 'Debemos' : 'Nos deben'; }

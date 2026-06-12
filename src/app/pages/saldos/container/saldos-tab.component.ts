@@ -18,7 +18,8 @@ import { ClientesComponentW } from '../../clientes/container/clientes-wrapper.co
 })
 export class SaldosTabComponent {
 
-  @ViewChild('saldosComp') saldosComp!: SaldosComponent;
+  @ViewChild('saldosComp')          saldosComp!: SaldosComponent;
+  @ViewChild('clientesWrapperComp') clientesWrapperComp!: ClientesComponentW;
 
   selectedIndex = 0;
 
@@ -36,6 +37,13 @@ export class SaldosTabComponent {
   onCuentasHeaderClick(): void {
     if (this.saldosComp && this.saldosComp.viewMode !== 'RESUMEN') {
       this.saldosComp.volverResumen();
+    }
+  }
+
+  /** Clic en el header del tab CLIENTES: si hay sub-vista abierta, vuelve al HOME */
+  onClientesHeaderClick(): void {
+    if (this.clientesWrapperComp && this.clientesWrapperComp.view !== 'HOME') {
+      this.clientesWrapperComp.goHome();
     }
   }
 }

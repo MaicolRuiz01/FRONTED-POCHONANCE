@@ -1,151 +1,123 @@
-/* cliente-wrapper.component.css */
+/* ── Home layout ── */
+.sw-home {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-.switch-cards{
+.sw-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  margin-bottom: 14px;
 }
 
-.switch-card{
+/* ── Card base ── */
+.sw-card {
   background: #fff;
   border: 1px solid #e9ecef;
-  border-radius: 14px;
-  padding: 14px 14px 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.04);
+}
+
+.sw-card--click {
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: transform .15s, box-shadow .2s;
+}
+.sw-card--click:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(0,0,0,.09);
 }
 
-.switch-card:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+.sw-card--total {
+  cursor: default;
 }
 
-.switch-card.active{
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.16);
+/* ── Accent bar ── */
+.sw-card-accent {
+  height: 4px;
+}
+.sw-accent--gray   { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+.sw-accent--blue   { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+.sw-accent--purple { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+/* ── Card body ── */
+.sw-card-body {
+  padding: 18px 20px 16px;
+  position: relative;
 }
 
-.switch-card__top{
+.sw-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.switch-card .title{
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
+.sw-card-title {
   font-weight: 700;
   color: #111827;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.switch-card__value{
-  font-size: 1.35rem;
+.sw-card-title i {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.sw-card-value {
+  font-size: 1.6rem;
   font-weight: 800;
   color: #111827;
   letter-spacing: .2px;
+  margin-bottom: 4px;
 }
 
-.switch-card__hint{
-  margin-top: 6px;
-  font-size: .82rem;
+.sw-card-hint {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.sw-card-arrow {
+  position: absolute;
+  bottom: 16px;
+  right: 18px;
+  color: #d1d5db;
+  font-size: 0.85rem;
+  transition: color .15s, transform .15s;
+}
+.sw-card--click:hover .sw-card-arrow {
   color: #6b7280;
+  transform: translateX(3px);
 }
 
-/* pill status */
-.pill{
-  font-size: .75rem;
+/* ── Pills ── */
+.sw-pill {
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 6px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid #e5e7eb;
   background: #f9fafb;
   color: #374151;
 }
 
-.pill.pos{
+.sw-pill--red {
   border-color: rgba(239,68,68,.25);
   background: rgba(239,68,68,.08);
   color: #b91c1c;
 }
 
-.pill.neg{
+.sw-pill--green {
   border-color: rgba(34,197,94,.25);
   background: rgba(34,197,94,.10);
   color: #15803d;
 }
 
-/* responsive */
-@media (max-width: 768px){
-  .switch-cards{
-    grid-template-columns: 1fr;
-  }
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .sw-grid { grid-template-columns: 1fr; }
 }
-
-/* Topbar contenedor */
-.switch-topbar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px 14px;
-  margin: 4px 0 16px;
-  border:1px solid #e9ecef;
-  border-radius:14px;
-  background:#ffffff;
-  box-shadow: 0 6px 18px rgba(0,0,0,.04);
-}
-
-/* Botón volver "pill" */
-:host ::ng-deep .back-btn.p-button{
-  border-radius: 999px !important;
-  padding: 0.55rem 0.95rem !important;
-  border: 1px solid #e5e7eb !important;
-  background: #f8fafc !important;
-  color: #111827 !important;
-  font-weight: 600 !important;
-  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-}
-
-/* Icono un poquito más separado */
-:host ::ng-deep .back-btn.p-button .p-button-icon{
-  margin-right: .55rem !important;
-  font-size: .95rem;
-}
-
-/* Hover bonito */
-:host ::ng-deep .back-btn.p-button:not(:disabled):hover{
-  background: #eef2ff !important;          /* suave azulito */
-  box-shadow: 0 10px 22px rgba(99,102,241,.12);
-  transform: translateY(-1px);
-}
-
-/* Active */
-:host ::ng-deep .back-btn.p-button:not(:disabled):active{
-  transform: translateY(0px);
-  box-shadow: 0 6px 14px rgba(99,102,241,.10);
-}
-
-/* Título (opcional) */
-.switch-title{
-  font-weight: 700;
-  color:#111827;
-  font-size: 1rem;
-  margin-left: auto;
-  opacity: .9;
-}
-/* Total general: visual de resumen */
-.switch-card--total{
-  cursor: default !important;
-  opacity: 0.95;
-  border-style: dashed;
-}
-
-/* Evita el hover “clickeable” si tienes hover global */
-.switch-card--total:hover{
-  transform: none !important;
-  box-shadow: none !important;
-}
-

@@ -12,9 +12,11 @@ export interface SseEvent {
 @Injectable({ providedIn: 'root' })
 export class P2PSseService implements OnDestroy {
   private eventSource: EventSource | null = null;
-  private nuevaVentaSubject = new Subject<SseEvent>();
+  private nuevaVentaSubject        = new Subject<SseEvent>();
+  private cambioOrdenActivaSubject = new Subject<SseEvent>();
 
-  nuevaVenta$ = this.nuevaVentaSubject.asObservable();
+  nuevaVenta$        = this.nuevaVentaSubject.asObservable();
+  cambioOrdenActiva$ = this.cambioOrdenActivaSubject.asObservable();
 
   constructor(private zone: NgZone) {}
 
@@ -29,9 +31,16 @@ export class P2PSseService implements OnDestroy {
         try {
           const data: SseEvent = JSON.parse(event.data);
           this.nuevaVentaSubject.next(data);
-        } catch {
-          // ignorar datos malformados
-        }
+        } catch { /* ignorar */ }
+      });
+    });
+
+    this.eventSource.addEventListener('cambio-orden-activa', (event: MessageEvent) => {
+      this.zone.run(() => {
+        try {
+          const data: SseEvent = JSON.parse(event.data);
+          this.cambioOrdenActivaSubject.next(data);
+        } catch { /* ignorar */ }
       });
     });
 
@@ -52,5 +61,6 @@ export class P2PSseService implements OnDestroy {
   ngOnDestroy(): void {
     this.disconnect();
     this.nuevaVentaSubject.complete();
+    this.cambioOrdenActivaSubject.complete();
   }
 }

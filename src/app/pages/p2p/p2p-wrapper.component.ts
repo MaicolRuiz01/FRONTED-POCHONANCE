@@ -11,6 +11,7 @@ import { VentasPendientesComponent } from './tabs/ventas-pendientes/ventas-pendi
 import { VentasAsignadasComponent } from './tabs/ventas-asignadas/ventas-asignadas.component';
 import { ComprasP2pComponent } from './tabs/compras-p2p/compras-p2p.component';
 import { ReglasP2pComponent } from './tabs/reglas-p2p/reglas-p2p.component';
+import { VentasEnCursoComponent } from './tabs/ventas-en-curso/ventas-en-curso.component';
 import { P2PSyncService, P2PSyncState } from '../../core/services/p2p-sync.service';
 
 @Component({
@@ -25,7 +26,8 @@ import { P2PSyncService, P2PSyncState } from '../../core/services/p2p-sync.servi
     VentasPendientesComponent,
     VentasAsignadasComponent,
     ComprasP2pComponent,
-    ReglasP2pComponent
+    ReglasP2pComponent,
+    VentasEnCursoComponent
   ],
   providers: [MessageService],
   templateUrl: './p2p-wrapper.component.html',

@@ -1,0 +1,126 @@
+<div class="vc-wrapper">
+
+  <!-- Header -->
+  <div class="vc-header">
+    <div class="vc-header-left">
+      <i class="pi pi-bolt vc-header-icon"></i>
+      <div>
+        <h3 class="vc-title">Ventas en curso</h3>
+        <p class="vc-subtitle">Órdenes P2P activas en Binance · actualiza cada 15 s</p>
+      </div>
+    </div>
+    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm"
+            pTooltip="Actualizar ahora" (click)="loadOrdenes()" [disabled]="loading">
+    </button>
+  </div>
+
+  <!-- Spinner -->
+  <div *ngIf="loading" class="vc-loading">
+    <p-progressSpinner styleClass="vc-spinner" strokeWidth="4"></p-progressSpinner>
+    <span>Consultando Binance…</span>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!loading && ordenes.length === 0" class="vc-empty">
+    <i class="pi pi-check-circle vc-empty-icon"></i>
+    <p>No hay ventas abiertas en este momento.</p>
+  </div>
+
+  <!-- Tabla -->
+  <p-table *ngIf="!loading && ordenes.length > 0"
+           [value]="ordenes"
+           [rowHover]="true"
+           responsiveLayout="scroll"
+           styleClass="p-datatable-sm vc-table">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Estado</th>
+        <th>Cuenta Binance</th>
+        <th>Fecha</th>
+        <th class="text-right">USDT</th>
+        <th class="text-right">COP (miles)</th>
+        <th class="text-right">Tasa</th>
+        <th>Cuenta COP</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-orden>
+      <tr [class.vc-row-payed]="orden.status === 'BUYER_PAYED'">
+
+        <!-- Estado -->
+        <td>
+          <p-tag [severity]="statusSeverity(orden.status)"
+                 [icon]="statusIcon(orden.status)"
+                 [value]="orden.statusLabel">
+          </p-tag>
+        </td>
+
+        <!-- Cuenta Binance -->
+        <td>
+          <span class="vc-account-badge">
+            <i class="pi pi-wallet"></i> {{ orden.accountBinance }}
+          </span>
+        </td>
+
+        <!-- Fecha -->
+        <td class="vc-date">{{ orden.createTime }}</td>
+
+        <!-- USDT -->
+        <td class="text-right vc-amount">{{ orden.dollarsUs | number:'1.2-2' }}</td>
+
+        <!-- COP miles -->
+        <td class="text-right vc-amount">{{ orden.pesosCop | number:'1.0-0' }}</td>
+
+        <!-- Tasa -->
+        <td class="text-right vc-tasa">{{ orden.tasa | number:'1.0-0' }}</td>
+
+        <!-- Dropdown cuenta COP -->
+        <td class="vc-dropdown-cell">
+          <div class="vc-cop-row">
+            <p-dropdown
+              [options]="copOptions()"
+              [ngModel]="seleccionPendiente[orden.orderNumber]"
+              (ngModelChange)="dropdownChanged(orden, $event)"
+              placeholder="Sin asignar"
+              [showClear]="true"
+              appendTo="body"
+              styleClass="vc-dropdown"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+          </div>
+        </td>
+
+        <!-- Acciones -->
+        <td class="vc-actions">
+          <button pButton icon="pi pi-check" class="p-button-sm p-button-success p-button-outlined"
+                  pTooltip="Guardar pre-asignación"
+                  [disabled]="!seleccionPendiente[orden.orderNumber]"
+                  (click)="guardarPreAsignacion(orden)">
+          </button>
+          <button pButton icon="pi pi-times" class="p-button-sm p-button-danger p-button-text"
+                  pTooltip="Quitar pre-asignación"
+                  [disabled]="!orden.preAsignadoCopId"
+                  (click)="quitarPreAsignacion(orden)">
+          </button>
+        </td>
+
+      </tr>
+
+      <!-- Sub-fila: pre-asignación activa -->
+      <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow">
+        <td colspan="8">
+          <span class="vc-preasign-badge">
+            <i class="pi pi-bookmark-fill"></i>
+            Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
+          </span>
+        </td>
+      </tr>
+
+    </ng-template>
+
+  </p-table>
+
+</div>

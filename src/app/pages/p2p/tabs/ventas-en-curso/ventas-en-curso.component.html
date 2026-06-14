@@ -26,6 +26,14 @@
     <p>No hay ventas abiertas en este momento.</p>
   </div>
 
+  <!-- Aviso si no hay cuentas marcadas para P2P -->
+  <div *ngIf="!hayActivasP2P" class="vc-warning">
+    <i class="pi pi-info-circle"></i>
+    Ninguna cuenta COP está marcada para P2P. Ve a <strong>Saldos → Cuentas</strong>
+    y activa las cuentas con el ícono <i class="pi pi-bookmark"></i>.
+    Por ahora se muestran todas.
+  </div>
+
   <!-- Tabla -->
   <p-table *ngIf="!loading && ordenes.length > 0"
            [value]="ordenes"

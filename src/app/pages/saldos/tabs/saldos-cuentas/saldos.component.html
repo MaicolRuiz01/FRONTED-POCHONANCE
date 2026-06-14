@@ -180,9 +180,21 @@
     <div *ngFor="let account of filteredAccounts" class="bc-card">
 
       <!-- Cabecera: nombre + acciones -->
-      <div class="bc-card-header">
-        <span class="bc-card-name">{{ account.accountType }}</span>
+      <div class="bc-card-header" [class.bc-card-header--inactiva]="account.activa === false">
+        <div class="bc-card-name-row">
+          <span class="bc-card-name">{{ account.accountType }}</span>
+          <span *ngIf="account.activa === false" class="bc-badge-inactiva">Inactiva</span>
+        </div>
         <div class="bc-card-actions">
+          <button pButton
+            [icon]="account.activa === false ? 'pi pi-power-off' : 'pi pi-check-circle'"
+            class="p-button-text p-button-sm bc-btn"
+            [class.bc-btn-inactiva]="account.activa === false"
+            [class.bc-btn-activa]="account.activa !== false"
+            [pTooltip]="account.activa === false ? 'Activar cuenta' : 'Desactivar cuenta (no consultará APIs)'"
+            tooltipPosition="top"
+            (click)="toggleActiva(account, $event)">
+          </button>
           <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm bc-btn"
             pTooltip="Editar" tooltipPosition="top"
             (click)="editarCuenta(account); $event.stopPropagation()">
@@ -190,6 +202,7 @@
           <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm bc-btn bc-btn-sync"
             pTooltip="Sincronizar saldos" tooltipPosition="top"
             [loading]="account.syncing"
+            [disabled]="account.activa === false"
             (click)="syncInternalAccount(account, $event)">
           </button>
           <button pButton icon="pi pi-trash" class="p-button-text p-button-sm bc-btn bc-btn-danger"

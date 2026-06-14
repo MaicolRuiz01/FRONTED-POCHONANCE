@@ -22,7 +22,7 @@ export interface AccountCop {
   cupoDisponibleHoy?: number;
   numeroCuenta?: string;
   cedula?: string;
-
+  activaParaP2P?: boolean;
 }
 
 /**
@@ -74,6 +74,10 @@ export class AccountCopService {
 
   getById(id: number): Observable<AccountCop> {
     return this.http.get<AccountCop>(`${this.apiUrl}/${id}`);
+  }
+
+  toggleActivaParaP2P(id: number): Observable<AccountCop> {
+    return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-p2p`, {});
   }
 
   downloadExcel(accountCopId: number): Observable<Blob> {

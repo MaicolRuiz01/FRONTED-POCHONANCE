@@ -23,6 +23,7 @@ import { AccountVesService } from '../../../../core/services/AccountVes.service'
 import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
 import { CuentasVesComponent } from '../cuentas-ves/cuentas-ves.component';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 export interface DisplayAccount {
@@ -36,6 +37,7 @@ export interface DisplayAccount {
   syncing: boolean;
   balances?: CryptoBalanceDetail[];
   loadingBalances?: boolean;
+  activa?: boolean;
 }
 
 @Component({
@@ -58,7 +60,8 @@ export interface DisplayAccount {
     ConfirmDialogModule,
     ProgressSpinnerModule,
     CuentasTabComponent,
-    CuentasVesComponent
+    CuentasVesComponent,
+    TooltipModule
   ]
 })
 export class SaldosComponent implements OnInit {
@@ -211,7 +214,8 @@ export class SaldosComponent implements OnInit {
           saldoExterno: 0,
           syncing: false,
           loadingBalances: false,
-          balances: []
+          balances: [],
+          activa: (c as any).activa !== false  // default true si no viene del backend
         }));
 
 
@@ -265,6 +269,24 @@ export class SaldosComponent implements OnInit {
 
   toggleText(account: DisplayAccount) {
     account.isFlipped = !account.isFlipped;
+  }
+
+  toggleActiva(account: DisplayAccount, event: Event) {
+    event.stopPropagation();
+    if (!account.id) return;
+    this.accountService.toggleActiva(account.id).subscribe({
+      next: updated => {
+        account.activa = updated.activa !== false;
+        const estado = account.activa ? 'activada' : 'desactivada';
+        this.messageService.add({
+          severity: account.activa ? 'success' : 'warn',
+          summary: 'Cuenta ' + estado,
+          detail: `${account.accountType} ${estado} — ${account.activa ? 'se consultará normalmente' : 'no se consultarán sus APIs'}`,
+          life: 3500
+        });
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar el estado de la cuenta' })
+    });
   }
 
   // ---------- Crear / Editar ----------

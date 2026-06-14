@@ -1,47 +1,38 @@
-/* Estilos personalizados para las tarjetas de cuentas */
-.account-card {
-  margin-bottom: 30px; 
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #f9fafb;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.account-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
-
-.account-card .p-card-header {
-  background-color: #007BFF; /* Azul bonito */
-  text-align: center;
-  font-size: 1.3rem;
-  font-weight: bold;
-  padding: 15px;
-  color: white;
-  border-radius: 15px 15px 0 0;
-}
-
-.account-card .account-details {
-  padding: 20px;
-  text-align: center;
-}
-
-.account-card .account-details p {
-  font-size: 1.1rem;
-  color: #333;
-  margin: 0;
-}
-
-/* Acomodar el grid para que se vean las tarjetas bien distribuidas */
-.p-grid {
+/* ── Grid de cards COP ── */
+.cop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+  margin-top: 4px;
 }
 
-.p-col-12 {
-  margin-bottom: 15px;
+/* ── Card base ── */
+.cop-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+
+.cop-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,.11);
+  transform: translateY(-2px);
+}
+
+/* Borde izquierdo por banco */
+.cop-card--nequi      { border-left-color: #d72c8a; }
+.cop-card--daviplata  { border-left-color: #c0392b; }
+.cop-card--bancolombia{ border-left-color: #1d4e89; }
+
+/* Glow sutil cuando está activa para P2P */
+.cop-card--p2p {
+  box-shadow: 0 2px 12px rgba(245,158,11,.18);
+  border-color: rgba(245,158,11,.35);
 }
 
 /* Estilos del modal */
@@ -150,100 +141,151 @@
   flex-shrink: 0;
 }
 
-/* ========== Flip card para cuentas COP ========== */
+/* ── Header card ── */
+.cop-card-header {
+  position: relative;
+}
 
-.account-card {
-  margin-bottom: 30px; 
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #f9fafb;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.cop-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  background: #f9fafb;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cop-card-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #111827;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Flip body ── */
+.cop-flip {
+  perspective: 1000px;
+  flex: 1;
   cursor: pointer;
 }
 
-.account-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
-
-.account-card .p-card-header {
-  background-color: #007BFF;
-  text-align: center;
-  font-size: 1.3rem;
-  font-weight: bold;
-  padding: 15px;
-  color: white;
-  border-radius: 15px 15px 0 0;
-}
-
-/* Contenedor del flip */
-.account-flip {
-  perspective: 1000px;
-}
-
-/* Elemento que rota */
-.flip-inner {
+.cop-flip-inner {
   position: relative;
-  width: 100%;
-  min-height: 150px;
+  min-height: 155px;
   transform-style: preserve-3d;
-  transition: transform 0.6s;
+  transition: transform .5s ease;
 }
 
-/* Estado volteado */
-.account-flip.is-flipped .flip-inner {
+.cop-flip.is-flipped .cop-flip-inner {
   transform: rotateY(180deg);
 }
 
-/* Caras */
-.flip-face {
+.cop-face {
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  padding: 14px 16px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
 }
 
-.flip-front {
-  /* cara frontal, no rota */
-}
-
-.flip-back {
+.cop-face-back {
   transform: rotateY(180deg);
 }
 
-/* Contenido interno */
-.account-card .account-details {
-  padding: 16px;
-  text-align: center;
+/* ── Front ── */
+.cop-balance {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 10px;
+  letter-spacing: -.01em;
 }
 
-.account-card .account-details p {
-  font-size: 1rem;
-  color: #333;
-  margin: 4px 0;
-}
-
-.resumen-dia p {
-  font-size: 0.9rem;
-}
-
-/* Acciones del reverso */
-.back-actions {
-  margin-top: 10px;
+.cop-stat-row {
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px dashed #f3f4f6;
 }
 
-/* Grid para las cards */
-.p-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+.cop-stat-row:last-of-type { border-bottom: none; }
+
+.cop-stat-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 500;
 }
+
+.cop-stat-value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* ── Back ── */
+.cop-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 0.78rem;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.cop-detail-label { color: #9ca3af; }
+
+.cop-detail-val {
+  font-weight: 600;
+  color: #111827;
+  text-align: right;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cop-val--in  { color: #059669; }
+.cop-val--out { color: #dc2626; }
+
+.cop-back-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+/* ── Footer ── */
+.cop-card-footer {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.cop-copy-btn.p-button { color: #6b7280 !important; }
+.cop-copy-btn.p-button:hover { color: #374151 !important; }
+
+.cop-footer-hint {
+  margin-left: auto;
+  font-size: 0.71rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cop-footer-hint:hover { color: #6b7280; }
 
 .bank-filter{
   display:flex;
@@ -311,11 +353,50 @@
   align-items:center;
   gap:10px;
 }
-.card-header-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 12px;
+/* .card-header-row — reemplazado por .cop-header-inner */
+
+/* ── Accent strip P2P activa ── */
+.p2p-accent-strip {
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  border-radius: 15px 15px 0 0;
+}
+
+/* ── Chip toggle P2P ── */
+.p2p-chip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #d1d5db;
+  background: transparent;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.p2p-chip:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245,158,11,.06);
+}
+
+.p2p-chip--on {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff !important;
+}
+
+.p2p-chip--on:hover {
+  background: #d97706;
+  border-color: #d97706;
 }
 
 .bank-logo-header{
@@ -324,8 +405,4 @@
   object-fit:contain;
 }
 
-.account-title{
-  font-weight:700;
-  font-size:1rem;
-  line-height:1.2;
-}
+/* .account-title — reemplazado por .cop-card-name */

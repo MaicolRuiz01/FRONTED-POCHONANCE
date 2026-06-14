@@ -134,8 +134,16 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Solo muestra las cuentas marcadas como activas para P2P.
+   *  Si ninguna está marcada, muestra todas como fallback. */
   copOptions() {
-    return this.cuentasCop.map(c => ({ label: c.name, value: c.id }));
+    const activas = this.cuentasCop.filter(c => c.activaParaP2P);
+    const lista   = activas.length > 0 ? activas : this.cuentasCop;
+    return lista.map(c => ({ label: c.name, value: c.id }));
+  }
+
+  get hayActivasP2P(): boolean {
+    return this.cuentasCop.some(c => c.activaParaP2P);
   }
 
   dropdownChanged(orden: ActiveP2POrder, copId: number | null): void {

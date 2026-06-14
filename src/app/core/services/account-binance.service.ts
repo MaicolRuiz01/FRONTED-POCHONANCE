@@ -15,6 +15,7 @@ export interface AccountBinance {
   tipo: string;
   apiKey?: string;
   apiSecret?: string;
+  activa?: boolean;
 }
 export interface CryptoBalanceDetail {
   symbol: string;
@@ -80,8 +81,11 @@ export class AccountBinanceService {
     return this.http.post<Record<string, number>>(url, {});
   }
   getInternalBalances(name: string): Observable<CryptoBalanceDetail[]> {
-  const url = `${this.apiUrl}/balances-internos?name=${encodeURIComponent(name)}`;
-  return this.http.get<CryptoBalanceDetail[]>(url);
-}
+    const url = `${this.apiUrl}/balances-internos?name=${encodeURIComponent(name)}`;
+    return this.http.get<CryptoBalanceDetail[]>(url);
+  }
 
+  toggleActiva(id: number): Observable<AccountBinance> {
+    return this.http.patch<AccountBinance>(`${this.apiUrl}/${id}/toggle-activa`, {});
+  }
 }

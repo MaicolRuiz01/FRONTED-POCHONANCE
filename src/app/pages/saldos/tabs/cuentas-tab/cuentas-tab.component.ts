@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AccountCopService, AccountCop, AccountCopCreate } from '../../../../core/services/account-cop.service';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
@@ -31,6 +32,7 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
     CommonModule,
     DropdownModule,
     InputNumberModule,
+    TooltipModule,
     AjusteSaldoDialogComponent
   ],
   templateUrl: './cuentas-tab.component.html',
@@ -265,8 +267,23 @@ export class CuentasTabComponent implements OnInit {
   }
 
   toggleFlip(account: AccountCop, event: MouseEvent) {
-    event.stopPropagation();          // para que no dispare otras cosas
+    event.stopPropagation();
     account.isFlipped = !account.isFlipped;
+  }
+
+  toggleP2P(account: AccountCop, event: MouseEvent) {
+    event.stopPropagation();
+    if (!account.id) return;
+    this.accountService.toggleActivaParaP2P(account.id).subscribe({
+      next: updated => {
+        account.activaParaP2P = updated.activaParaP2P;
+        const msg = updated.activaParaP2P
+          ? `${account.name} marcada como activa para P2P`
+          : `${account.name} removida de P2P activas`;
+        this.notificationService.success(msg);
+      },
+      error: () => this.notificationService.error('Error al actualizar cuenta')
+    });
   }
   getDisponible(balance?: number | null): number {
     const b = Number(balance ?? 0);

@@ -16,7 +16,9 @@ import { ClienteService, Cliente } from '../../../../core/services/cliente.servi
 import { CajaService, Caja } from '../../../../core/services/caja.service';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { GastoService } from '../../../../core/services/gasto.service';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 import { NotificationService } from '../../../../core/services/notification.service';
 type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 
@@ -33,18 +35,25 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
     DropdownModule,
     InputNumberModule,
     TooltipModule,
+    ConfirmDialogModule,
+    ToastModule,
     AjusteSaldoDialogComponent
   ],
   templateUrl: './cuentas-tab.component.html',
-  styleUrls: ['./cuentas-tab.component.css']
+  styleUrls: ['./cuentas-tab.component.css'],
+  providers: [MessageService, ConfirmationService]
 })
 export class CuentasTabComponent implements OnInit {
   cuentas: AccountCop[] = [];
-  newAccount: AccountCopCreate = {
-    name: '', balance: 0, bankType: 'NEQUI', numeroCuenta: '',
-    cedula: ''
-  };
+  newAccount: any = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
   displayDialog: boolean = false;
+
+  // ── Flags anti doble-submit ──
+  submittingCreate     = false;
+  submittingRetiro     = false;
+  submittingDeposito   = false;
+  submittingTransfer   = false;
+  submittingPago       = false;
   clientes: Cliente[] = [];
   cajas: Caja[] = [];
   selectedCajaId?: number;
@@ -93,6 +102,7 @@ export class CuentasTabComponent implements OnInit {
     private cajaService: CajaService,
     private gastoService: GastoService,
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private router: Router,
     private notificationService: NotificationService
 ) { }
@@ -161,27 +171,51 @@ export class CuentasTabComponent implements OnInit {
   }
 
   createAccount() {
-    if (!this.newAccount.name || this.newAccount.balance == null || !this.newAccount.bankType) {
+    if (this.submittingCreate) return;
+    if (!this.newAccount.name?.trim() || this.newAccount.balance == null || !this.newAccount.bankType) {
       this.notificationService.warn('Nombre, balance y tipo de banco son obligatorios');
       return;
     }
-
-    this.accountService.create(this.newAccount).subscribe(account => {
-      this.cuentas.push(account);
-      this.displayDialog = false;
-      this.newAccount = {
-        name: '', balance: 0, bankType: 'NEQUI',
-        numeroCuenta: '',
-        cedula: ''
-      };
-    }, error => {
-      console.error('Error creating account', error);
+    this.submittingCreate = true;
+    this.accountService.create(this.newAccount).subscribe({
+      next: account => {
+        this.cuentas.push(account);
+        this.displayDialog = false;
+        this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
+        this.submittingCreate = false;
+      },
+      error: () => {
+        this.notificationService.error('Error al crear la cuenta');
+        this.submittingCreate = false;
+      }
     });
   }
 
-
   showCreateDialog() {
+    this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
     this.displayDialog = true;
+  }
+
+  eliminarCuenta(account: AccountCop, event: Event) {
+    event.stopPropagation();
+    if (!account.id) return;
+    this.confirmationService.confirm({
+      message: `¿Eliminar la cuenta <strong>${account.name}</strong>? Esta acción no se puede deshacer.`,
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.accountService.delete(account.id!).subscribe({
+          next: () => {
+            this.cuentas = this.cuentas.filter(c => c.id !== account.id);
+            this.notificationService.success(`Cuenta ${account.name} eliminada`);
+          },
+          error: () => this.notificationService.error('No se pudo eliminar la cuenta')
+        });
+      }
+    });
   }
 
   abrirDialogPago() {
@@ -214,55 +248,47 @@ export class CuentasTabComponent implements OnInit {
   }
 
   registrarRetiro() {
+    if (this.submittingRetiro) return;
     if (!this.selectedCuentaOrigenId || !this.selectedCajaId || !this.montoMovimiento) return;
-
+    this.submittingRetiro = true;
     const url = `${this.movimientoService['apiUrl']}/retiro?cuentaId=${this.selectedCuentaOrigenId}&cajaId=${this.selectedCajaId}&monto=${this.montoMovimiento}`;
     this.movimientoService['http'].post(url, {}).subscribe({
-      next: () => {
-        this.displayDialogRetiro = false;
-        this.loadCuentas();
-      },
-      error: () => this.notificationService.error('Error al registrar retiro')
+      next: () => { this.displayDialogRetiro = false; this.loadCuentas(); this.submittingRetiro = false; },
+      error: () => { this.notificationService.error('Error al registrar retiro'); this.submittingRetiro = false; }
     });
   }
 
   registrarDeposito() {
+    if (this.submittingDeposito) return;
     if (!this.selectedCuentaDestinoId || !this.selectedCajaId || !this.montoMovimiento) return;
-
+    this.submittingDeposito = true;
     const url = `${this.movimientoService['apiUrl']}/deposito?cuentaId=${this.selectedCuentaDestinoId}&cajaId=${this.selectedCajaId}&monto=${this.montoMovimiento}`;
     this.movimientoService['http'].post(url, {}).subscribe({
-      next: () => {
-        this.displayDialogDeposito = false;
-        this.loadCuentas();
-      },
-      error: () => this.notificationService.error('Error al registrar depósito')
+      next: () => { this.displayDialogDeposito = false; this.loadCuentas(); this.submittingDeposito = false; },
+      error: () => { this.notificationService.error('Error al registrar depósito'); this.submittingDeposito = false; }
     });
   }
 
-
   registrarTransferencia() {
+    if (this.submittingTransfer) return;
     if (!this.selectedCuentaOrigenId || !this.selectedCuentaDestinoId || !this.montoMovimiento) return;
-
+    this.submittingTransfer = true;
     this.movimientoService.registrarTransferencia(
-      this.selectedCuentaOrigenId,
-      this.selectedCuentaDestinoId,
-      this.montoMovimiento
-    ).subscribe(() => {
-      this.displayDialogTransferencia = false;
-      this.loadCuentas();
+      this.selectedCuentaOrigenId, this.selectedCuentaDestinoId, this.montoMovimiento
+    ).subscribe({
+      next: () => { this.displayDialogTransferencia = false; this.loadCuentas(); this.submittingTransfer = false; },
+      error: () => { this.notificationService.error('Error al registrar transferencia'); this.submittingTransfer = false; }
     });
   }
 
   registrarPagoCliente() {
+    if (this.submittingPago) return;
     if (!this.selectedClienteId || !this.cuentaPagoId || !this.montoPago) return;
+    this.submittingPago = true;
     const url = `${this.movimientoService['apiUrl']}/pago?cuentaId=${this.cuentaPagoId}&clienteId=${this.selectedClienteId}&monto=${this.montoPago}`;
     this.movimientoService['http'].post(url, {}).subscribe({
-      next: () => {
-        this.displayDialogPago = false;
-        this.loadCuentas();
-        this.loadClientes();
-      },
-      error: () => this.notificationService.error('Error al registrar pago')
+      next: () => { this.displayDialogPago = false; this.loadCuentas(); this.loadClientes(); this.submittingPago = false; },
+      error: () => { this.notificationService.error('Error al registrar pago'); this.submittingPago = false; }
     });
   }
 

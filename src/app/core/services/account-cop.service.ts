@@ -81,10 +81,10 @@ export class AccountCopService {
   }
 
   downloadExcel(accountCopId: number): Observable<Blob> {
-  // OJO: ajusta la ruta si tu backend usa otra (ej: /excel/cuenta-cop/{id})
-  return this.http.get(`${this.apiUrl}/excel/${accountCopId}`, {
-    responseType: 'blob'
-  });
-}
+    return this.http.get(`${this.apiUrl}/excel/${accountCopId}`, { responseType: 'blob' });
+  }
 
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

@@ -1,3 +1,6 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
 <!-- Barra de acciones -->
 <div class="botones-container">
 
@@ -141,6 +144,10 @@
               pTooltip="Descargar Excel" tooltipPosition="top"
               (click)="downloadExcelAccountCop(account.id!); $event.stopPropagation()">
             </button>
+            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+              pTooltip="Eliminar cuenta" tooltipPosition="top"
+              (click)="eliminarCuenta(account, $event)">
+            </button>
           </div>
         </div>
 
@@ -200,7 +207,9 @@
       <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false">
       </button>
 
-      <button pButton label="Crear" icon="pi pi-check" class="p-button-success" (click)="createAccount()">
+      <button pButton label="Crear" icon="pi pi-check" class="p-button-success"
+        [disabled]="submittingCreate" [loading]="submittingCreate"
+        (click)="createAccount()">
       </button>
     </div>
   </ng-template>
@@ -226,7 +235,9 @@
 
   <p-footer>
     <button pButton label="Cancelar" (click)="displayDialogRetiro = false"></button>
-    <button pButton label="Confirmar" class="p-button-danger" (click)="registrarRetiro()"></button>
+    <button pButton label="Confirmar" class="p-button-danger"
+      [disabled]="submittingRetiro" [loading]="submittingRetiro"
+      (click)="registrarRetiro()"></button>
   </p-footer>
 </p-dialog>
 
@@ -251,7 +262,9 @@
 
   <p-footer>
     <button pButton label="Cancelar" (click)="displayDialogDeposito = false"></button>
-    <button pButton label="Confirmar" class="p-button-primary" (click)="registrarDeposito()"></button>
+    <button pButton label="Confirmar" class="p-button-primary"
+      [disabled]="submittingDeposito" [loading]="submittingDeposito"
+      (click)="registrarDeposito()"></button>
   </p-footer>
 </p-dialog>
 
@@ -276,7 +289,9 @@
 
   <p-footer>
     <button pButton label="Cancelar" (click)="displayDialogTransferencia = false"></button>
-    <button pButton label="Confirmar" class="p-button-help" (click)="registrarTransferencia()"></button>
+    <button pButton label="Confirmar" class="p-button-help"
+      [disabled]="submittingTransfer" [loading]="submittingTransfer"
+      (click)="registrarTransferencia()"></button>
   </p-footer>
 </p-dialog>
 
@@ -299,7 +314,9 @@
 
   <p-footer>
     <button pButton label="Cancelar" (click)="displayDialogPago = false" class="p-button-text"></button>
-    <button pButton label="Confirmar" class="p-button-success" (click)="registrarPagoCliente()"></button>
+    <button pButton label="Confirmar" class="p-button-success"
+      [disabled]="submittingPago" [loading]="submittingPago"
+      (click)="registrarPagoCliente()"></button>
   </p-footer>
 </p-dialog>
 

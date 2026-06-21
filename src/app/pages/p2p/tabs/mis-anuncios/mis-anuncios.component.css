@@ -1,0 +1,135 @@
+/* ── Header ── */
+.anuncios-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.anuncios-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.anuncios-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.anuncios-update-time {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+}
+
+/* ── Spinner ── */
+.anuncios-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+}
+
+/* ── Sin resultados ── */
+.anuncios-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+/* ── Grid de tarjetas ── */
+.anuncios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Tarjeta ── */
+.anuncio-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.anuncio-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.anuncio-card.sell::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.anuncio-card.buy::before  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+
+.anuncio-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ── Header de tarjeta ── */
+.anuncio-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.anuncio-cuenta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+/* ── Precio ── */
+.anuncio-precio {
+  margin-bottom: 0.9rem;
+}
+.precio-valor {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text-color);
+  line-height: 1.1;
+}
+.precio-moneda {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+}
+
+/* ── Detalles ── */
+.anuncio-detalles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.detalle-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-color-secondary);
+}
+.detalle-valor {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.detalle-valor.disponible { color: #f59e0b; }
+.detalle-valor.metodo     { color: #60a5fa; font-size: 0.78rem; }
+
+/* ── Footer ── */
+.anuncio-footer {
+  border-top: 1px solid var(--surface-border);
+  padding-top: 0.6rem;
+  display: flex;
+  align-items: center;
+  color: var(--text-color-secondary);
+}

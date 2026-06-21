@@ -1,0 +1,130 @@
+/* ── Fondo ── */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0f0f;
+  padding: 1rem;
+}
+
+/* ── Tarjeta ── */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Logo ── */
+.login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.login-logo-img {
+  width: 42px;
+  height: 42px;
+}
+
+.login-brand {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #d97706 0%, #fbbf24 35%, #fde68a 60%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Títulos ── */
+.login-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #f1f1f1;
+  text-align: center;
+  margin: 0 0 0.35rem;
+}
+
+.login-subtitle {
+  font-size: 0.875rem;
+  color: #888;
+  text-align: center;
+  margin: 0 0 1.75rem;
+}
+
+/* ── Error ── */
+.login-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Campos ── */
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.login-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.login-field .p-inputtext {
+  background: #111 !important;
+  border: 1px solid #333 !important;
+  color: #f1f1f1 !important;
+  border-radius: 8px !important;
+  height: 2.75rem;
+  font-size: 0.95rem;
+  padding-left: 2.5rem !important;
+  width: 100%;
+}
+
+.login-field .p-inputtext:focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+}
+
+.login-field .p-input-icon-left i {
+  color: #666;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Botón ── */
+.login-btn {
+  margin-top: 0.5rem;
+  height: 2.85rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+  border: none !important;
+  color: #111 !important;
+  transition: opacity 0.2s;
+}
+
+.login-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}

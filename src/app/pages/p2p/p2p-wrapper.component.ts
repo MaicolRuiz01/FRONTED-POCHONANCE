@@ -27,7 +27,7 @@ import { P2PSyncService, P2PSyncState } from '../../core/services/p2p-sync.servi
     VentasAsignadasComponent,
     ComprasP2pComponent,
     ReglasP2pComponent,
-    VentasEnCursoComponent
+    VentasEnCursoComponent,
   ],
   providers: [MessageService],
   templateUrl: './p2p-wrapper.component.html',

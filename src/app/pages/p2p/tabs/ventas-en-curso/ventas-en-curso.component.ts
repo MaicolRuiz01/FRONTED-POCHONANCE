@@ -14,6 +14,7 @@ import { P2PSyncService, ActiveP2POrder } from '../../../../core/services/p2p-sy
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { P2PSseService } from '../../../../core/services/p2p-sse.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.service';
 
 @Component({
   selector: 'app-ventas-en-curso',
@@ -31,31 +32,67 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   cuentasCop: AccountCop[]  = [];
   loading = false;
 
+  anuncios: AnuncioDto[] = [];
+  loadingAnuncios = false;
+  ultimaActualizacionAnuncios: string | null = null;
+
   /** Mapa de orderNumber → copId seleccionado en el dropdown (antes de guardar) */
   seleccionPendiente: Record<string, number | null> = {};
 
+  /** Contador regresivo para el próximo auto-refresh */
+  countdown = 15;
+  private readonly REFRESH_INTERVAL = 15;
+
+  sseConectado = false;
+
   private sseSub?: Subscription;
+  private sseStatusSub?: Subscription;
+  private countdownTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private syncService: P2PSyncService,
     private accountCopService: AccountCopService,
     private sseService: P2PSseService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private anunciosService: AnunciosService
   ) {}
 
   ngOnInit(): void {
     this.loadCuentasCop();
     this.loadOrdenes();
+    this.loadAnuncios();
+    this.startCountdown();
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
     this.sseService.connect();
     this.sseSub = this.sseService.cambioOrdenActiva$.subscribe(() => {
       this.loadOrdenes();
+      this.resetCountdown();
     });
+    this.sseStatusSub = this.sseService.connected$.subscribe(v => this.sseConectado = v);
   }
 
   ngOnDestroy(): void {
     this.sseSub?.unsubscribe();
+    this.sseStatusSub?.unsubscribe();
+    clearInterval(this.countdownTimer);
+  }
+
+  // ── Countdown ────────────────────────────────────────────────
+
+  private startCountdown(): void {
+    this.countdown = this.REFRESH_INTERVAL;
+    this.countdownTimer = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        this.loadOrdenes();
+        this.countdown = this.REFRESH_INTERVAL;
+      }
+    }, 1000);
+  }
+
+  resetCountdown(): void {
+    this.countdown = this.REFRESH_INTERVAL;
   }
 
   // ── Carga de datos ────────────────────────────────────────────
@@ -82,6 +119,21 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.accountCopService.getAll().subscribe({
       next: cuentas => this.cuentasCop = cuentas
     });
+  }
+
+  loadAnuncios(): void {
+    this.loadingAnuncios = true;
+    this.anunciosService.getMisAnuncios()
+      .pipe(finalize(() => this.loadingAnuncios = false))
+      .subscribe({
+        next: data => {
+          this.anuncios = data;
+          this.ultimaActualizacionAnuncios = new Intl.DateTimeFormat('es-CO', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+          }).format(new Date());
+        },
+        error: () => { this.anuncios = []; }
+      });
   }
 
   // ── Pre-asignación ────────────────────────────────────────────
@@ -116,7 +168,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Helpers de UI ─────────────────────────────────────────────
+  // ── Helpers de UI — órdenes ───────────────────────────────────
 
   statusSeverity(status: string): 'warning' | 'info' | 'secondary' {
     switch (status) {
@@ -148,5 +200,33 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   dropdownChanged(orden: ActiveP2POrder, copId: number | null): void {
     this.seleccionPendiente[orden.orderNumber] = copId;
+    if (copId) {
+      this.guardarPreAsignacion(orden);
+    } else if (orden.preAsignadoCopId) {
+      this.quitarPreAsignacion(orden);
+    }
+  }
+
+  /** Extrae solo la hora de un createTime con formato "YYYY-MM-DD HH:mm:ss" */
+  horaCorta(createTime: string): string {
+    if (!createTime) return '';
+    const partes = createTime.split(' ');
+    return partes.length > 1 ? partes[1] : createTime;
+  }
+
+  // ── Helpers de UI — anuncios ──────────────────────────────────
+
+  tipoSeverity(tipo: string): 'success' | 'danger' {
+    return tipo?.toUpperCase() === 'SELL' ? 'danger' : 'success';
+  }
+
+  tipoLabel(tipo: string): string {
+    return tipo?.toUpperCase() === 'SELL' ? 'VENTA' : 'COMPRA';
+  }
+
+  fmtCop(valor: string): string {
+    const n = parseFloat(valor);
+    if (isNaN(n)) return valor ?? '—';
+    return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 }).format(n);
   }
 }

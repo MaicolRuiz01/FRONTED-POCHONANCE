@@ -12,3 +12,37 @@
 @import "assets/demo/styles/flags/flags.css";
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
+
+/* ── Topbar: usuario + rol + logout ── */
+.topbar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+  font-size: 0.82rem;
+}
+.topbar-username {
+  color: #f1f1f1;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.topbar-rol {
+  background: rgba(107, 114, 128, 0.3);
+  color: #9ca3af;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.topbar-rol.admin {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+.topbar-logout {
+  color: #ef4444 !important;
+}
+.topbar-logout:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+}

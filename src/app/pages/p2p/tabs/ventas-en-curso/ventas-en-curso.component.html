@@ -1,26 +1,120 @@
 <div class="vc-wrapper">
 
-  <!-- Header -->
-  <div class="vc-header">
-    <div class="vc-header-left">
-      <i class="pi pi-bolt vc-header-icon"></i>
-      <div>
-        <h3 class="vc-title">Ventas en curso</h3>
-        <p class="vc-subtitle">Órdenes P2P activas en Binance · actualiza cada 15 s</p>
-      </div>
-    </div>
-    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm"
-            pTooltip="Actualizar ahora" (click)="loadOrdenes()" [disabled]="loading">
+  <!-- ══════════════════════════════════════════
+       SECCIÓN 1 — ANUNCIOS ACTIVOS
+  ══════════════════════════════════════════ -->
+
+  <div class="vc-divider" style="margin-top: 0; border-top: none;">
+    <span class="vc-divider-label">
+      <i class="pi pi-megaphone"></i> Mis anuncios activos en Binance P2P
+    </span>
+    <span *ngIf="ultimaActualizacionAnuncios" class="vc-divider-time">
+      {{ ultimaActualizacionAnuncios }}
+    </span>
+    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
+            pTooltip="Actualizar anuncios" (click)="loadAnuncios()" [loading]="loadingAnuncios">
     </button>
   </div>
 
-  <!-- Spinner -->
+  <!-- Spinner anuncios -->
+  <div *ngIf="loadingAnuncios" class="vc-loading">
+    <p-progressSpinner styleClass="vc-spinner" strokeWidth="4"></p-progressSpinner>
+    <span>Buscando en el marketplace…</span>
+  </div>
+
+  <!-- Sin anuncios -->
+  <div *ngIf="!loadingAnuncios && anuncios.length === 0" class="vc-anuncios-empty">
+    <i class="pi pi-info-circle"></i>
+    <span>No se encontraron anuncios activos. Verifica el campo <strong>userBinance</strong> de cada cuenta.</span>
+  </div>
+
+  <!-- Grid de tarjetas de anuncios -->
+  <div *ngIf="!loadingAnuncios && anuncios.length > 0" class="vc-anuncios-grid">
+
+    <div *ngFor="let a of anuncios" class="vc-anuncio-card"
+         [class.sell]="a.tipo?.toUpperCase() === 'SELL'"
+         [class.buy]="a.tipo?.toUpperCase() === 'BUY'">
+
+      <!-- Tipo + cuenta -->
+      <div class="vc-anuncio-header">
+        <p-tag [value]="tipoLabel(a.tipo)"
+               [severity]="tipoSeverity(a.tipo)"
+               styleClass="text-xs font-bold">
+        </p-tag>
+        <span class="vc-anuncio-cuenta">{{ a.vendedor }}</span>
+      </div>
+
+      <!-- Precio -->
+      <div class="vc-anuncio-precio">
+        <span class="vc-precio-valor">{{ fmtCop(a.precio) }}</span>
+        <span class="vc-precio-label">COP / {{ a.moneda }}</span>
+      </div>
+
+      <!-- Detalles -->
+      <div class="vc-anuncio-detalles">
+        <div class="vc-detalle">
+          <span class="vc-detalle-label">Disponible</span>
+          <span class="vc-detalle-val disponible">{{ fmtCop(a.disponible) }} {{ a.moneda }}</span>
+        </div>
+        <div class="vc-detalle">
+          <span class="vc-detalle-label">Mínimo</span>
+          <span class="vc-detalle-val">{{ fmtCop(a.minimo) }} {{ a.fiat }}</span>
+        </div>
+        <div class="vc-detalle">
+          <span class="vc-detalle-label">Máximo</span>
+          <span class="vc-detalle-val">{{ fmtCop(a.maximo) }} {{ a.fiat }}</span>
+        </div>
+        <div class="vc-detalle">
+          <span class="vc-detalle-label">Método</span>
+          <span class="vc-detalle-val metodo">{{ a.metodoPago || '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Footer: hora -->
+      <div class="vc-anuncio-footer">
+        <i class="pi pi-clock text-xs"></i>
+        <span>{{ a.horaAnuncio }}</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SEPARADOR
+  ══════════════════════════════════════════ -->
+  <div class="vc-divider">
+    <span class="vc-divider-label">
+      <i class="pi pi-bolt"></i> Ventas en curso
+    </span>
+
+    <!-- Indicador SSE -->
+    <span class="vc-sse-badge" [class.connected]="sseConectado" [class.disconnected]="!sseConectado"
+          [pTooltip]="sseConectado ? 'Tiempo real activo' : 'Reconectando…'"
+          tooltipPosition="top">
+      <span class="vc-sse-dot"></span>
+      {{ sseConectado ? 'En vivo' : 'Reconectando' }}
+    </span>
+
+    <span class="vc-countdown" [class.urgent]="countdown <= 5">
+      <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
+    </span>
+    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
+            pTooltip="Actualizar ahora" (click)="loadOrdenes(); resetCountdown()" [disabled]="loading">
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECCIÓN 2 — ÓRDENES EN CURSO
+  ══════════════════════════════════════════ -->
+
+  <!-- Spinner órdenes -->
   <div *ngIf="loading" class="vc-loading">
     <p-progressSpinner styleClass="vc-spinner" strokeWidth="4"></p-progressSpinner>
     <span>Consultando Binance…</span>
   </div>
 
-  <!-- Vacío -->
+  <!-- Vacío órdenes -->
   <div *ngIf="!loading && ordenes.length === 0" class="vc-empty">
     <i class="pi pi-check-circle vc-empty-icon"></i>
     <p>No hay ventas abiertas en este momento.</p>
@@ -34,7 +128,7 @@
     Por ahora se muestran todas.
   </div>
 
-  <!-- Tabla -->
+  <!-- Tabla órdenes -->
   <p-table *ngIf="!loading && ordenes.length > 0"
            [value]="ordenes"
            [rowHover]="true"
@@ -43,40 +137,32 @@
 
     <ng-template pTemplate="header">
       <tr>
-        <th>Estado</th>
-        <th>Cuenta Binance</th>
-        <th>Fecha</th>
-        <th class="text-right">USDT</th>
+        <th>Estado · Cuenta</th>
+        <th>Hora</th>
         <th class="text-right">COP (miles)</th>
         <th class="text-right">Tasa</th>
         <th>Cuenta COP</th>
-        <th></th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-orden>
       <tr [class.vc-row-payed]="orden.status === 'BUYER_PAYED'">
 
-        <!-- Estado -->
+        <!-- Estado + Cuenta Binance combinados -->
         <td>
-          <p-tag [severity]="statusSeverity(orden.status)"
-                 [icon]="statusIcon(orden.status)"
-                 [value]="orden.statusLabel">
-          </p-tag>
+          <div class="vc-estado-cuenta">
+            <p-tag [severity]="statusSeverity(orden.status)"
+                   [icon]="statusIcon(orden.status)"
+                   [value]="orden.statusLabel">
+            </p-tag>
+            <span class="vc-account-badge">
+              <i class="pi pi-wallet"></i> {{ orden.accountBinance }}
+            </span>
+          </div>
         </td>
 
-        <!-- Cuenta Binance -->
-        <td>
-          <span class="vc-account-badge">
-            <i class="pi pi-wallet"></i> {{ orden.accountBinance }}
-          </span>
-        </td>
-
-        <!-- Fecha -->
-        <td class="vc-date">{{ orden.createTime }}</td>
-
-        <!-- USDT -->
-        <td class="text-right vc-amount">{{ orden.dollarsUs | number:'1.2-2' }}</td>
+        <!-- Solo hora -->
+        <td class="vc-date">{{ horaCorta(orden.createTime) }}</td>
 
         <!-- COP miles -->
         <td class="text-right vc-amount">{{ orden.pesosCop | number:'1.0-0' }}</td>
@@ -84,42 +170,26 @@
         <!-- Tasa -->
         <td class="text-right vc-tasa">{{ orden.tasa | number:'1.0-0' }}</td>
 
-        <!-- Dropdown cuenta COP -->
+        <!-- Dropdown cuenta COP — auto-guarda al elegir -->
         <td class="vc-dropdown-cell">
-          <div class="vc-cop-row">
-            <p-dropdown
-              [options]="copOptions()"
-              [ngModel]="seleccionPendiente[orden.orderNumber]"
-              (ngModelChange)="dropdownChanged(orden, $event)"
-              placeholder="Sin asignar"
-              [showClear]="true"
-              appendTo="body"
-              styleClass="vc-dropdown"
-              optionLabel="label"
-              optionValue="value">
-            </p-dropdown>
-          </div>
-        </td>
-
-        <!-- Acciones -->
-        <td class="vc-actions">
-          <button pButton icon="pi pi-check" class="p-button-sm p-button-success p-button-outlined"
-                  pTooltip="Guardar pre-asignación"
-                  [disabled]="!seleccionPendiente[orden.orderNumber]"
-                  (click)="guardarPreAsignacion(orden)">
-          </button>
-          <button pButton icon="pi pi-times" class="p-button-sm p-button-danger p-button-text"
-                  pTooltip="Quitar pre-asignación"
-                  [disabled]="!orden.preAsignadoCopId"
-                  (click)="quitarPreAsignacion(orden)">
-          </button>
+          <p-dropdown
+            [options]="copOptions()"
+            [ngModel]="seleccionPendiente[orden.orderNumber]"
+            (ngModelChange)="dropdownChanged(orden, $event)"
+            placeholder="Sin asignar"
+            [showClear]="true"
+            appendTo="body"
+            styleClass="vc-dropdown"
+            optionLabel="label"
+            optionValue="value">
+          </p-dropdown>
         </td>
 
       </tr>
 
       <!-- Sub-fila: pre-asignación activa -->
       <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow">
-        <td colspan="8">
+        <td colspan="5">
           <span class="vc-preasign-badge">
             <i class="pi pi-bookmark-fill"></i>
             Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>

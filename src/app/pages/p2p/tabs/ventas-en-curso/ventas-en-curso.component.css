@@ -26,12 +26,12 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-color, #111827);
 }
 .vc-subtitle {
   margin: 0;
   font-size: 0.78rem;
-  color: #9ca3af;
+  color: var(--text-color-secondary, #9ca3af);
 }
 
 /* ── Loading / Vacío ── */
@@ -40,7 +40,7 @@
   align-items: center;
   gap: 12px;
   padding: 24px 0;
-  color: #6b7280;
+  color: var(--text-color-secondary, #6b7280);
   font-size: 0.9rem;
 }
 .vc-spinner { width: 32px; height: 32px; }
@@ -48,7 +48,7 @@
 .vc-empty {
   text-align: center;
   padding: 40px 0;
-  color: #9ca3af;
+  color: var(--text-color-secondary, #9ca3af);
 }
 .vc-empty-icon {
   font-size: 2.5rem;
@@ -68,33 +68,33 @@
 }
 
 /* ── Celdas ── */
-.vc-date   { font-size: 0.82rem; color: #6b7280; white-space: nowrap; }
-.vc-amount { font-weight: 600; color: #111827; font-size: 0.88rem; }
-.vc-tasa   { font-size: 0.82rem; color: #6b7280; }
+.vc-date   { font-size: 0.82rem; color: var(--text-color-secondary, #6b7280); white-space: nowrap; }
+.vc-amount { font-weight: 600; color: var(--text-color, #111827); font-size: 0.88rem; }
+.vc-tasa   { font-size: 0.82rem; color: var(--text-color-secondary, #6b7280); }
 
 .vc-account-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-size: 0.82rem;
-  background: #f3f4f6;
+  background: var(--surface-200, #f3f4f6);
   padding: 2px 8px;
   border-radius: 999px;
-  color: #374151;
+  color: var(--text-color, #374151);
 }
 .vc-account-badge i { font-size: 0.75rem; }
 
+/* ── Estado + Cuenta combinados ── */
+.vc-estado-cuenta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* ── Dropdown COP ── */
 .vc-dropdown-cell { min-width: 180px; }
-.vc-cop-row { display: flex; align-items: center; gap: 6px; }
 .vc-dropdown { width: 100%; }
-
-/* ── Acciones ── */
-.vc-actions {
-  display: flex;
-  gap: 4px;
-  white-space: nowrap;
-}
 
 /* ── Aviso sin cuentas marcadas ── */
 .vc-warning {
@@ -129,3 +129,222 @@
   border-radius: 999px;
 }
 .vc-preasign-badge i { font-size: 0.75rem; }
+
+/* ══════════════════════════════════════════
+   SEPARADOR
+══════════════════════════════════════════ */
+.vc-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--surface-border, #e5e7eb);
+}
+.vc-divider + .vc-divider,
+.vc-anuncios-grid + .vc-divider,
+.vc-anuncios-empty + .vc-divider,
+.vc-loading + .vc-divider {
+  margin-top: 28px;
+}
+.vc-divider-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-color, #374151);
+  flex: 1;
+}
+.vc-divider-label i {
+  color: #f59e0b;
+}
+.vc-divider-time {
+  font-size: 0.72rem;
+  color: var(--text-color-secondary, #9ca3af);
+  white-space: nowrap;
+}
+
+/* ── Indicador SSE ── */
+.vc-sse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s;
+}
+.vc-sse-badge.connected {
+  background: rgba(34,197,94,.12);
+  color: #16a34a;
+}
+.vc-sse-badge.disconnected {
+  background: rgba(239,68,68,.1);
+  color: #dc2626;
+}
+.vc-sse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vc-sse-badge.connected   .vc-sse-dot {
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+  animation: sse-pulse 2s ease-in-out infinite;
+}
+.vc-sse-badge.disconnected .vc-sse-dot {
+  background: #ef4444;
+  animation: blink 1s step-start infinite;
+}
+@keyframes sse-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(34,197,94,.6); }
+  70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0);  }
+  100% { box-shadow: 0 0 0 0   rgba(34,197,94,0);  }
+}
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
+
+/* ── Contador regresivo ── */
+.vc-countdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-color-secondary, #9ca3af);
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+.vc-countdown i { font-size: 0.7rem; }
+.vc-countdown.urgent {
+  color: #f59e0b;
+  animation: pulse-count 1s ease-in-out infinite;
+}
+@keyframes pulse-count {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+.vc-divider-btn {
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   ANUNCIOS — sin resultados
+══════════════════════════════════════════ */
+.vc-anuncios-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-color-secondary, #6b7280);
+  background: var(--surface-100, #f9fafb);
+  border: 1px dashed var(--surface-border, #d1d5db);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.vc-anuncios-empty i { color: #9ca3af; }
+
+/* ══════════════════════════════════════════
+   ANUNCIOS — grid de tarjetas
+══════════════════════════════════════════ */
+.vc-anuncios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+/* ── Tarjeta ── */
+.vc-anuncio-card {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.vc-anuncio-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.vc-anuncio-card.sell::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+.vc-anuncio-card.buy::before  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.vc-anuncio-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+}
+
+/* ── Header tarjeta ── */
+.vc-anuncio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.vc-anuncio-cuenta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+/* ── Precio ── */
+.vc-anuncio-precio {
+  margin-bottom: 10px;
+}
+.vc-precio-valor {
+  display: block;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-color, #111827);
+  line-height: 1.15;
+}
+.vc-precio-label {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary, #9ca3af);
+}
+
+/* ── Detalles ── */
+.vc-anuncio-detalles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+}
+.vc-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.vc-detalle-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-color-secondary, #9ca3af);
+}
+.vc-detalle-val {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-color, #374151);
+}
+.vc-detalle-val.disponible { color: #f59e0b; }
+.vc-detalle-val.metodo     { color: #60a5fa; font-size: 0.75rem; }
+
+/* ── Footer tarjeta ── */
+.vc-anuncio-footer {
+  border-top: 1px solid var(--surface-border, #f3f4f6);
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-color-secondary, #9ca3af);
+}

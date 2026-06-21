@@ -1,5 +1,5 @@
 <div class="layout-topbar">
-    <!-- ESTE ES EL BOTON DE MENU  -->
+    <!-- Botón de menú -->
     <button #menubutton class="p-link layout-menu-button layout-topbar-button" (click)="layoutService.onMenuToggle()">
         <i class="pi pi-bars"></i>
     </button>
@@ -25,18 +25,21 @@
     </button>
 
     <div #topbarmenu class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active': layoutService.state.profileSidebarVisible}">
-        <button class="p-link layout-topbar-button">
-            <i class="pi pi-bell"></i>
-            <span>Calendar</span>
 
+        <!-- Usuario + rol -->
+        <div class="topbar-user-info">
+            <i class="pi pi-user" style="color: #f59e0b;"></i>
+            <span class="topbar-username">{{ auth.getUsername() }}</span>
+            <span class="topbar-rol" [class.admin]="auth.isAdmin()">
+                {{ auth.getRol() }}
+            </span>
+        </div>
+
+        <!-- Cerrar sesión -->
+        <button class="p-link layout-topbar-button topbar-logout" (click)="logout()" title="Cerrar sesión">
+            <i class="pi pi-sign-out"></i>
+            <span>Salir</span>
         </button>
-        <button class="p-link layout-topbar-button">
-            <i class="pi pi-user"></i>
-            <span>Profile</span>
-        </button>
-        <button class="p-link layout-topbar-button" [routerLink]="'/documentation'">
-            <i class="pi pi-cog"></i>
-            <span>Settings</span>
-        </button>
+
     </div>
 </div>

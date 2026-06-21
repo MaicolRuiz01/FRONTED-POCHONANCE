@@ -1,0 +1,84 @@
+<!-- Header -->
+<div class="anuncios-header">
+  <div class="anuncios-header-left">
+    <span class="anuncios-title">
+      <i class="pi pi-megaphone text-yellow-500 mr-2"></i>
+      Anuncios activos en Binance P2P
+    </span>
+    <span *ngIf="ultimaActualizacion" class="anuncios-update-time">
+      Actualizado: {{ ultimaActualizacion }}
+    </span>
+  </div>
+  <button pButton icon="pi pi-refresh" label="Actualizar"
+          class="p-button-outlined p-button-sm"
+          [loading]="loading"
+          (click)="cargar()">
+  </button>
+</div>
+
+<!-- Spinner -->
+<div *ngIf="loading" class="anuncios-spinner">
+  <p-progressSpinner strokeWidth="3" [style]="{width:'40px', height:'40px'}"></p-progressSpinner>
+  <span class="text-color-secondary text-sm mt-2">Buscando en el marketplace...</span>
+</div>
+
+<!-- Sin resultados -->
+<div *ngIf="!loading && anuncios.length === 0" class="anuncios-empty">
+  <i class="pi pi-info-circle text-4xl text-color-secondary mb-3"></i>
+  <p class="text-color-secondary">No se encontraron anuncios activos.</p>
+  <p class="text-xs text-color-secondary">
+    Asegúrate de que el campo <strong>userBinance</strong> de cada cuenta coincida
+    con el nickname en Binance P2P.
+  </p>
+</div>
+
+<!-- Grid de tarjetas -->
+<div *ngIf="!loading && anuncios.length > 0" class="anuncios-grid">
+
+  <div *ngFor="let a of anuncios" class="anuncio-card"
+       [class.sell]="a.tipo?.toUpperCase() === 'SELL'"
+       [class.buy]="a.tipo?.toUpperCase() === 'BUY'">
+
+    <!-- Tipo + cuenta -->
+    <div class="anuncio-card-header">
+      <p-tag [value]="tipoLabel(a.tipo)"
+             [severity]="tipoSeverity(a.tipo)"
+             styleClass="text-xs font-bold">
+      </p-tag>
+      <span class="anuncio-cuenta">{{ a.vendedor }}</span>
+    </div>
+
+    <!-- Precio -->
+    <div class="anuncio-precio">
+      <span class="precio-valor">{{ fmtCop(a.precio) }}</span>
+      <span class="precio-moneda">COP / {{ a.moneda }}</span>
+    </div>
+
+    <!-- Detalles -->
+    <div class="anuncio-detalles">
+      <div class="detalle-item">
+        <span class="detalle-label">Disponible</span>
+        <span class="detalle-valor disponible">{{ fmtCop(a.disponible) }} {{ a.moneda }}</span>
+      </div>
+      <div class="detalle-item">
+        <span class="detalle-label">Mínimo</span>
+        <span class="detalle-valor">{{ fmtCop(a.minimo) }} {{ a.fiat }}</span>
+      </div>
+      <div class="detalle-item">
+        <span class="detalle-label">Máximo</span>
+        <span class="detalle-valor">{{ fmtCop(a.maximo) }} {{ a.fiat }}</span>
+      </div>
+      <div class="detalle-item">
+        <span class="detalle-label">Método</span>
+        <span class="detalle-valor metodo">{{ a.metodoPago || '—' }}</span>
+      </div>
+    </div>
+
+    <!-- Hora publicación -->
+    <div class="anuncio-footer">
+      <i class="pi pi-clock text-xs"></i>
+      <span class="text-xs text-color-secondary ml-1">{{ a.horaAnuncio }}</span>
+    </div>
+  </div>
+
+</div>

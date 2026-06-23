@@ -1,8 +1,83 @@
 <p-toast></p-toast>
 
+<!-- Modal cuentas COP para P2P -->
+<p-dialog
+  header="Cuentas COP en P2P"
+  [(visible)]="showCuentasModal"
+  [modal]="true"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div *ngIf="loadingCuentas" class="flex justify-content-center py-4">
+    <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
+  </div>
+
+  <div *ngIf="!loadingCuentas" class="cuentas-modal-list">
+    <div *ngFor="let c of cuentasCop" class="cuenta-modal-row" [class.cuenta-modal-row--active]="c.activaParaP2P">
+
+      <!-- Nombre + banco -->
+      <div class="cuenta-modal-info">
+        <span class="bank-dot-modal" [style.background]="bankColor(c.bankType)"></span>
+        <div class="cuenta-modal-texts">
+          <span class="cuenta-modal-name">{{ c.name }}</span>
+          <span class="cuenta-modal-bank text-xs text-color-secondary">{{ c.bankType }}</span>
+        </div>
+        <!-- Warning cupo agotado -->
+        <span *ngIf="c.activaParaP2P && cupoAgotado(c)" class="cupo-warn-badge">
+          <i class="pi pi-exclamation-triangle"></i> Cupo agotado
+        </span>
+      </div>
+
+      <!-- Toggle + cupo tipo -->
+      <div class="cuenta-modal-controls">
+        <button pButton
+          [icon]="c.activaParaP2P ? 'pi pi-check-circle' : 'pi pi-circle'"
+          [class]="c.activaParaP2P ? 'p-button-sm p-button-success p-button-text' : 'p-button-sm p-button-secondary p-button-text'"
+          [loading]="togglingId === c.id"
+          (click)="toggleP2P(c)"
+          [pTooltip]="c.activaParaP2P ? 'Desactivar' : 'Activar'"
+          tooltipPosition="top">
+        </button>
+      </div>
+
+      <!-- Cupo selector (solo si activa) -->
+      <div *ngIf="c.activaParaP2P" class="cuenta-modal-cupo">
+        <div class="cupo-tipo-btns-modal">
+          <button *ngFor="let op of cupoTipoOpciones"
+            class="cupo-btn-modal"
+            [class.cupo-btn-modal--active]="(c.cupoTipoP2P ?? 'AMBOS') === op.value"
+            (click)="setCupoTipo(c, op.value)">
+            {{ op.label }}
+          </button>
+        </div>
+        <div class="cupo-valores-modal">
+          <span [class.cupo-dim]="(c.cupoTipoP2P ?? 'AMBOS') === 'CORRESPONSAL'">
+            Cajero <b [class.text-red-500]="(c.cupoCajeroDisponibleHoy ?? 0) <= 0">
+              ${{ (c.cupoCajeroDisponibleHoy ?? 0) | number:'1.0-0' }}
+            </b>
+          </span>
+          <span [class.cupo-dim]="(c.cupoTipoP2P ?? 'AMBOS') === 'CAJERO'">
+            Corresponsal <b [class.text-red-500]="(c.cupoCorresponsalDisponibleHoy ?? 0) <= 0">
+              ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}
+            </b>
+          </span>
+          <span class="cupo-efectivo-modal">
+            Efectivo <b [class.text-red-500]="cupoAgotado(c)">
+              ${{ cupoEfectivo(c) | number:'1.0-0' }}
+            </b>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</p-dialog>
+
 <div class="grid">
   <div class="col-12">
-    <!-- Header con sync status -->
+
+    <!-- Header -->
     <div class="card mb-2 p-3">
       <div class="p2p-header">
         <div class="p2p-header-left">
@@ -17,19 +92,34 @@
             </span>
           </div>
           <span *ngIf="syncStates.length === 0" class="text-sm text-color-secondary sync-state-text">
-            Sin datos de sync aún
+            Sin datos de sync aun
           </span>
         </div>
 
-        <button pButton
-          icon="pi pi-refresh"
-          class="p-button-outlined p-button-sm"
-          [loading]="syncing"
-          (click)="triggerSync()"
-          pTooltip="Sincronizar ahora"
-          tooltipPosition="left">
-          <span class="sync-btn-label ml-2">Sincronizar ahora</span>
-        </button>
+        <div class="p2p-header-actions">
+          <!-- Boton cuentas COP -->
+          <button pButton
+            icon="pi pi-wallet"
+            label="Cuentas P2P"
+            class="p-button-outlined p-button-sm"
+            (click)="showCuentasModal = true"
+            pTooltip="Gestionar cuentas COP activas en P2P"
+            tooltipPosition="left">
+            <span class="ml-1 sync-btn-label">
+              <span *ngIf="cuentasActivasCount > 0" class="cuenta-badge">{{ cuentasActivasCount }}</span>
+            </span>
+          </button>
+
+          <button pButton
+            icon="pi pi-refresh"
+            class="p-button-outlined p-button-sm"
+            [loading]="syncing"
+            (click)="triggerSync()"
+            pTooltip="Sincronizar ahora"
+            tooltipPosition="left">
+            <span class="sync-btn-label ml-2">Sincronizar ahora</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -39,7 +129,7 @@
       <p-tabPanel>
         <ng-template pTemplate="header">
           <i class="pi pi-bolt mr-2 text-yellow-500"></i>
-          <span>Auto-Asignación</span>
+          <span>Auto-Asignacion</span>
         </ng-template>
         <app-reglas-p2p></app-reglas-p2p>
       </p-tabPanel>
@@ -75,7 +165,6 @@
         </ng-template>
         <app-compras-p2p></app-compras-p2p>
       </p-tabPanel>
-
 
     </p-tabView>
   </div>

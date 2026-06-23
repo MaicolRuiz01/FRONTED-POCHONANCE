@@ -121,8 +121,8 @@ export class MovimientoService {
     return this.http.get<MovimientoDto[]>(`${this.apiUrl}/listar`);
   }
 
-  registrarRetiro(idCuentaOrigen: number, monto: number) {
-    const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&monto=${monto}`;
+  registrarRetiro(idCuentaOrigen: number, cajaId: number, monto: number, tipoRetiro: 'CAJERO' | 'CORRESPONSAL') {
+    const url = `${this.apiUrl}/retiro?cuentaId=${idCuentaOrigen}&cajaId=${cajaId}&monto=${monto}&tipoRetiro=${tipoRetiro}`;
     return this.http.post(url, {});
   }
 

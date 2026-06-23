@@ -5,6 +5,7 @@ import { environment } from '../../../environment/environment';
 import { SaleP2PDto } from './sale-p2p.service';
 
 export type BankTypeCop = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
+export type CupoTipoP2P = 'CAJERO' | 'CORRESPONSAL' | 'AMBOS';
 
 export interface AccountCop {
   id?: number;
@@ -20,9 +21,12 @@ export interface AccountCop {
   isFlipped?: boolean;
   bankType: BankTypeCop;
   cupoDisponibleHoy?: number;
+  cupoCajeroDisponibleHoy?: number;
+  cupoCorresponsalDisponibleHoy?: number;
   numeroCuenta?: string;
   cedula?: string;
   activaParaP2P?: boolean;
+  cupoTipoP2P?: CupoTipoP2P;
 }
 
 /**
@@ -78,6 +82,10 @@ export class AccountCopService {
 
   toggleActivaParaP2P(id: number): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-p2p`, {});
+  }
+
+  setCupoTipo(id: number, cupoTipoP2P: CupoTipoP2P): Observable<AccountCop> {
+    return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/cupo-tipo`, { cupoTipoP2P });
   }
 
   downloadExcel(accountCopId: number): Observable<Blob> {

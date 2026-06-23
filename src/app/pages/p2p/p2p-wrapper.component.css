@@ -39,6 +39,154 @@
   white-space: nowrap;
 }
 
+/* ── Boton cuentas P2P badge ── */
+.cuenta-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--primary-color, #6366f1);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.p2p-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Modal cuentas COP ── */
+.cuentas-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cuenta-modal-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--surface-border, #e2e8f0);
+  transition: background 0.15s;
+}
+
+.cuenta-modal-row:last-child {
+  border-bottom: none;
+}
+
+.cuenta-modal-row--active {
+  background: rgba(99,102,241,0.04);
+  border-radius: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.cuenta-modal-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bank-dot-modal {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cuenta-modal-texts {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cuenta-modal-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-color, #1e293b);
+}
+
+.cuenta-modal-bank {
+  font-size: 0.75rem;
+}
+
+.cuenta-modal-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.cupo-warn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #d97706;
+  background: #fef3c7;
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* Selector cupo tipo (modal) */
+.cuenta-modal-cupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.cupo-tipo-btns-modal {
+  display: flex;
+  gap: 5px;
+}
+
+.cupo-btn-modal {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  border: 1.5px solid var(--surface-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--surface-ground, #f8fafc);
+  color: var(--text-color-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+
+.cupo-btn-modal--active {
+  border-color: var(--primary-color, #6366f1);
+  background: var(--primary-color, #6366f1);
+  color: #fff;
+}
+
+.cupo-valores-modal {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary, #64748b);
+}
+
+.cupo-valores-modal .cupo-dim {
+  opacity: 0.4;
+}
+
+.cupo-efectivo-modal {
+  font-weight: 600;
+  color: var(--text-color, #1e293b);
+}
+
 @media (max-width: 600px) {
   .p2p-header-left h2 {
     font-size: 1.1rem;

@@ -65,18 +65,9 @@
 
     <!-- Header -->
     <div class="cop-card-header">
-      <div *ngIf="account.activaParaP2P" class="p2p-accent-strip"></div>
       <div class="cop-header-inner">
         <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
         <span class="cop-card-name">{{ account.name }}</span>
-        <button type="button"
-          class="p2p-chip"
-          [class.p2p-chip--on]="account.activaParaP2P"
-          [title]="account.activaParaP2P ? 'Quitar de P2P activas' : 'Marcar para P2P'"
-          (click)="toggleP2P(account, $event)">
-          <i class="pi" [class.pi-check]="account.activaParaP2P" [class.pi-plus]="!account.activaParaP2P"></i>
-          P2P
-        </button>
       </div>
     </div>
 
@@ -92,8 +83,12 @@
             <span class="cop-stat-value">{{ getDisponible(account.balance) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
           <div class="cop-stat-row">
-            <span class="cop-stat-label">Cupo hoy</span>
-            <span class="cop-stat-value">{{ (account.cupoDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
+            <span class="cop-stat-label">Cajero disp.</span>
+            <span class="cop-stat-value">{{ (account.cupoCajeroDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
+          </div>
+          <div class="cop-stat-row">
+            <span class="cop-stat-label">Corresponsal disp.</span>
+            <span class="cop-stat-value">{{ (account.cupoCorresponsalDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
         </div>
 
@@ -217,25 +212,58 @@
 </p-dialog>
 
 <!-- RETIRO -->
-<p-dialog header="Registrar Retiro" [(visible)]="displayDialogRetiro" [modal]="true">
-  <div class="p-fluid">
-    <label>Cuenta Origen</label>
-    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
-      placeholder="Selecciona la Cuenta Origen" [style.width.%]="100" [appendTo]="'body'">
-    </p-dropdown>
-    <label>Caja</label>
-    <p-dropdown [options]="cajas" [(ngModel)]="selectedCajaId" optionLabel="name" optionValue="id"
-      placeholder="Selecciona caja" [style.width.%]="100" [appendTo]="'body'">
-    </p-dropdown>
+<p-dialog header="Registrar Retiro" [(visible)]="displayDialogRetiro" [modal]="true" [style]="{width: '420px'}">
+  <div class="p-fluid" style="display:flex; flex-direction:column; gap:14px; padding-top:4px;">
 
-    <label>Monto</label>
-    <p-inputNumber [(ngModel)]="montoMovimiento" name="montoMovimiento" mode="currency" currency="COP" [min]="0">
-    </p-inputNumber>
+    <div>
+      <label style="font-weight:600; margin-bottom:6px; display:block;">Tipo de retiro</label>
+      <p-dropdown [options]="tiposRetiro" [(ngModel)]="tipoRetiro"
+        optionLabel="label" optionValue="value"
+        [appendTo]="'body'" [style]="{width:'100%'}">
+      </p-dropdown>
+    </div>
+
+    <div>
+      <label style="font-weight:600; margin-bottom:6px; display:block;">Cuenta Origen</label>
+      <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
+        placeholder="Selecciona la Cuenta Origen" [appendTo]="'body'" [style]="{width:'100%'}">
+      </p-dropdown>
+    </div>
+
+    <!-- Info cupo de la cuenta seleccionada -->
+    <div *ngIf="selectedCuentaOrigenId" style="background:var(--surface-100,#f9fafb); border:1px solid var(--surface-border,#e5e7eb); border-radius:8px; padding:10px 14px; font-size:.83rem;">
+      <ng-container *ngFor="let c of cuentas">
+        <ng-container *ngIf="c.id === selectedCuentaOrigenId">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--text-color-secondary,#6b7280);">Cupo cajero disponible</span>
+            <strong [style.color]="tipoRetiro==='CAJERO' ? '#2563eb' : 'inherit'">{{ (c.cupoCajeroDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-color-secondary,#6b7280);">Cupo corresponsal disponible</span>
+            <strong [style.color]="tipoRetiro==='CORRESPONSAL' ? '#2563eb' : 'inherit'">{{ (c.cupoCorresponsalDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+
+    <div>
+      <label style="font-weight:600; margin-bottom:6px; display:block;">Caja</label>
+      <p-dropdown [options]="cajas" [(ngModel)]="selectedCajaId" optionLabel="name" optionValue="id"
+        placeholder="Selecciona caja" [appendTo]="'body'" [style]="{width:'100%'}">
+      </p-dropdown>
+    </div>
+
+    <div>
+      <label style="font-weight:600; margin-bottom:6px; display:block;">Monto</label>
+      <p-inputNumber [(ngModel)]="montoMovimiento" name="montoMovimiento" mode="currency" currency="COP" [min]="0" [style]="{width:'100%'}">
+      </p-inputNumber>
+    </div>
+
   </div>
 
   <p-footer>
-    <button pButton label="Cancelar" (click)="displayDialogRetiro = false"></button>
-    <button pButton label="Confirmar" class="p-button-danger"
+    <button pButton label="Cancelar" class="p-button-text" (click)="displayDialogRetiro = false"></button>
+    <button pButton label="Confirmar retiro" class="p-button-danger"
       [disabled]="submittingRetiro" [loading]="submittingRetiro"
       (click)="registrarRetiro()"></button>
   </p-footer>

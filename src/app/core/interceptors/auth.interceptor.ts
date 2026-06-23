@@ -18,10 +18,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((err: HttpErrorResponse) => {
       // Solo cerrar sesión en 401 (token expirado o inválido)
       // y solo si el usuario estaba autenticado (evita loops en /login)
-      if (err.status === 401 && auth.isLoggedIn()) {
+      if ((err.status === 401 || err.status === 403) && auth.isLoggedIn()) {
         auth.logout(); // limpia localStorage y navega a /login
       }
-      // 403, 404 y otros errores se propagan normalmente sin cerrar sesión
       return throwError(() => err);
     })
   );

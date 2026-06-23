@@ -74,6 +74,11 @@ export class CuentasTabComponent implements OnInit {
   selectedCuentaDestinoId?: number;
   montoMovimiento?: number;
   displayDialogRetiro: boolean = false;
+  tipoRetiro: 'CAJERO' | 'CORRESPONSAL' = 'CAJERO';
+  tiposRetiro = [
+    { label: 'Cajero (ATM)', value: 'CAJERO' },
+    { label: 'Corresponsal', value: 'CORRESPONSAL' }
+  ];
   displayDialogDeposito: boolean = false;
   displayDialogTransferencia: boolean = false;
   selectedClienteId?: number;
@@ -230,6 +235,7 @@ export class CuentasTabComponent implements OnInit {
     this.selectedCuentaOrigenId = undefined;
     this.montoMovimiento = undefined;
     this.selectedCajaId = undefined;
+    this.tipoRetiro = 'CAJERO';
   }
 
   abrirDialogDeposito() {
@@ -251,10 +257,23 @@ export class CuentasTabComponent implements OnInit {
     if (this.submittingRetiro) return;
     if (!this.selectedCuentaOrigenId || !this.selectedCajaId || !this.montoMovimiento) return;
     this.submittingRetiro = true;
-    const url = `${this.movimientoService['apiUrl']}/retiro?cuentaId=${this.selectedCuentaOrigenId}&cajaId=${this.selectedCajaId}&monto=${this.montoMovimiento}`;
-    this.movimientoService['http'].post(url, {}).subscribe({
-      next: () => { this.displayDialogRetiro = false; this.loadCuentas(); this.submittingRetiro = false; },
-      error: () => { this.notificationService.error('Error al registrar retiro'); this.submittingRetiro = false; }
+    this.movimientoService.registrarRetiro(
+      this.selectedCuentaOrigenId,
+      this.selectedCajaId,
+      this.montoMovimiento,
+      this.tipoRetiro
+    ).subscribe({
+      next: () => {
+        this.displayDialogRetiro = false;
+        this.loadCuentas();
+        this.submittingRetiro = false;
+        this.notificationService.success('Retiro registrado correctamente.');
+      },
+      error: (err) => {
+        const msg = err?.error?.error ?? 'Error al registrar retiro';
+        this.notificationService.error(msg);
+        this.submittingRetiro = false;
+      }
     });
   }
 

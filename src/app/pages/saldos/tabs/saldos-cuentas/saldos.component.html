@@ -24,7 +24,7 @@
   <div class="saldo-card saldo-card-crypto" style="cursor:pointer" (click)="verBinance()">
     <h4 class="saldo-title">Criptos</h4>
     <p class="saldo-usdt" style="margin:0;">
-  {{ totalUsdtGeneral | number:'1.2-2' }}
+  {{ (totalUsdtGeneral ?? 0) / 1000 | number:'1.2-2' }}
   <span class="saldo-unit">USDT</span>
   
   
@@ -32,7 +32,7 @@
 
 <!-- 👇 COP equivalente -->
 <p class="saldo-cop" *ngIf="latestRate > 0" style="margin:4px 0 0 0;">
-  ≈ {{ totalCopGeneral | currency:'COP':'symbol':'1.0-0' }}
+  ≈ {{ (totalCopGeneral ?? 0) / 1000 | currency:'COP':'symbol':'1.0-0' }}
   <span class="saldo-unit">(USDT→COP)</span>
 </p>
 
@@ -218,7 +218,7 @@
         <ng-container *ngIf="!account.isFlipped; else bcDetalles">
           <!-- Vista principal: saldo + tabla criptos -->
           <div class="bc-saldo-row">
-            <span class="bc-saldo-value">{{ account.saldoExterno | number:'1.2-2' }}</span>
+            <span class="bc-saldo-value">{{ (account.saldoExterno ?? 0) / 1000 | number:'1.2-2' }}</span>
             <span class="bc-saldo-unit">USDT</span>
           </div>
 

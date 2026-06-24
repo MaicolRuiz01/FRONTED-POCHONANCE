@@ -155,6 +155,12 @@
         pTooltip="Copiar datos cuenta" tooltipPosition="top"
         (click)="copiarCuenta(account, $event); $event.stopPropagation()">
       </button>
+      <button pButton icon="pi pi-key" class="p-button-text p-button-sm cop-key-btn"
+        [pTooltip]="'Llaves Brebe' + ((account.brebeKeys?.length ?? 0) > 0 ? ' (' + account.brebeKeys!.length + ')' : '')"
+        tooltipPosition="top"
+        [class.has-keys]="(account.brebeKeys?.length ?? 0) > 0"
+        (click)="abrirBrebeDialog(account, $event)">
+      </button>
       <span class="cop-footer-hint" (click)="toggleFlip(account, $event)">
         <i class="pi" [class.pi-chevron-right]="!account.isFlipped" [class.pi-chevron-left]="account.isFlipped"></i>
         {{ account.isFlipped ? 'Ver saldo' : 'Ver detalles' }}
@@ -410,6 +416,64 @@
   </div>
 </p-dialog>
 
+
+<!-- ═══════════════════════════════════════════
+     DIALOG — LLAVES BREBE
+══════════════════════════════════════════ -->
+<p-dialog
+  [header]="'Llaves Brebe — ' + (cuentaBrebeActual?.name ?? '')"
+  [(visible)]="showBrebeDialog"
+  [modal]="true"
+  [style]="{width: '460px'}"
+  [closable]="true">
+
+  <!-- Lista de llaves existentes -->
+  <div *ngIf="!cuentaBrebeActual?.brebeKeys?.length" class="brebe-empty">
+    <i class="pi pi-info-circle"></i>
+    <span>Esta cuenta no tiene llaves Brebe aún.</span>
+  </div>
+
+  <div *ngFor="let k of cuentaBrebeActual?.brebeKeys" class="brebe-key-row">
+    <div class="brebe-key-info">
+      <span class="brebe-key-val">{{ k.llave }}</span>
+      <span *ngIf="k.descripcion" class="brebe-key-desc">{{ k.descripcion }}</span>
+    </div>
+    <button pButton icon="pi pi-trash"
+      class="p-button-text p-button-danger p-button-sm brebe-del-btn"
+      pTooltip="Eliminar llave" tooltipPosition="left"
+      (click)="eliminarLlave(k)">
+    </button>
+  </div>
+
+  <!-- Formulario para agregar -->
+  <div class="brebe-add-form">
+    <div class="brebe-add-title">
+      <i class="pi pi-plus-circle"></i> Agregar nueva llave
+    </div>
+    <input pInputText
+      [(ngModel)]="nuevaLlave"
+      placeholder="Clave Brebe *"
+      class="brebe-input"
+      (keyup.enter)="agregarLlave()">
+    <input pInputText
+      [(ngModel)]="nuevaLlaveDesc"
+      placeholder="Descripción (opcional)"
+      class="brebe-input"
+      (keyup.enter)="agregarLlave()">
+    <button pButton label="Agregar" icon="pi pi-plus"
+      class="p-button-success p-button-sm"
+      [disabled]="!nuevaLlave.trim()"
+      (click)="agregarLlave()">
+    </button>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text"
+      (click)="showBrebeDialog = false">
+    </button>
+  </ng-template>
+
+</p-dialog>
 
 <app-ajuste-saldo-dialog *ngIf="cuentaAjuste" [visible]="showAjusteCuenta" (visibleChange)="showAjusteCuenta = $event"
   [entidad]="'CUENTACOP'" [entidadId]="cuentaAjuste.id!" [nombreEntidad]="cuentaAjuste.name"

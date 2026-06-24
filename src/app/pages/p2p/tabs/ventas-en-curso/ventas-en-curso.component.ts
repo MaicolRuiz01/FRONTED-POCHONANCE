@@ -104,12 +104,22 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .subscribe({
         next: data => {
           this.ordenes = data;
-          // Inicializar selección pendiente con la pre-asignación actual
+          // Sincronizar seleccionPendiente:
+          // Si el servidor tiene un valor definido → es la fuente de verdad (override).
+          // Si el servidor no tiene pre-asignación y el cliente ya tiene una selección
+          // pendiente → conservar la selección del cliente (acaba de guardar).
+          const nuevo: Record<string, number | null> = { ...this.seleccionPendiente };
           for (const o of data) {
-            if (!(o.orderNumber in this.seleccionPendiente)) {
-              this.seleccionPendiente[o.orderNumber] = o.preAsignadoCopId ?? null;
+            if (o.preAsignadoCopId != null) {
+              // Servidor manda un valor real → confiar en él
+              nuevo[o.orderNumber] = o.preAsignadoCopId;
+            } else if (!(o.orderNumber in nuevo)) {
+              // Clave nueva sin valor en servidor → inicializar a null
+              nuevo[o.orderNumber] = null;
             }
+            // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
+          this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
         },
         error: () => this.notification.error('No se pudo cargar las órdenes activas.')
       });
@@ -139,17 +149,23 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   // ── Pre-asignación ────────────────────────────────────────────
 
   guardarPreAsignacion(orden: ActiveP2POrder): void {
-    const copId = this.seleccionPendiente[orden.orderNumber];
+    const orderNumber = orden.orderNumber;
+    const copId = this.seleccionPendiente[orderNumber];
     if (!copId) return;
 
     this.syncService.savePreAsignacion({
-      orderNumber:   orden.orderNumber,
+      orderNumber,
       copId,
       accountBinance: orden.accountBinance
     }).subscribe({
       next: () => {
-        orden.preAsignadoCopId = copId;
-        orden.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === copId)?.name ?? '';
+        // Buscar la referencia VIVA en this.ordenes (no la closure que puede ser stale)
+        const live = this.ordenes.find(o => o.orderNumber === orderNumber);
+        const target = live ?? orden;
+        target.preAsignadoCopId = copId;
+        target.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === copId)?.name ?? '';
+        // Nuevo objeto para forzar CD
+        this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: copId };
         this.notification.success('Pre-asignación guardada.');
       },
       error: () => this.notification.error('Error al guardar pre-asignación.')
@@ -157,11 +173,14 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   quitarPreAsignacion(orden: ActiveP2POrder): void {
-    this.syncService.deletePreAsignacion(orden.orderNumber).subscribe({
+    const orderNumber = orden.orderNumber;
+    this.syncService.deletePreAsignacion(orderNumber).subscribe({
       next: () => {
-        orden.preAsignadoCopId = null;
-        orden.preAsignadoCopNombre = null;
-        this.seleccionPendiente[orden.orderNumber] = null;
+        const live = this.ordenes.find(o => o.orderNumber === orderNumber);
+        const target = live ?? orden;
+        target.preAsignadoCopId = null;
+        target.preAsignadoCopNombre = null;
+        this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: null };
         this.notification.success('Pre-asignación removida.');
       },
       error: () => this.notification.error('Error al remover pre-asignación.')
@@ -186,6 +205,17 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     }
   }
 
+  get cuentasActivasP2P() {
+    return this.cuentasCop.filter(c => c.activaParaP2P);
+  }
+
+  bankColor(bank: string): string {
+    const m: Record<string, string> = {
+      NEQUI: '#7c3aed', BANCOLOMBIA: '#f59e0b', DAVIPLATA: '#ef4444'
+    };
+    return m[bank] ?? '#6b7280';
+  }
+
   /** Solo muestra las cuentas marcadas como activas para P2P.
    *  Si ninguna está marcada, muestra todas como fallback. */
   copOptions() {
@@ -199,7 +229,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   dropdownChanged(orden: ActiveP2POrder, copId: number | null): void {
-    this.seleccionPendiente[orden.orderNumber] = copId;
+    // Spread para nuevo objeto → Angular detecta cambio inmediatamente en [ngModel]
+    this.seleccionPendiente = { ...this.seleccionPendiente, [orden.orderNumber]: copId };
     if (copId) {
       this.guardarPreAsignacion(orden);
     } else if (orden.preAsignadoCopId) {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountCopService, AccountCop, AccountCopCreate } from '../../../../core/services/account-cop.service';
+import { AccountCopService, AccountCop, AccountCopCreate, BrebeKey } from '../../../../core/services/account-cop.service';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
@@ -88,6 +88,12 @@ export class CuentasTabComponent implements OnInit {
   montoPago?: number;
   showAjusteCuenta = false;
   cuentaAjuste: AccountCop | null = null;
+
+  // ── Llaves Brebe ──
+  showBrebeDialog = false;
+  cuentaBrebeActual: AccountCop | null = null;
+  nuevaLlave = '';
+  nuevaLlaveDesc = '';
   // NUEVO: total por banco (sum(balance))
   totalNequi = 0;
   totalBancolombia = 0;
@@ -405,19 +411,6 @@ export class CuentasTabComponent implements OnInit {
     return n <= 0 ? 0 : (n / 0.996);
   }
 
-  private buildAccountClipboardText(account: AccountCop): string {
-    // arma el texto como tu cliente lo quiere
-    // puedes cambiar el formato libremente
-    const lines = [
-      `${account.name ?? ''}`,
-      `${account.bankType ?? ''}`,
-      `Cuenta: ${account.numeroCuenta ?? ''}`,
-      `Cédula: ${account.cedula ?? ''}`
-    ];
-
-    return lines.join('\n');
-  }
-
   async copiarCuenta(account: AccountCop, event?: Event) {
     event?.stopPropagation(); // evita flip / clicks raros
 
@@ -468,7 +461,7 @@ export class CuentasTabComponent implements OnInit {
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = `cuenta_cop_${accountId}_reporte.xlsx`; // nombre opcional
+      a.download = `cuenta_cop_${accountId}_reporte.xlsx`;
       a.click();
 
       window.URL.revokeObjectURL(url);
@@ -480,5 +473,62 @@ export class CuentasTabComponent implements OnInit {
   });
 }
 
+  // ══════════════════════════════════════════
+  // LLAVES BREBE
+  // ══════════════════════════════════════════
+
+  abrirBrebeDialog(cuenta: AccountCop, event: Event) {
+    event.stopPropagation();
+    this.cuentaBrebeActual = cuenta;
+    this.nuevaLlave = '';
+    this.nuevaLlaveDesc = '';
+    this.showBrebeDialog = true;
+  }
+
+  agregarLlave() {
+    if (!this.cuentaBrebeActual?.id || !this.nuevaLlave.trim()) return;
+    const llave = this.nuevaLlave.trim();
+    const desc = this.nuevaLlaveDesc.trim() || undefined;
+    this.accountService.addBrebeKey(this.cuentaBrebeActual.id, llave, desc).subscribe({
+      next: key => {
+        if (!this.cuentaBrebeActual!.brebeKeys) this.cuentaBrebeActual!.brebeKeys = [];
+        this.cuentaBrebeActual!.brebeKeys.push(key);
+        this.nuevaLlave = '';
+        this.nuevaLlaveDesc = '';
+        this.notificationService.success('Llave agregada correctamente.');
+      },
+      error: () => this.notificationService.error('Error al agregar llave Brebe.')
+    });
+  }
+
+  eliminarLlave(key: BrebeKey) {
+    if (!this.cuentaBrebeActual?.id || !key.id) return;
+    this.accountService.deleteBrebeKey(this.cuentaBrebeActual.id, key.id).subscribe({
+      next: () => {
+        this.cuentaBrebeActual!.brebeKeys =
+          this.cuentaBrebeActual!.brebeKeys?.filter(k => k.id !== key.id);
+        this.notificationService.success('Llave eliminada.');
+      },
+      error: () => this.notificationService.error('Error al eliminar llave Brebe.')
+    });
+  }
+
+  private buildAccountClipboardText(account: AccountCop): string {
+    const lines = [
+      `${account.name ?? ''}`,
+      `${account.bankType ?? ''}`,
+      `Cuenta: ${account.numeroCuenta ?? ''}`,
+      `Cédula: ${account.cedula ?? ''}`
+    ];
+    if (account.brebeKeys && account.brebeKeys.length > 0) {
+      lines.push('');
+      lines.push('Llaves Brebe:');
+      for (const k of account.brebeKeys) {
+        const desc = k.descripcion ? ` (${k.descripcion})` : '';
+        lines.push(`• ${k.llave}${desc}`);
+      }
+    }
+    return lines.join('\n');
+  }
 
 }

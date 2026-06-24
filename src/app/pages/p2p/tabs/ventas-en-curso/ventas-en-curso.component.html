@@ -1,6 +1,42 @@
 <div class="vc-wrapper">
 
   <!-- ══════════════════════════════════════════
+       SECCIÓN 0 — CUENTAS COP ACTIVAS P2P
+  ══════════════════════════════════════════ -->
+  <div *ngIf="cuentasActivasP2P.length > 0" class="cop-strip">
+    <div *ngFor="let c of cuentasActivasP2P" class="cop-mini-card">
+
+      <!-- Punto de color por banco -->
+      <span class="cop-mini-dot" [style.background]="bankColor(c.bankType)"></span>
+
+      <!-- Nombre y saldo -->
+      <div class="cop-mini-body">
+        <span class="cop-mini-name">{{ c.name }}</span>
+        <span class="cop-mini-saldo">${{ (c.balance ?? 0) | number:'1.0-0' }}</span>
+      </div>
+
+      <!-- Iconos cajero / corresponsal -->
+      <div class="cop-mini-icons">
+        <span class="cop-mini-icon"
+              [class.cop-icon--ok]="(c.cupoCajeroDisponibleHoy ?? 1) > 0"
+              [class.cop-icon--agotado]="(c.cupoCajeroDisponibleHoy ?? 1) <= 0"
+              pTooltip="Cajero: ${{ (c.cupoCajeroDisponibleHoy ?? 0) | number:'1.0-0' }}"
+              tooltipPosition="top">
+          <i class="pi pi-credit-card"></i>
+        </span>
+        <span class="cop-mini-icon"
+              [class.cop-icon--ok]="(c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
+              [class.cop-icon--agotado]="(c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
+              pTooltip="Corresponsal: ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}"
+              tooltipPosition="top">
+          <i class="pi pi-building"></i>
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        SECCIÓN 1 — ANUNCIOS ACTIVOS
   ══════════════════════════════════════════ -->
 
@@ -108,12 +144,6 @@
        SECCIÓN 2 — ÓRDENES EN CURSO
   ══════════════════════════════════════════ -->
 
-  <!-- Spinner órdenes -->
-  <div *ngIf="loading" class="vc-loading">
-    <p-progressSpinner styleClass="vc-spinner" strokeWidth="4"></p-progressSpinner>
-    <span>Consultando Binance…</span>
-  </div>
-
   <!-- Vacío órdenes -->
   <div *ngIf="!loading && ordenes.length === 0" class="vc-empty">
     <i class="pi pi-check-circle vc-empty-icon"></i>
@@ -128,9 +158,10 @@
     Por ahora se muestran todas.
   </div>
 
-  <!-- Tabla órdenes -->
-  <p-table *ngIf="!loading && ordenes.length > 0"
+  <!-- Tabla órdenes — usa [loading] nativo para NO destruir el componente en cada refresh -->
+  <p-table *ngIf="ordenes.length > 0 || loading"
            [value]="ordenes"
+           [loading]="loading"
            [rowHover]="true"
            responsiveLayout="scroll"
            styleClass="p-datatable-sm vc-table">

@@ -348,3 +348,84 @@
   font-size: 0.72rem;
   color: var(--text-color-secondary, #9ca3af);
 }
+
+/* ══════════════════════════════════════════
+   STRIP CUENTAS COP ACTIVAS P2P
+══════════════════════════════════════════ */
+.cop-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cop-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 6px 10px;
+  min-width: 160px;
+  flex: 1 1 160px;
+  max-width: 240px;
+}
+
+.cop-mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cop-mini-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cop-mini-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-color, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cop-mini-saldo {
+  font-size: 0.72rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.cop-mini-icons {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.cop-mini-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.cop-icon--ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.cop-icon--agotado {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}

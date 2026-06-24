@@ -405,4 +405,85 @@
   object-fit:contain;
 }
 
+/* ══════════════════════════════════════════
+   BOTÓN LLAVES BREBE EN FOOTER DE TARJETA
+══════════════════════════════════════════ */
+.cop-key-btn {
+  color: var(--text-color-secondary, #9ca3af) !important;
+  transition: color .15s;
+}
+.cop-key-btn.has-keys {
+  color: #f59e0b !important;
+}
+.cop-key-btn:hover {
+  color: #f59e0b !important;
+}
+
+/* ══════════════════════════════════════════
+   DIALOG LLAVES BREBE
+══════════════════════════════════════════ */
+.brebe-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 4px;
+  font-size: .85rem;
+  color: var(--text-color-secondary, #9ca3af);
+}
+.brebe-empty i { font-size: 1rem; color: #d1d5db; }
+
+.brebe-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--surface-border, #f3f4f6);
+  gap: 8px;
+}
+.brebe-key-row:last-of-type { border-bottom: none; }
+
+.brebe-key-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.brebe-key-val {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text-color, #111827);
+  word-break: break-all;
+}
+.brebe-key-desc {
+  font-size: .75rem;
+  color: var(--text-color-secondary, #9ca3af);
+}
+.brebe-del-btn {
+  flex-shrink: 0;
+}
+
+.brebe-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 2px solid var(--surface-border, #e5e7eb);
+}
+.brebe-add-title {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text-color-secondary, #6b7280);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.brebe-add-title i { color: #10b981; }
+.brebe-input {
+  width: 100%;
+  font-size: .88rem;
+}
+
 /* .account-title — reemplazado por .cop-card-name */

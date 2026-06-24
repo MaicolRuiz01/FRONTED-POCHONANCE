@@ -7,6 +7,12 @@ import { SaleP2PDto } from './sale-p2p.service';
 export type BankTypeCop = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 export type CupoTipoP2P = 'CAJERO' | 'CORRESPONSAL' | 'AMBOS';
 
+export interface BrebeKey {
+  id?: number;
+  llave: string;
+  descripcion?: string;
+}
+
 export interface AccountCop {
   id?: number;
   name: string;
@@ -27,6 +33,7 @@ export interface AccountCop {
   cedula?: string;
   activaParaP2P?: boolean;
   cupoTipoP2P?: CupoTipoP2P;
+  brebeKeys?: BrebeKey[];
 }
 
 /**
@@ -94,5 +101,13 @@ export class AccountCopService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  addBrebeKey(accountId: number, llave: string, descripcion?: string): Observable<BrebeKey> {
+    return this.http.post<BrebeKey>(`${this.apiUrl}/${accountId}/brebe-keys`, { llave, descripcion });
+  }
+
+  deleteBrebeKey(accountId: number, keyId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${accountId}/brebe-keys/${keyId}`);
   }
 }

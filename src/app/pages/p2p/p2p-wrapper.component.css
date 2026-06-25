@@ -62,6 +62,60 @@
 }
 
 /* ── Modal cuentas COP ── */
+.cuentas-filtro-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cuenta-modal-saldo {
+  margin-left: 8px;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.cuentas-banco-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.banco-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  font-size: 0.78rem;
+  border: 1.5px solid var(--surface-border, #e2e8f0);
+  border-radius: 999px;
+  background: var(--surface-ground, #f8fafc);
+  color: var(--text-color-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+
+.banco-chip--active {
+  border-color: var(--primary-color, #6366f1);
+  color: var(--text-color, #1e293b);
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--primary-color, #6366f1) inset;
+}
+
+.retirar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
 .cuentas-modal-list {
   display: flex;
   flex-direction: column;

@@ -429,3 +429,29 @@
   background: rgba(239, 68, 68, 0.12);
   color: #ef4444;
 }
+
+.cop-mini-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.10);
+  color: #ef4444;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cop-mini-remove:hover:not(:disabled) {
+  background: #ef4444;
+  color: #fff;
+}
+
+.cop-mini-remove:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

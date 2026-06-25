@@ -33,6 +33,14 @@
         </span>
       </div>
 
+      <!-- Quitar de P2P (deseleccionar) -->
+      <button type="button" class="cop-mini-remove"
+              [disabled]="desactivandoId === c.id"
+              (click)="desactivarP2P(c)"
+              pTooltip="Quitar de P2P" tooltipPosition="top">
+        <i class="pi" [ngClass]="desactivandoId === c.id ? 'pi-spin pi-spinner' : 'pi-times'"></i>
+      </button>
+
     </div>
   </div>
 

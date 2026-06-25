@@ -47,6 +47,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   private sseSub?: Subscription;
   private sseStatusSub?: Subscription;
+  private p2pSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
 
   constructor(
@@ -70,11 +71,15 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       this.resetCountdown();
     });
     this.sseStatusSub = this.sseService.connected$.subscribe(v => this.sseConectado = v);
+
+    // Si otra vista (el modal) cambia el estado P2P de una cuenta, recargamos
+    this.p2pSub = this.accountCopService.p2pCambio$.subscribe(() => this.loadCuentasCop());
   }
 
   ngOnDestroy(): void {
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
+    this.p2pSub?.unsubscribe();
     clearInterval(this.countdownTimer);
   }
 
@@ -207,6 +212,25 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   get cuentasActivasP2P() {
     return this.cuentasCop.filter(c => c.activaParaP2P);
+  }
+
+  /** ID de la cuenta que se está quitando de P2P (para el spinner del botón). */
+  desactivandoId: number | null = null;
+
+  /** Quita la cuenta de P2P (deselecciona) desde su card. */
+  desactivarP2P(c: AccountCop): void {
+    if (!c.id || this.desactivandoId === c.id) return;
+    this.desactivandoId = c.id;
+    this.accountCopService.toggleActivaParaP2P(c.id)
+      .pipe(finalize(() => this.desactivandoId = null))
+      .subscribe({
+        next: updated => {
+          c.activaParaP2P = updated.activaParaP2P;
+          this.accountCopService.notificarCambioP2P();
+          this.notification.success(`${c.name} quitada de P2P`);
+        },
+        error: () => this.notification.error('No se pudo quitar la cuenta de P2P.')
+      });
   }
 
   bankColor(bank: string): string {

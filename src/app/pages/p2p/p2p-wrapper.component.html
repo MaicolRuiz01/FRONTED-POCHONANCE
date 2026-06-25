@@ -13,16 +13,44 @@
     <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
   </div>
 
-  <div *ngIf="!loadingCuentas" class="cuentas-modal-list">
-    <div *ngFor="let c of cuentasCop" class="cuenta-modal-row" [class.cuenta-modal-row--active]="c.activaParaP2P">
+  <!-- Filtro por tipo de cupo de retiro -->
+  <div *ngIf="!loadingCuentas" class="cuentas-filtro-bar">
+    <button *ngFor="let f of filtroOpciones"
+      class="cupo-btn-modal"
+      [class.cupo-btn-modal--active]="filtroTipo === f.value"
+      (click)="filtroTipo = f.value">
+      {{ f.label }}
+    </button>
+  </div>
 
-      <!-- Nombre + banco -->
+  <!-- Filtro por banco -->
+  <div *ngIf="!loadingCuentas" class="cuentas-banco-bar">
+    <button *ngFor="let b of bancosDisponibles"
+      class="banco-chip"
+      [class.banco-chip--active]="bancoActivo(b.value)"
+      (click)="toggleBanco(b.value)">
+      <span class="bank-dot-modal" [style.background]="bankColor(b.value)"></span>
+      {{ b.label }}
+    </button>
+  </div>
+
+  <div *ngIf="!loadingCuentas" class="cuentas-modal-list">
+    <div *ngFor="let c of cuentasFiltradas" class="cuenta-modal-row" [class.cuenta-modal-row--active]="c.activaParaP2P">
+
+      <!-- Nombre + banco + saldo -->
       <div class="cuenta-modal-info">
         <span class="bank-dot-modal" [style.background]="bankColor(c.bankType)"></span>
         <div class="cuenta-modal-texts">
-          <span class="cuenta-modal-name">{{ c.name }}</span>
+          <span class="cuenta-modal-name">
+            {{ c.name }}
+            <b class="cuenta-modal-saldo">{{ c.balance | currency:'COP':'$':'1.0-0' }}</b>
+          </span>
           <span class="cuenta-modal-bank text-xs text-color-secondary">{{ c.bankType }}</span>
         </div>
+        <!-- Badge "Retirar": hay saldo para cajero+corresponsal y no se ha retirado hoy -->
+        <span *ngIf="puedeRetirar(c)" class="retirar-badge">
+          <i class="pi pi-wallet"></i> Retirar
+        </span>
         <!-- Warning cupo agotado -->
         <span *ngIf="c.activaParaP2P && cupoAgotado(c)" class="cupo-warn-badge">
           <i class="pi pi-exclamation-triangle"></i> Cupo agotado
@@ -70,6 +98,10 @@
         </div>
       </div>
 
+    </div>
+
+    <div *ngIf="cuentasFiltradas.length === 0" class="text-center text-color-secondary py-3 text-sm">
+      No hay cuentas con cupo de este tipo.
     </div>
   </div>
 </p-dialog>

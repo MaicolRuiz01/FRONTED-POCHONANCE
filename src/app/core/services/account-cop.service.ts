@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { SaleP2PDto } from './sale-p2p.service';
 
@@ -51,6 +51,15 @@ export interface AccountCopCreate {
 @Injectable({ providedIn: 'root' })
 export class AccountCopService {
   private apiUrl = `${environment.apiUrl}/cuenta-cop`;
+
+  /** Se emite cuando cambia el estado P2P de alguna cuenta (activar/desactivar),
+   *  para que las distintas vistas (modal y tira de cuentas) se sincronicen. */
+  private p2pCambio = new Subject<void>();
+  p2pCambio$ = this.p2pCambio.asObservable();
+
+  notificarCambioP2P(): void {
+    this.p2pCambio.next();
+  }
 
   constructor(private http: HttpClient) { }
 

@@ -9,6 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
+import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { VentasPendientesComponent } from './tabs/ventas-pendientes/ventas-pendientes.component';
@@ -61,18 +62,87 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
     { label: 'Ambos', value: 'AMBOS' },
   ];
 
+  // ── Filtro por tipo de cupo de retiro (modal Cuentas COP en P2P) ──
+  filtroTipo: 'TODOS' | 'CAJERO' | 'CORRESPONSAL' = 'TODOS';
+  filtroOpciones: { label: string; value: 'TODOS' | 'CAJERO' | 'CORRESPONSAL' }[] = [
+    { label: 'Todos', value: 'TODOS' },
+    { label: 'Cajero', value: 'CAJERO' },
+    { label: 'Corresponsal', value: 'CORRESPONSAL' },
+  ];
+
+  // ── Filtro por banco (multi-seleccion; vacio = todos) ──
+  bancosSeleccionados = new Set<string>();
+
+  /** Cupo maximo del dia por banco (en miles, igual que CupoDiarioRules del backend). */
+  private readonly cupoMax: Record<string, { cajero: number; corresponsal: number }> = {
+    NEQUI:       { cajero: 2700, corresponsal: 5000 },
+    BANCOLOMBIA: { cajero: 2700, corresponsal: 10000 },
+    DAVIPLATA:   { cajero: 3000, corresponsal: 5000 },
+  };
+
+  /** Bancos soportados por la app (lista fija, siempre visibles en el filtro). */
+  bancosDisponibles: { label: string; value: string }[] = [
+    { label: 'Nequi', value: 'NEQUI' },
+    { label: 'Daviplata', value: 'DAVIPLATA' },
+    { label: 'Bancolombia', value: 'BANCOLOMBIA' },
+  ];
+
+  bancoActivo(bank: string): boolean {
+    return this.bancosSeleccionados.has(bank);
+  }
+
+  toggleBanco(bank: string): void {
+    if (this.bancosSeleccionados.has(bank)) this.bancosSeleccionados.delete(bank);
+    else this.bancosSeleccionados.add(bank);
+  }
+
+  /**
+   * Muestra el badge "Retirar" cuando el saldo alcanza para cubrir cajero +
+   * corresponsal y ambos cupos siguen al maximo del dia (aun no se ha retirado).
+   */
+  puedeRetirar(c: AccountCop): boolean {
+    const max = this.cupoMax[c.bankType];
+    if (!max) return false;
+    const cajeroDisp = c.cupoCajeroDisponibleHoy ?? 0;
+    const corrDisp = c.cupoCorresponsalDisponibleHoy ?? 0;
+    const sinRetirarHoy = cajeroDisp >= max.cajero && corrDisp >= max.corresponsal;
+    const saldoCubre = (c.balance ?? 0) >= (max.cajero + max.corresponsal);
+    return sinRetirarHoy && saldoCubre;
+  }
+
+  /**
+   * Cuentas del modal: filtradas por tipo de cupo de retiro disponible,
+   * por banco, y ordenadas de mayor a menor saldo.
+   */
+  get cuentasFiltradas(): AccountCop[] {
+    return this.cuentasCop
+      .filter(c => {
+        if (this.filtroTipo === 'CAJERO') return (c.cupoCajeroDisponibleHoy ?? 0) > 0;
+        if (this.filtroTipo === 'CORRESPONSAL') return (c.cupoCorresponsalDisponibleHoy ?? 0) > 0;
+        return true;
+      })
+      .filter(c => this.bancosSeleccionados.size === 0 || this.bancosSeleccionados.has(c.bankType))
+      .sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
+  }
+
   constructor(
     private syncService: P2PSyncService,
     private messageService: MessageService,
     private copService: AccountCopService
   ) {}
 
+  private p2pSub?: Subscription;
+
   ngOnInit(): void {
     this.loadSyncStatus();
     this.loadCuentas();
+    // Si otra vista cambia el estado P2P de una cuenta, recargamos para sincronizar
+    this.p2pSub = this.copService.p2pCambio$.subscribe(() => this.loadCuentas());
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.p2pSub?.unsubscribe();
+  }
 
   loadCuentas(): void {
     this.loadingCuentas = true;
@@ -114,6 +184,7 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
       .subscribe({
         next: updated => {
           cuenta.activaParaP2P = updated.activaParaP2P;
+          this.copService.notificarCambioP2P();
           this.messageService.add({
             severity: 'success',
             summary: updated.activaParaP2P ? 'Cuenta activada' : 'Cuenta desactivada',

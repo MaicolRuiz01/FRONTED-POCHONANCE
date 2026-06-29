@@ -74,6 +74,14 @@
   font-weight: 700;
 }
 
+/* Saldo proyectado: saldo actual + ventas P2P en curso pre-asignadas */
+.cuenta-modal-saldo--en-curso {
+  color: #d97706;
+  background: #fef3c7;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
 .cuentas-banco-bar {
   display: flex;
   gap: 6px;
@@ -191,6 +199,21 @@
   padding: 2px 8px;
   white-space: nowrap;
 }
+
+.cupo-lleno-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fde68a;
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cupo-lleno-badge:hover { filter: brightness(0.96); }
 
 /* Selector cupo tipo (modal) */
 .cuenta-modal-cupo {

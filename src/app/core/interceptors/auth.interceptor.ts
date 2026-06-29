@@ -2,11 +2,9 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth   = inject(AuthService);
-  const router = inject(Router);
+  const auth = inject(AuthService);
 
   const token = auth.getToken();
 
@@ -16,12 +14,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((err: HttpErrorResponse) => {
-      // Solo cerrar sesión en 401 (token expirado o inválido)
-      // y solo si el usuario estaba autenticado (evita loops en /login)
-      // Solo cierra sesión en 401 (token expirado/inválido).
+      // Solo cierra sesión en 401 (token expirado/inválido) cuando había un token en uso.
       // 403 = sin permiso, pero el usuario SÍ está autenticado → no sacar.
-      if (err.status === 401 && auth.isLoggedIn()) {
-        auth.logout();
+      // status 0 = backend caído / sin red → tampoco sacar (no es expiración).
+      if (err.status === 401 && auth.hasStoredToken()) {
+        auth.logout(true);
       }
       return throwError(() => err);
     })

@@ -8,17 +8,18 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { DialogModule } from 'primeng/dialog';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { VentasPendientesComponent } from './tabs/ventas-pendientes/ventas-pendientes.component';
 import { VentasAsignadasComponent } from './tabs/ventas-asignadas/ventas-asignadas.component';
 import { ComprasP2pComponent } from './tabs/compras-p2p/compras-p2p.component';
-import { ReglasP2pComponent } from './tabs/reglas-p2p/reglas-p2p.component';
 import { VentasEnCursoComponent } from './tabs/ventas-en-curso/ventas-en-curso.component';
-import { P2PSyncService, P2PSyncState } from '../../core/services/p2p-sync.service';
-import { AccountCopService, AccountCop, CupoTipoP2P } from '../../core/services/account-cop.service';
+import { P2PSyncService, P2PSyncState, ActiveP2POrder } from '../../core/services/p2p-sync.service';
+import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
+import { RetiradorService } from '../../core/services/retirador.service';
 
 @Component({
   selector: 'app-p2p-wrapper',
@@ -33,13 +34,13 @@ import { AccountCopService, AccountCop, CupoTipoP2P } from '../../core/services/
     TooltipModule,
     SelectButtonModule,
     DialogModule,
+    ConfirmDialogModule,
     VentasPendientesComponent,
     VentasAsignadasComponent,
     ComprasP2pComponent,
-    ReglasP2pComponent,
     VentasEnCursoComponent,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './p2p-wrapper.component.html',
   styleUrls: ['./p2p-wrapper.component.css']
 })
@@ -49,6 +50,8 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
 
   showCuentasModal = false;
   cuentasCop: AccountCop[] = [];
+  /** Órdenes P2P en curso (abiertas) — para proyectar el saldo pre-asignado. */
+  activeOrders: ActiveP2POrder[] = [];
   loadingCuentas = false;
   togglingId: number | null = null;
 
@@ -56,16 +59,9 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
     return this.cuentasCop.filter(c => c.activaParaP2P).length;
   }
 
-  cupoTipoOpciones: { label: string; value: CupoTipoP2P }[] = [
-    { label: 'Cajero', value: 'CAJERO' },
-    { label: 'Corresponsal', value: 'CORRESPONSAL' },
-    { label: 'Ambos', value: 'AMBOS' },
-  ];
-
   // ── Filtro por tipo de cupo de retiro (modal Cuentas COP en P2P) ──
-  filtroTipo: 'TODOS' | 'CAJERO' | 'CORRESPONSAL' = 'TODOS';
-  filtroOpciones: { label: string; value: 'TODOS' | 'CAJERO' | 'CORRESPONSAL' }[] = [
-    { label: 'Todos', value: 'TODOS' },
+  filtroTipo: 'CAJERO' | 'CORRESPONSAL' = 'CAJERO';
+  filtroOpciones: { label: string; value: 'CAJERO' | 'CORRESPONSAL' }[] = [
     { label: 'Cajero', value: 'CAJERO' },
     { label: 'Corresponsal', value: 'CORRESPONSAL' },
   ];
@@ -116,11 +112,9 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
    */
   get cuentasFiltradas(): AccountCop[] {
     return this.cuentasCop
-      .filter(c => {
-        if (this.filtroTipo === 'CAJERO') return (c.cupoCajeroDisponibleHoy ?? 0) > 0;
-        if (this.filtroTipo === 'CORRESPONSAL') return (c.cupoCorresponsalDisponibleHoy ?? 0) > 0;
-        return true;
-      })
+      .filter(c => this.filtroTipo === 'CAJERO'
+        ? (c.cupoCajeroDisponibleHoy ?? 0) > 0
+        : (c.cupoCorresponsalDisponibleHoy ?? 0) > 0)
       .filter(c => this.bancosSeleccionados.size === 0 || this.bancosSeleccionados.has(c.bankType))
       .sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
   }
@@ -128,7 +122,9 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   constructor(
     private syncService: P2PSyncService,
     private messageService: MessageService,
-    private copService: AccountCopService
+    private copService: AccountCopService,
+    private retiradorService: RetiradorService,
+    private confirmationService: ConfirmationService
   ) {}
 
   private p2pSub?: Subscription;
@@ -136,8 +132,23 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSyncStatus();
     this.loadCuentas();
+    this.loadActiveOrders();
     // Si otra vista cambia el estado P2P de una cuenta, recargamos para sincronizar
     this.p2pSub = this.copService.p2pCambio$.subscribe(() => this.loadCuentas());
+  }
+
+  /** Abre la modal y refresca cuentas + órdenes en curso para el saldo proyectado. */
+  openCuentasModal(): void {
+    this.showCuentasModal = true;
+    this.loadCuentas();
+    this.loadActiveOrders();
+  }
+
+  loadActiveOrders(): void {
+    this.syncService.getActiveOrders().subscribe({
+      next: o => this.activeOrders = o ?? [],
+      error: () => this.activeOrders = []
+    });
   }
 
   ngOnDestroy(): void {
@@ -184,11 +195,18 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
       .subscribe({
         next: updated => {
           cuenta.activaParaP2P = updated.activaParaP2P;
+          // Al activarla, queda con el medio de la pestaña actual (cajero o corresponsal).
+          if (updated.activaParaP2P && cuenta.id) {
+            cuenta.cupoTipoP2P = this.filtroTipo;
+            this.copService.setCupoTipo(cuenta.id, this.filtroTipo).subscribe({
+              next: u => { cuenta.cupoTipoP2P = u.cupoTipoP2P; this.copService.notificarCambioP2P(); }
+            });
+          }
           this.copService.notificarCambioP2P();
           this.messageService.add({
             severity: 'success',
             summary: updated.activaParaP2P ? 'Cuenta activada' : 'Cuenta desactivada',
-            detail: `${cuenta.name} ${updated.activaParaP2P ? 'incluida en' : 'excluida de'} P2P`,
+            detail: `${cuenta.name} ${updated.activaParaP2P ? 'incluida en' : 'excluida de'} P2P (${updated.activaParaP2P ? (this.filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal') : ''})`,
             life: 2500
           });
         },
@@ -196,25 +214,130 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
       });
   }
 
-  setCupoTipo(cuenta: AccountCop, tipo: CupoTipoP2P): void {
-    if (!cuenta.id) return;
-    this.copService.setCupoTipo(cuenta.id, tipo).subscribe({
-      next: updated => { cuenta.cupoTipoP2P = updated.cupoTipoP2P; }
-    });
-  }
-
-  /** Cupo efectivo segun tipo seleccionado */
+  /** Cupo efectivo segun el FILTRO de tipo activo (Cajero / Corresponsal / Todos). */
   cupoEfectivo(cuenta: AccountCop): number {
-    const tipo = cuenta.cupoTipoP2P ?? 'AMBOS';
-    const cajero = cuenta.cupoCajeroDisponibleHoy ?? 0;
-    const corresponsal = cuenta.cupoCorresponsalDisponibleHoy ?? 0;
-    if (tipo === 'CAJERO') return cajero;
-    if (tipo === 'CORRESPONSAL') return corresponsal;
-    return cajero + corresponsal;
+    return this.filtroTipo === 'CAJERO'
+      ? (cuenta.cupoCajeroDisponibleHoy ?? 0)
+      : (cuenta.cupoCorresponsalDisponibleHoy ?? 0);
   }
 
   cupoAgotado(cuenta: AccountCop): boolean {
     return this.cupoEfectivo(cuenta) <= 0;
+  }
+
+  // ── Saldo proyectado por ventas P2P en curso pre-asignadas ────────
+
+  /** Suma de pesos COP de las órdenes en curso pre-asignadas a esta cuenta. */
+  pesosEnCurso(cuenta: AccountCop): number {
+    if (!cuenta.id) return 0;
+    return this.activeOrders
+      .filter(o => o.preAsignadoCopId === cuenta.id)
+      .reduce((sum, o) => sum + (o.pesosCop ?? 0), 0);
+  }
+
+  /** ¿La cuenta tiene ventas en curso pre-asignadas? (para pintar el saldo en amarillo). */
+  tieneEnCurso(cuenta: AccountCop): boolean {
+    return this.pesosEnCurso(cuenta) > 0;
+  }
+
+  /** Saldo actual + pesos de las ventas en curso que se le pre-asignaron. */
+  saldoProyectado(cuenta: AccountCop): number {
+    return (cuenta.balance ?? 0) + this.pesosEnCurso(cuenta);
+  }
+
+  // ── Retiro (botón "Retirar" de la modal Cuentas COP en P2P) ───
+
+  solicitandoId: number | null = null;
+
+  /** Cupo máximo del día para el medio del FILTRO activo, según el banco de la cuenta. */
+  cupoDelMedio(cuenta: AccountCop): number {
+    const max = this.cupoMax[cuenta.bankType];
+    if (!max) return 0;
+    return this.filtroTipo === 'CAJERO' ? max.cajero : max.corresponsal;
+  }
+
+  /** Solo se habilita el retiro si el saldo cubre el cupo del medio. */
+  puedeSolicitarRetiro(cuenta: AccountCop): boolean {
+    return (cuenta.balance ?? 0) >= this.cupoDelMedio(cuenta);
+  }
+
+  /** Crea la solicitud de retiro de esa cuenta al instante (tras confirmar) y la quita de la lista. */
+  solicitarRetiro(cuenta: AccountCop): void {
+    if (!cuenta.id || !this.puedeSolicitarRetiro(cuenta)) return;
+    const monto = this.cupoDelMedio(cuenta);
+    const medioLabel = this.filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal';
+    this.confirmationService.confirm({
+      header: '¿Estás seguro?',
+      message: `¿Deseas solicitar el retiro de ${cuenta.name} por ${medioLabel} ($${monto.toLocaleString('es-CO')})?`,
+      acceptLabel: 'Sí, solicitar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.solicitandoId = cuenta.id!;
+        this.retiradorService.crearSolicitudGeneral({
+          detalles: [{
+            cuentaCopId: cuenta.id!,
+            tipoRetiro: this.filtroTipo,
+            montoCajero: this.filtroTipo === 'CAJERO' ? monto : null,
+            montoCorresponsal: this.filtroTipo === 'CORRESPONSAL' ? monto : null,
+          }]
+        })
+        .pipe(finalize(() => this.solicitandoId = null))
+        .subscribe({
+          next: () => {
+            // Al solicitar el retiro, la cuenta se deselecciona de P2P automáticamente.
+            cuenta.activaParaP2P = false;
+            this.copService.toggleActivaParaP2P(cuenta.id!).subscribe({
+              next: u => { cuenta.activaParaP2P = u.activaParaP2P; this.copService.notificarCambioP2P(); },
+              error: () => this.copService.notificarCambioP2P()
+            });
+            this.messageService.add({
+              severity: 'success', summary: 'Retiro solicitado',
+              detail: `${cuenta.name} — solicitud creada y cuenta deseleccionada de P2P.`, life: 3000
+            });
+          },
+          error: () => this.messageService.add({
+            severity: 'error', summary: 'Error', detail: 'No se pudo crear la solicitud de retiro.'
+          })
+        });
+      }
+    });
+  }
+
+  // ── Aviso de cupo lleno (saldo proyectado alcanzó el cupo del medio) ──
+
+  showCupoLlenoModal = false;
+  cupoLlenoCuenta: AccountCop | null = null;
+
+  /** El saldo proyectado (saldo + ventas en curso pre-asignadas) ya alcanzó el cupo del medio. */
+  cupoLleno(cuenta: AccountCop): boolean {
+    const cupo = this.cupoDelMedio(cuenta);
+    return cupo > 0 && this.saldoProyectado(cuenta) >= cupo;
+  }
+
+  abrirAvisoCupoLleno(cuenta: AccountCop): void {
+    this.cupoLlenoCuenta = cuenta;
+    this.showCupoLlenoModal = true;
+  }
+
+  /** Mantener la cuenta activa para seguir usándola en ese cupo. */
+  cupoLlenoSeguir(): void {
+    this.showCupoLlenoModal = false;
+  }
+
+  /** Quitar la cuenta de P2P (deseleccionar). */
+  cupoLlenoDeseleccionar(): void {
+    if (this.cupoLlenoCuenta) this.toggleP2P(this.cupoLlenoCuenta);
+    this.showCupoLlenoModal = false;
+  }
+
+  /** Cambiar por otra: libera esta cuenta y deja la lista para elegir otra. */
+  cupoLlenoCambiar(): void {
+    if (this.cupoLlenoCuenta) this.toggleP2P(this.cupoLlenoCuenta);
+    this.showCupoLlenoModal = false;
+    this.messageService.add({
+      severity: 'info', summary: 'Cuenta liberada',
+      detail: 'Selecciona otra cuenta COP para ese cupo.', life: 3500
+    });
   }
 
   bankIcon(bank: string): string {

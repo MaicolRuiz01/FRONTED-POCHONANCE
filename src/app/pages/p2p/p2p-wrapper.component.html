@@ -43,17 +43,39 @@
         <div class="cuenta-modal-texts">
           <span class="cuenta-modal-name">
             {{ c.name }}
-            <b class="cuenta-modal-saldo">{{ c.balance | currency:'COP':'$':'1.0-0' }}</b>
+            <b class="cuenta-modal-saldo"
+               [class.cuenta-modal-saldo--en-curso]="tieneEnCurso(c)"
+               [pTooltip]="tieneEnCurso(c)
+                 ? ('Saldo ' + (c.balance | currency:'COP':'$':'1.0-0') + ' + ' + (pesosEnCurso(c) | currency:'COP':'$':'1.0-0') + ' de ventas en curso')
+                 : ''"
+               tooltipPosition="top">
+              {{ (tieneEnCurso(c) ? saldoProyectado(c) : c.balance) | currency:'COP':'$':'1.0-0' }}
+            </b>
           </span>
           <span class="cuenta-modal-bank text-xs text-color-secondary">{{ c.bankType }}</span>
         </div>
-        <!-- Badge "Retirar": hay saldo para cajero+corresponsal y no se ha retirado hoy -->
-        <span *ngIf="puedeRetirar(c)" class="retirar-badge">
-          <i class="pi pi-wallet"></i> Retirar
-        </span>
+        <!-- Botón "Retirar": solicita el retiro del medio seleccionado (cajero/corresponsal) -->
+        <button *ngIf="c.activaParaP2P" pButton
+          label="Retirar"
+          icon="pi pi-wallet"
+          class="p-button-sm p-button-success retirar-btn"
+          [disabled]="!puedeSolicitarRetiro(c) || solicitandoId === c.id"
+          [loading]="solicitandoId === c.id"
+          (click)="solicitarRetiro(c)"
+          [pTooltip]="puedeSolicitarRetiro(c)
+            ? ('Solicitar retiro por ' + (filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal') + ' ($' + (cupoDelMedio(c) | number:'1.0-0') + ')')
+            : ('Saldo insuficiente: requiere $' + (cupoDelMedio(c) | number:'1.0-0'))"
+          tooltipPosition="left">
+        </button>
         <!-- Warning cupo agotado -->
         <span *ngIf="c.activaParaP2P && cupoAgotado(c)" class="cupo-warn-badge">
           <i class="pi pi-exclamation-triangle"></i> Cupo agotado
+        </span>
+        <!-- Aviso cupo lleno: el saldo proyectado alcanzó el cupo del medio -->
+        <span *ngIf="c.activaParaP2P && cupoLleno(c)" class="cupo-lleno-badge"
+          (click)="abrirAvisoCupoLleno(c)"
+          pTooltip="El saldo proyectado alcanzó el cupo — opciones" tooltipPosition="top">
+          <i class="pi pi-check-circle"></i> Cupo lleno
         </span>
       </div>
 
@@ -69,23 +91,15 @@
         </button>
       </div>
 
-      <!-- Cupo selector (solo si activa) -->
+      <!-- Valores de cupo (solo si activa) — el tipo lo decide el filtro de arriba -->
       <div *ngIf="c.activaParaP2P" class="cuenta-modal-cupo">
-        <div class="cupo-tipo-btns-modal">
-          <button *ngFor="let op of cupoTipoOpciones"
-            class="cupo-btn-modal"
-            [class.cupo-btn-modal--active]="(c.cupoTipoP2P ?? 'AMBOS') === op.value"
-            (click)="setCupoTipo(c, op.value)">
-            {{ op.label }}
-          </button>
-        </div>
         <div class="cupo-valores-modal">
-          <span [class.cupo-dim]="(c.cupoTipoP2P ?? 'AMBOS') === 'CORRESPONSAL'">
+          <span [class.cupo-dim]="filtroTipo === 'CORRESPONSAL'">
             Cajero <b [class.text-red-500]="(c.cupoCajeroDisponibleHoy ?? 0) <= 0">
               ${{ (c.cupoCajeroDisponibleHoy ?? 0) | number:'1.0-0' }}
             </b>
           </span>
-          <span [class.cupo-dim]="(c.cupoTipoP2P ?? 'AMBOS') === 'CAJERO'">
+          <span [class.cupo-dim]="filtroTipo === 'CAJERO'">
             Corresponsal <b [class.text-red-500]="(c.cupoCorresponsalDisponibleHoy ?? 0) <= 0">
               ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}
             </b>
@@ -103,6 +117,30 @@
     <div *ngIf="cuentasFiltradas.length === 0" class="text-center text-color-secondary py-3 text-sm">
       No hay cuentas con cupo de este tipo.
     </div>
+  </div>
+</p-dialog>
+
+<p-confirmDialog
+  [style]="{ width: '380px' }"
+  acceptButtonStyleClass="p-button-success"
+  rejectButtonStyleClass="p-button-text">
+</p-confirmDialog>
+
+<!-- Aviso: la cuenta llenó su cupo del medio -->
+<p-dialog header="Cupo lleno" [(visible)]="showCupoLlenoModal" [modal]="true"
+  [style]="{ width: '420px' }" [draggable]="false" [resizable]="false">
+  <p *ngIf="cupoLlenoCuenta" class="mb-3">
+    La cuenta <b>{{ cupoLlenoCuenta.name }}</b> ya alcanzó el cupo de
+    <b>{{ filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal' }}</b> sumando las ventas en curso.
+    ¿Qué deseas hacer?
+  </p>
+  <div class="flex flex-column gap-2">
+    <button pButton label="Seguir activa para ese cupo" icon="pi pi-check"
+      class="p-button-success" (click)="cupoLlenoSeguir()"></button>
+    <button pButton label="Cambiar por otra cuenta" icon="pi pi-sync"
+      class="p-button-outlined" (click)="cupoLlenoCambiar()"></button>
+    <button pButton label="Deseleccionar cuenta" icon="pi pi-times"
+      class="p-button-text p-button-danger" (click)="cupoLlenoDeseleccionar()"></button>
   </div>
 </p-dialog>
 
@@ -134,7 +172,7 @@
             icon="pi pi-wallet"
             label="Cuentas P2P"
             class="p-button-outlined p-button-sm"
-            (click)="showCuentasModal = true"
+            (click)="openCuentasModal()"
             pTooltip="Gestionar cuentas COP activas en P2P"
             tooltipPosition="left">
             <span class="ml-1 sync-btn-label">
@@ -157,14 +195,6 @@
 
     <!-- Tabs -->
     <p-tabView styleClass="p2p-tabs">
-
-      <p-tabPanel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-bolt mr-2 text-yellow-500"></i>
-          <span>Auto-Asignacion</span>
-        </ng-template>
-        <app-reglas-p2p></app-reglas-p2p>
-      </p-tabPanel>
 
       <p-tabPanel>
         <ng-template pTemplate="header">

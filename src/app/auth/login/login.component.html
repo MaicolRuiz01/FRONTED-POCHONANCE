@@ -11,6 +11,14 @@
     <h2 class="login-title">Iniciar sesión</h2>
     <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
 
+    <!-- Aviso de sesión expirada -->
+    <p-message
+      *ngIf="notice"
+      severity="warn"
+      [text]="notice"
+      styleClass="w-full mb-3"
+    ></p-message>
+
     <!-- Error -->
     <div *ngIf="error" class="login-error">
       <i class="pi pi-exclamation-triangle"></i>

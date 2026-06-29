@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -26,14 +26,26 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   username = '';
   password = '';
   loading  = false;
   error    = '';
+  notice   = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    // Si llegó aquí porque su sesión expiró, avísale en vez de dejarlo perdido.
+    if (this.route.snapshot.queryParamMap.get('expired') === 'true') {
+      this.notice = 'Tu sesión expiró por seguridad. Por favor inicia sesión de nuevo.';
+    }
+  }
 
   login(): void {
     if (!this.username || !this.password) {

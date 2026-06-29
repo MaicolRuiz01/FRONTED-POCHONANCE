@@ -17,7 +17,9 @@
 
       <!-- Iconos cajero / corresponsal -->
       <div class="cop-mini-icons">
+        <!-- Solo el ícono del medio asignado a la cuenta (cajero o corresponsal) -->
         <span class="cop-mini-icon"
+              *ngIf="c.cupoTipoP2P !== 'CORRESPONSAL'"
               [class.cop-icon--ok]="(c.cupoCajeroDisponibleHoy ?? 1) > 0"
               [class.cop-icon--agotado]="(c.cupoCajeroDisponibleHoy ?? 1) <= 0"
               pTooltip="Cajero: ${{ (c.cupoCajeroDisponibleHoy ?? 0) | number:'1.0-0' }}"
@@ -25,6 +27,7 @@
           <i class="pi pi-credit-card"></i>
         </span>
         <span class="cop-mini-icon"
+              *ngIf="c.cupoTipoP2P !== 'CAJERO'"
               [class.cop-icon--ok]="(c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
               [class.cop-icon--agotado]="(c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
               pTooltip="Corresponsal: ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}"

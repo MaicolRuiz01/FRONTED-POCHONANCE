@@ -93,8 +93,11 @@
 }
 
 /* ── Dropdown COP ── */
-.vc-dropdown-cell { min-width: 180px; }
+.vc-dropdown-cell { min-width: 210px; }
 .vc-dropdown { width: 100%; }
+.vc-cop-assign { display: flex; align-items: center; gap: 6px; }
+.vc-cop-assign .vc-dropdown { flex: 1; }
+.vc-repeat-btn { flex: 0 0 auto; }
 
 /* ── Aviso sin cuentas marcadas ── */
 .vc-warning {

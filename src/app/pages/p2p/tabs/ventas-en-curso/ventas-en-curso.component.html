@@ -214,17 +214,28 @@
 
         <!-- Dropdown cuenta COP — auto-guarda al elegir -->
         <td class="vc-dropdown-cell">
-          <p-dropdown
-            [options]="copOptions()"
-            [ngModel]="seleccionPendiente[orden.orderNumber]"
-            (ngModelChange)="dropdownChanged(orden, $event)"
-            placeholder="Sin asignar"
-            [showClear]="true"
-            appendTo="body"
-            styleClass="vc-dropdown"
-            optionLabel="label"
-            optionValue="value">
-          </p-dropdown>
+          <div class="vc-cop-assign">
+            <p-dropdown
+              [options]="copOptions()"
+              [ngModel]="seleccionPendiente[orden.orderNumber]"
+              (ngModelChange)="dropdownChanged(orden, $event)"
+              placeholder="Sin asignar"
+              [showClear]="true"
+              appendTo="body"
+              styleClass="vc-dropdown"
+              optionLabel="label"
+              optionValue="value">
+            </p-dropdown>
+            <!-- Botón "=": repite la última cuenta COP asignada -->
+            <button pButton type="button"
+              icon="pi pi-equals"
+              class="p-button-outlined p-button-sm vc-repeat-btn"
+              [disabled]="ultimaCopId == null"
+              (click)="asignarUltima(orden)"
+              [pTooltip]="ultimaCopId != null ? ('Asignar la última usada: ' + ultimaCopNombre) : 'Aún no has asignado ninguna cuenta'"
+              tooltipPosition="left">
+            </button>
+          </div>
         </td>
 
       </tr>

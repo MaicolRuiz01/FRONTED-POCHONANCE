@@ -39,6 +39,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Mapa de orderNumber → copId seleccionado en el dropdown (antes de guardar) */
   seleccionPendiente: Record<string, number | null> = {};
 
+  /** Última cuenta COP asignada — para el botón "=" (repetir la misma asignación). */
+  ultimaCopId: number | null = null;
+  ultimaCopNombre = '';
+
   /** Contador regresivo para el próximo auto-refresh */
   countdown = 15;
   private readonly REFRESH_INTERVAL = 15;
@@ -256,10 +260,19 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     // Spread para nuevo objeto → Angular detecta cambio inmediatamente en [ngModel]
     this.seleccionPendiente = { ...this.seleccionPendiente, [orden.orderNumber]: copId };
     if (copId) {
+      // Recordar la última cuenta asignada para el botón "=".
+      this.ultimaCopId = copId;
+      this.ultimaCopNombre = this.cuentasCop.find(c => c.id === copId)?.name ?? '';
       this.guardarPreAsignacion(orden);
     } else if (orden.preAsignadoCopId) {
       this.quitarPreAsignacion(orden);
     }
+  }
+
+  /** Botón "=": asigna a esta orden la última cuenta COP usada, sin volver a buscar en el dropdown. */
+  asignarUltima(orden: ActiveP2POrder): void {
+    if (this.ultimaCopId == null) return;
+    this.dropdownChanged(orden, this.ultimaCopId);
   }
 
   /** Extrae solo la hora de un createTime con formato "YYYY-MM-DD HH:mm:ss" */

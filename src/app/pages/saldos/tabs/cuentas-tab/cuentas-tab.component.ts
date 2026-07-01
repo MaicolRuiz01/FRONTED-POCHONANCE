@@ -146,6 +146,21 @@ export class CuentasTabComponent implements OnInit {
   }
 
   loadCuentas() {
+    // 1) Mostrar al instante lo último cargado (evita la pantalla vacía al re-entrar).
+    const cache = this.accountService.getCached();
+    if (cache.length && this.cuentas.length === 0) {
+      this.cuentas = cache.map(c => ({ ...c }));
+    }
+
+    // 2) Refrescar SIEMPRE el saldo, rápido (dato crítico) con la consulta liviana.
+    this.accountService.getSaldos().subscribe(saldos => {
+      const saldoPorId = new Map(saldos.map(s => [s.id, s.balance]));
+      this.cuentas.forEach(c => {
+        if (c.id != null && saldoPorId.has(c.id)) c.balance = saldoPorId.get(c.id)!;
+      });
+    });
+
+    // 3) Refresco completo en segundo plano (reemplaza la lista y carga los detalles del día).
     this.accountService.getAll().subscribe({
       next: (cuentas: AccountCop[]) => {
         this.cuentas = cuentas;

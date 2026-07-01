@@ -40,6 +40,9 @@ export class VentasAsignadasComponent implements OnInit {
   selectedSale: SaleP2PDto | null = null;
   selectedCopAccount: AccountCop | null = null;
 
+  /** Filtro por cuenta COP (nombre) para la tabla de asignadas. null = todas. */
+  filtroCop: string | null = null;
+
   constructor(
     private saleService: SaleP2PService,
     private accountCopService: AccountCopService,
@@ -90,6 +93,31 @@ export class VentasAsignadasComponent implements OnInit {
   getCuentasAsignadas(sale: SaleP2PDto): string {
     if (!sale.accountCopsDetails?.length) return '—';
     return sale.accountCopsDetails.map(d => d.nameAccount).join(', ');
+  }
+
+  /** Nombres de cuenta COP presentes en las ventas cargadas (para el filtro). */
+  get cuentasEnLista(): string[] {
+    const set = new Set<string>();
+    for (const v of this.ventas) {
+      (v.accountCopsDetails ?? []).forEach(d => { if (d.nameAccount) set.add(d.nameAccount); });
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }
+
+  /** Ventas filtradas por la cuenta COP seleccionada (o todas). */
+  get ventasFiltradas(): SaleP2PDto[] {
+    if (!this.filtroCop) return this.ventas;
+    return this.ventas.filter(v =>
+      (v.accountCopsDetails ?? []).some(d => d.nameAccount === this.filtroCop));
+  }
+
+  get totalUsdFiltrado(): string {
+    return this.ventasFiltradas.reduce((s, v) => s + (v.dollarsUs ?? 0), 0).toFixed(2);
+  }
+
+  get totalCopFiltrado(): string {
+    const fmt = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+    return fmt.format(this.ventasFiltradas.reduce((s, v) => s + (v.pesosCop ?? 0), 0));
   }
 
   private toIsoDate(d: Date): string {

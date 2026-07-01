@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { SaleP2PDto } from './sale-p2p.service';
 
@@ -63,8 +63,19 @@ export class AccountCopService {
 
   constructor(private http: HttpClient) { }
 
+  /** Última lista cargada — para mostrar al instante al re-entrar a la vista. */
+  private cacheCuentas: AccountCop[] = [];
+  getCached(): AccountCop[] { return this.cacheCuentas; }
+
   getAll(): Observable<AccountCop[]> {
-    return this.http.get<AccountCop[]>(this.apiUrl);
+    return this.http.get<AccountCop[]>(this.apiUrl).pipe(
+      tap(list => this.cacheCuentas = list ?? [])
+    );
+  }
+
+  /** Consulta liviana: solo id + saldo de cada cuenta. Rápida, para refrescar el saldo siempre. */
+  getSaldos(): Observable<{ id: number; balance: number }[]> {
+    return this.http.get<{ id: number; balance: number }[]>(`${this.apiUrl}/saldos`);
   }
 
   create(account: AccountCopCreate): Observable<AccountCop> {

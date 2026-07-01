@@ -31,6 +31,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   ordenes: ActiveP2POrder[] = [];
   cuentasCop: AccountCop[]  = [];
   loading = false;
+  /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
+  refreshing = false;
 
   anuncios: AnuncioDto[] = [];
   loadingAnuncios = false;
@@ -107,9 +109,13 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   // ── Carga de datos ────────────────────────────────────────────
 
   loadOrdenes(): void {
-    this.loading = true;
+    // Solo mostramos el spinner grande en la PRIMERA carga (tabla vacía).
+    // En los refrescos de 15s hacemos un refresco silencioso: la tabla vieja
+    // se mantiene visible hasta que llegan los datos nuevos (sin parpadeo en blanco).
+    if (this.ordenes.length === 0) this.loading = true;
+    this.refreshing = true;
     this.syncService.getActiveOrders()
-      .pipe(finalize(() => this.loading = false))
+      .pipe(finalize(() => { this.loading = false; this.refreshing = false; }))
       .subscribe({
         next: data => {
           this.ordenes = data;

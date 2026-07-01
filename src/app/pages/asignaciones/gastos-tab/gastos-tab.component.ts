@@ -44,6 +44,14 @@ export class GastosComponent implements OnInit {
   cuentaSeleccionadaId?: number;
   cajaSeleccionadaId?: number;
 
+  // Filtro por banco para el select de Cuenta COP
+  bancosSel = new Set<string>();
+  bancosDisponibles = [
+    { label: 'Nequi', value: 'NEQUI' },
+    { label: 'Daviplata', value: 'DAVIPLATA' },
+    { label: 'Bancolombia', value: 'BANCOLOMBIA' },
+  ];
+
   columns: TableColumn[] = [
     { campo: 'fecha', columna: 'Fecha' },
     { campo: 'descripcion', columna: 'Descripción' },
@@ -57,7 +65,28 @@ export class GastosComponent implements OnInit {
     private accountService: AccountCopService
   ) { }
 
+  toggleBanco(b: string): void {
+    if (this.bancosSel.has(b)) this.bancosSel.delete(b);
+    else this.bancosSel.add(b);
+    // Si la cuenta ya elegida no está en el filtro, la limpiamos.
+    if (this.cuentaSeleccionadaId != null &&
+        !this.cuentasFiltradas.some(c => c.id === this.cuentaSeleccionadaId)) {
+      this.cuentaSeleccionadaId = undefined;
+    }
+  }
+
+  bancoActivo(b: string): boolean { return this.bancosSel.has(b); }
+
+  /** Cuentas COP filtradas por el/los banco(s) seleccionado(s). Vacío = todas. */
+  get cuentasFiltradas(): AccountCop[] {
+    if (this.bancosSel.size === 0) return this.cuentas;
+    return this.cuentas.filter(c => this.bancosSel.has(c.bankType));
+  }
+
   ngOnInit(): void {
+    // Mostrar al instante lo último cargado (evita esperar el listado completo).
+    const cache = this.accountService.getCached();
+    if (cache.length) this.cuentas = cache;
     this.accountService.getAll().subscribe(data => {
       this.cuentas = data;
       this.refreshGastosView();
@@ -84,8 +113,20 @@ export class GastosComponent implements OnInit {
 
     this.gastosView = this.gastos.map(g => ({
       ...g,
+      fecha: this.formatFecha((g as any).fecha),
       origen: this.buildOrigen(g)
-    }));
+    })) as (Gasto & { origen: string })[];
+  }
+
+  /** Fecha legible: "30/06/2026 11:45" en vez del ISO con microsegundos. */
+  private formatFecha(iso: any): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return new Intl.DateTimeFormat('es-CO', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).format(d);
   }
 
 
@@ -111,6 +152,9 @@ export class GastosComponent implements OnInit {
     this.gastoService.crear(this.nuevoGasto).subscribe(() => {
       this.productDialog = false;
       this.cargarGastos();
+      // El gasto restó el saldo → refrescar cuentas y avisar a otras vistas.
+      this.accountService.getAll().subscribe(data => this.cuentas = data);
+      this.accountService.notificarCambioP2P();
     });
   }
 

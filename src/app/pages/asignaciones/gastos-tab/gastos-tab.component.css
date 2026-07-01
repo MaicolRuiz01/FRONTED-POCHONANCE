@@ -5,6 +5,86 @@
   width: 100%;
 }
 
+/* Filtro por banco en el select de Cuenta COP */
+.gasto-banco-bar {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 8px;
+  flex-wrap: wrap;
+}
+.gasto-banco-chip {
+  border: 1px solid var(--surface-300, #cbd5e1);
+  background: var(--surface-0, #fff);
+  color: var(--text-color-secondary, #475569);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.gasto-banco-chip:hover { border-color: var(--primary-color, #6366f1); }
+.gasto-banco-chip.active {
+  background: var(--primary-color, #6366f1);
+  border-color: var(--primary-color, #6366f1);
+  color: #fff;
+}
+
+/* ── Vista de gastos ── */
+.gastos-wrapper { padding: 4px 2px; }
+.gastos-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-200, #e2e8f0);
+  border-radius: 14px; padding: 14px 18px; margin-bottom: 14px;
+}
+.gastos-header-title { display: flex; align-items: center; gap: 12px; }
+.gastos-header-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(99,102,241,.12); color: var(--primary-color, #6366f1);
+  font-size: 1.2rem;
+}
+.gastos-header-title h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color, #1e293b); }
+.gastos-subtitle { font-size: .8rem; color: var(--text-color-secondary, #64748b); }
+.gastos-new-btn { border-radius: 10px !important; font-weight: 600; }
+.gastos-card {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-200, #e2e8f0);
+  border-radius: 14px; padding: 10px 12px;
+}
+
+/* ── Modal nuevo gasto ── */
+.gasto-form { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; }
+.gasto-field { display: flex; flex-direction: column; gap: 6px; }
+.gasto-field > label { font-size: .82rem; font-weight: 600; color: var(--text-color-secondary, #475569); }
+.w-full { width: 100%; }
+
+/* Selector segmentado de forma de pago */
+.gasto-segment {
+  display: flex; gap: 6px;
+  background: var(--surface-100, #f1f5f9);
+  padding: 4px; border-radius: 12px;
+}
+.gasto-seg-btn {
+  flex: 1; border: none; background: transparent; cursor: pointer;
+  padding: 8px 10px; border-radius: 9px; font-size: .85rem; font-weight: 600;
+  color: var(--text-color-secondary, #64748b);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all .15s;
+}
+.gasto-seg-btn.active {
+  background: var(--surface-card, #fff);
+  color: var(--primary-color, #6366f1);
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+}
+
+/* Opción del dropdown */
+.gasto-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.gasto-opt-name { font-weight: 500; }
+.gasto-opt-saldo { color: var(--text-color-secondary, #64748b); font-weight: 600; }
+
 .header-title {
   flex-grow: 1;
   text-align: center;

@@ -1,52 +1,80 @@
-<div class="ng-container">
-  <h1>Gastos</h1>
-</div>
-<div class="button-container">
- <p-button icon="pi pi-plus" styleClass="p-button-success p-button-rounded" title="Nuevo Gasto" (click)="openNew()"></p-button>
-</div>
+<div class="gastos-wrapper">
 
-<!--componente table reutilizable--><br>
-
-<app-mi-table [data]="gastosView" [columns]="columns">
-    
-  </app-mi-table>
-
-<p-dialog [(visible)]="productDialog" header="Nuevo Gasto" [modal]="true" [style]="{ width: '400px' }">
-  <div class="p-fluid p-formgrid p-grid">
-
-    <!-- Tipo de pago -->
-    <div class="p-field p-col-12">
-      <label>Forma de pago</label>
-      <p-dropdown [(ngModel)]="tipoPago" [options]="[
-          { label: 'Cuenta COP', value: 'cuenta' },
-          { label: 'Caja (efectivo)', value: 'caja' }
-        ]"
-        placeholder="Seleccione tipo de pago">
-      </p-dropdown>
+  <!-- Header -->
+  <div class="gastos-header">
+    <div class="gastos-header-title">
+      <span class="gastos-header-icon"><i class="pi pi-wallet"></i></span>
+      <div>
+        <h2>Gastos</h2>
+        <span class="gastos-subtitle">Registra y consulta los gastos de cuentas y cajas</span>
+      </div>
     </div>
-<br>
+    <button pButton icon="pi pi-plus" label="Nuevo gasto"
+      class="p-button-sm gastos-new-btn" (click)="openNew()"></button>
+  </div>
+
+  <!-- Tabla en tarjeta -->
+  <div class="gastos-card">
+    <app-mi-table [data]="gastosView" [columns]="columns"></app-mi-table>
+  </div>
+
+</div>
+
+<!-- Modal: Nuevo gasto -->
+<p-dialog [(visible)]="productDialog" header="Nuevo gasto" [modal]="true"
+  [style]="{ width: '440px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false"
+  styleClass="gasto-dialog">
+
+  <div class="gasto-form">
+
+    <!-- Forma de pago (segmentado) -->
+    <div class="gasto-field">
+      <label>Forma de pago</label>
+      <div class="gasto-segment">
+        <button type="button" class="gasto-seg-btn" [class.active]="tipoPago === 'cuenta'"
+          (click)="tipoPago = 'cuenta'">
+          <i class="pi pi-building"></i> Cuenta COP
+        </button>
+        <button type="button" class="gasto-seg-btn" [class.active]="tipoPago === 'caja'"
+          (click)="tipoPago = 'caja'">
+          <i class="pi pi-money-bill"></i> Caja (efectivo)
+        </button>
+      </div>
+    </div>
+
     <!-- Selección de cuenta COP -->
-    <div *ngIf="tipoPago === 'cuenta'" class="p-field p-col-12">
+    <div *ngIf="tipoPago === 'cuenta'" class="gasto-field">
       <label>Cuenta COP</label>
+
+      <!-- Filtro por tipo de banco -->
+      <div class="gasto-banco-bar">
+        <button type="button" *ngFor="let b of bancosDisponibles"
+          class="gasto-banco-chip" [class.active]="bancoActivo(b.value)"
+          (click)="toggleBanco(b.value)">
+          {{ b.label }}
+        </button>
+      </div>
+
       <p-dropdown
-        [options]="cuentas"
+        [options]="cuentasFiltradas"
         optionLabel="name"
         optionValue="id"
         [(ngModel)]="cuentaSeleccionadaId"
         [filter]="true"
         placeholder="Seleccione una cuenta"
+        styleClass="w-full"
         [appendTo]="'body'">
         <ng-template let-cuenta pTemplate="item">
-          <div class="p-d-flex p-jc-between">
-            <span>{{ cuenta.name }}</span>
-            <small>{{ cuenta.balance | currency:'USD' }}</small>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%">
+            <span style="font-weight:500">{{ cuenta.name }}</span>
+            <small style="color:#64748b;font-weight:600">{{ cuenta.balance | currency:'USD' }}</small>
           </div>
         </ng-template>
       </p-dropdown>
     </div>
-<br>
+
     <!-- Selección de caja -->
-    <div *ngIf="tipoPago === 'caja'" class="p-field p-col-12">
+    <div *ngIf="tipoPago === 'caja'" class="gasto-field">
       <label>Caja</label>
       <p-dropdown
         [options]="cajas"
@@ -55,35 +83,39 @@
         [(ngModel)]="cajaSeleccionadaId"
         [filter]="true"
         placeholder="Seleccione una caja"
+        styleClass="w-full"
         [appendTo]="'body'">
         <ng-template let-caja pTemplate="item">
-          <div class="p-d-flex p-jc-between">
-            <span>{{ caja.name }}</span>
-            <small>{{ caja.saldo | currency:'USD' }}</small>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%">
+            <span style="font-weight:500">{{ caja.name }}</span>
+            <small style="color:#64748b;font-weight:600">{{ caja.saldo | currency:'USD' }}</small>
           </div>
         </ng-template>
       </p-dropdown>
     </div>
 
-    <!-- Campos comunes -->
-    <div class="p-field p-col-12">
+    <!-- Descripción -->
+    <div class="gasto-field">
       <label>Descripción</label>
-      <input pInputText [(ngModel)]="nuevoGasto.descripcion" />
+      <input pInputText class="w-full" [(ngModel)]="nuevoGasto.descripcion"
+        placeholder="¿En qué fue el gasto?" />
     </div>
-<br>
-    <div class="p-field p-col-12">
+
+    <!-- Monto -->
+    <div class="gasto-field">
       <label>Monto</label>
-      <input type="number" pInputText [(ngModel)]="nuevoGasto.monto" inputmode="numeric" />
+      <input type="number" pInputText class="w-full" [(ngModel)]="nuevoGasto.monto"
+        inputmode="numeric" placeholder="0" />
     </div>
-    <br>
-    <div class="p-col-12">
-      <button
-        pButton
-        label="Guardar"
-        class="p-button-success p-mt-2"
-        (click)="crearGasto()"
-        [disabled]="!nuevoGasto.descripcion || !nuevoGasto.monto">
-      </button>
-    </div>
+
   </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="productDialog = false"></button>
+    <button pButton label="Guardar gasto" icon="pi pi-check" class="p-button-success"
+      (click)="crearGasto()"
+      [disabled]="!nuevoGasto.descripcion || !nuevoGasto.monto">
+    </button>
+  </ng-template>
+
 </p-dialog>

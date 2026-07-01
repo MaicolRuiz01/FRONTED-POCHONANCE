@@ -147,7 +147,8 @@
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>
     <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
-            pTooltip="Actualizar ahora" (click)="loadOrdenes(); resetCountdown()" [disabled]="loading">
+            pTooltip="Actualizar ahora" (click)="loadOrdenes(); resetCountdown()"
+            [disabled]="refreshing" [loading]="refreshing">
     </button>
   </div>
 
@@ -172,6 +173,7 @@
   <!-- Tabla órdenes — usa [loading] nativo para NO destruir el componente en cada refresh -->
   <p-table *ngIf="ordenes.length > 0 || loading"
            [value]="ordenes"
+           dataKey="orderNumber"
            [loading]="loading"
            [rowHover]="true"
            responsiveLayout="scroll"

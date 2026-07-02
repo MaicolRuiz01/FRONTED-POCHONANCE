@@ -35,8 +35,8 @@
   <ng-container *ngIf="selectedSale">
     <p><strong>ID Withdrawal:</strong> {{ selectedSale.idWithdrawals }}</p>
     <p><strong>Cuenta:</strong> {{ selectedSale.nameAccount }}</p>
-    <p><strong>Dólares:</strong> {{ selectedSale.dollars }}</p>
-    <p><strong>Pesos:</strong> {{ selectedSale.pesos }}</p>
+    <p><strong>Dólares:</strong> {{ selectedSale.dollars | number:'1.2-2' }}</p>
+    <p><strong>Pesos:</strong> {{ selectedSale.pesos | number:'1.2-2' }}</p>
     <p><strong>Tasa:</strong> {{ selectedSale.tasa }}</p>
     <p><strong>Cliente:</strong> {{ getClienteName(selectedSale.clienteId) }}</p>
     <p><strong>Cuentas asignadas:</strong></p>

@@ -309,16 +309,28 @@ export class SaldosComponent implements OnInit {
   }
   // Mantengo tu método original de creación (lo usa guardarCuenta cuando no está en modo edición)
   crearCuentaBinance() {
-    if (!this.newAccount.name || !this.newAccount.referenceAccount || !this.newAccount.tipo) {
+    if (!this.newAccount.name || !this.newAccount.address || !this.newAccount.tipo) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Faltan datos',
-        detail: 'Completa todos los campos'
+        detail: 'Completa nombre, wallet y tipo de cuenta'
       });
       return;
     }
 
-    if (this.newAccount.tipo === 'TRUST') {
+    // Solo Binance necesita Id de cuenta, API Key y API Secret.
+    if (this.newAccount.tipo === 'BINANCE' &&
+        (!this.newAccount.referenceAccount || !this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Faltan datos',
+        detail: 'Para cuentas Binance completa Id de cuenta, API Key y API Secret'
+      });
+      return;
+    }
+
+    // Los tipos que no son Binance no llevan credenciales.
+    if (this.newAccount.tipo !== 'BINANCE') {
       this.newAccount.apiKey = null!;
       this.newAccount.apiSecret = null!;
     }
@@ -348,16 +360,28 @@ export class SaldosComponent implements OnInit {
   // NUEVO: método único para guardar (crea o actualiza según editMode)
   guardarCuenta() {
     // Validaciones comunes
-    if (!this.newAccount.name || !this.newAccount.referenceAccount || !this.newAccount.tipo) {
+    if (!this.newAccount.name || !this.newAccount.address || !this.newAccount.tipo) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Faltan datos',
-        detail: 'Completa todos los campos obligatorios'
+        detail: 'Completa nombre, wallet y tipo de cuenta'
       });
       return;
     }
 
-    if (this.newAccount.tipo === 'TRUST') {
+    // Solo Binance necesita Id de cuenta, API Key y API Secret.
+    if (this.newAccount.tipo === 'BINANCE' &&
+        (!this.newAccount.referenceAccount || !this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Faltan datos',
+        detail: 'Para cuentas Binance completa Id de cuenta, API Key y API Secret'
+      });
+      return;
+    }
+
+    // Los tipos que no son Binance no llevan credenciales.
+    if (this.newAccount.tipo !== 'BINANCE') {
       this.newAccount.apiKey = null!;
       this.newAccount.apiSecret = null!;
     }
@@ -378,11 +402,11 @@ export class SaldosComponent implements OnInit {
           this.loadAccounts();
           this.resetForm();
         },
-        error: () => {
+        error: (err) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'No se pudo actualizar la cuenta'
+            detail: err?.error?.message ?? 'No se pudo actualizar la cuenta'
           });
         }
       });

@@ -204,14 +204,18 @@ export class CuentasTabComponent implements OnInit {
     }
     this.submittingCreate = true;
     this.accountService.create(this.newAccount).subscribe({
-      next: account => {
-        this.cuentas.push(account);
+      next: () => {
         this.displayDialog = false;
         this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
         this.submittingCreate = false;
+        // Refresca lista + caché desde el servidor (así la cuenta nueva aparece seguro).
+        this.loadCuentas();
+        this.accountService.notificarCambioP2P();
       },
-      error: () => {
-        this.notificationService.error('Error al crear la cuenta');
+      error: (err) => {
+        // El backend manda el motivo real en err.error.message (ej. número duplicado).
+        const msg = err?.error?.message ?? 'Error al crear la cuenta';
+        this.notificationService.error(msg);
         this.submittingCreate = false;
       }
     });

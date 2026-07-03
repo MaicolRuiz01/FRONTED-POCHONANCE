@@ -25,6 +25,8 @@ export interface SellDollar {
   nombresCuentasAsignadas?: string[];
   tipoCuenta?: string;
   cryptoSymbol?: string;
+  // Monto real vendido (misma escala que dollars). Opcional: solo al asignar.
+  montoVerdadero?: number;
 }
 
 

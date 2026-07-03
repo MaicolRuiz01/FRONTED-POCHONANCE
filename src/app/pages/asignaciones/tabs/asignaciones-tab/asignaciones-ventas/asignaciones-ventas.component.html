@@ -150,6 +150,19 @@
       </div>
       <br>
 
+      <div class="p-field p-col-12">
+        <label style="display:flex; align-items:center; gap:.5rem;">
+          <input type="checkbox" [(ngModel)]="useMontoVerdadero" />
+          <strong>Usar monto verdadero</strong>
+        </label>
+        <small style="display:block; color:#6c757d;">
+          Corrige el monto cuando por comisiones de red no llega exacto (ej: 29.998 → 30).
+        </small>
+        <input *ngIf="useMontoVerdadero" type="number" pInputText [(ngModel)]="montoVerdadero"
+          placeholder="Monto real vendido" class="w-full" style="margin-top:.5rem;" inputmode="decimal" />
+      </div>
+      <br>
+
       <!-- Si es cliente especial -->
       <ng-container *ngIf="isSpecialClient">
         <div class="p-field p-col-12">

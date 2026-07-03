@@ -70,6 +70,10 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   displayModal: boolean = false;
   purchaseRate: number | null = null;
 
+  // Monto verdadero (opcional): corrige el monto por comisiones de red al asignar.
+  useMontoVerdadero: boolean = false;
+  montoVerdadero: number | null = null;
+
   isRateInvalid: boolean = false;
   suppliers: Supplier[] = [];
   selectedSupplierId: number | null = null;
@@ -158,6 +162,16 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
     this.isRateInvalid = false;
     this.displayModal = true;
     this.selectedSupplierId = null;
+    this.useMontoVerdadero = false;
+    this.montoVerdadero = deposit.amount;
+  }
+
+  /** Monto que se usará para pesos: el verdadero si está habilitado y es válido, si no el importado. */
+  get montoEfectivo(): number {
+    if (this.useMontoVerdadero && this.montoVerdadero && this.montoVerdadero > 0) {
+      return this.montoVerdadero;
+    }
+    return this.selectedDeposit?.amount ?? 0;
   }
 
   closeModal(): void {
@@ -169,11 +183,20 @@ export class AsignacionesComprasComponent implements OnInit, AfterViewInit {
   saveAssignment(): void {
     if (!this.selectedDeposit || !this.purchaseRate) return;
 
-    const pesos = this.selectedDeposit.amount * this.purchaseRate;
+    if (this.useMontoVerdadero && (!this.montoVerdadero || this.montoVerdadero <= 0)) {
+      this.notificationService.warn('Ingresa un monto verdadero válido');
+      return;
+    }
+
+    const pesos = this.montoEfectivo * this.purchaseRate;
     const buyData: Partial<BuyDollarsDto> = {
       tasa: this.purchaseRate,
       pesos
     };
+
+    if (this.useMontoVerdadero && this.montoVerdadero && this.montoVerdadero > 0) {
+      buyData.montoVerdadero = this.montoVerdadero;
+    }
 
     if (this.assignType === 'proveedor' && this.selectedSupplierId) {
       buyData.supplierId = this.selectedSupplierId;

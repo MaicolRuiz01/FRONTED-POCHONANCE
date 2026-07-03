@@ -17,6 +17,8 @@ export interface BuyDollarsDto {
   idDeposit: string;
   pesos: number;
   cryptoSymbol?: string;
+  // Monto real comprado (misma escala que amount). Opcional: solo al asignar.
+  montoVerdadero?: number;
 }
 
 @Injectable({

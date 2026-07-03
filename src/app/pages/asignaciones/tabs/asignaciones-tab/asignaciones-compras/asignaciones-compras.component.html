@@ -46,6 +46,18 @@
       </div>
 
       <div class="p-field" style="margin-bottom: 1rem;">
+        <label style="display:flex; align-items:center; gap:.5rem;">
+          <input type="checkbox" [(ngModel)]="useMontoVerdadero" />
+          <strong>Usar monto verdadero</strong>
+        </label>
+        <small style="display:block; color:#6c757d;">
+          Corrige el monto cuando por comisiones de red no llega exacto (ej: 29.998 → 30).
+        </small>
+        <input *ngIf="useMontoVerdadero" type="number" pInputText [(ngModel)]="montoVerdadero"
+          placeholder="Monto real comprado" style="width:100%; margin-top:.5rem;" inputmode="decimal" />
+      </div>
+
+      <div class="p-field" style="margin-bottom: 1rem;">
         <label for="rateInput"><strong>Tasa de compra</strong></label>
         <input id="rateInput" type="number" pInputText [(ngModel)]="purchaseRate"
           [ngClass]="{ 'p-invalid': isRateInvalid }" placeholder="Ingrese tasa" style="width:100%" inputmode="numeric"

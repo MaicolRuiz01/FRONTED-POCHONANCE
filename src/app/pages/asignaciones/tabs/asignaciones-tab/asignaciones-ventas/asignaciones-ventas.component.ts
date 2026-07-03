@@ -65,6 +65,10 @@ export class AsignacionesVentasComponent implements OnInit {
   selectedSupplierId: number | null = null;
   isSolanaSale: boolean = false;
 
+  // Monto verdadero (opcional): corrige el monto por comisiones de red al asignar.
+  useMontoVerdadero: boolean = false;
+  montoVerdadero: number | null = null;
+
   //campo es el nombre de donde tomo el dato y columna como quiero que se muestre
   columns: TableColumn[] = [
     { campo: 'nameAccount', columna: 'Cuenta' },
@@ -142,8 +146,16 @@ export class AsignacionesVentasComponent implements OnInit {
     });
   }
 
+  /** Monto que se usará para pesos: el verdadero si está habilitado y es válido, si no el importado. */
+  get montoEfectivo(): number {
+    if (this.useMontoVerdadero && this.montoVerdadero && this.montoVerdadero > 0) {
+      return this.montoVerdadero;
+    }
+    return this.selected?.dollars || 0;
+  }
+
   get totalPesos(): number {
-    return (this.selected?.dollars || 0) * (this.saleRate || 0);
+    return this.montoEfectivo * (this.saleRate || 0);
   }
 
   get montoProveedor(): number {
@@ -156,6 +168,9 @@ export class AsignacionesVentasComponent implements OnInit {
     this.saleRate = null;
     this.selectedSupplierId = null;
     this.accounts = [];
+
+    this.useMontoVerdadero = false;
+    this.montoVerdadero = sale.dollars;
 
     const tipo = (sale.tipoCuenta || '').toUpperCase();
     this.isSolanaSale = (tipo === 'SOLANA' || tipo === 'PHANTOM');
@@ -202,15 +217,25 @@ export class AsignacionesVentasComponent implements OnInit {
       return;
     }
 
-    const pesos = this.selected.dollars * this.saleRate;
+    if (this.useMontoVerdadero && (!this.montoVerdadero || this.montoVerdadero <= 0)) {
+      this.notificationService.warn('Ingresa un monto verdadero válido');
+      return;
+    }
+
+    const montoUsado = this.montoEfectivo;
+    const pesos = montoUsado * this.saleRate;
 
     // ✅ CORRECCIÓN: Creamos un objeto limpio con solo los datos a asignar.
     const assignDto: Partial<SellDollar> = {
       tasa: this.saleRate,
       pesos: pesos,
-      dollars: this.selected.dollars,
+      dollars: montoUsado,
       accounts: this.accounts,
     };
+
+    if (this.useMontoVerdadero && this.montoVerdadero && this.montoVerdadero > 0) {
+      assignDto.montoVerdadero = this.montoVerdadero;
+    }
 
     // ✅ CORRECCIÓN: Asigna el cliente o el proveedor de forma segura.
     if (this.isSpecialClient) {

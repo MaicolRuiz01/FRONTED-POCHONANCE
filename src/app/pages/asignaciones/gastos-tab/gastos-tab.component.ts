@@ -36,6 +36,14 @@ export class GastosComponent implements OnInit {
   gastos: Gasto[] = [];
   productDialog = false;
   nuevoGasto: Gasto = { descripcion: '', monto: 0 };
+
+  // Anti-doble-registro: bloquea el botón mientras el POST va en camino.
+  guardando = false;
+
+  // Eliminar gasto (con confirmación y reversión de saldo en backend).
+  confirmDialog = false;
+  gastoAEliminar: (Gasto & { origen?: string }) | null = null;
+  eliminando = false;
   gastosView: (Gasto & { origen: string })[] = [];
   cuentas: AccountCop[] = [];
   cajas: { id: number, name: string, saldo: number }[] = [];
@@ -133,14 +141,28 @@ export class GastosComponent implements OnInit {
 
 
   openNew(): void {
-    this.nuevoGasto = { descripcion: '', monto: 0 };
+    // Clave de idempotencia única por modal: aunque el usuario haga varios clics,
+    // todos los POST llevan la misma clave y el backend crea el gasto una sola vez.
+    this.nuevoGasto = { descripcion: '', monto: 0, idempotencyKey: this.nuevaKey() };
     this.tipoPago = 'cuenta';
     this.cuentaSeleccionadaId = undefined;
     this.cajaSeleccionadaId = undefined;
+    this.guardando = false;
     this.productDialog = true;
   }
 
+  private nuevaKey(): string {
+    // crypto.randomUUID cuando existe; si no, fallback simple.
+    const c: any = (typeof crypto !== 'undefined') ? crypto : null;
+    if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    return 'gasto-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+
   crearGasto(): void {
+    // Candado en el frontend: si ya hay un guardado en curso, ignora clics extra.
+    if (this.guardando) return;
+    this.guardando = true;
+
     if (this.tipoPago === 'cuenta' && this.cuentaSeleccionadaId) {
       this.nuevoGasto.cuentaPago = { id: this.cuentaSeleccionadaId } as any;
       this.nuevoGasto.pagoEfectivo = undefined;
@@ -149,12 +171,82 @@ export class GastosComponent implements OnInit {
       this.nuevoGasto.cuentaPago = undefined;
     }
 
-    this.gastoService.crear(this.nuevoGasto).subscribe(() => {
-      this.productDialog = false;
-      this.cargarGastos();
-      // El gasto restó el saldo → refrescar cuentas y avisar a otras vistas.
-      this.accountService.getAll().subscribe(data => this.cuentas = data);
-      this.accountService.notificarCambioP2P();
+    // Guardamos referencias antes del POST (para construir la fila local).
+    const desc = this.nuevoGasto.descripcion;
+    const monto = this.nuevoGasto.monto;
+    const cuentaPago = this.nuevoGasto.cuentaPago;
+    const pagoEfectivo = this.nuevoGasto.pagoEfectivo;
+
+    this.gastoService.crear(this.nuevoGasto).subscribe({
+      next: (resp) => {
+        this.guardando = false;
+        this.productDialog = false;
+
+        // Sin re-fetch: agregamos la fila localmente con el id que devolvió el backend.
+        const creado: Gasto = {
+          id: resp?.id,
+          descripcion: desc,
+          monto,
+          cuentaPago,
+          pagoEfectivo,
+          fecha: resp?.fecha ?? new Date().toISOString()
+        };
+        this.gastos = [creado, ...this.gastos];
+        this.refreshGastosView();
+
+        // Ajuste local del saldo (para dropdowns) sin pedir todo de nuevo.
+        this.ajustarSaldoLocal(creado, -1);
+        this.accountService.notificarCambioP2P();
+      },
+      error: () => {
+        // Reactiva el botón para que el usuario pueda reintentar (misma key = sin duplicado).
+        this.guardando = false;
+      }
+    });
+  }
+
+  /** Ajusta el saldo local de la cuenta/caja afectada. signo -1 = resta (crear), +1 = devuelve (eliminar). */
+  private ajustarSaldoLocal(g: Gasto, signo: 1 | -1): void {
+    const monto = g.monto || 0;
+    if (g.cuentaPago?.id) {
+      const c = this.cuentas.find(x => x.id === g.cuentaPago!.id);
+      if (c) c.balance = (c.balance || 0) + signo * monto * 1.004;
+    }
+    if (g.pagoEfectivo?.id) {
+      const caja = this.cajas.find(x => x.id === g.pagoEfectivo!.id);
+      if (caja) caja.saldo = (caja.saldo || 0) + signo * monto;
+    }
+  }
+
+  pedirEliminar(gasto: Gasto & { origen?: string }): void {
+    this.gastoAEliminar = gasto;
+    this.confirmDialog = true;
+  }
+
+  confirmarEliminar(): void {
+    const gasto = this.gastoAEliminar;
+    if (!gasto?.id || this.eliminando) return;
+    const id = gasto.id;
+
+    // === Borrado optimista: quitamos la fila YA (se siente instantáneo). ===
+    const idx = this.gastos.findIndex(x => x.id === id);
+    const backup = idx >= 0 ? this.gastos[idx] : null;
+    if (idx >= 0) this.gastos.splice(idx, 1);
+    this.refreshGastosView();
+    this.ajustarSaldoLocal(gasto, +1);       // devolvemos el saldo localmente
+    this.confirmDialog = false;
+    this.gastoAEliminar = null;
+    this.accountService.notificarCambioP2P();
+
+    // El backend confirma en segundo plano; si falla, revertimos.
+    this.gastoService.eliminar(id).subscribe({
+      error: () => {
+        if (backup) {
+          this.gastos.splice(Math.max(idx, 0), 0, backup);
+          this.refreshGastosView();
+          this.ajustarSaldoLocal(gasto, -1);  // deshacemos la devolución local
+        }
+      }
     });
   }
 

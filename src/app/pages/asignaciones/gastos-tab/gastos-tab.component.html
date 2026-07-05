@@ -15,7 +15,13 @@
 
   <!-- Tabla en tarjeta -->
   <div class="gastos-card">
-    <app-mi-table [data]="gastosView" [columns]="columns"></app-mi-table>
+    <app-mi-table [data]="gastosView" [columns]="columns">
+      <ng-template #actionTemplate let-g>
+        <button pButton icon="pi pi-trash" title="Eliminar gasto y devolver el saldo"
+          class="p-button-rounded p-button-text p-button-danger p-button-sm"
+          (click)="pedirEliminar(g)"></button>
+      </ng-template>
+    </app-mi-table>
   </div>
 
 </div>
@@ -111,11 +117,33 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" class="p-button-text" (click)="productDialog = false"></button>
-    <button pButton label="Guardar gasto" icon="pi pi-check" class="p-button-success"
+    <button pButton label="Cancelar" class="p-button-text" (click)="productDialog = false"
+      [disabled]="guardando"></button>
+    <button pButton [label]="guardando ? 'Guardando…' : 'Guardar gasto'"
+      [icon]="guardando ? 'pi pi-spin pi-spinner' : 'pi pi-check'" class="p-button-success"
       (click)="crearGasto()"
-      [disabled]="!nuevoGasto.descripcion || !nuevoGasto.monto">
+      [disabled]="guardando || !nuevoGasto.descripcion || !nuevoGasto.monto">
     </button>
   </ng-template>
 
+</p-dialog>
+
+<!-- Modal: confirmar eliminación (devuelve el saldo) -->
+<p-dialog [(visible)]="confirmDialog" header="Eliminar gasto" [modal]="true"
+  [style]="{ width: '380px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+  <div style="padding:.25rem 0;">
+    <p style="margin:0 0 .5rem 0;">
+      ¿Eliminar este gasto y <strong>devolver el saldo</strong> a
+      <strong>{{ gastoAEliminar?.origen }}</strong>?
+    </p>
+    <p style="margin:0;color:#64748b;">Monto: {{ gastoAEliminar?.monto | number:'1.0-2' }}</p>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="confirmDialog = false"
+      [disabled]="eliminando"></button>
+    <button pButton [label]="eliminando ? 'Eliminando…' : 'Eliminar'"
+      [icon]="eliminando ? 'pi pi-spin pi-spinner' : 'pi pi-trash'" class="p-button-danger"
+      (click)="confirmarEliminar()" [disabled]="eliminando">
+    </button>
+  </ng-template>
 </p-dialog>

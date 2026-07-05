@@ -10,6 +10,7 @@ export interface Gasto {
   cuentaPago?: { id: number };
   pagoEfectivo?: { id: number };
   fecha?: string; // solo si el backend lo devuelve
+  idempotencyKey?: string; // candado anti-duplicado (una por modal de nuevo gasto)
 }
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,11 @@ export class GastoService {
 
   crear(gasto: Gasto): Observable<Gasto> {
     return this.http.post<Gasto>(this.apiUrl, gasto);
+  }
+
+  /** Elimina el gasto; el backend devuelve el saldo a la cuenta/caja afectada. */
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   pagar(id: number): Observable<void> {

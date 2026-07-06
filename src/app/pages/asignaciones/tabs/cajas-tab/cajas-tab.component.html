@@ -10,6 +10,11 @@
   (click)="abrirCrearCaja()">
 </p-button>
 
+<button pButton type="button" icon="pi pi-arrow-right-arrow-left" label="Transferir entre cajas"
+  class="p-button-sm p-button-outlined" style="margin-left:.75rem;"
+  (click)="abrirTransferencia()">
+</button>
+
 <br /><br />
 
 <p-table [value]="cajas" [loading]="loadingCajas">
@@ -31,6 +36,13 @@
                 icon="pi pi-eye"
                 class="p-button-text p-button-sm"
                 (click)="$event.stopPropagation(); verMovimientos(caja)">
+        </button>
+        <button pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger p-button-sm"
+                title="Eliminar caja"
+                (click)="pedirEliminarCaja(caja, $event)">
         </button>
       </td>
     </tr>
@@ -84,6 +96,7 @@
           <th>Cuenta Origen</th>
           <th>Cuenta Destino</th>
           <th>Caja</th>
+          <th>Caja Destino</th>
           <th>Cliente</th>
           <th>Proveedor</th>
         </tr>
@@ -97,6 +110,7 @@
           <td>{{ mov.cuentaOrigen || '-' }}</td>
           <td>{{ mov.cuentaDestino || '-' }}</td>
           <td>{{ mov.caja || '-' }}</td>
+          <td>{{ mov.cajaDestino || '-' }}</td>
           <td>{{ mov.pagoCliente || '-' }}</td>
           <td>{{ mov.pagoProveedor || '-' }}</td>
         </tr>
@@ -104,7 +118,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="8" class="p-text-center">Sin movimientos para esta caja.</td>
+          <td colspan="9" class="p-text-center">Sin movimientos para esta caja.</td>
         </tr>
       </ng-template>
     </p-table>
@@ -112,5 +126,60 @@
 
   <ng-template #loadingTpl>
     <div class="p-3">Cargando movimientos...</div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal: Transferir entre cajas -->
+<p-dialog header="Transferir entre cajas" [(visible)]="showTransferDialog" [modal]="true"
+          [style]="{ width: '420px' }" [draggable]="false" [resizable]="false">
+  <div class="p-fluid">
+    <div class="p-field" style="margin-bottom:1rem;">
+      <label>Caja origen</label>
+      <p-dropdown [options]="cajas" [(ngModel)]="transferOrigenId"
+        optionLabel="name" optionValue="id" placeholder="Selecciona caja origen"
+        [style.width.%]="100" appendTo="body"></p-dropdown>
+    </div>
+
+    <div class="p-field" style="margin-bottom:1rem;">
+      <label>Caja destino</label>
+      <p-dropdown [options]="destinosDisponibles" [(ngModel)]="transferDestinoId"
+        optionLabel="name" optionValue="id" placeholder="Selecciona caja destino"
+        [style.width.%]="100" appendTo="body"></p-dropdown>
+    </div>
+
+    <div class="p-field">
+      <label>Monto</label>
+      <input type="number" pInputText [(ngModel)]="transferMonto" min="0"
+        placeholder="0" inputmode="numeric" style="width:100%;" />
+      <small style="color:#64748b;">Sin comisión (no aplica el 4x1000).</small>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showTransferDialog = false"
+            [disabled]="transfiriendo"></button>
+    <button pButton [label]="transfiriendo ? 'Transfiriendo…' : 'Transferir'"
+            [icon]="transfiriendo ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            class="p-button-success" (click)="confirmarTransferencia()"
+            [disabled]="transfiriendo || !transferOrigenId || !transferDestinoId || !transferMonto">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal: confirmar eliminar caja -->
+<p-dialog header="Eliminar caja" [(visible)]="showDeleteCaja" [modal]="true"
+          [style]="{ width: '380px' }" [draggable]="false" [resizable]="false">
+  <p style="margin:0;">
+    ¿Eliminar la caja <strong>{{ cajaAEliminar?.name }}</strong>?
+  </p>
+  <p style="margin:.5rem 0 0 0; color:#64748b; font-size:.85rem;">
+    Si la caja tiene movimientos o gastos asociados no se podrá eliminar.
+  </p>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showDeleteCaja = false"
+            [disabled]="eliminandoCaja"></button>
+    <button pButton [label]="eliminandoCaja ? 'Eliminando…' : 'Eliminar'"
+            [icon]="eliminandoCaja ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"
+            class="p-button-danger" (click)="confirmarEliminarCaja()" [disabled]="eliminandoCaja"></button>
   </ng-template>
 </p-dialog>

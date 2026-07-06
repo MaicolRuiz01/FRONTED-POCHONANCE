@@ -136,6 +136,15 @@ export class MovimientoService {
     return this.http.post(url, {});
   }
 
+  /** Traspaso entre cajas (sin comisión 4x1000). */
+  registrarTransferenciaCaja(cajaOrigenId: number, cajaDestinoId: number, monto: number) {
+    const params = new HttpParams()
+      .set('origenId', cajaOrigenId)
+      .set('destinoId', cajaDestinoId)
+      .set('monto', monto);
+    return this.http.post(`${this.apiUrl}/transferencia-caja`, {}, { params });
+  }
+
   getTransferencias(): Observable<MovimientoVistaDto[]> {
     const url = `${this.apiUrl}/transferencias`;
     return this.http.get<MovimientoVistaDto[]>(url);

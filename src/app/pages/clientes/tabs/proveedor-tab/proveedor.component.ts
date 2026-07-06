@@ -361,6 +361,44 @@ export class ProveedorComponent implements OnInit {
     });
   }
 
+  /** Tras eliminar un movimiento en lista-pagos: refrescar saldos y el diálogo abierto. */
+  onMovimientoEliminado(): void {
+    this.loadSuppliers();
+    if (this.selectedSupplier?.id) this.onSelectSupplier(this.selectedSupplier);
+  }
+
+  // ── Eliminar proveedor ────────────────────────────────────────
+  showDeleteProveedor = false;
+  proveedorAEliminar: Supplier | null = null;
+  eliminandoProveedor = false;
+
+  pedirEliminarProveedor(supplier: Supplier, event: Event): void {
+    event.stopPropagation();
+    this.proveedorAEliminar = supplier;
+    this.showDeleteProveedor = true;
+  }
+
+  confirmarEliminarProveedor(): void {
+    if (!this.proveedorAEliminar?.id || this.eliminandoProveedor) return;
+    const id = this.proveedorAEliminar.id;
+    this.eliminandoProveedor = true;
+    this.supplierService.eliminar(id).subscribe({
+      next: () => {
+        this.eliminandoProveedor = false;
+        this.showDeleteProveedor = false;
+        this.proveedorAEliminar = null;
+        this.suppliers = this.suppliers.filter(s => s.id !== id);
+        this.emitTotal();
+      },
+      error: (err) => {
+        this.eliminandoProveedor = false;
+        console.error('Error eliminando proveedor', err);
+        // El backend devuelve 409 con { error } si tiene compras/pagos/movimientos.
+        alert(err?.error?.error || 'No se pudo eliminar el proveedor.');
+      }
+    });
+  }
+
   downloadExcel(supplier: Supplier, event?: Event) {
     event?.stopPropagation(); // para que no abra el dialog al darle click
 

@@ -25,4 +25,8 @@ export class CajaService {
     return this.http.post<Caja>(this.apiUrl, caja);
   }
 
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
 }

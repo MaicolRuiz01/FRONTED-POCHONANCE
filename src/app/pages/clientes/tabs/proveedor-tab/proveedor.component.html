@@ -34,6 +34,9 @@
           <button pButton icon="pi pi-refresh" pTooltip="Ajustar saldo"
             class="p-button-text p-button-warning p-button-sm prov-icon-btn"
             (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)"></button>
+          <button pButton icon="pi pi-trash" pTooltip="Eliminar proveedor"
+            class="p-button-text p-button-danger p-button-sm prov-icon-btn"
+            (click)="pedirEliminarProveedor(supplier, $event)"></button>
         </div>
       </div>
 
@@ -92,7 +95,7 @@
   <p-tabView>
     <p-tabPanel header="Movimientos">
       <ng-container *ngIf="!loadingMovs; else movsLoading">
-        <app-lista-pagos [pagos]="movimientos"></app-lista-pagos>
+        <app-lista-pagos [pagos]="movimientos" (eliminado)="onMovimientoEliminado()"></app-lista-pagos>
       </ng-container>
       <ng-template #movsLoading>
         <div class="prov-loading">Cargando movimientos...</div>
@@ -171,32 +174,37 @@
     <div class="p-field">
       <label>Fuente de Pago</label>
       <p-dropdown [options]="paymentOptions" [(ngModel)]="paymentMethod"
-        placeholder="Seleccione la fuente"></p-dropdown>
+        placeholder="Seleccione la fuente" appendTo="body"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Cuenta Bancaria'">
       <label>Cuenta COP</label>
       <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop"
-        optionLabel="name" placeholder="Seleccione cuenta"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione cuenta"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Caja'">
       <label>Caja</label>
       <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja"
-        optionLabel="name" placeholder="Seleccione caja"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione caja"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Cliente'">
       <label>Cliente</label>
       <p-dropdown [options]="clientes" [(ngModel)]="selectedCliente"
-        optionLabel="nombre" placeholder="Seleccione cliente"></p-dropdown>
+        optionLabel="nombre" placeholder="Seleccione cliente"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Proveedor'">
       <label>Proveedor Origen</label>
       <p-dropdown [options]="suppliers" [(ngModel)]="selectedProveedorOrigen"
-        optionLabel="name" placeholder="Seleccione proveedor origen"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione proveedor origen"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field">
       <label>Proveedor Destino</label>
       <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier"
-        optionLabel="name" placeholder="Seleccione proveedor"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione proveedor"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field">
       <label>Monto</label>
@@ -298,3 +306,21 @@
   [saldoActual]="proveedorAjuste.balance ?? 0"
   (ajusteRealizado)="onAjusteProveedorRealizado()">
 </app-ajuste-saldo-dialog>
+
+<!-- ── Confirmar eliminar proveedor ── -->
+<p-dialog header="Eliminar proveedor" [(visible)]="showDeleteProveedor" [modal]="true"
+          [style]="{ width: '400px' }" [draggable]="false" [resizable]="false">
+  <p style="margin:0;">
+    ¿Eliminar el proveedor <strong>{{ proveedorAEliminar?.name }}</strong>?
+  </p>
+  <p style="margin:.5rem 0 0 0; color:#64748b; font-size:.85rem;">
+    Si tiene compras, pagos o movimientos asociados no se podrá eliminar.
+  </p>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showDeleteProveedor = false"
+            [disabled]="eliminandoProveedor"></button>
+    <button pButton [label]="eliminandoProveedor ? 'Eliminando…' : 'Eliminar'"
+            [icon]="eliminandoProveedor ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"
+            class="p-button-danger" (click)="confirmarEliminarProveedor()" [disabled]="eliminandoProveedor"></button>
+  </ng-template>
+</p-dialog>

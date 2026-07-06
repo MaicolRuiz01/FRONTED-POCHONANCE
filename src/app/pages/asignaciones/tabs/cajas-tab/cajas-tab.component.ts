@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
 import { NotificationService } from '../../../../core/services/notification.service';
 
 
@@ -23,7 +24,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
     DialogModule,
     FormsModule,
     ButtonModule,
-    InputTextModule
+    InputTextModule,
+    DropdownModule
   ],
   templateUrl: './cajas-tab.component.html',
   styleUrl: './cajas-tab.component.css'
@@ -43,6 +45,18 @@ export class MovimientosComponent implements OnInit {
   cajaSeleccionada: Caja | null = null;
   movimientosCaja: any[] = [];
   loadingMovs = false;
+
+  // Eliminar caja
+  showDeleteCaja = false;
+  cajaAEliminar: Caja | null = null;
+  eliminandoCaja = false;
+
+  // Traspaso entre cajas
+  showTransferDialog = false;
+  transferOrigenId: number | null = null;
+  transferDestinoId: number | null = null;
+  transferMonto: number | null = null;
+  transfiriendo = false;
 
   constructor(private movimientoService: MovimientoService,
     private cajaService: CajaService
@@ -97,8 +111,71 @@ export class MovimientosComponent implements OnInit {
       complete: () => this.loadingMovs = false
     });
   }
-  
 
-  
+  abrirTransferencia(): void {
+    this.transferOrigenId = null;
+    this.transferDestinoId = null;
+    this.transferMonto = null;
+    this.showTransferDialog = true;
+  }
+
+  get destinosDisponibles(): Caja[] {
+    // No permitir elegir la misma caja de origen como destino.
+    return this.cajas.filter(c => c.id !== this.transferOrigenId);
+  }
+
+  confirmarTransferencia(): void {
+    if (this.transfiriendo) return;
+    if (!this.transferOrigenId || !this.transferDestinoId || !this.transferMonto || this.transferMonto <= 0) {
+      this.notificationService.warn('Selecciona origen, destino y un monto válido.');
+      return;
+    }
+    if (this.transferOrigenId === this.transferDestinoId) {
+      this.notificationService.warn('La caja origen y destino no pueden ser la misma.');
+      return;
+    }
+    this.transfiriendo = true;
+    this.movimientoService.registrarTransferenciaCaja(
+      this.transferOrigenId, this.transferDestinoId, this.transferMonto
+    ).subscribe({
+      next: () => {
+        this.transfiriendo = false;
+        this.showTransferDialog = false;
+        this.loadCajas();
+        this.notificationService.success('Traspaso entre cajas realizado');
+      },
+      error: (err) => {
+        this.transfiriendo = false;
+        const msg = err?.error?.error || 'No se pudo realizar el traspaso.';
+        this.notificationService.error(msg);
+      }
+    });
+  }
+
+  pedirEliminarCaja(caja: Caja, event: Event): void {
+    event.stopPropagation();
+    this.cajaAEliminar = caja;
+    this.showDeleteCaja = true;
+  }
+
+  confirmarEliminarCaja(): void {
+    if (!this.cajaAEliminar?.id || this.eliminandoCaja) return;
+    const id = this.cajaAEliminar.id;
+    this.eliminandoCaja = true;
+    this.cajaService.eliminar(id).subscribe({
+      next: () => {
+        this.eliminandoCaja = false;
+        this.showDeleteCaja = false;
+        this.cajaAEliminar = null;
+        this.cajas = this.cajas.filter(c => c.id !== id);
+        this.notificationService.success('Caja eliminada');
+      },
+      error: (err) => {
+        this.eliminandoCaja = false;
+        const msg = err?.error?.error || 'No se pudo eliminar la caja.';
+        this.notificationService.error(msg);
+      }
+    });
+  }
 
 }

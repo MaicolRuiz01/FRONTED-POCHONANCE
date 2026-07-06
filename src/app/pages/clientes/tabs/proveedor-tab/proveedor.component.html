@@ -174,32 +174,37 @@
     <div class="p-field">
       <label>Fuente de Pago</label>
       <p-dropdown [options]="paymentOptions" [(ngModel)]="paymentMethod"
-        placeholder="Seleccione la fuente"></p-dropdown>
+        placeholder="Seleccione la fuente" appendTo="body"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Cuenta Bancaria'">
       <label>Cuenta COP</label>
       <p-dropdown [options]="accountCops" [(ngModel)]="selectedAccountCop"
-        optionLabel="name" placeholder="Seleccione cuenta"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione cuenta"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Caja'">
       <label>Caja</label>
       <p-dropdown [options]="cajas" [(ngModel)]="selectedCaja"
-        optionLabel="name" placeholder="Seleccione caja"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione caja"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Cliente'">
       <label>Cliente</label>
       <p-dropdown [options]="clientes" [(ngModel)]="selectedCliente"
-        optionLabel="nombre" placeholder="Seleccione cliente"></p-dropdown>
+        optionLabel="nombre" placeholder="Seleccione cliente"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field" *ngIf="paymentMethod === 'Proveedor'">
       <label>Proveedor Origen</label>
       <p-dropdown [options]="suppliers" [(ngModel)]="selectedProveedorOrigen"
-        optionLabel="name" placeholder="Seleccione proveedor origen"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione proveedor origen"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field">
       <label>Proveedor Destino</label>
       <p-dropdown [options]="suppliers" [(ngModel)]="selectedSupplier"
-        optionLabel="name" placeholder="Seleccione proveedor"></p-dropdown>
+        optionLabel="name" placeholder="Seleccione proveedor"
+        appendTo="body" [filter]="true" [scrollHeight]="'240px'"></p-dropdown>
     </div>
     <div class="p-field">
       <label>Monto</label>

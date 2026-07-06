@@ -8,6 +8,7 @@ export interface AuthResponse {
   token: string;
   username: string;
   rol: 'ADMIN' | 'OPERARIO';
+  sessionId?: number;
 }
 
 export interface LoginRequest {
@@ -21,15 +22,24 @@ export class AuthService {
   private readonly TOKEN_KEY   = 'poch_token';
   private readonly USER_KEY    = 'poch_user';
   private readonly ROL_KEY     = 'poch_rol';
+  private readonly SID_KEY     = 'poch_sid';   // id de la sesión (para heartbeat/reporte)
 
   private loggedIn$ = new BehaviorSubject<boolean>(this.hasValidToken());
 
   /** Temporizador que cierra la sesión justo cuando el JWT expira (aunque el usuario esté inactivo). */
   private logoutTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Latido para medir el tiempo de sesión del operador (cada minuto mientras la app está abierta). */
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly HEARTBEAT_MS = 60_000;
+
   constructor(private http: HttpClient, private router: Router) {
     // Si al abrir la app ya hay un token válido, programa el auto-logout para cuando venza.
     this.scheduleAutoLogout();
+    // Reanuda el heartbeat si se recarga la página con una sesión activa.
+    if (this.hasValidToken() && this.getSessionId() != null) {
+      this.startHeartbeat();
+    }
   }
 
   // ── Login / Logout ────────────────────────────────────────────
@@ -40,8 +50,10 @@ export class AuthService {
         localStorage.setItem(this.TOKEN_KEY, resp.token);
         localStorage.setItem(this.USER_KEY,  resp.username);
         localStorage.setItem(this.ROL_KEY,   resp.rol);
+        if (resp.sessionId != null) localStorage.setItem(this.SID_KEY, String(resp.sessionId));
         this.loggedIn$.next(true);
         this.scheduleAutoLogout();
+        this.startHeartbeat();
       })
     );
   }
@@ -51,12 +63,49 @@ export class AuthService {
    * @param expired  true si fue por expiración del token (muestra aviso al usuario).
    */
   logout(expired = false): void {
+    // Avisar al backend el fin de la sesión (best-effort) antes de limpiar.
+    const sid = this.getSessionId();
+    if (sid != null) {
+      this.http.post(`${environment.apiUrl}/auth/sesion/logout`, { sessionId: sid })
+        .subscribe({ next: () => {}, error: () => {} });
+    }
+    this.stopHeartbeat();
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.ROL_KEY);
+    localStorage.removeItem(this.SID_KEY);
     this.clearAutoLogout();
     this.loggedIn$.next(false);
     this.router.navigate(['/login'], expired ? { queryParams: { expired: 'true' } } : {});
+  }
+
+  // ── Heartbeat de sesión (para el reporte de tiempo del admin) ──
+
+  /** Id de la sesión actual (o null). */
+  getSessionId(): number | null {
+    const raw = localStorage.getItem(this.SID_KEY);
+    const n = raw != null ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private startHeartbeat(): void {
+    this.stopHeartbeat();
+    this.enviarHeartbeat();               // uno inmediato
+    this.heartbeatTimer = setInterval(() => this.enviarHeartbeat(), this.HEARTBEAT_MS);
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+  }
+
+  private enviarHeartbeat(): void {
+    const sid = this.getSessionId();
+    if (sid == null || !this.hasValidToken()) return;
+    this.http.post(`${environment.apiUrl}/auth/sesion/heartbeat`, { sessionId: sid })
+      .subscribe({ next: () => {}, error: () => {} });
   }
 
   // ── Estado ────────────────────────────────────────────────────

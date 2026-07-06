@@ -7,6 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { DropdownModule } from 'primeng/dropdown';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -21,7 +22,7 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableModule, ButtonModule,
-    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule
+    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule
   ],
   templateUrl: './ventas-en-curso.component.html',
   styleUrls: ['./ventas-en-curso.component.css']
@@ -44,6 +45,19 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Última cuenta COP asignada — para el botón "=" (repetir la misma asignación). */
   ultimaCopId: number | null = null;
   ultimaCopNombre = '';
+
+  /** Cupo máximo del día por banco (en miles, igual que el backend y el modal de cuentas). */
+  private readonly cupoMax: Record<string, { cajero: number; corresponsal: number }> = {
+    NEQUI:       { cajero: 2700, corresponsal: 5000 },
+    BANCOLOMBIA: { cajero: 2700, corresponsal: 10000 },
+    DAVIPLATA:   { cajero: 3000, corresponsal: 5000 },
+  };
+
+  /** Aviso de cupo lleno (cambiar / desactivar). */
+  showCupoLleno = false;
+  cupoLlenoCuenta: AccountCop | null = null;
+  /** Cuentas ya avisadas (para no repetir el modal en cada refresco). */
+  private cupoLlenoAvisado = new Set<number>();
 
   /** Contador regresivo para el próximo auto-refresh */
   countdown = 15;
@@ -135,6 +149,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
+          // Al llegar datos frescos (saldos/ventas en curso) revisamos si algún cupo se llenó.
+          this.verificarCuposLlenos();
         },
         error: () => this.notification.error('No se pudo cargar las órdenes activas.')
       });
@@ -142,7 +158,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   loadCuentasCop(): void {
     this.accountCopService.getAll().subscribe({
-      next: cuentas => this.cuentasCop = cuentas
+      next: cuentas => {
+        this.cuentasCop = cuentas;
+        this.verificarCuposLlenos();
+      }
     });
   }
 
@@ -182,6 +201,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         // Nuevo objeto para forzar CD
         this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: copId };
         this.notification.success('Pre-asignación guardada.');
+        // Si con esta asignación la cuenta alcanzó su cupo → avisar de inmediato.
+        this.verificarCuposLlenos();
       },
       error: () => this.notification.error('Error al guardar pre-asignación.')
     });
@@ -236,6 +257,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .subscribe({
         next: updated => {
           c.activaParaP2P = updated.activaParaP2P;
+          if (c.id != null) this.cupoLlenoAvisado.delete(c.id); // permitir re-avisar si se reactiva
           this.accountCopService.notificarCambioP2P();
           this.notification.success(`${c.name} quitada de P2P`);
         },
@@ -251,11 +273,86 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   /** Solo muestra las cuentas marcadas como activas para P2P.
-   *  Si ninguna está marcada, muestra todas como fallback. */
+   *  Si ninguna está marcada, muestra todas como fallback.
+   *  Las cuentas con el cupo lleno quedan deshabilitadas (no se pueden asignar). */
   copOptions() {
     const activas = this.cuentasCop.filter(c => c.activaParaP2P);
     const lista   = activas.length > 0 ? activas : this.cuentasCop;
-    return lista.map(c => ({ label: c.name, value: c.id }));
+    return lista.map(c => {
+      const lleno = this.cupoLlenoDe(c);
+      return {
+        label: lleno ? `${c.name} — cupo lleno` : c.name,
+        value: c.id,
+        disabled: lleno
+      };
+    });
+  }
+
+  // ── Cupo del día ──────────────────────────────────────────────
+
+  /** Cupo máximo del día para la cuenta, según el medio con el que se activó (cupoTipoP2P). */
+  cupoMaxDeCuenta(c: AccountCop): number {
+    const max = this.cupoMax[c.bankType];
+    if (!max) return 0;
+    if (c.cupoTipoP2P === 'CORRESPONSAL') return max.corresponsal;
+    if (c.cupoTipoP2P === 'AMBOS')        return max.cajero + max.corresponsal;
+    return max.cajero; // CAJERO por defecto
+  }
+
+  /** Pesos de las órdenes en curso ya pre-asignadas a esta cuenta. */
+  private pesosEnCursoDe(copId: number | null | undefined): number {
+    if (copId == null) return 0;
+    return this.ordenes
+      .filter(o => o.preAsignadoCopId === copId)
+      .reduce((s, o) => s + (o.pesosCop ?? 0), 0);
+  }
+
+  /** True si la cuenta ya alcanzó (o superó) su cupo del día: saldo + ventas en curso pre-asignadas. */
+  cupoLlenoDe(c: AccountCop): boolean {
+    const max = this.cupoMaxDeCuenta(c);
+    if (max <= 0) return false;
+    return ((c.balance ?? 0) + this.pesosEnCursoDe(c.id)) >= max;
+  }
+
+  // ── Aviso automático de cupo lleno ────────────────────────────
+
+  /** Revisa las cuentas activas; si alguna acaba de llenar su cupo, abre el aviso (una a la vez). */
+  private verificarCuposLlenos(): void {
+    if (this.showCupoLleno) return; // ya hay un aviso abierto
+    for (const c of this.cuentasActivasP2P) {
+      if (c.id == null) continue;
+      if (this.cupoLlenoDe(c)) {
+        if (!this.cupoLlenoAvisado.has(c.id)) {
+          this.cupoLlenoAvisado.add(c.id);
+          this.cupoLlenoCuenta = c;
+          this.showCupoLleno = true;
+          return; // una a la vez
+        }
+      } else {
+        this.cupoLlenoAvisado.delete(c.id); // se liberó → puede volver a avisar
+      }
+    }
+  }
+
+  /** Mantener la cuenta activa para seguir usándola. */
+  cupoLlenoSeguir(): void {
+    this.showCupoLleno = false;
+    this.cupoLlenoCuenta = null;
+  }
+
+  /** Desactivar la cuenta de P2P. */
+  cupoLlenoDesactivar(): void {
+    if (this.cupoLlenoCuenta) this.desactivarP2P(this.cupoLlenoCuenta);
+    this.showCupoLleno = false;
+    this.cupoLlenoCuenta = null;
+  }
+
+  /** Cambiar por otra: libera esta cuenta y avisa para activar otra en su lugar. */
+  cupoLlenoCambiar(): void {
+    if (this.cupoLlenoCuenta) this.desactivarP2P(this.cupoLlenoCuenta);
+    this.showCupoLleno = false;
+    this.cupoLlenoCuenta = null;
+    this.notification.info('Cuenta liberada. Activa otra cuenta COP para reemplazarla.');
   }
 
   get hayActivasP2P(): boolean {
@@ -263,6 +360,23 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   dropdownChanged(orden: ActiveP2POrder, copId: number | null): void {
+    if (copId) {
+      // 🚫 BLOQUEO: no se puede asignar una cuenta que ya cumplió su cupo del día.
+      const cuenta = this.cuentasCop.find(c => c.id === copId);
+      if (cuenta && this.cupoLlenoDe(cuenta)) {
+        this.notification.warn(`${cuenta.name} ya cumplió su cupo del día; no se puede asignar.`);
+        // Revertir la selección visual a lo que estaba antes.
+        this.seleccionPendiente = {
+          ...this.seleccionPendiente,
+          [orden.orderNumber]: orden.preAsignadoCopId ?? null
+        };
+        // Ofrecer cambiar/desactivar de una vez.
+        this.cupoLlenoCuenta = cuenta;
+        this.showCupoLleno = true;
+        return;
+      }
+    }
+
     // Spread para nuevo objeto → Angular detecta cambio inmediatamente en [ngModel]
     this.seleccionPendiente = { ...this.seleccionPendiente, [orden.orderNumber]: copId };
     if (copId) {

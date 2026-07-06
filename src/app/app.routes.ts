@@ -15,7 +15,9 @@ import { ContainerComponent } from './pages/cambios-arabes/container/container.c
 import { P2PWrapperComponent } from './pages/p2p/p2p-wrapper.component';
 import { RetiradoresComponent } from './pages/retiradores/retiradores.component';
 import { LoginComponent } from './auth/login/login.component';
+import { OperadoresComponent } from './pages/operadores/operadores.component';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   // ── Login (público) ──────────────────────────────────────────
@@ -44,6 +46,7 @@ export const routes: Routes = [
       { path: 'cambios-arabes', component: ContainerComponent },
       { path: 'p2p',            component: P2PWrapperComponent },
       { path: 'retiradores',    component: RetiradoresComponent },
+      { path: 'operadores',     component: OperadoresComponent, canActivate: [adminGuard] },
     ]
   },
 

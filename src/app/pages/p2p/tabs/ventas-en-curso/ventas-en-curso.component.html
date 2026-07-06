@@ -226,7 +226,8 @@
               appendTo="body"
               styleClass="vc-dropdown"
               optionLabel="label"
-              optionValue="value">
+              optionValue="value"
+              [optionDisabled]="'disabled'">
             </p-dropdown>
             <!-- Botón "=": repite la última cuenta COP asignada -->
             <button pButton type="button"
@@ -257,3 +258,21 @@
   </p-table>
 
 </div>
+
+<!-- ══════════════════════════════════════════
+     MODAL AUTOMÁTICO — CUPO LLENO
+══════════════════════════════════════════ -->
+<p-dialog header="Cupo lleno" [(visible)]="showCupoLleno" [modal]="true"
+  [style]="{ width: '400px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+  <p *ngIf="cupoLlenoCuenta" style="margin:0 0 1rem 0;">
+    La cuenta <b>{{ cupoLlenoCuenta.name }}</b> ya alcanzó su cupo del día
+    (${{ cupoMaxDeCuenta(cupoLlenoCuenta) | number:'1.0-0' }}).
+    ¿Qué deseas hacer?
+  </p>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cambiar por otra" icon="pi pi-sync"
+      class="p-button-outlined" (click)="cupoLlenoCambiar()"></button>
+    <button pButton label="Desactivar" icon="pi pi-times"
+      class="p-button-danger" (click)="cupoLlenoDesactivar()"></button>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,71 @@
+<div class="card">
+  <div class="op-header">
+    <div class="op-title">
+      <span class="op-icon"><i class="pi pi-users"></i></span>
+      <div>
+        <h2>Operadores</h2>
+        <span class="op-subtitle">Tiempo de sesión e ingresos por día</span>
+      </div>
+    </div>
+
+    <div class="op-controls">
+      <p-calendar
+        [(ngModel)]="fecha"
+        (onSelect)="onFechaChange()"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [readonlyInput]="true"
+        appendTo="body"
+        placeholder="Fecha">
+      </p-calendar>
+      <button pButton icon="pi pi-refresh" label="Actualizar"
+        class="p-button-sm" (click)="cargar()" [loading]="loading"></button>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div *ngIf="loading" class="op-loading">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!loading && resumen.length === 0" class="op-empty">
+    <i class="pi pi-info-circle"></i>
+    <span>Ningún operador registró sesión en esta fecha.</span>
+  </div>
+
+  <!-- Tabla -->
+  <p-table *ngIf="!loading && resumen.length > 0" [value]="resumen"
+    styleClass="p-datatable-sm" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Operador</th>
+        <th>Rol</th>
+        <th class="text-center">Ingresos</th>
+        <th class="text-right">Tiempo total</th>
+        <th class="text-center">Estado</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-r>
+      <tr>
+        <td><strong>{{ r.username }}</strong></td>
+        <td><p-tag [value]="r.rol || '—'" [severity]="rolSeverity(r.rol)"></p-tag></td>
+        <td class="text-center">{{ r.ingresos }}</td>
+        <td class="text-right">{{ formatTiempo(r.tiempoTotalSegundos) }}</td>
+        <td class="text-center">
+          <span *ngIf="r.sesionAbierta" class="op-online"><i class="pi pi-circle-fill"></i> En línea</span>
+          <span *ngIf="!r.sesionAbierta" class="op-offline">—</span>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="2" class="text-right"><strong>Total ingresos</strong></td>
+        <td class="text-center"><strong>{{ totalIngresos }}</strong></td>
+        <td colspan="2"></td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

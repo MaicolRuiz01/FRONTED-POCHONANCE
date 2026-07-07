@@ -96,9 +96,9 @@ export class RetiradoresComponent implements OnInit {
   ];
 
   tipoOptions = [
-    { label: 'Cajero ($ 2.000)', value: 'CAJERO' as TipoRetiro },
-    { label: 'Corresponsal ($ 3.000)', value: 'CORRESPONSAL' as TipoRetiro },
-    { label: 'Completo ($ 4.000)', value: 'COMPLETO' as TipoRetiro },
+    { label: 'Cajero ($ 2)', value: 'CAJERO' as TipoRetiro },
+    { label: 'Corresponsal ($ 3)', value: 'CORRESPONSAL' as TipoRetiro },
+    { label: 'Completo ($ 4)', value: 'COMPLETO' as TipoRetiro },
   ];
 
   constructor(
@@ -106,7 +106,7 @@ export class RetiradoresComponent implements OnInit {
     private copSvc: AccountCopService,
     private msgSvc: MessageService,
     private confirmSvc: ConfirmationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadAll();
@@ -290,7 +290,7 @@ export class RetiradoresComponent implements OnInit {
 
   get pagoEstimado(): number {
     return this.cuentasSeleccionadas.reduce((sum, c) => {
-      const pago = c.tipoRetiro === 'CAJERO' ? 2000 : c.tipoRetiro === 'CORRESPONSAL' ? 3000 : 4000;
+      const pago = c.tipoRetiro === 'CAJERO' ? 2 : c.tipoRetiro === 'CORRESPONSAL' ? 3 : 4;
       return sum + pago;
     }, 0);
   }
@@ -306,7 +306,7 @@ export class RetiradoresComponent implements OnInit {
 
   get pagoEstimadoGeneral(): number {
     return this.cuentasSeleccionadasGeneral.reduce((sum, c) => {
-      const pago = c.tipoRetiro === 'CAJERO' ? 2000 : c.tipoRetiro === 'CORRESPONSAL' ? 3000 : 4000;
+      const pago = c.tipoRetiro === 'CAJERO' ? 2 : c.tipoRetiro === 'CORRESPONSAL' ? 3 : 4;
       return sum + pago;
     }, 0);
   }
@@ -334,10 +334,18 @@ export class RetiradoresComponent implements OnInit {
         montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
       }))
     }).pipe(finalize(() => this.savingRetiro = false)).subscribe({
-      next: () => {
+      next: (res) => {
         this.showRetiroDialog = false;
         this.loadAll();
-        this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'El retirador fue notificado.', life: 4000 });
+        if (res.telegramNotificado === false) {
+          this.msgSvc.add({
+            severity: 'warn', summary: 'Solicitud creada, pero no se notificó',
+            detail: 'El retirador aún no ha vinculado su Telegram (debe enviarle /start al bot). Cuando lo haga, usa "Reenviar" en su historial.',
+            life: 8000
+          });
+        } else {
+          this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'El retirador fue notificado.', life: 4000 });
+        }
       },
       error: (err) => {
         const msg = err?.error?.message ?? 'No se pudo crear la solicitud.';
@@ -375,6 +383,56 @@ export class RetiradoresComponent implements OnInit {
             this.msgSvc.add({ severity: 'success', summary: 'Retiro confirmado', detail: 'El dinero fue descontado de las cuentas.', life: 3000 });
           },
           error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo confirmar.' })
+        });
+      }
+    });
+  }
+
+  /** Reintenta notificar por Telegram una solicitud PENDIENTE (ej: el retirador ya le dio /start al bot). */
+  reenviarSolicitud(s: SolicitudRetiro): void {
+    this.retiradorSvc.reenviarSolicitud(s.id).subscribe({
+      next: (res) => {
+        const idx = this.historial.findIndex(x => x.id === res.id);
+        if (idx > -1) this.historial[idx] = res;
+        if (res.telegramNotificado === false) {
+          this.msgSvc.add({
+            severity: 'warn', summary: 'Aún no se pudo notificar',
+            detail: 'El retirador todavía no ha vinculado su Telegram (debe enviarle /start al bot).',
+            life: 6000
+          });
+        } else {
+          this.msgSvc.add({ severity: 'success', summary: 'Reenviado', detail: 'Se volvió a notificar al retirador por Telegram.', life: 4000 });
+        }
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'No se pudo reenviar la solicitud.';
+        this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+      }
+    });
+  }
+
+  /** Cancela una solicitud aún no completada (ej: se envió por error). No mueve saldos. */
+  cancelarSolicitud(s: SolicitudRetiro): void {
+    this.confirmSvc.confirm({
+      message: `¿Cancelar la solicitud #${s.id} de <strong>${s.totalMonto | 0}</strong> COP?<br>Como el dinero solo se descuenta al confirmar, cancelarla ahora no afecta ningún saldo.`,
+      header: 'Cancelar solicitud',
+      icon: 'pi pi-times-circle',
+      acceptLabel: 'Sí, cancelar',
+      rejectLabel: 'Volver',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.retiradorSvc.cancelarSolicitud(s.id).subscribe({
+          next: (res) => {
+            const idxHist = this.historial.findIndex(x => x.id === res.id);
+            if (idxHist > -1) this.historial[idxHist] = res;
+            this.solicitudesSinAsignar = this.solicitudesSinAsignar.filter(x => x.id !== res.id);
+            this.loadAll();
+            this.msgSvc.add({ severity: 'success', summary: 'Solicitud cancelada', detail: 'No se movió ningún saldo.', life: 3000 });
+          },
+          error: (err) => {
+            const msg = err?.error?.message ?? 'No se pudo cancelar la solicitud.';
+            this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+          }
         });
       }
     });
@@ -442,8 +500,11 @@ export class RetiradoresComponent implements OnInit {
     return pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}.`;
   }
 
-  estadoSeverity(estado: EstadoSolicitud): 'warning' | 'info' | 'success' {
-    return estado === 'COMPLETADO' ? 'success' : estado === 'PENDIENTE' ? 'warning' : 'info';
+  estadoSeverity(estado: EstadoSolicitud): 'warning' | 'info' | 'success' | 'danger' {
+    if (estado === 'COMPLETADO') return 'success';
+    if (estado === 'PENDIENTE') return 'warning';
+    if (estado === 'CANCELADO') return 'danger';
+    return 'info';
   }
 
   bankIcon(bankType: string): string {

@@ -228,7 +228,10 @@ export class RetiradoresComponent implements OnInit {
         this.loadSinAsignar();
         this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'Se publicó en Telegram. El primero que la tome queda asignado.', life: 5000 });
       },
-      error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la solicitud.' })
+      error: (err) => {
+        const msg = err?.error?.message ?? 'No se pudo crear la solicitud.';
+        this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+      }
     });
   }
 
@@ -336,7 +339,10 @@ export class RetiradoresComponent implements OnInit {
         this.loadAll();
         this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'El retirador fue notificado.', life: 4000 });
       },
-      error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la solicitud.' })
+      error: (err) => {
+        const msg = err?.error?.message ?? 'No se pudo crear la solicitud.';
+        this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+      }
     });
   }
 

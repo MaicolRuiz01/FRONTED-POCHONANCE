@@ -487,3 +487,12 @@
 }
 
 /* .account-title — reemplazado por .cop-card-name */
+
+/* Íconos de cupo cajero/corresponsal (verde=disponible, rojo=agotado) */
+.cupo-ico {
+  font-size: 0.8rem;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.cupo-ico-ok { color: #16a34a; }   /* verde: aún hay cupo */
+.cupo-ico-red { color: #dc2626; }  /* rojo: cupo agotado */

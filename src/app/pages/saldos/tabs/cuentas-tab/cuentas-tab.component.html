@@ -19,11 +19,12 @@
   <button pButton label="Pago Cliente" icon="pi pi-wallet" class="btn-accion btn-pago"
     (click)="abrirDialogPago()"></button>
 
-  <div class="total-badge" (click)="openCupoDialog()" title="Ver cupo por banco">
+  <div class="total-badge" (click)="openCupoDialog()"
+       title="Total disponible = suma de saldos − 4x1000 (0,4%)">
     <i class="pi pi-calculator total-badge-icon"></i>
     <div class="total-badge-body">
-      <span class="total-badge-label">Total COP</span>
-      <span class="total-badge-value">{{ totalCuentas | currency:'COP':'symbol':'1.0-0' }}</span>
+      <span class="total-badge-label">Total COP disponible</span>
+      <span class="total-badge-value">{{ totalCuentasNeto | currency:'COP':'symbol':'1.0-0' }}</span>
     </div>
     <i class="pi pi-chevron-right total-badge-arrow"></i>
   </div>
@@ -83,11 +84,23 @@
             <span class="cop-stat-value">{{ getDisponible(account.balance) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
           <div class="cop-stat-row">
-            <span class="cop-stat-label">Cajero disp.</span>
+            <span class="cop-stat-label">
+              <i class="pi pi-credit-card cupo-ico"
+                 [class.cupo-ico-ok]="(account.cupoCajeroDisponibleHoy ?? 0) > 0"
+                 [class.cupo-ico-red]="(account.cupoCajeroDisponibleHoy ?? 0) <= 0"
+                 [title]="(account.cupoCajeroDisponibleHoy ?? 0) > 0 ? 'Cajero: cupo disponible' : 'Cajero: cupo agotado'"></i>
+              Cajero disp.
+            </span>
             <span class="cop-stat-value">{{ (account.cupoCajeroDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
           <div class="cop-stat-row">
-            <span class="cop-stat-label">Corresponsal disp.</span>
+            <span class="cop-stat-label">
+              <i class="pi pi-building cupo-ico"
+                 [class.cupo-ico-ok]="(account.cupoCorresponsalDisponibleHoy ?? 0) > 0"
+                 [class.cupo-ico-red]="(account.cupoCorresponsalDisponibleHoy ?? 0) <= 0"
+                 [title]="(account.cupoCorresponsalDisponibleHoy ?? 0) > 0 ? 'Corresponsal: cupo disponible' : 'Corresponsal: cupo agotado'"></i>
+              Corresponsal disp.
+            </span>
             <span class="cop-stat-value">{{ (account.cupoCorresponsalDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
         </div>
@@ -252,6 +265,18 @@
       </ng-container>
     </div>
 
+    <!-- Aviso: cupo agotado / monto excede -->
+    <div *ngIf="cupoAgotadoRetiro"
+         style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; font-size:.83rem; display:flex; align-items:center; gap:8px;">
+      <i class="pi pi-ban"></i>
+      <span>El cupo de <strong>{{ tipoRetiro === 'CAJERO' ? 'cajero' : 'corresponsal' }}</strong> de esta cuenta ya está <strong>agotado</strong> hoy. No puedes retirar por este medio.</span>
+    </div>
+    <div *ngIf="!cupoAgotadoRetiro && montoExcedeCupo"
+         style="background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:8px; padding:10px 14px; font-size:.83rem; display:flex; align-items:center; gap:8px;">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>El monto supera el cupo de {{ tipoRetiro === 'CAJERO' ? 'cajero' : 'corresponsal' }} disponible ({{ cupoDisponibleRetiro | currency:'COP':'$':'1.0-0' }}).</span>
+    </div>
+
     <div>
       <label style="font-weight:600; margin-bottom:6px; display:block;">Caja</label>
       <p-dropdown [options]="cajas" [(ngModel)]="selectedCajaId" optionLabel="name" optionValue="id"
@@ -270,7 +295,7 @@
   <p-footer>
     <button pButton label="Cancelar" class="p-button-text" (click)="displayDialogRetiro = false"></button>
     <button pButton label="Confirmar retiro" class="p-button-danger"
-      [disabled]="submittingRetiro" [loading]="submittingRetiro"
+      [disabled]="submittingRetiro || cupoAgotadoRetiro || montoExcedeCupo" [loading]="submittingRetiro"
       (click)="registrarRetiro()"></button>
   </p-footer>
 </p-dialog>

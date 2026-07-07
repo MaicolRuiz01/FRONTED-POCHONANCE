@@ -145,6 +145,30 @@ export class CuentasTabComponent implements OnInit {
     return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
   }
 
+  /** Total COP disponible = suma de saldos MENOS el 4x1000 de todo (para sacarlo hay que pagarlo). */
+  get totalCuentasNeto(): number {
+    return this.getDisponible(this.totalCuentas);
+  }
+
+  // ── Cupo del retiro seleccionado (para avisar si está agotado) ──
+  get cuentaRetiroSeleccionada(): any {
+    return this.cuentas.find(c => c.id === this.selectedCuentaOrigenId);
+  }
+  get cupoDisponibleRetiro(): number {
+    const c = this.cuentaRetiroSeleccionada;
+    if (!c) return 0;
+    return this.tipoRetiro === 'CAJERO'
+      ? (c.cupoCajeroDisponibleHoy ?? 0)
+      : (c.cupoCorresponsalDisponibleHoy ?? 0);
+  }
+  get cupoAgotadoRetiro(): boolean {
+    return !!this.selectedCuentaOrigenId && this.cupoDisponibleRetiro <= 0;
+  }
+  get montoExcedeCupo(): boolean {
+    return !!this.montoMovimiento && !!this.selectedCuentaOrigenId
+      && this.montoMovimiento > this.cupoDisponibleRetiro;
+  }
+
   loadCuentas() {
     // 1) Mostrar al instante lo último cargado (evita la pantalla vacía al re-entrar).
     const cache = this.accountService.getCached();

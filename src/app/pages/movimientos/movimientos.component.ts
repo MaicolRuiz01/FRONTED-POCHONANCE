@@ -145,14 +145,20 @@ private obtenerListaPorTipo(tipo: string) {
 }
 
 eliminarMovimiento(movimiento: Movimiento) {
-  if (!confirm('¿Estás seguro de que deseas eliminar este movimiento?')) return;
+  if (!confirm('¿Eliminar este movimiento? Se revertirán los saldos (y el cupo, si es un retiro de hoy).')) return;
   this.movimientoService.eliminarMovimiento(movimiento).subscribe({
     next: () => {
       this.retiros = this.retiros.filter(m => m.id !== movimiento.id);
       this.depositos = this.depositos.filter(m => m.id !== movimiento.id);
       this.traspasos = this.traspasos.filter(m => m.idtransaccion !== movimiento.idtransaccion);
+      // Los saldos de caja/cuenta cambiaron con la reversa → refrescar.
+      this.loadCajas();
+      this.notificationService.success('Movimiento eliminado y saldos revertidos');
     },
-    error: () => this.notificationService.error('Error al eliminar el movimiento')
+    error: (err) => {
+      const msg = err?.error?.error || 'Error al eliminar el movimiento';
+      this.notificationService.error(msg);
+    }
   });
 }
 }

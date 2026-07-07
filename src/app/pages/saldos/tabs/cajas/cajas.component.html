@@ -37,11 +37,18 @@
         <div class="caja-nombre">
           <i class="pi pi-box mr-2" style="color:#0891b2;font-size:0.9rem;"></i>{{ caja.name }}
         </div>
-        <button pButton icon="pi pi-refresh"
-          class="p-button-text p-button-sm p-button-secondary"
-          pTooltip="Ajustar saldo"
-          (click)="abrirAjusteCaja(caja); $event.stopPropagation()">
-        </button>
+        <div style="display:flex; gap:.15rem;">
+          <button pButton icon="pi pi-refresh"
+            class="p-button-text p-button-sm p-button-secondary"
+            pTooltip="Ajustar saldo"
+            (click)="abrirAjusteCaja(caja); $event.stopPropagation()">
+          </button>
+          <button pButton icon="pi pi-trash"
+            class="p-button-text p-button-sm p-button-danger"
+            pTooltip="Eliminar caja"
+            (click)="eliminarCaja(caja, $event)">
+          </button>
+        </div>
       </div>
 
       <!-- Saldo principal -->
@@ -111,6 +118,7 @@
               <th>Caja</th>
               <th>Cliente</th>
               <th>Proveedor</th>
+              <th>Acción</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-mov>
@@ -119,14 +127,20 @@
               <td>{{ mov.tipo }}</td>
               <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
               <td>{{ mov.cuentaOrigen || '-' }}</td>
-              <td>{{ mov.cuentaDestino || '-' }}</td>
+              <td>{{ mov.cuentaDestino || mov.cajaDestino || '-' }}</td>
               <td>{{ mov.caja || '-' }}</td>
               <td>{{ mov.pagoCliente || '-' }}</td>
               <td>{{ mov.pagoProveedor || '-' }}</td>
+              <td>
+                <button *ngIf="esEliminable(mov)" pButton icon="pi pi-trash"
+                  class="p-button-text p-button-sm p-button-danger"
+                  pTooltip="Eliminar y revertir" (click)="eliminarMovimientoCaja(mov)">
+                </button>
+              </td>
             </tr>
           </ng-template>
           <ng-template pTemplate="emptymessage">
-            <tr><td colspan="8" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
+            <tr><td colspan="9" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
           </ng-template>
         </p-table>
       </ng-container>

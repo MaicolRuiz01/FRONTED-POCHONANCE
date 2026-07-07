@@ -94,6 +94,40 @@ export class CajasComponent implements OnInit {
     this.showAjusteCaja = true;
   }
 
+  // ── Eliminar caja ──────────────────────────────────────────────
+  eliminarCaja(caja: Caja, event: Event) {
+    event.stopPropagation(); // que no abra el modal de movimientos
+    if (!caja?.id) return;
+    if (!confirm(`¿Eliminar la caja "${caja.name}"? No se puede si tiene movimientos o gastos asociados.`)) return;
+    this.cajaService.eliminar(caja.id).subscribe({
+      next: () => {
+        this.cajas = this.cajas.filter(c => c.id !== caja.id);
+        this.notificationService.success('Caja eliminada');
+      },
+      error: (err) => this.notificationService.error(err?.error?.error || 'No se pudo eliminar la caja.')
+    });
+  }
+
+  // ── Eliminar un movimiento de la caja (con reversa de saldos/cupo) ──
+  /** Solo mostramos el botón para los tipos que el backend sabe revertir. */
+  esEliminable(mov: any): boolean {
+    const t = (mov?.tipo || '').toUpperCase();
+    return t.startsWith('RETIRO') || t === 'PAGO PROVEEDOR' || t === 'TRANSFERENCIA CAJA';
+  }
+
+  eliminarMovimientoCaja(mov: any) {
+    if (!mov?.id) return;
+    if (!confirm('¿Eliminar este movimiento? Se revertirán los saldos (y el cupo, si es un retiro de hoy).')) return;
+    this.movimientoService.eliminarMovimiento(mov).subscribe({
+      next: () => {
+        this.movimientosCaja = this.movimientosCaja.filter(m => m.id !== mov.id);
+        this.loadCajas(); // los saldos cambiaron con la reversa
+        this.notificationService.success('Movimiento eliminado y saldos revertidos');
+      },
+      error: (err) => this.notificationService.error(err?.error?.error || 'No se pudo eliminar el movimiento.')
+    });
+  }
+
   onAjusteCajaRealizado() {
     this.loadCajas(); // refresca saldos después del ajuste
   }

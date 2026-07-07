@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
 export type TipoRetiro = 'CAJERO' | 'CORRESPONSAL' | 'COMPLETO';
-export type EstadoSolicitud = 'SIN_ASIGNAR' | 'PENDIENTE' | 'COMPLETADO';
+export type EstadoSolicitud = 'SIN_ASIGNAR' | 'PENDIENTE' | 'COMPLETADO' | 'CANCELADO';
 
 export interface Retirador {
   id?: number;
@@ -60,6 +60,8 @@ export interface SolicitudRetiro {
   totalMonto: number;
   pagoRetirador: number;
   detalles: DetalleRetiro[];
+  /** true/false solo viene poblado justo después de crear/reenviar la solicitud. */
+  telegramNotificado?: boolean;
 }
 
 export interface RankingRetirador {
@@ -99,6 +101,16 @@ export class RetiradorService {
 
   confirmarSolicitud(solicitudId: number): Observable<SolicitudRetiro> {
     return this.http.post<SolicitudRetiro>(`${this.base}/solicitudes/${solicitudId}/confirmar`, {});
+  }
+
+  /** Reintenta la notificación de Telegram de una solicitud individual (ej: si el retirador no había dado /start al bot). */
+  reenviarSolicitud(solicitudId: number): Observable<SolicitudRetiro> {
+    return this.http.post<SolicitudRetiro>(`${this.base}/solicitudes/${solicitudId}/reenviar`, {});
+  }
+
+  /** Cancela una solicitud que aún no fue completada (ej: se envió por error). No mueve saldos. */
+  cancelarSolicitud(solicitudId: number): Observable<SolicitudRetiro> {
+    return this.http.post<SolicitudRetiro>(`${this.base}/solicitudes/${solicitudId}/cancelar`, {});
   }
 
   historial(retiradorId: number): Observable<SolicitudRetiro[]> {

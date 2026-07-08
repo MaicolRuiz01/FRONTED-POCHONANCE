@@ -28,7 +28,9 @@ export class SaldosTabComponent {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['tab'] === 'cuentas-cop') {
-        this.selectedIndex = 2;
+        this.selectedIndex = 0; // pestaña CUENTAS
+        // Abrir directamente la vista de cuentas COP (no el resumen).
+        setTimeout(() => this.saldosComp?.verCop());
       }
     });
   }

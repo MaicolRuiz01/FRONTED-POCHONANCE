@@ -26,6 +26,7 @@ export interface ActiveP2POrder {
   createTime: string;
   preAsignadoCopId: number | null;
   preAsignadoCopNombre: string | null;
+  estadoManual?: string; // 'PENDIENTE' (amarillo) | 'RECIBIDO' (verde)
 }
 
 export interface PreAsignacionRequest {
@@ -61,5 +62,10 @@ export class P2PSyncService {
 
   deletePreAsignacion(orderNumber: string): Observable<any> {
     return this.http.delete(`${this.activeUrl}/pre-asignacion/${orderNumber}`);
+  }
+
+  /** Clasifica el dinero de la orden: 'RECIBIDO' (verde) o 'PENDIENTE' (amarillo). */
+  setEstadoManual(orderNumber: string, estado: 'RECIBIDO' | 'PENDIENTE'): Observable<any> {
+    return this.http.put(`${this.activeUrl}/pre-asignacion/${orderNumber}/estado`, {}, { params: { estado } });
   }
 }

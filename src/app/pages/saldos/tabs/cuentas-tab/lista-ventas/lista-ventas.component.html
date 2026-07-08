@@ -1,180 +1,170 @@
-<div class="account-header">
-  <div class="account-header-left">
-    <button
-      pButton
-      label="Regresar"
-      icon="pi pi-arrow-left"
-      class="p-button-rounded p-button-text"
-      (click)="goBack()">
-    </button>
+<div class="lv-wrap">
 
-    <div class="account-header-text">
-      <h2 class="account-title">{{ accountName }}</h2>
-      <p class="account-subtitle">
-        Cuenta COP • ID #{{ accountId }}
-      </p>
+  <!-- Header -->
+  <a class="lv-back" (click)="goBack()"><i class="pi pi-arrow-left"></i> Regresar</a>
+
+  <div class="lv-header">
+    <div>
+      <h2 class="lv-title">{{ accountName }}</h2>
+      <span class="lv-sub">Cuenta COP</span>
+    </div>
+    <div class="lv-saldo">
+      <span class="lv-saldo-label">Saldo actual</span>
+      <span class="lv-saldo-val">{{ saldo | currency:'COP':'$':'1.0-0' }}</span>
     </div>
   </div>
 
-  <!-- Si quieres mostrar saldo actual de la cuenta -->
-  <div class="account-header-right" *ngIf="saldo != null">
-    <span class="account-badge-label">Saldo actual</span>
-    <span class="account-badge-amount">
-      {{ saldo | currency:'COP':'symbol':'1.0-0' }}
-    </span>
-  </div>
-</div>
+  <p-tabView (onChange)="onTabChange($event)" styleClass="lv-tabs">
 
-<br>
-<hr>
-<br>
-<p-card class="account-card">
-  <p-tabView (onChange)="onTabChange($event)">
-
-    <!-- TAB 0: Ventas -->
-    <p-tabPanel header="Ventas">
-      <p-table
-        [value]="ventas"
-        *ngIf="!loadingVentas && ventas.length > 0"
-        class="p-datatable-striped p-shadow-2">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>ID</th>
-            <th>Monto (USD)</th>
-            <th>Monto (COP)</th>
-            <th>Fecha</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-venta>
-          <tr>
-            <td>{{ venta.id }}</td>
-            <td>{{ venta.dollarsUs | number:'1.2-2' }}</td>
-            <td>{{ venta.pesosCop | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ venta.date | date:'short' }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-      <div *ngIf="loadingVentas">Cargando ventas…</div>
-      <p *ngIf="!loadingVentas && ventas.length === 0">
-        No hay ventas registradas para esta cuenta.
-      </p>
-    </p-tabPanel>
-
-    <!-- TAB 1: Entradas -->
-    <p-tabPanel header="Entradas">
-      <p-table
-        [value]="movimientosEntradas"
-        *ngIf="!loadingMovs && movimientosEntradas.length > 0"
-        class="p-datatable-striped p-shadow-2">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Monto (COP)</th>
-            <th>Detalle</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-mov>
-          <tr>
-            <td>{{ mov.fecha | date:'short' }}</td>
-            <td>{{ mov.tipo }}</td>
-            <td>{{ mov.montoSigned | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ mov.detalle }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-      <div *ngIf="loadingMovs">Cargando movimientos…</div>
-      <p *ngIf="!loadingMovs && movimientosEntradas.length === 0">
-        No hay entradas para esta cuenta.
-      </p>
-    </p-tabPanel>
-
-    <!-- TAB 2: Salidas -->
-    <p-tabPanel header="Salidas">
-      <p-table
-        [value]="movimientosSalidas"
-        *ngIf="!loadingMovs && movimientosSalidas.length > 0"
-        class="p-datatable-striped p-shadow-2">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Monto (COP)</th>
-            <th>Detalle</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-mov>
-          <tr>
-            <td>{{ mov.fecha | date:'short' }}</td>
-            <td>{{ mov.tipo }}</td>
-            <td>{{ mov.montoSigned | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ mov.detalle }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-
-      <div *ngIf="loadingMovs">Cargando movimientos…</div>
-      <p *ngIf="!loadingMovs && movimientosSalidas.length === 0">
-        No hay salidas para esta cuenta.
-      </p>
-    </p-tabPanel>
-
-    <!-- TAB 3: Ajustes de saldo -->
-    <p-tabPanel header="Ajustes de saldo">
-      <ng-container *ngIf="!loadingAjustes; else ajustesLoadingTpl">
-        <p-table
-          [value]="ajustesCuenta"
-          *ngIf="ajustesCuenta.length > 0"
-          class="p-datatable-striped p-shadow-2">
+    <!-- ══ VENTAS P2P ══ -->
+    <p-tabPanel header="Ventas P2P">
+      <ng-container *ngIf="!loadingVentas; else cargando">
+        <p-table [value]="ventas" [paginator]="ventas.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
           <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Orden</th><th class="tr">USDT</th><th class="tr">Pesos</th><th class="tr">Tasa</th><th>Cuenta Binance</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-v>
             <tr>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Monto</th>
-              <th>Motivo</th>
-              <th>Actor</th>
-              <th>Saldo anterior</th>
-              <th>Saldo nuevo</th>
-              <th>Diferencia</th>
+              <td>{{ v.date | date:'dd/MM/yy HH:mm' }}</td>
+              <td>{{ v.numberOrder }}</td>
+              <td class="tr">{{ v.dollarsUs | number:'1.0-2' }}</td>
+              <td class="tr">{{ v.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr">{{ v.tasa | number:'1.0-2' }}</td>
+              <td>{{ v.binanceAccount?.name || v.nameAccountBinance || '—' }}</td>
             </tr>
           </ng-template>
-
-          <ng-template pTemplate="body" let-aj>
-            <tr>
-              <td>{{ aj.fecha | date:'short' }}</td>
-              <td>{{ aj.tipo }}</td>
-              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.motivo || '-' }}</td>
-              <td>{{ aj.actor || '-' }}</td>
-              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td [ngClass]="{ 'text-green': aj.diferencia > 0, 'text-red': aj.diferencia < 0 }">
-                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
-              </td>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8" class="p-text-center">
-                Sin ajustes de saldo para esta cuenta.
-              </td>
-            </tr>
-          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="lv-empty">Sin ventas P2P para esta cuenta.</td></tr></ng-template>
         </p-table>
-
-        <p *ngIf="ajustesCuenta.length === 0">
-          No hay ajustes de saldo para esta cuenta.
-        </p>
       </ng-container>
+    </p-tabPanel>
 
-      <ng-template #ajustesLoadingTpl>
-        <div class="p-3">Cargando ajustes de saldo…</div>
-      </ng-template>
+    <!-- ══ COMPRAS P2P ══ -->
+    <p-tabPanel header="Compras P2P">
+      <ng-container *ngIf="!loadingCompras; else cargando">
+        <p-table [value]="compras" [paginator]="compras.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Orden</th><th class="tr">USDT</th><th class="tr">Pesos (total)</th><th class="tr">Asignado a esta cuenta</th><th class="tr">Tasa</th><th>Cuenta Binance</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-c>
+            <tr>
+              <td>{{ c.date | date:'dd/MM/yy HH:mm' }}</td>
+              <td>{{ c.numberOrder }}</td>
+              <td class="tr">{{ c.dollarsUs | number:'1.0-2' }}</td>
+              <td class="tr">{{ c.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr"><strong>{{ c.montoAsignado | currency:'COP':'$':'1.0-0' }}</strong></td>
+              <td class="tr">{{ c.tasa | number:'1.0-2' }}</td>
+              <td>{{ c.binanceAccountName || '—' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="7" class="lv-empty">Sin compras P2P asignadas a esta cuenta.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </p-tabPanel>
+
+    <!-- ══ RETIROS ══ -->
+    <p-tabPanel header="Retiros">
+      <ng-container *ngIf="!loadingMovs; else cargando">
+        <p-table [value]="retiros" [paginator]="retiros.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Tipo</th><th class="tr">Monto</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-m>
+            <tr>
+              <td>{{ m.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td><p-tag [value]="m.tipo" [severity]="tipoSeverity(m.tipo)"></p-tag></td>
+              <td class="tr lv-neg">{{ m.montoSigned | currency:'COP':'$':'1.0-0' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="3" class="lv-empty">Sin retiros.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </p-tabPanel>
+
+    <!-- ══ TRASPASOS (COP ↔ COP) ══ -->
+    <p-tabPanel header="Traspasos">
+      <ng-container *ngIf="!loadingMovs; else cargando">
+        <p-table [value]="traspasos" [paginator]="traspasos.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Detalle</th><th class="tr">Monto</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-m>
+            <tr>
+              <td>{{ m.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td>{{ m.detalle || 'Traspaso' }}</td>
+              <td class="tr" [ngClass]="m.entrada ? 'lv-pos' : 'lv-neg'">{{ m.montoSigned | currency:'COP':'$':'1.0-0' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="3" class="lv-empty">Sin traspasos entre cuentas.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </p-tabPanel>
+
+    <!-- ══ ENTRADAS ══ -->
+    <p-tabPanel header="Entradas">
+      <ng-container *ngIf="!loadingMovs; else cargando">
+        <p-table [value]="entradas" [paginator]="entradas.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="tr">Monto</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-m>
+            <tr>
+              <td>{{ m.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td><p-tag [value]="m.tipo" [severity]="tipoSeverity(m.tipo)"></p-tag></td>
+              <td>{{ m.detalle || '—' }}</td>
+              <td class="tr lv-pos">{{ m.montoSigned | currency:'COP':'$':'1.0-0' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="4" class="lv-empty">Sin entradas.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </p-tabPanel>
+
+    <!-- ══ SALIDAS ══ -->
+    <p-tabPanel header="Salidas">
+      <ng-container *ngIf="!loadingMovs; else cargando">
+        <p-table [value]="salidas" [paginator]="salidas.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="tr">Monto</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-m>
+            <tr>
+              <td>{{ m.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td><p-tag [value]="m.tipo" [severity]="tipoSeverity(m.tipo)"></p-tag></td>
+              <td>{{ m.detalle || '—' }}</td>
+              <td class="tr lv-neg">{{ m.montoSigned | currency:'COP':'$':'1.0-0' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="4" class="lv-empty">Sin salidas.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </p-tabPanel>
+
+    <!-- ══ AJUSTES DE SALDO ══ -->
+    <p-tabPanel header="Ajustes de saldo">
+      <ng-container *ngIf="!loadingAjustes; else cargando">
+        <p-table [value]="ajustes" [paginator]="ajustes.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr><th>Fecha</th><th>Motivo</th><th>Actor</th><th class="tr">Saldo anterior</th><th class="tr">Saldo nuevo</th><th class="tr">Diferencia</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-a>
+            <tr>
+              <td>{{ a.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td>{{ a.motivo || '—' }}</td>
+              <td>{{ a.actor || '—' }}</td>
+              <td class="tr">{{ a.saldoAnterior | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr">{{ a.saldoNuevo | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr" [ngClass]="(a.diferencia ?? 0) >= 0 ? 'lv-pos' : 'lv-neg'">{{ a.diferencia | currency:'COP':'$':'1.0-0' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="lv-empty">Sin ajustes.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
     </p-tabPanel>
 
   </p-tabView>
-</p-card>
 
+  <ng-template #cargando>
+    <div class="lv-loading"><p-progressSpinner strokeWidth="4" [style]="{'width':'34px','height':'34px'}"></p-progressSpinner></div>
+  </ng-template>
+
+</div>

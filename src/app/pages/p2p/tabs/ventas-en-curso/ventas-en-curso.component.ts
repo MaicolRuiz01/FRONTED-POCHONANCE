@@ -9,7 +9,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { Subscription } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { finalize, debounceTime } from 'rxjs/operators';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 
 import { P2PSyncService, ActiveP2POrder } from '../../../../core/services/p2p-sync.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
@@ -68,6 +69,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private sseSub?: Subscription;
   private sseStatusSub?: Subscription;
   private p2pSub?: Subscription;
+  private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
 
   constructor(
@@ -75,7 +77,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     private accountCopService: AccountCopService,
     private sseService: P2PSseService,
     private notification: NotificationService,
-    private anunciosService: AnunciosService
+    private anunciosService: AnunciosService,
+    private saldosSse: SaldosSseService
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +95,12 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     });
     this.sseStatusSub = this.sseService.connected$.subscribe(v => this.sseConectado = v);
 
+    // Tiempo real de saldos COP: al cambiar un saldo, refresca las mini-cards al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(700))
+      .subscribe(() => this.refrescarSaldosCop());
+
     // Si otra vista (el modal) cambia el estado P2P de una cuenta, recargamos
     this.p2pSub = this.accountCopService.p2pCambio$.subscribe(() => this.loadCuentasCop());
   }
@@ -100,7 +109,22 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
+    this.saldosSub?.unsubscribe();
+    this.saldosSse.disconnect();
     clearInterval(this.countdownTimer);
+  }
+
+  /** Refresco liviano de saldos COP (id + balance) al recibir el evento SSE. */
+  private refrescarSaldosCop(): void {
+    this.accountCopService.getSaldos().subscribe({
+      next: saldos => {
+        const map = new Map(saldos.map(s => [s.id, s.balance]));
+        this.cuentasCop.forEach(c => {
+          if (c.id != null && map.has(c.id)) c.balance = map.get(c.id)!;
+        });
+      },
+      error: () => { /* silencioso */ }
+    });
   }
 
   // ── Countdown ────────────────────────────────────────────────
@@ -149,8 +173,6 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
-          // Al llegar datos frescos (saldos/ventas en curso) revisamos si algún cupo se llenó.
-          this.verificarCuposLlenos();
         },
         error: () => this.notification.error('No se pudo cargar las órdenes activas.')
       });
@@ -160,7 +182,6 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.accountCopService.getAll().subscribe({
       next: cuentas => {
         this.cuentasCop = cuentas;
-        this.verificarCuposLlenos();
       }
     });
   }
@@ -198,11 +219,12 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         const target = live ?? orden;
         target.preAsignadoCopId = copId;
         target.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === copId)?.name ?? '';
+        if (!target.estadoManual) target.estadoManual = 'PENDIENTE'; // por defecto, amarillo
         // Nuevo objeto para forzar CD
         this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: copId };
         this.notification.success('Pre-asignación guardada.');
-        // Si con esta asignación la cuenta alcanzó su cupo → avisar de inmediato.
-        this.verificarCuposLlenos();
+        // Aviso (NO bloqueo) si con esta asignación el amarillo se pasa del cupo.
+        this.avisarSiExcedeCupo(copId);
       },
       error: () => this.notification.error('Error al guardar pre-asignación.')
     });
@@ -274,17 +296,73 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   /** Solo muestra las cuentas marcadas como activas para P2P.
    *  Si ninguna está marcada, muestra todas como fallback.
-   *  Las cuentas con el cupo lleno quedan deshabilitadas (no se pueden asignar). */
+   *  Las cuentas con el cupo lleno se marcan en la etiqueta, pero NO se bloquean
+   *  (el cliente pidió advertencia, no prohibición). */
   copOptions() {
     const activas = this.cuentasCop.filter(c => c.activaParaP2P);
     const lista   = activas.length > 0 ? activas : this.cuentasCop;
-    return lista.map(c => {
-      const lleno = this.cupoLlenoDe(c);
-      return {
-        label: lleno ? `${c.name} — cupo lleno` : c.name,
-        value: c.id,
-        disabled: lleno
-      };
+    return lista.map(c => ({
+      label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
+      value: c.id
+    }));
+  }
+
+  // ── Saldos verde (recibido) / amarillo (pendiente) por cuenta ──
+
+  /** Suma de pesosCop de las órdenes pre-asignadas a la cuenta con (o sin) estado RECIBIDO. */
+  private sumaOrdenes(copId: number | null | undefined, recibido: boolean): number {
+    if (copId == null) return 0;
+    return this.ordenes
+      .filter(o => o.preAsignadoCopId === copId && ((o.estadoManual === 'RECIBIDO') === recibido))
+      .reduce((s, o) => s + (o.pesosCop ?? 0), 0);
+  }
+
+  /** VERDE (solo visual): saldo real + órdenes marcadas como RECIBIDO. */
+  saldoVerdeDe(c: AccountCop): number {
+    return (c.balance ?? 0) + this.sumaOrdenes(c.id, true);
+  }
+
+  /** AMARILLO: órdenes pre-asignadas pendientes (aún no marcadas RECIBIDO). */
+  saldoAmarilloDe(c: AccountCop): number {
+    return this.sumaOrdenes(c.id, false);
+  }
+
+  medioLabel(c: AccountCop): string {
+    if (c.cupoTipoP2P === 'CORRESPONSAL') return 'corresponsal';
+    if (c.cupoTipoP2P === 'AMBOS') return 'cajero+corresponsal';
+    return 'cajero';
+  }
+
+  /** Aviso (NO bloqueo) si el amarillo de la cuenta superó su cupo. */
+  private avisarSiExcedeCupo(copId: number | null | undefined): void {
+    if (copId == null) return;
+    const c = this.cuentasCop.find(x => x.id === copId);
+    if (!c) return;
+    const max = this.cupoMaxDeCuenta(c);
+    if (max <= 0) return;
+    const amarillo = this.saldoAmarilloDe(c);
+    if (amarillo > max) {
+      const exceso = amarillo - max;
+      this.notification.warn(
+        `Ojo: ${c.name} se pasó del cupo de ${this.medioLabel(c)}. ` +
+        `Excedente $${Math.round(exceso).toLocaleString('es-CO')} (cupo $${Math.round(max).toLocaleString('es-CO')}).`
+      );
+    }
+  }
+
+  /** Botones "no ha pagado" (amarillo) / "ya cayó" (verde) por orden. */
+  marcarEstado(orden: ActiveP2POrder, estado: 'RECIBIDO' | 'PENDIENTE'): void {
+    if (!orden.preAsignadoCopId) {
+      this.notification.warn('Primero asigna la orden a una cuenta COP.');
+      return;
+    }
+    this.syncService.setEstadoManual(orden.orderNumber, estado).subscribe({
+      next: () => {
+        const live = this.ordenes.find(o => o.orderNumber === orden.orderNumber);
+        if (live) live.estadoManual = estado;
+        this.notification.success(estado === 'RECIBIDO' ? 'Marcada: ya cayó (verde).' : 'Marcada: pendiente (amarillo).');
+      },
+      error: (err) => this.notification.error(err?.error?.error || 'No se pudo cambiar el estado.')
     });
   }
 
@@ -360,22 +438,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   dropdownChanged(orden: ActiveP2POrder, copId: number | null): void {
-    if (copId) {
-      // 🚫 BLOQUEO: no se puede asignar una cuenta que ya cumplió su cupo del día.
-      const cuenta = this.cuentasCop.find(c => c.id === copId);
-      if (cuenta && this.cupoLlenoDe(cuenta)) {
-        this.notification.warn(`${cuenta.name} ya cumplió su cupo del día; no se puede asignar.`);
-        // Revertir la selección visual a lo que estaba antes.
-        this.seleccionPendiente = {
-          ...this.seleccionPendiente,
-          [orden.orderNumber]: orden.preAsignadoCopId ?? null
-        };
-        // Ofrecer cambiar/desactivar de una vez.
-        this.cupoLlenoCuenta = cuenta;
-        this.showCupoLleno = true;
-        return;
-      }
-    }
+    // Sin bloqueo: el cliente pidió advertencia (no prohibición). El aviso de exceso
+    // de cupo se muestra tras guardar la pre-asignación (ver avisarSiExcedeCupo).
 
     // Spread para nuevo objeto → Angular detecta cambio inmediatamente en [ngModel]
     this.seleccionPendiente = { ...this.seleccionPendiente, [orden.orderNumber]: copId };

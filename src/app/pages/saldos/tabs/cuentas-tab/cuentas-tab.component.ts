@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { AccountCopService, AccountCop, AccountCopCreate, BrebeKey } from '../../../../core/services/account-cop.service';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
@@ -43,8 +46,9 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
   styleUrls: ['./cuentas-tab.component.css'],
   providers: [MessageService, ConfirmationService]
 })
-export class CuentasTabComponent implements OnInit {
+export class CuentasTabComponent implements OnInit, OnDestroy {
   cuentas: AccountCop[] = [];
+  private saldosSub?: Subscription;
   newAccount: any = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
   displayDialog: boolean = false;
 
@@ -115,7 +119,8 @@ export class CuentasTabComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private saldosSse: SaldosSseService
 ) { }
 
   ngOnInit(): void {
@@ -125,6 +130,30 @@ export class CuentasTabComponent implements OnInit {
       next: data => this.cajas = data,
       error: () => this.notificationService.error('Error al cargar cajas')
     });
+
+    // Tiempo real: cuando cambia un saldo en el backend, refresca los saldos al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(700))
+      .subscribe(() => this.refrescarSaldos());
+  }
+
+  /** Refresco liviano de saldos (solo id + balance) al recibir el evento SSE. */
+  private refrescarSaldos(): void {
+    this.accountService.getSaldos().subscribe({
+      next: saldos => {
+        const map = new Map(saldos.map(s => [s.id, s.balance]));
+        this.cuentas.forEach(c => {
+          if (c.id != null && map.has(c.id)) c.balance = map.get(c.id)!;
+        });
+      },
+      error: () => { /* silencioso */ }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    this.saldosSse.disconnect();
   }
 
   abrirAjusteCuenta(cuenta: AccountCop) {

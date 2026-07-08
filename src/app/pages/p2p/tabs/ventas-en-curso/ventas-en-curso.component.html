@@ -9,10 +9,18 @@
       <!-- Punto de color por banco -->
       <span class="cop-mini-dot" [style.background]="bankColor(c.bankType)"></span>
 
-      <!-- Nombre y saldo -->
+      <!-- Nombre y saldos: verde (ya cayó) + amarillo (pendiente por caer) -->
       <div class="cop-mini-body">
         <span class="cop-mini-name">{{ c.name }}</span>
-        <span class="cop-mini-saldo">${{ (c.balance ?? 0) | number:'1.0-0' }}</span>
+        <span class="cop-mini-saldo cop-saldo-verde"
+              pTooltip="Ya cayó (saldo real + órdenes marcadas recibidas)" tooltipPosition="top">
+          ${{ saldoVerdeDe(c) | number:'1.0-0' }}
+        </span>
+        <span class="cop-mini-saldo cop-saldo-amarillo"
+              *ngIf="saldoAmarilloDe(c) > 0"
+              pTooltip="Pendiente por caer (órdenes pre-asignadas sin marcar)" tooltipPosition="top">
+          + ${{ saldoAmarilloDe(c) | number:'1.0-0' }}
+        </span>
       </div>
 
       <!-- Iconos cajero / corresponsal -->
@@ -226,8 +234,7 @@
               appendTo="body"
               styleClass="vc-dropdown"
               optionLabel="label"
-              optionValue="value"
-              [optionDisabled]="'disabled'">
+              optionValue="value">
             </p-dropdown>
             <!-- Botón "=": repite la última cuenta COP asignada -->
             <button pButton type="button"
@@ -243,13 +250,29 @@
 
       </tr>
 
-      <!-- Sub-fila: pre-asignación activa -->
+      <!-- Sub-fila: pre-asignación activa + clasificación manual del dinero -->
       <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow">
         <td colspan="5">
-          <span class="vc-preasign-badge">
-            <i class="pi pi-bookmark-fill"></i>
-            Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
-          </span>
+          <div class="vc-subrow-inner">
+            <span class="vc-preasign-badge">
+              <i class="pi pi-bookmark-fill"></i>
+              Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
+            </span>
+            <div class="vc-estado-btns">
+              <button pButton type="button" label="Ya cayó" icon="pi pi-check"
+                class="p-button-sm"
+                [ngClass]="orden.estadoManual === 'RECIBIDO' ? 'p-button-success' : 'p-button-outlined p-button-success'"
+                pTooltip="El dinero ya cayó → suma al verde" tooltipPosition="top"
+                (click)="marcarEstado(orden, 'RECIBIDO')">
+              </button>
+              <button pButton type="button" label="Pendiente" icon="pi pi-clock"
+                class="p-button-sm"
+                [ngClass]="(orden.estadoManual || 'PENDIENTE') === 'PENDIENTE' ? 'p-button-warning' : 'p-button-outlined p-button-warning'"
+                pTooltip="Aún no ha pagado → queda en amarillo" tooltipPosition="top"
+                (click)="marcarEstado(orden, 'PENDIENTE')">
+              </button>
+            </div>
+          </div>
         </td>
       </tr>
 

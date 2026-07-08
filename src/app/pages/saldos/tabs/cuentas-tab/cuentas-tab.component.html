@@ -83,6 +83,23 @@
             <span class="cop-stat-label">Disponible</span>
             <span class="cop-stat-value">{{ getDisponible(account.balance) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
+          <div class="cop-stat-row" *ngIf="(account.montoComprometido ?? 0) > 0">
+            <span class="cop-stat-label"
+                  [pTooltip]="tooltipComprometido(account)" tooltipPosition="top">
+              <i class="pi pi-clock cupo-ico cupo-ico-red"></i>
+              Comprometido (sin confirmar)
+            </span>
+            <span class="cop-stat-value cop-val--out"
+                  [pTooltip]="tooltipComprometido(account)" tooltipPosition="top">
+              {{ account.montoComprometido | currency:'COP':'$':'1.0-0' }}
+            </span>
+          </div>
+          <div class="cop-stat-row" *ngIf="(account.montoComprometido ?? 0) > 0">
+            <span class="cop-stat-label" pTooltip="Saldo menos lo ya comprometido en retiros sin confirmar. Es el máximo que se puede pedir en una nueva solicitud." tooltipPosition="top">
+              Disponible p/ nueva solicitud
+            </span>
+            <span class="cop-stat-value">{{ getDisponibleReal(account) | currency:'COP':'$':'1.0-0' }}</span>
+          </div>
           <div class="cop-stat-row">
             <span class="cop-stat-label">
               <i class="pi pi-credit-card cupo-ico"

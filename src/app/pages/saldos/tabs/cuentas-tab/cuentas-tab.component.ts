@@ -206,8 +206,41 @@ export class CuentasTabComponent implements OnInit {
             c.gastosHoy = total;
           });
         });
+
+        this.loadMontosComprometidos();
       }
     });
+  }
+
+  /** Carga cuánto de cada cuenta ya está "comprometido" en retiros enviados sin confirmar. */
+  loadMontosComprometidos() {
+    this.accountService.getMontosComprometidos().subscribe({
+      next: lista => {
+        const porCuenta = new Map(lista.map(c => [c.cuentaCopId, c]));
+        this.cuentas.forEach(c => {
+          if (c.id == null) return;
+          const info = porCuenta.get(c.id);
+          c.montoComprometido = info?.montoComprometido ?? 0;
+          c.solicitudesComprometidas = info?.solicitudes ?? [];
+        });
+      },
+      error: () => { /* no bloquea la vista si falla; simplemente no se muestra el dato */ }
+    });
+  }
+
+  /** Saldo disponible real = saldo bruto menos lo ya comprometido en retiros sin confirmar. */
+  getDisponibleReal(cuenta: AccountCop): number {
+    return (cuenta.balance ?? 0) - (cuenta.montoComprometido ?? 0);
+  }
+
+  tooltipComprometido(cuenta: AccountCop): string {
+    if (!cuenta.solicitudesComprometidas?.length) return '';
+    return cuenta.solicitudesComprometidas
+      .map(s => {
+        const quien = s.retiradorNombre ? s.retiradorNombre : 'sin asignar';
+        return `#${s.solicitudId} — ${this.formatCop(s.monto)} (${quien})`;
+      })
+      .join('\n');
   }
 
 

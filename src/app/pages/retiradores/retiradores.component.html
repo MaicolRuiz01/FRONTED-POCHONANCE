@@ -44,11 +44,18 @@
             </span>
           </span>
         </div>
-        <button pButton icon="pi pi-user-plus" label="Asignar manual"
-          class="p-button-sm p-button-outlined"
-          style="border-color:#0891b2;color:#0891b2;white-space:nowrap;"
-          (click)="openAsignar(s)">
-        </button>
+        <span style="display:flex;gap:6px;">
+          <button pButton icon="pi pi-user-plus" label="Asignar manual"
+            class="p-button-sm p-button-outlined"
+            style="border-color:#0891b2;color:#0891b2;white-space:nowrap;"
+            (click)="openAsignar(s)">
+          </button>
+          <button pButton icon="pi pi-times" label="Cancelar"
+            class="p-button-sm p-button-outlined p-button-danger"
+            pTooltip="Cancelar esta solicitud (ej: se envió por error). No mueve ningún saldo."
+            (click)="cancelarSolicitud(s)">
+          </button>
+        </span>
       </div>
     </div>
   </div>
@@ -385,8 +392,16 @@
           <p-tag [value]="s.estado" [severity]="estadoSeverity(s.estado)"></p-tag>
           <span class="hist-fecha ml-2">{{ s.fechaCreacion | date:'dd/MM/yy HH:mm' }}</span>
         </div>
-        <button pButton icon="pi pi-check" label="Confirmar" class="p-button-sm p-button-success"
-          *ngIf="s.estado === 'PENDIENTE'" (click)="confirmarSolicitud(s)"></button>
+        <span *ngIf="s.estado === 'PENDIENTE'">
+          <button pButton icon="pi pi-send" label="Reenviar" class="p-button-sm p-button-text"
+            pTooltip="Reintenta notificar por Telegram (útil si el retirador acaba de darle /start al bot)"
+            (click)="reenviarSolicitud(s)"></button>
+          <button pButton icon="pi pi-check" label="Confirmar" class="p-button-sm p-button-success"
+            (click)="confirmarSolicitud(s)"></button>
+          <button pButton icon="pi pi-times" label="Cancelar" class="p-button-sm p-button-text p-button-danger"
+            pTooltip="Cancelar esta solicitud (ej: se envió por error). No mueve ningún saldo."
+            (click)="cancelarSolicitud(s)"></button>
+        </span>
       </div>
       <div class="hist-montos">
         <span>Total: <strong>{{ s.totalMonto | currency:'COP':'symbol':'1.0-0' }}</strong></span>

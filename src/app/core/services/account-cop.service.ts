@@ -48,6 +48,17 @@ export interface AccountCopCreate {
   cedula?: string;
 }
 
+export interface CompraP2PCuenta {
+  buyId: number;
+  numberOrder: string;
+  date: string;
+  tasa: number;
+  dollarsUs: number;
+  pesosCop: number;
+  montoAsignado: number;
+  binanceAccountName?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AccountCopService {
   private apiUrl = `${environment.apiUrl}/cuenta-cop`;
@@ -93,6 +104,10 @@ export class AccountCopService {
 
   getSalesByAccountCopId(accountCopId: number): Observable<SaleP2PDto[]> {
     return this.http.get<SaleP2PDto[]>(`${this.apiUrl}/${accountCopId}/sales`);
+  }
+
+  getComprasP2PByAccountCopId(accountCopId: number): Observable<CompraP2PCuenta[]> {
+    return this.http.get<CompraP2PCuenta[]>(`${this.apiUrl}/${accountCopId}/compras-p2p`);
   }
 
   getTotalBalance(): Observable<number> {

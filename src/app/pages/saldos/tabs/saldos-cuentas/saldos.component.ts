@@ -181,7 +181,9 @@ export class SaldosComponent implements OnInit {
 
 
   getBalanceTotalExterno() {
-    this.accountService.getBalanceTotalInterno().subscribe({
+    // Antes llamaba por error al endpoint INTERNO. Ahora trae el balance EXTERNO real
+    // de las criptos (Binance/TRON), que es lo que debe entrar al Saldo Total.
+    this.accountService.getBalanceTotalExterno().subscribe({
       next: res => {
         this.balanceTotalExterno = res;
         this.recalculateExternalCop();      // 👈 recalcular COP
@@ -731,10 +733,17 @@ export class SaldosComponent implements OnInit {
     return this.totalCriptosGeneralUsdt * rate;
   }
 
-  /** SALDO TOTAL = criptos en COP + COP + VES en COP */
+  /** Balance EXTERNO de criptos (Binance/TRON) convertido a COP. */
+  get criptoExternoCop(): number {
+    const rate = Number(this.latestRate) || 0;
+    if (rate <= 0) return 0;
+    return (Number(this.balanceTotalExterno) || 0) * rate;
+  }
+
+  /** SALDO TOTAL = Cuentas COP + VES→COP + balance EXTERNO de criptos→COP. */
   get saldoTotalCop(): number {
     const cop = Number(this.totalCuentasCop) || 0;
     const vesCop = Number(this.totalCuentasVesCop) || 0;
-    return cop + vesCop + this.totalCriptosGeneralCop;
+    return cop + vesCop + this.criptoExternoCop;
   }
 }

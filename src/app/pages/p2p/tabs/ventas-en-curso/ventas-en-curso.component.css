@@ -458,3 +458,15 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* Dos saldos en la card: verde (ya cayó) + amarillo (pendiente) */
+.cop-mini-body { display: flex; flex-direction: column; gap: 1px; }
+.cop-saldo-verde { color: #16a34a; font-weight: 800; }
+.cop-saldo-amarillo { color: #d97706; font-weight: 700; font-size: .82rem; }
+
+/* Sub-fila de pre-asignación con botones de estado */
+.vc-subrow-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.vc-estado-btns { display: flex; gap: 6px; }

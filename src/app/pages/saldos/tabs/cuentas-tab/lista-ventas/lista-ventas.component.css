@@ -1,0 +1,27 @@
+.lv-wrap { padding: 4px 2px; }
+
+.lv-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #6366f1; font-weight: 600; cursor: pointer; margin-bottom: 12px;
+}
+.lv-back:hover { text-decoration: underline; }
+
+.lv-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
+  padding-bottom: 14px; border-bottom: 1px solid #e5e7eb;
+}
+.lv-title { margin: 0; font-size: 1.6rem; font-weight: 700; color: #111827; }
+.lv-sub { color: #6b7280; font-size: .85rem; }
+
+.lv-saldo { text-align: right; }
+.lv-saldo-label { display: block; color: #6b7280; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+.lv-saldo-val { font-size: 1.4rem; font-weight: 800; color: #059669; }
+
+.tr { text-align: right; }
+.lv-pos { color: #16a34a; font-weight: 600; }
+.lv-neg { color: #dc2626; font-weight: 600; }
+
+.lv-empty { text-align: center; color: #9ca3af; padding: 1.5rem 0; }
+
+.lv-loading { display: flex; justify-content: center; padding: 2rem 0; }

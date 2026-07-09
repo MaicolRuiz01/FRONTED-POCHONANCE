@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -12,13 +12,15 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { finalize } from 'rxjs/operators';
+import { Subscription, interval } from 'rxjs';
+import { finalize, debounceTime } from 'rxjs/operators';
 
 import {
   RetiradorService, Retirador, SolicitudRetiro, TipoRetiro,
   FuentePago, PagoRetiradorRequest, RankingRetirador, EstadoSolicitud
 } from '../../core/services/retirador.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
+import { SaldosSseService } from '../../core/services/saldos-sse.service';
 
 interface CuentaSeleccionada {
   cuenta: AccountCop;
@@ -40,7 +42,10 @@ interface CuentaSeleccionada {
   templateUrl: './retiradores.component.html',
   styleUrls: ['./retiradores.component.css']
 })
-export class RetiradoresComponent implements OnInit {
+export class RetiradoresComponent implements OnInit, OnDestroy {
+
+  private saldosSub?: Subscription;
+  private sinAsignarPollSub?: Subscription;
 
   retiradores: Retirador[] = [];
   cuentasCop: AccountCop[] = [];
@@ -105,14 +110,96 @@ export class RetiradoresComponent implements OnInit {
     private retiradorSvc: RetiradorService,
     private copSvc: AccountCopService,
     private msgSvc: MessageService,
-    private confirmSvc: ConfirmationService
+    private confirmSvc: ConfirmationService,
+    private saldosSse: SaldosSseService
   ) { }
 
   ngOnInit(): void {
     this.loadAll();
-    this.copSvc.getAll().subscribe({ next: c => this.cuentasCop = c ?? [] });
+    this.copSvc.getAll().subscribe({
+      next: c => {
+        this.cuentasCop = c ?? [];
+        this.loadMontosComprometidos();
+      }
+    });
     this.loadSinAsignar();
     this.loadRanking();
+
+    // Tiempo real: cuando un vendedor mueve el saldo de una cuenta (venta P2P,
+    // ajuste, etc), refresca los saldos acá al instante — así los montos que se
+    // ven al armar una solicitud de retiro no quedan desactualizados.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(700))
+      .subscribe(() => this.refrescarSaldos());
+
+    // "Solicitudes sin retirador" se puede resolver desde Telegram (un
+    // retirador le da Aceptar en el grupo) sin pasar por esta página, así que
+    // no hay ningún evento que avise acá. Se refresca solo cada 5s para que
+    // el banner desaparezca sin tener que recargar.
+    this.sinAsignarPollSub = interval(5000).subscribe(() => this.loadSinAsignar(true));
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    this.saldosSse.disconnect();
+    this.sinAsignarPollSub?.unsubscribe();
+  }
+
+  /** Refresco liviano de saldo Y cupo diario al recibir el evento SSE.
+   *  Muta los mismos objetos AccountCop en vez de reemplazar el array, así que
+   *  si hay un diálogo de "Solicitar retiro" abierto (que referencia esas mismas
+   *  cuentas) también se actualiza en vivo, sin que el usuario tenga que recargar. */
+  private refrescarSaldos(): void {
+    this.copSvc.getSaldos().subscribe({
+      next: saldos => {
+        const map = new Map(saldos.map(s => [s.id, s]));
+        this.cuentasCop.forEach(c => {
+          if (c.id == null) return;
+          const s = map.get(c.id);
+          if (!s) return;
+          c.balance = s.balance;
+          c.cupoCajeroDisponibleHoy = s.cupoCajeroDisponibleHoy;
+          c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
+        });
+      },
+      error: () => { /* silencioso */ }
+    });
+    this.loadMontosComprometidos();
+  }
+
+  /** Carga cuánto de cada cuenta ya está comprometido en retiros enviados sin confirmar,
+   *  para poder avisar al elegir cuentas en "Solicitar retiro" / "Solicitud general". */
+  loadMontosComprometidos(): void {
+    this.copSvc.getMontosComprometidos().subscribe({
+      next: lista => {
+        const porCuenta = new Map(lista.map(x => [x.cuentaCopId, x]));
+        this.cuentasCop.forEach(c => {
+          if (c.id == null) return;
+          const info = porCuenta.get(c.id);
+          c.montoComprometido = info?.montoComprometido ?? 0;
+          c.solicitudesComprometidas = info?.solicitudes ?? [];
+        });
+      },
+      error: () => { /* no bloquea la vista si falla */ }
+    });
+  }
+
+  /** Saldo disponible real de una cuenta = saldo menos lo ya comprometido en retiros sin confirmar. */
+  disponibleReal(cuenta: AccountCop): number {
+    return (cuenta.balance ?? 0) - (cuenta.montoComprometido ?? 0);
+  }
+
+  /** Texto para el tooltip: qué solicitudes generan el monto comprometido de una cuenta. */
+  tooltipComprometido(cuenta: AccountCop): string {
+    if (!cuenta.solicitudesComprometidas?.length) return '';
+    return cuenta.solicitudesComprometidas
+      .map(s => {
+        const quien = s.retiradorNombre ? s.retiradorNombre : 'sin asignar';
+        const monto = (s.monto ?? 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+        return `#${s.solicitudId} — ${monto} (${quien})`;
+      })
+      .join('\n');
   }
 
   loadAll(): void {
@@ -123,8 +210,9 @@ export class RetiradoresComponent implements OnInit {
     });
   }
 
-  loadSinAsignar(): void {
-    this.loadingSinAsignar = true;
+  /** @param silencioso true en los refrescos automáticos (poll), para no parpadear el spinner. */
+  loadSinAsignar(silencioso = false): void {
+    if (!silencioso) this.loadingSinAsignar = true;
     this.retiradorSvc.getSolicitudesSinAsignar()
       .pipe(finalize(() => this.loadingSinAsignar = false))
       .subscribe({ next: s => this.solicitudesSinAsignar = s ?? [] });
@@ -197,6 +285,7 @@ export class RetiradoresComponent implements OnInit {
     this.retiradorActivo = r;
     this.cuentasParaRetiro = this.buildCuentasSeleccion();
     this.showRetiroDialog = true;
+    this.loadMontosComprometidos(); // refresca por si hubo solicitudes nuevas desde el último load
   }
 
   // ── Modal solicitud general ───────────────────────────────────
@@ -204,6 +293,7 @@ export class RetiradoresComponent implements OnInit {
   openGeneral(): void {
     this.cuentasParaGeneral = this.buildCuentasSeleccion();
     this.showGeneralDialog = true;
+    this.loadMontosComprometidos();
   }
 
   get cuentasSeleccionadasGeneral(): CuentaSeleccionada[] {
@@ -267,7 +357,9 @@ export class RetiradoresComponent implements OnInit {
   // ── Helpers cuentas ───────────────────────────────────────────
 
   private buildCuentasSeleccion(): CuentaSeleccionada[] {
-    return this.cuentasCop.map(c => ({
+    // De mayor a menor saldo, para elegir primero las cuentas con más plata.
+    const ordenadas = [...this.cuentasCop].sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
+    return ordenadas.map(c => ({
       cuenta: c,
       seleccionada: false,
       tipoRetiro: 'CAJERO' as TipoRetiro,

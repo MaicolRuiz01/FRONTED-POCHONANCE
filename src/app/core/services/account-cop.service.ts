@@ -54,6 +54,13 @@ export interface CuentaComprometidoDto {
   solicitudes: SolicitudComprometidaDto[];
 }
 
+export interface SaldoLiviano {
+  id: number;
+  balance: number;
+  cupoCajeroDisponibleHoy?: number;
+  cupoCorresponsalDisponibleHoy?: number;
+}
+
 /**
  * ✅ SOLO lo que el backend necesita para crear.
  * Nada de entradasHoy, isFlipped, etc.
@@ -102,9 +109,9 @@ export class AccountCopService {
     );
   }
 
-  /** Consulta liviana: solo id + saldo de cada cuenta. Rápida, para refrescar el saldo siempre. */
-  getSaldos(): Observable<{ id: number; balance: number }[]> {
-    return this.http.get<{ id: number; balance: number }[]>(`${this.apiUrl}/saldos`);
+  /** Consulta liviana: id + saldo + cupo diario restante de cada cuenta. Rápida, para refrescar en tiempo real. */
+  getSaldos(): Observable<SaldoLiviano[]> {
+    return this.http.get<SaldoLiviano[]>(`${this.apiUrl}/saldos`);
   }
 
   /** Monto comprometido (retiros enviados sin confirmar) por cuenta, con el desglose de solicitudes. */

@@ -138,13 +138,18 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
       .subscribe(() => this.refrescarSaldos());
   }
 
-  /** Refresco liviano de saldos (solo id + balance) al recibir el evento SSE. */
+  /** Refresco liviano de saldo Y cupo diario al recibir el evento SSE. */
   private refrescarSaldos(): void {
     this.accountService.getSaldos().subscribe({
       next: saldos => {
-        const map = new Map(saldos.map(s => [s.id, s.balance]));
+        const map = new Map(saldos.map(s => [s.id, s]));
         this.cuentas.forEach(c => {
-          if (c.id != null && map.has(c.id)) c.balance = map.get(c.id)!;
+          if (c.id == null) return;
+          const s = map.get(c.id);
+          if (!s) return;
+          c.balance = s.balance;
+          c.cupoCajeroDisponibleHoy = s.cupoCajeroDisponibleHoy;
+          c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
         });
       },
       error: () => { /* silencioso */ }
@@ -205,11 +210,16 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
       this.cuentas = cache.map(c => ({ ...c }));
     }
 
-    // 2) Refrescar SIEMPRE el saldo, rápido (dato crítico) con la consulta liviana.
+    // 2) Refrescar SIEMPRE el saldo y el cupo, rápido (dato crítico) con la consulta liviana.
     this.accountService.getSaldos().subscribe(saldos => {
-      const saldoPorId = new Map(saldos.map(s => [s.id, s.balance]));
+      const porId = new Map(saldos.map(s => [s.id, s]));
       this.cuentas.forEach(c => {
-        if (c.id != null && saldoPorId.has(c.id)) c.balance = saldoPorId.get(c.id)!;
+        if (c.id == null) return;
+        const s = porId.get(c.id);
+        if (!s) return;
+        c.balance = s.balance;
+        c.cupoCajeroDisponibleHoy = s.cupoCajeroDisponibleHoy;
+        c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
       });
     });
 

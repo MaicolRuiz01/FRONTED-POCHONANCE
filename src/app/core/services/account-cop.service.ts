@@ -34,6 +34,31 @@ export interface AccountCop {
   activaParaP2P?: boolean;
   cupoTipoP2P?: CupoTipoP2P;
   brebeKeys?: BrebeKey[];
+  /** Cuánto del balance ya está comprometido en retiros enviados sin confirmar (se llena en el frontend). */
+  montoComprometido?: number;
+  /** Desglose de las solicitudes que generan ese monto comprometido. */
+  solicitudesComprometidas?: SolicitudComprometidaDto[];
+}
+
+export interface SolicitudComprometidaDto {
+  solicitudId: number;
+  monto: number;
+  estado: 'SIN_ASIGNAR' | 'PENDIENTE';
+  fechaCreacion: string;
+  retiradorNombre?: string | null;
+}
+
+export interface CuentaComprometidoDto {
+  cuentaCopId: number;
+  montoComprometido: number;
+  solicitudes: SolicitudComprometidaDto[];
+}
+
+export interface SaldoLiviano {
+  id: number;
+  balance: number;
+  cupoCajeroDisponibleHoy?: number;
+  cupoCorresponsalDisponibleHoy?: number;
 }
 
 /**
@@ -84,9 +109,14 @@ export class AccountCopService {
     );
   }
 
-  /** Consulta liviana: solo id + saldo de cada cuenta. Rápida, para refrescar el saldo siempre. */
-  getSaldos(): Observable<{ id: number; balance: number }[]> {
-    return this.http.get<{ id: number; balance: number }[]>(`${this.apiUrl}/saldos`);
+  /** Consulta liviana: id + saldo + cupo diario restante de cada cuenta. Rápida, para refrescar en tiempo real. */
+  getSaldos(): Observable<SaldoLiviano[]> {
+    return this.http.get<SaldoLiviano[]>(`${this.apiUrl}/saldos`);
+  }
+
+  /** Monto comprometido (retiros enviados sin confirmar) por cuenta, con el desglose de solicitudes. */
+  getMontosComprometidos(): Observable<CuentaComprometidoDto[]> {
+    return this.http.get<CuentaComprometidoDto[]>(`${this.apiUrl}/comprometido`);
   }
 
   /** Total COP disponible (mismo valor para la card y el label): suma de saldos

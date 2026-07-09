@@ -186,6 +186,13 @@
           </span>
         </label>
       </div>
+      <div *ngIf="(item.cuenta.montoComprometido ?? 0) > 0"
+           [pTooltip]="tooltipComprometido(item.cuenta)" tooltipPosition="top"
+           style="padding-left:28px;margin:-4px 0 6px;font-size:0.78rem;color:#b91c1c;">
+        <i class="pi pi-clock" style="font-size:0.75rem;"></i>
+        Ya hay {{ item.cuenta.montoComprometido | currency:'COP':'symbol':'1.0-0' }} en retiros sin confirmar
+        — disponible: {{ disponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }}
+      </div>
       <ng-container *ngIf="item.seleccionada">
         <div style="padding-left:28px;">
           <p-dropdown [options]="tipoOptions" [(ngModel)]="item.tipoRetiro"
@@ -197,12 +204,18 @@
             <p-inputNumber [(ngModel)]="item.montoCajero"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
+            <small [style.color]="(item.montoCajero ?? 0) > (item.cuenta.cupoCajeroDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
+              Cupo cajero hoy: {{ item.cuenta.cupoCajeroDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            </small>
           </div>
           <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
             <label>Monto corresponsal</label>
             <p-inputNumber [(ngModel)]="item.montoCorresponsal"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
+            <small [style.color]="(item.montoCorresponsal ?? 0) > (item.cuenta.cupoCorresponsalDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
+              Cupo corresponsal hoy: {{ item.cuenta.cupoCorresponsalDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            </small>
           </div>
         </div>
       </ng-container>
@@ -255,6 +268,13 @@
           </span>
         </label>
       </div>
+      <div *ngIf="(item.cuenta.montoComprometido ?? 0) > 0"
+           [pTooltip]="tooltipComprometido(item.cuenta)" tooltipPosition="top"
+           style="padding-left:28px;margin:-4px 0 6px;font-size:0.78rem;color:#b91c1c;">
+        <i class="pi pi-clock" style="font-size:0.75rem;"></i>
+        Ya hay {{ item.cuenta.montoComprometido | currency:'COP':'symbol':'1.0-0' }} en retiros sin confirmar
+        — disponible: {{ disponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }}
+      </div>
       <ng-container *ngIf="item.seleccionada">
         <div style="padding-left:28px;">
           <p-dropdown [options]="tipoOptions" [(ngModel)]="item.tipoRetiro"
@@ -266,12 +286,18 @@
             <p-inputNumber [(ngModel)]="item.montoCajero"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
+            <small [style.color]="(item.montoCajero ?? 0) > (item.cuenta.cupoCajeroDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
+              Cupo cajero hoy: {{ item.cuenta.cupoCajeroDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            </small>
           </div>
           <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
             <label>Monto corresponsal</label>
             <p-inputNumber [(ngModel)]="item.montoCorresponsal"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
+            <small [style.color]="(item.montoCorresponsal ?? 0) > (item.cuenta.cupoCorresponsalDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
+              Cupo corresponsal hoy: {{ item.cuenta.cupoCorresponsalDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            </small>
           </div>
         </div>
       </ng-container>

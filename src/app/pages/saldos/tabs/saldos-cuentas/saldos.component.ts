@@ -85,6 +85,9 @@ export class SaldosComponent implements OnInit {
   selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | null = null;
 
   totalCuentasCop = 0;
+  /** Total COP disponible autoritativo (backend): idéntico al label de la vista Cuentas COP.
+   *  Σ saldos − 4x1000 diferido pendiente, y a ese neto el 4x1000 de sacarlo. */
+  totalCopDisponible = 0;
   totalCuentasVes = 0;
   loadingCop = false;
   loadingVes = false;
@@ -604,7 +607,8 @@ export class SaldosComponent implements OnInit {
   private cargarCriptosInicial(account: DisplayAccount): void {
     account.loadingBalances = true;
 
-    this.accountService.getInternalBalances(account.accountType)
+    // Saldo EXTERNO real por símbolo (el interno ya no se usa).
+    this.accountService.getExternalBalances(account.accountType)
       .pipe(finalize(() => account.loadingBalances = false))
       .subscribe({
         next: (balances) => {
@@ -626,6 +630,12 @@ export class SaldosComponent implements OnInit {
 
   loadTotalCop(): void {
     this.loadingCop = true;
+
+    // Total autoritativo (mismo valor que el label "TOTAL COP DISPONIBLE" en Cuentas COP).
+    this.cajaService.getTotalDisponible().subscribe({
+      next: v => this.totalCopDisponible = Number(v) || 0,
+      error: () => this.totalCopDisponible = 0
+    });
 
     // tu servicio ya está inyectado como "cajaService" (AccountCopService)
     this.cajaService.getAll()
@@ -740,10 +750,13 @@ export class SaldosComponent implements OnInit {
     return (Number(this.balanceTotalExterno) || 0) * rate;
   }
 
-  /** SALDO TOTAL = Cuentas COP + VES→COP + balance EXTERNO de criptos→COP. */
+  /** SALDO TOTAL = suma EXACTA de la card "Cuentas COP" + la card "Criptos" (+ VES→COP).
+   *  Ambas en la misma escala (÷1000): la de COP ya viene en miles (totalCopDisponible) y
+   *  la de criptos en COP se divide entre 1000 como el resto de saldos. */
   get saldoTotalCop(): number {
-    const cop = Number(this.totalCuentasCop) || 0;
+    const cop = Number(this.totalCopDisponible) || 0;              // = card Cuentas COP
+    const cripto = (Number(this.criptoExternoCop) || 0) / 1000;    // = card Criptos (en COP, ÷1000)
     const vesCop = Number(this.totalCuentasVesCop) || 0;
-    return cop + vesCop + this.criptoExternoCop;
+    return cop + cripto + vesCop;
   }
 }

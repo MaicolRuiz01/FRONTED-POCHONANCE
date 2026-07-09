@@ -85,6 +85,12 @@ export class AccountBinanceService {
     return this.http.get<CryptoBalanceDetail[]>(url);
   }
 
+  /** Detalle de criptos por cuenta desde el saldo EXTERNO real (consulta en vivo). */
+  getExternalBalances(name: string): Observable<CryptoBalanceDetail[]> {
+    const url = `${this.apiUrl}/balances-externos?name=${encodeURIComponent(name)}`;
+    return this.http.get<CryptoBalanceDetail[]>(url);
+  }
+
   toggleActiva(id: number): Observable<AccountBinance> {
     return this.http.patch<AccountBinance>(`${this.apiUrl}/${id}/toggle-activa`, {});
   }

@@ -43,6 +43,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Mapa de orderNumber → copId seleccionado en el dropdown (antes de guardar) */
   seleccionPendiente: Record<string, number | null> = {};
 
+  /** Estado manual marcado localmente (RECIBIDO/PENDIENTE) por orderNumber. Evita que el
+   *  refresco de 15s pise lo que el usuario acaba de marcar (verde/amarillo). */
+  private estadoManualLocal: Record<string, 'RECIBIDO' | 'PENDIENTE'> = {};
+
   /** Última cuenta COP asignada — para el botón "=" (repetir la misma asignación). */
   ultimaCopId: number | null = null;
   ultimaCopNombre = '';
@@ -156,6 +160,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => { this.loading = false; this.refreshing = false; }))
       .subscribe({
         next: data => {
+          // Conservar el estado manual recién marcado por el usuario (que el refresco no lo pise).
+          for (const o of data) {
+            const local = this.estadoManualLocal[o.orderNumber];
+            if (local) o.estadoManual = local;
+          }
           this.ordenes = data;
           // Sincronizar seleccionPendiente:
           // Si el servidor tiene un valor definido → es la fuente de verdad (override).
@@ -322,9 +331,15 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     return (c.balance ?? 0) + this.sumaOrdenes(c.id, true);
   }
 
-  /** AMARILLO: órdenes pre-asignadas pendientes (aún no marcadas RECIBIDO). */
+  /** AMARILLO (monto pendiente por caer) — se usa para el aviso de cupo y el *ngIf. */
   saldoAmarilloDe(c: AccountCop): number {
     return this.sumaOrdenes(c.id, false);
+  }
+
+  /** AMARILLO que se MUESTRA: con cuánto quedará la cuenta cuando caiga lo pendiente
+   *  = verde (saldo real + recibidas) + lo pendiente por caer. */
+  saldoProyectadoDe(c: AccountCop): number {
+    return this.saldoVerdeDe(c) + this.saldoAmarilloDe(c);
   }
 
   medioLabel(c: AccountCop): string {
@@ -356,13 +371,25 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       this.notification.warn('Primero asigna la orden a una cuenta COP.');
       return;
     }
+    const prev = orden.estadoManual;
+    // Optimista: suma al verde / pasa a amarillo DE UNA VEZ, sin esperar al backend.
+    orden.estadoManual = estado;
+    const live = this.ordenes.find(o => o.orderNumber === orden.orderNumber);
+    if (live) live.estadoManual = estado;
+    // Override local: el refresco de 15s NO debe pisar lo que el usuario acaba de marcar.
+    this.estadoManualLocal[orden.orderNumber] = estado;
+
     this.syncService.setEstadoManual(orden.orderNumber, estado).subscribe({
       next: () => {
-        const live = this.ordenes.find(o => o.orderNumber === orden.orderNumber);
-        if (live) live.estadoManual = estado;
         this.notification.success(estado === 'RECIBIDO' ? 'Marcada: ya cayó (verde).' : 'Marcada: pendiente (amarillo).');
       },
-      error: (err) => this.notification.error(err?.error?.error || 'No se pudo cambiar el estado.')
+      error: (err) => {
+        // Revertir si el backend falló.
+        orden.estadoManual = prev;
+        if (live) live.estadoManual = prev;
+        delete this.estadoManualLocal[orden.orderNumber];
+        this.notification.error(err?.error?.error || 'No se pudo cambiar el estado.');
+      }
     });
   }
 

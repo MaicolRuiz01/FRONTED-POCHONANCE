@@ -24,15 +24,15 @@
   <div class="saldo-card saldo-card-crypto" style="cursor:pointer" (click)="verBinance()">
     <h4 class="saldo-title">Criptos</h4>
     <p class="saldo-usdt" style="margin:0;">
-  {{ (totalUsdtGeneral ?? 0) / 1000 | number:'1.2-2' }}
+  {{ (balanceTotalExterno ?? 0) / 1000 | number:'1.2-2' }}
   <span class="saldo-unit">USDT</span>
-  
-  
+
+
 </p>
 
-<!-- 👇 COP equivalente -->
+<!-- 👇 COP equivalente (saldo EXTERNO real × tasa, ÷1000 como el resto) -->
 <p class="saldo-cop" *ngIf="latestRate > 0" style="margin:4px 0 0 0;">
-  ≈ {{ (totalCopGeneral ?? 0) / 1000 | currency:'COP':'symbol':'1.0-0' }}
+  ≈ {{ (criptoExternoCop / 1000) | currency:'COP':'symbol':'1.0-0' }}
   <span class="saldo-unit">(USDT→COP)</span>
 </p>
 
@@ -59,7 +59,7 @@
     </p>
 
     <p class="saldo-cop" *ngIf="!loadingCop">
-      {{ totalCuentasCop | currency:'COP':'symbol':'1.0-0' }}
+      {{ totalCopDisponible | currency:'COP':'symbol':'1.0-0' }}
     </p>
 
     <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
@@ -239,7 +239,7 @@
               <tr *ngFor="let b of account.balances">
                 <td class="bc-symbol">{{ b.symbol }}</td>
                 <td>{{ b.quantity | number:'1.4-8' }}</td>
-                <td>{{ b.usdtValue | number:'1.2-2' }}</td>
+                <td>{{ (b.usdtValue / 1000) | number:'1.2-2' }}</td>
               </tr>
             </tbody>
           </table>

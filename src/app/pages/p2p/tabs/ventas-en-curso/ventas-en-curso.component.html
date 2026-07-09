@@ -18,8 +18,8 @@
         </span>
         <span class="cop-mini-saldo cop-saldo-amarillo"
               *ngIf="saldoAmarilloDe(c) > 0"
-              pTooltip="Pendiente por caer (órdenes pre-asignadas sin marcar)" tooltipPosition="top">
-          + ${{ saldoAmarilloDe(c) | number:'1.0-0' }}
+              pTooltip="Con cuánto quedará la cuenta cuando caiga lo pendiente" tooltipPosition="top">
+          ${{ saldoProyectadoDe(c) | number:'1.0-0' }}
         </span>
       </div>
 

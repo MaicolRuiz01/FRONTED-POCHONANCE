@@ -89,6 +89,12 @@ export class AccountCopService {
     return this.http.get<{ id: number; balance: number }[]>(`${this.apiUrl}/saldos`);
   }
 
+  /** Total COP disponible (mismo valor para la card y el label): suma de saldos
+   *  − 4x1000 diferido pendiente, y a ese neto se le resta el 4x1000 de sacarlo. */
+  getTotalDisponible(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/total-disponible`);
+  }
+
   create(account: AccountCopCreate): Observable<AccountCop> {
     if (!account.name?.trim()) {
       throw new Error('Name cannot be empty');

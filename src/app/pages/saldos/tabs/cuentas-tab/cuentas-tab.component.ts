@@ -126,6 +126,7 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCuentas();
     this.loadClientes();
+    this.loadTotalDisponible();
     this.cajaService.listar().subscribe({
       next: data => this.cajas = data,
       error: () => this.notificationService.error('Error al cargar cajas')
@@ -149,6 +150,8 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
       },
       error: () => { /* silencioso */ }
     });
+    // Mantener el total disponible sincronizado (mismo valor que la card).
+    this.loadTotalDisponible();
   }
 
   ngOnDestroy(): void {
@@ -177,6 +180,16 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   /** Total COP disponible = suma de saldos MENOS el 4x1000 de todo (para sacarlo hay que pagarlo). */
   get totalCuentasNeto(): number {
     return this.getDisponible(this.totalCuentas);
+  }
+
+  /** Total COP disponible AUTORITATIVO (backend), idéntico al de la card "CUENTAS COP":
+   *  Σ saldos − 4x1000 diferido pendiente, y a ese neto se le resta el 4x1000 de sacarlo. */
+  totalCopDisponible = 0;
+  private loadTotalDisponible(): void {
+    this.accountService.getTotalDisponible().subscribe({
+      next: v => this.totalCopDisponible = Number(v) || 0,
+      error: () => { /* silencioso */ }
+    });
   }
 
   // ── Cupo del retiro seleccionado (para avisar si está agotado) ──

@@ -78,6 +78,13 @@ export class ProveedorComponent implements OnInit {
 
   cajas: any[] = [];
   selectedCaja: any | null = null;
+
+  // Pago de proveedor A CAJA (el proveedor nos da efectivo → entra a una caja)
+  showProvACaja = false;
+  provACajaSupplier: Supplier | null = null;
+  provACajaCajaId: number | null = null;
+  provACajaMonto = 0;
+
   paymentMethod: string = 'Cuenta Bancaria';
   paymentOptions = ['Cuenta Bancaria', 'Caja', 'Proveedor', 'Cliente'];
   selectedCliente: any | null = null;
@@ -273,6 +280,32 @@ export class ProveedorComponent implements OnInit {
       this.amount = 0;
       this.paymentMethod = 'Cuenta Bancaria';
     }
+  }
+
+  /** Abre el diálogo "el proveedor da efectivo a una caja". */
+  abrirProvACaja(supplier: Supplier, event?: Event): void {
+    event?.stopPropagation(); // no abrir el diálogo de movimientos
+    this.provACajaSupplier = supplier;
+    this.provACajaCajaId = null;
+    this.provACajaMonto = 0;
+    this.showProvACaja = true;
+  }
+
+  registrarProvACaja(): void {
+    const provId = Number(this.provACajaSupplier?.id ?? 0);
+    const cajaId = Number(this.provACajaCajaId ?? 0);
+    const monto = Number(this.provACajaMonto ?? 0);
+    if (!provId || !cajaId || monto <= 0) {
+      console.error('Datos incompletos para el pago de proveedor a caja');
+      return;
+    }
+    this.movimientoService.pagoProveedorACaja(provId, cajaId, monto).subscribe({
+      next: () => {
+        this.showProvACaja = false;
+        this.loadSuppliers();
+      },
+      error: (err) => console.error('Error registrando pago de proveedor a caja:', err)
+    });
   }
 
   onSelectSupplier(supplier: Supplier): void {

@@ -112,7 +112,8 @@ export class CajasComponent implements OnInit {
   /** Solo mostramos el botón para los tipos que el backend sabe revertir. */
   esEliminable(mov: any): boolean {
     const t = (mov?.tipo || '').toUpperCase();
-    return t.startsWith('RETIRO') || t === 'PAGO PROVEEDOR' || t === 'TRANSFERENCIA CAJA';
+    return t.startsWith('RETIRO') || t === 'PAGO PROVEEDOR' || t === 'TRANSFERENCIA CAJA'
+        || t === 'PAGO PROVEEDOR A CAJA';
   }
 
   eliminarMovimientoCaja(mov: any) {

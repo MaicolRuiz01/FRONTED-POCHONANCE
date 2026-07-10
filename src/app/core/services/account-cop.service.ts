@@ -120,6 +120,12 @@ export class AccountCopService {
     return this.http.get<SaldoLiviano[]>(`${this.apiUrl}/saldos`);
   }
 
+  /** Consulta liviana para ventas en curso (P2P): nombre, banco, saldo, cupos y estado P2P,
+   *  SIN las llaves Brebe. Mucho más rápida que traer la entidad completa. */
+  getP2PView(): Observable<AccountCop[]> {
+    return this.http.get<AccountCop[]>(`${this.apiUrl}/p2p`);
+  }
+
   /** Monto comprometido (retiros enviados sin confirmar) por cuenta, con el desglose de solicitudes. */
   getMontosComprometidos(): Observable<CuentaComprometidoDto[]> {
     return this.http.get<CuentaComprometidoDto[]>(`${this.apiUrl}/comprometido`);

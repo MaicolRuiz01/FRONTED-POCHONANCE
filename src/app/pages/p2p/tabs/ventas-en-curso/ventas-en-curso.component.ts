@@ -188,7 +188,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   loadCuentasCop(): void {
-    this.accountCopService.getAll().subscribe({
+    // Endpoint liviano (sin llaves Brebe) → mucho más rápido para pintar las mini-cards y el dropdown.
+    this.accountCopService.getP2PView().subscribe({
       next: cuentas => {
         this.cuentasCop = cuentas;
       }

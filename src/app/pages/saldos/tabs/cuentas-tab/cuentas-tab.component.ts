@@ -205,8 +205,8 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     const c = this.cuentaRetiroSeleccionada;
     if (!c) return 0;
     return this.tipoRetiro === 'CAJERO'
-      ? (c.cupoCajeroDisponibleHoy ?? 0)
-      : (c.cupoCorresponsalDisponibleHoy ?? 0);
+      ? this.cupoCajeroDisponibleReal(c)
+      : this.cupoCorresponsalDisponibleReal(c);
   }
   get cupoAgotadoRetiro(): boolean {
     return !!this.selectedCuentaOrigenId && this.cupoDisponibleRetiro <= 0;
@@ -273,6 +273,8 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
           if (c.id == null) return;
           const info = porCuenta.get(c.id);
           c.montoComprometido = info?.montoComprometido ?? 0;
+          c.montoCajeroComprometido = info?.montoCajeroComprometido ?? 0;
+          c.montoCorresponsalComprometido = info?.montoCorresponsalComprometido ?? 0;
           c.solicitudesComprometidas = info?.solicitudes ?? [];
         });
       },
@@ -283,6 +285,20 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   /** Saldo disponible real = saldo bruto menos lo ya comprometido en retiros sin confirmar. */
   getDisponibleReal(cuenta: AccountCop): number {
     return (cuenta.balance ?? 0) - (cuenta.montoComprometido ?? 0);
+  }
+
+  /**
+   * Cupo diario de CAJERO que en verdad queda disponible: el cupo del día
+   * (que solo baja al CONFIRMAR un retiro) menos lo que ya está comprometido
+   * hoy en solicitudes de cajero aún sin confirmar.
+   */
+  cupoCajeroDisponibleReal(cuenta: AccountCop): number {
+    return Math.max((cuenta.cupoCajeroDisponibleHoy ?? 0) - (cuenta.montoCajeroComprometido ?? 0), 0);
+  }
+
+  /** Igual que cupoCajeroDisponibleReal(), pero para CORRESPONSAL. */
+  cupoCorresponsalDisponibleReal(cuenta: AccountCop): number {
+    return Math.max((cuenta.cupoCorresponsalDisponibleHoy ?? 0) - (cuenta.montoCorresponsalComprometido ?? 0), 0);
   }
 
   tooltipComprometido(cuenta: AccountCop): string {

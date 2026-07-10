@@ -106,7 +106,9 @@
             <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm p-button-secondary"
               pTooltip="Editar" (click)="openEdit(r)"></button>
             <button pButton icon="pi pi-history" class="p-button-text p-button-sm p-button-secondary"
-              pTooltip="Historial" (click)="openHistorial(r)"></button>
+              pTooltip="Historial de retiros" (click)="openHistorial(r)"></button>
+            <button pButton icon="pi pi-wallet" class="p-button-text p-button-sm p-button-secondary"
+              pTooltip="Movimientos de caja (gastos, pagos a proveedor, etc)" (click)="verMovimientosCaja(r)"></button>
             <button pButton icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger"
               pTooltip="Eliminar" (click)="deleteRetirador(r)"></button>
           </div>
@@ -204,8 +206,8 @@
             <p-inputNumber [(ngModel)]="item.montoCajero"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
-            <small [style.color]="(item.montoCajero ?? 0) > (item.cuenta.cupoCajeroDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
-              Cupo cajero hoy: {{ item.cuenta.cupoCajeroDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            <small [style.color]="(item.montoCajero ?? 0) > cupoCajeroDisponibleReal(item.cuenta) ? '#b91c1c' : '#9ca3af'">
+              Cupo cajero hoy: {{ cupoCajeroDisponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }} disponible
             </small>
           </div>
           <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
@@ -213,8 +215,8 @@
             <p-inputNumber [(ngModel)]="item.montoCorresponsal"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
-            <small [style.color]="(item.montoCorresponsal ?? 0) > (item.cuenta.cupoCorresponsalDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
-              Cupo corresponsal hoy: {{ item.cuenta.cupoCorresponsalDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            <small [style.color]="(item.montoCorresponsal ?? 0) > cupoCorresponsalDisponibleReal(item.cuenta) ? '#b91c1c' : '#9ca3af'">
+              Cupo corresponsal hoy: {{ cupoCorresponsalDisponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }} disponible
             </small>
           </div>
         </div>
@@ -236,7 +238,13 @@
     </div>
   </div>
   <ng-template pTemplate="footer">
+    <button pButton label="Todo" icon="pi pi-bolt" class="p-button-outlined"
+      pTooltip="Autocompleta el retiro matutino: marca y calcula el monto de todas las cuentas con saldo disponible, para que lo revises antes de enviar."
+      tooltipPosition="top"
+      [disabled]="savingRetiro"
+      (click)="aplicarTodoRetiro()"></button>
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      [disabled]="savingRetiro"
       (click)="showRetiroDialog = false"></button>
     <button pButton label="Enviar solicitud" icon="pi pi-send"
       style="background:#4f46e5;border:none;"
@@ -286,8 +294,8 @@
             <p-inputNumber [(ngModel)]="item.montoCajero"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
-            <small [style.color]="(item.montoCajero ?? 0) > (item.cuenta.cupoCajeroDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
-              Cupo cajero hoy: {{ item.cuenta.cupoCajeroDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            <small [style.color]="(item.montoCajero ?? 0) > cupoCajeroDisponibleReal(item.cuenta) ? '#b91c1c' : '#9ca3af'">
+              Cupo cajero hoy: {{ cupoCajeroDisponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }} disponible
             </small>
           </div>
           <div class="input-group" *ngIf="requiresCorresponsal(item.tipoRetiro)">
@@ -295,8 +303,8 @@
             <p-inputNumber [(ngModel)]="item.montoCorresponsal"
               mode="currency" currency="COP" locale="es-CO" [min]="0" placeholder="$ 0">
             </p-inputNumber>
-            <small [style.color]="(item.montoCorresponsal ?? 0) > (item.cuenta.cupoCorresponsalDisponibleHoy ?? 0) ? '#b91c1c' : '#9ca3af'">
-              Cupo corresponsal hoy: {{ item.cuenta.cupoCorresponsalDisponibleHoy ?? 0 | currency:'COP':'symbol':'1.0-0' }} disponible
+            <small [style.color]="(item.montoCorresponsal ?? 0) > cupoCorresponsalDisponibleReal(item.cuenta) ? '#b91c1c' : '#9ca3af'">
+              Cupo corresponsal hoy: {{ cupoCorresponsalDisponibleReal(item.cuenta) | currency:'COP':'symbol':'1.0-0' }} disponible
             </small>
           </div>
         </div>
@@ -314,7 +322,13 @@
     </div>
   </div>
   <ng-template pTemplate="footer">
+    <button pButton label="Todo" icon="pi pi-bolt" class="p-button-outlined"
+      pTooltip="Autocompleta el retiro matutino: marca y calcula el monto de todas las cuentas con saldo disponible, para que lo revises antes de enviar."
+      tooltipPosition="top"
+      [disabled]="savingGeneral"
+      (click)="aplicarTodoGeneral()"></button>
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      [disabled]="savingGeneral"
       (click)="showGeneralDialog = false"></button>
     <button pButton label="Publicar en Telegram" icon="pi pi-send"
       style="background:#0891b2;border:none;"
@@ -443,5 +457,93 @@
   <ng-template pTemplate="footer">
     <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text"
       (click)="showHistorialDialog = false"></button>
+  </ng-template>
+</p-dialog>
+
+
+<!-- ═══ DIALOG: Movimientos de caja (todo lo que entra/sale del efectivo del retirador) ═══ -->
+<p-dialog [header]="'Movimientos de caja — ' + (retiradorMovs?.nombre ?? '')"
+  [(visible)]="showMovsCajaDialog" [modal]="true"
+  [style]="{width:'85vw'}" [breakpoints]="{'800px':'98vw'}">
+
+  <p-tabView>
+    <p-tabPanel header="Movimientos">
+      <div *ngIf="loadingMovsCaja" class="flex justify-content-center p-4">
+        <p-progressSpinner strokeWidth="4" [style]="{'width':'36px','height':'36px'}"></p-progressSpinner>
+      </div>
+      <p-table *ngIf="!loadingMovsCaja" [value]="movimientosCaja" scrollable="true" scrollHeight="420px">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Caja</th>
+            <th>Cliente</th>
+            <th>Proveedor</th>
+            <th>Motivo</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-mov>
+          <tr>
+            <td>{{ mov.fecha | date:'dd/MM/yy HH:mm' }}</td>
+            <td>{{ mov.tipo }}</td>
+            <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ mov.cuentaOrigen || '-' }}</td>
+            <td>{{ mov.cuentaDestino || mov.cajaDestino || '-' }}</td>
+            <td>{{ mov.caja || '-' }}</td>
+            <td>{{ mov.pagoCliente || '-' }}</td>
+            <td>{{ mov.pagoProveedor || '-' }}</td>
+            <td>{{ mov.motivo || '-' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="9" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+
+    <p-tabPanel header="Ajustes de saldo">
+      <div *ngIf="loadingAjustesCaja" class="flex justify-content-center p-4">
+        <p-progressSpinner strokeWidth="4" [style]="{'width':'36px','height':'36px'}"></p-progressSpinner>
+      </div>
+      <p-table *ngIf="!loadingAjustesCaja" [value]="ajustesCaja" scrollable="true" scrollHeight="420px">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+            <th>Motivo</th>
+            <th>Actor</th>
+            <th>Saldo anterior</th>
+            <th>Saldo nuevo</th>
+            <th>Diferencia</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-aj>
+          <tr>
+            <td>{{ aj.fecha | date:'dd/MM/yy HH:mm' }}</td>
+            <td>{{ aj.tipo }}</td>
+            <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ aj.motivo || '-' }}</td>
+            <td>{{ aj.actor || '-' }}</td>
+            <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td [ngClass]="{ 'text-green-500': aj.diferencia > 0, 'text-red-500': aj.diferencia < 0 }">
+              {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="p-text-center text-color-secondary">Sin ajustes.</td></tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+  </p-tabView>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text"
+      (click)="showMovsCajaDialog = false"></button>
   </ng-template>
 </p-dialog>

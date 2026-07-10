@@ -197,6 +197,15 @@ export class MovimientoService {
     return this.http.post(`${this.apiUrl}/pago-proveedor-a-caja`, {}, { params });
   }
 
+  /** El cliente nos da efectivo → entra a una caja (sin 4x1000). */
+  pagoClienteACaja(clienteId: number, cajaId: number, monto: number): Observable<any> {
+    const params = new HttpParams()
+      .set('clienteId', clienteId.toString())
+      .set('cajaId', cajaId.toString())
+      .set('monto', monto.toString());
+    return this.http.post(`${this.apiUrl}/pago-caja`, {}, { params });
+  }
+
   getMovimientosPorCliente(clienteId: number): Observable<MovimientoVistaDto[]> {
     const url = `${this.apiUrl}/cliente/${clienteId}`;
     return this.http.get<MovimientoVistaDto[]>(url);

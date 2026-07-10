@@ -34,9 +34,6 @@
           <button pButton icon="pi pi-refresh" pTooltip="Ajustar saldo"
             class="p-button-text p-button-warning p-button-sm prov-icon-btn"
             (click)="$event.stopPropagation(); abrirAjusteProveedor(supplier)"></button>
-          <button pButton icon="pi pi-wallet" pTooltip="El proveedor da efectivo a una caja"
-            class="p-button-text p-button-info p-button-sm prov-icon-btn"
-            (click)="abrirProvACaja(supplier, $event)"></button>
           <button pButton icon="pi pi-trash" pTooltip="Eliminar proveedor"
             class="p-button-text p-button-danger p-button-sm prov-icon-btn"
             (click)="pedirEliminarProveedor(supplier, $event)"></button>
@@ -325,31 +322,5 @@
     <button pButton [label]="eliminandoProveedor ? 'Eliminando…' : 'Eliminar'"
             [icon]="eliminandoProveedor ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"
             class="p-button-danger" (click)="confirmarEliminarProveedor()" [disabled]="eliminandoProveedor"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- El proveedor nos da efectivo → entra a una caja (sin 4x1000) -->
-<p-dialog header="Proveedor da efectivo a caja" [(visible)]="showProvACaja" [modal]="true"
-          [style]="{width:'420px'}">
-  <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
-    <p style="margin:0;">
-      <strong>{{ provACajaSupplier?.name }}</strong> entrega efectivo. Entra como
-      <strong>entrada</strong> a la caja que elijas (sin 4x1000).
-    </p>
-    <div>
-      <label>Caja</label>
-      <p-dropdown [options]="cajas" optionLabel="name" optionValue="id"
-        [(ngModel)]="provACajaCajaId" placeholder="Selecciona la caja" [style]="{width:'100%'}"></p-dropdown>
-    </div>
-    <div>
-      <label>Monto</label>
-      <p-inputNumber [(ngModel)]="provACajaMonto" mode="currency" currency="COP" locale="es-CO"
-        [minFractionDigits]="0" [style]="{width:'100%'}"></p-inputNumber>
-    </div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton label="Cancelar" class="p-button-text" (click)="showProvACaja = false"></button>
-    <button pButton label="Registrar entrada" icon="pi pi-wallet"
-            (click)="registrarProvACaja()"></button>
   </ng-template>
 </p-dialog>

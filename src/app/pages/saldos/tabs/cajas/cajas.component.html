@@ -8,11 +8,91 @@
       Gestiona las cajas de efectivo del negocio.
     </p>
   </div>
-  <button pButton icon="pi pi-plus" label="Nueva caja"
-    style="background:#0891b2;border:none;border-radius:10px;"
-    (click)="displayCajaDialog = true">
-  </button>
+  <div class="flex" style="gap:.5rem;">
+    <button pButton icon="pi pi-wallet" label="Pago de proveedor"
+      class="p-button-outlined"
+      pTooltip="Un proveedor nos da efectivo → entra a una caja"
+      (click)="abrirProvACaja()">
+    </button>
+    <button pButton icon="pi pi-user" label="Pago de cliente"
+      class="p-button-outlined"
+      pTooltip="Un cliente nos da efectivo → entra a una caja"
+      (click)="abrirCliACaja()">
+    </button>
+    <button pButton icon="pi pi-plus" label="Nueva caja"
+      style="background:#0891b2;border:none;border-radius:10px;"
+      (click)="displayCajaDialog = true">
+    </button>
+  </div>
 </div>
+
+<!-- El proveedor nos da efectivo → entra a una caja (sin 4x1000) -->
+<p-dialog header="Pago de proveedor a caja" [(visible)]="showProvACaja" [modal]="true"
+          [style]="{width:'440px'}">
+  <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
+    <p style="margin:0; color:#64748b;">
+      El proveedor entrega efectivo. Entra como <strong>entrada</strong> a la caja (sin 4x1000).
+    </p>
+    <div>
+      <label>Proveedor</label>
+      <p-dropdown [options]="proveedores" optionLabel="name" optionValue="id" [filter]="true"
+        [(ngModel)]="provACajaProvId" placeholder="Selecciona el proveedor"
+        [style]="{width:'100%'}"></p-dropdown>
+    </div>
+    <div>
+      <label>Caja</label>
+      <p-dropdown [options]="cajas" optionLabel="name" optionValue="id"
+        [(ngModel)]="provACajaCajaId" placeholder="Selecciona la caja"
+        [style]="{width:'100%'}"></p-dropdown>
+    </div>
+    <div>
+      <label>Monto</label>
+      <p-inputNumber [(ngModel)]="provACajaMonto" mode="currency" currency="COP" locale="es-CO"
+        [minFractionDigits]="0" [style]="{width:'100%'}"></p-inputNumber>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showProvACaja = false"
+            [disabled]="guardandoProvACaja"></button>
+    <button pButton [label]="guardandoProvACaja ? 'Guardando…' : 'Registrar entrada'"
+            [icon]="guardandoProvACaja ? 'pi pi-spin pi-spinner' : 'pi pi-wallet'"
+            (click)="registrarProvACaja()" [disabled]="guardandoProvACaja"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- El cliente nos da efectivo → entra a una caja (sin 4x1000) -->
+<p-dialog header="Pago de cliente a caja" [(visible)]="showCliACaja" [modal]="true"
+          [style]="{width:'440px'}">
+  <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
+    <p style="margin:0; color:#64748b;">
+      El cliente entrega efectivo. Entra como <strong>entrada</strong> a la caja (sin 4x1000).
+    </p>
+    <div>
+      <label>Cliente</label>
+      <p-dropdown [options]="clientes" optionLabel="nombre" optionValue="id" [filter]="true"
+        [(ngModel)]="cliACajaClienteId" placeholder="Selecciona el cliente"
+        [style]="{width:'100%'}"></p-dropdown>
+    </div>
+    <div>
+      <label>Caja</label>
+      <p-dropdown [options]="cajas" optionLabel="name" optionValue="id"
+        [(ngModel)]="cliACajaCajaId" placeholder="Selecciona la caja"
+        [style]="{width:'100%'}"></p-dropdown>
+    </div>
+    <div>
+      <label>Monto</label>
+      <p-inputNumber [(ngModel)]="cliACajaMonto" mode="currency" currency="COP" locale="es-CO"
+        [minFractionDigits]="0" [style]="{width:'100%'}"></p-inputNumber>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showCliACaja = false"
+            [disabled]="guardandoCliACaja"></button>
+    <button pButton [label]="guardandoCliACaja ? 'Guardando…' : 'Registrar entrada'"
+            [icon]="guardandoCliACaja ? 'pi pi-spin pi-spinner' : 'pi pi-user'"
+            (click)="registrarCliACaja()" [disabled]="guardandoCliACaja"></button>
+  </ng-template>
+</p-dialog>
 
 <!-- Barra de totales -->
 <div class="cajas-total-bar mb-4">

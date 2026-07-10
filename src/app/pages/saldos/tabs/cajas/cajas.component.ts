@@ -10,11 +10,14 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DropdownModule } from 'primeng/dropdown';
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { GastoService } from '../../../../core/services/gasto.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
+import { ClienteService } from '../../../../core/services/cliente.service';
 
 @Component({
   selector: 'app-cajas-tab',
@@ -22,7 +25,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
   imports: [
     FormsModule, ButtonModule, InputTextModule, DialogModule, TabViewModule,
     TableModule, CurrencyPipe, CardModule, InputNumberModule, CommonModule,
-    ProgressSpinnerModule, TooltipModule,
+    ProgressSpinnerModule, TooltipModule, DropdownModule,
     AjusteSaldoDialogComponent
   ],
   templateUrl: './cajas.component.html',
@@ -45,16 +48,109 @@ export class CajasComponent implements OnInit {
   ajustesCaja: MovimientoAjusteDto[] = [];
   loadingAjustesCaja = false;
 
+  // Pago de proveedor A CAJA (el proveedor nos da efectivo → entra a una caja)
+  showProvACaja = false;
+  proveedores: Supplier[] = [];
+  provACajaProvId: number | null = null;
+  provACajaCajaId: number | null = null;
+  provACajaMonto = 0;
+  guardandoProvACaja = false;
+
+  // Pago de cliente A CAJA (el cliente nos da efectivo → entra a una caja)
+  showCliACaja = false;
+  clientes: any[] = [];
+  cliACajaClienteId: number | null = null;
+  cliACajaCajaId: number | null = null;
+  cliACajaMonto = 0;
+  guardandoCliACaja = false;
+
   constructor(
     private movimientoService: MovimientoService,
     private cajaService: CajaService,
     private gastoService: GastoService
   ,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private supplierService: SupplierService,
+    private clienteService: ClienteService
 ) { }
 
   ngOnInit(): void {
     this.loadCajas();
+  }
+
+  /** Abre el diálogo "un proveedor nos da efectivo a una caja". */
+  abrirProvACaja(): void {
+    this.provACajaProvId = null;
+    this.provACajaCajaId = null;
+    this.provACajaMonto = 0;
+    this.showProvACaja = true;
+    // Cargar proveedores para el dropdown (una sola vez).
+    if (this.proveedores.length === 0) {
+      this.supplierService.getAllSuppliers().subscribe({
+        next: provs => this.proveedores = provs || [],
+        error: () => this.notificationService.error('No se pudieron cargar los proveedores')
+      });
+    }
+  }
+
+  registrarProvACaja(): void {
+    const provId = Number(this.provACajaProvId ?? 0);
+    const cajaId = Number(this.provACajaCajaId ?? 0);
+    const monto = Number(this.provACajaMonto ?? 0);
+    if (!provId || !cajaId || monto <= 0) {
+      this.notificationService.error('Selecciona proveedor, caja y un monto válido.');
+      return;
+    }
+    this.guardandoProvACaja = true;
+    this.movimientoService.pagoProveedorACaja(provId, cajaId, monto).subscribe({
+      next: () => {
+        this.guardandoProvACaja = false;
+        this.showProvACaja = false;
+        this.notificationService.success('Entrada de proveedor registrada en la caja.');
+        this.loadCajas();
+      },
+      error: () => {
+        this.guardandoProvACaja = false;
+        this.notificationService.error('No se pudo registrar la entrada.');
+      }
+    });
+  }
+
+  /** Abre el diálogo "un cliente nos da efectivo a una caja". */
+  abrirCliACaja(): void {
+    this.cliACajaClienteId = null;
+    this.cliACajaCajaId = null;
+    this.cliACajaMonto = 0;
+    this.showCliACaja = true;
+    if (this.clientes.length === 0) {
+      this.clienteService.listar().subscribe({
+        next: cli => this.clientes = cli || [],
+        error: () => this.notificationService.error('No se pudieron cargar los clientes')
+      });
+    }
+  }
+
+  registrarCliACaja(): void {
+    const cliId = Number(this.cliACajaClienteId ?? 0);
+    const cajaId = Number(this.cliACajaCajaId ?? 0);
+    const monto = Number(this.cliACajaMonto ?? 0);
+    if (!cliId || !cajaId || monto <= 0) {
+      this.notificationService.error('Selecciona cliente, caja y un monto válido.');
+      return;
+    }
+    this.guardandoCliACaja = true;
+    this.movimientoService.pagoClienteACaja(cliId, cajaId, monto).subscribe({
+      next: () => {
+        this.guardandoCliACaja = false;
+        this.showCliACaja = false;
+        this.notificationService.success('Entrada de cliente registrada en la caja.');
+        this.loadCajas();
+      },
+      error: () => {
+        this.guardandoCliACaja = false;
+        this.notificationService.error('No se pudo registrar la entrada.');
+      }
+    });
   }
 
   loadCajas() {
@@ -113,7 +209,7 @@ export class CajasComponent implements OnInit {
   esEliminable(mov: any): boolean {
     const t = (mov?.tipo || '').toUpperCase();
     return t.startsWith('RETIRO') || t === 'PAGO PROVEEDOR' || t === 'TRANSFERENCIA CAJA'
-        || t === 'PAGO PROVEEDOR A CAJA';
+        || t === 'PAGO PROVEEDOR A CAJA' || t === 'PAGO CLIENTE A CAJA';
   }
 
   eliminarMovimientoCaja(mov: any) {

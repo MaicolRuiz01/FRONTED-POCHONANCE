@@ -10,6 +10,8 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
+import { TableModule } from 'primeng/table';
+import { TabViewModule } from 'primeng/tabview';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Subscription, interval } from 'rxjs';
@@ -21,10 +23,19 @@ import {
 } from '../../core/services/retirador.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 import { SaldosSseService } from '../../core/services/saldos-sse.service';
+import { MovimientoService, MovimientoAjusteDto } from '../../core/services/movimiento.service';
 
 interface CuentaSeleccionada {
   cuenta: AccountCop;
   seleccionada: boolean;
+  tipoRetiro: TipoRetiro;
+  montoCajero: number | null;
+  montoCorresponsal: number | null;
+}
+
+/** Una fila calculada por el botón "Todo" — se envía como su PROPIA solicitud independiente. */
+interface FilaAutomatica {
+  cuenta: AccountCop;
   tipoRetiro: TipoRetiro;
   montoCajero: number | null;
   montoCorresponsal: number | null;
@@ -36,7 +47,7 @@ interface CuentaSeleccionada {
   imports: [
     CommonModule, FormsModule, ButtonModule, DialogModule, ConfirmDialogModule,
     DropdownModule, InputTextModule, InputNumberModule, TagModule, TooltipModule,
-    ProgressSpinnerModule, ToastModule
+    ProgressSpinnerModule, ToastModule, TableModule, TabViewModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './retiradores.component.html',
@@ -81,6 +92,15 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   historial: SolicitudRetiro[] = [];
   loadingHistorial = false;
 
+  // ── Modal movimientos de caja (todo lo que entra/sale de la caja del retirador:
+  // retiros que confirma, pagos a proveedor, gastos, pagos que recibe, etc) ──
+  showMovsCajaDialog = false;
+  retiradorMovs: Retirador | null = null;
+  movimientosCaja: any[] = [];
+  loadingMovsCaja = false;
+  ajustesCaja: MovimientoAjusteDto[] = [];
+  loadingAjustesCaja = false;
+
   // ── Modal pago retirador ──
   showPagoDialog = false;
   pagoRetirador: Retirador | null = null;
@@ -111,7 +131,8 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     private copSvc: AccountCopService,
     private msgSvc: MessageService,
     private confirmSvc: ConfirmationService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private movimientoSvc: MovimientoService
   ) { }
 
   ngOnInit(): void {
@@ -178,6 +199,8 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
           if (c.id == null) return;
           const info = porCuenta.get(c.id);
           c.montoComprometido = info?.montoComprometido ?? 0;
+          c.montoCajeroComprometido = info?.montoCajeroComprometido ?? 0;
+          c.montoCorresponsalComprometido = info?.montoCorresponsalComprometido ?? 0;
           c.solicitudesComprometidas = info?.solicitudes ?? [];
         });
       },
@@ -188,6 +211,22 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   /** Saldo disponible real de una cuenta = saldo menos lo ya comprometido en retiros sin confirmar. */
   disponibleReal(cuenta: AccountCop): number {
     return (cuenta.balance ?? 0) - (cuenta.montoComprometido ?? 0);
+  }
+
+  /**
+   * Cupo diario de CAJERO que en verdad queda disponible: el cupo del día
+   * (que solo baja cuando un retiro se CONFIRMA) menos lo que ya está
+   * comprometido hoy en solicitudes de cajero aún sin confirmar. Sin esto,
+   * el sistema deja pedir más de lo que realmente cabe (el backend sí lo
+   * valida y rechaza, pero el frontend debe mostrar/calcular lo mismo).
+   */
+  cupoCajeroDisponibleReal(cuenta: AccountCop): number {
+    return Math.max((cuenta.cupoCajeroDisponibleHoy ?? 0) - (cuenta.montoCajeroComprometido ?? 0), 0);
+  }
+
+  /** Igual que cupoCajeroDisponibleReal(), pero para CORRESPONSAL. */
+  cupoCorresponsalDisponibleReal(cuenta: AccountCop): number {
+    return Math.max((cuenta.cupoCorresponsalDisponibleHoy ?? 0) - (cuenta.montoCorresponsalComprometido ?? 0), 0);
   }
 
   /** Texto para el tooltip: qué solicitudes generan el monto comprometido de una cuenta. */
@@ -288,12 +327,22 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     this.loadMontosComprometidos(); // refresca por si hubo solicitudes nuevas desde el último load
   }
 
+  /** Botón "Todo": autocompleta (marca y calcula montos) el retiro matutino, para que lo revises antes de enviar. */
+  aplicarTodoRetiro(): void {
+    this.cuentasParaRetiro = this.calcularSeleccionAutomatica();
+  }
+
   // ── Modal solicitud general ───────────────────────────────────
 
   openGeneral(): void {
     this.cuentasParaGeneral = this.buildCuentasSeleccion();
     this.showGeneralDialog = true;
     this.loadMontosComprometidos();
+  }
+
+  /** Botón "Todo": autocompleta (marca y calcula montos) el retiro matutino, para que lo revises antes de enviar. */
+  aplicarTodoGeneral(): void {
+    this.cuentasParaGeneral = this.calcularSeleccionAutomatica();
   }
 
   get cuentasSeleccionadasGeneral(): CuentaSeleccionada[] {
@@ -304,23 +353,31 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     const sel = this.cuentasSeleccionadasGeneral;
     if (!sel.length) return;
 
+    // Cada fila seleccionada se manda como su PROPIA solicitud (propio
+    // mensaje/número en Telegram), nunca todas combinadas en una sola.
+    const filas: FilaAutomatica[] = sel.map(c => ({
+      cuenta: c.cuenta,
+      tipoRetiro: c.tipoRetiro,
+      montoCajero: this.requiresCajero(c.tipoRetiro) ? c.montoCajero : null,
+      montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
+    }));
+
     this.savingGeneral = true;
-    this.retiradorSvc.crearSolicitudGeneral({
-      detalles: sel.map(c => ({
-        cuentaCopId: c.cuenta.id!,
-        tipoRetiro: c.tipoRetiro,
-        montoCajero: this.requiresCajero(c.tipoRetiro) ? c.montoCajero : null,
-        montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
-      }))
-    }).pipe(finalize(() => this.savingGeneral = false)).subscribe({
-      next: () => {
-        this.showGeneralDialog = false;
-        this.loadSinAsignar();
-        this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'Se publicó en Telegram. El primero que la tome queda asignado.', life: 5000 });
-      },
-      error: (err) => {
-        const msg = err?.error?.message ?? 'No se pudo crear la solicitud.';
-        this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+    this.enviarFilasSecuencial(filas, 'general', 0, 0, 0, (exitosas, total) => {
+      this.savingGeneral = false;
+      this.showGeneralDialog = false;
+      this.loadSinAsignar();
+      if (total === 1) {
+        if (exitosas === 1) {
+          this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'Se publicó en Telegram. El primero que la tome queda asignado.', life: 5000 });
+        }
+      } else {
+        this.msgSvc.add({
+          severity: exitosas === total ? 'success' : 'warn',
+          summary: exitosas === total ? 'Solicitudes enviadas' : 'Terminado con errores',
+          detail: `${exitosas} de ${total} publicadas en Telegram.`,
+          life: 6000
+        });
       }
     });
   }
@@ -366,6 +423,129 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
       montoCajero: null,
       montoCorresponsal: null
     }));
+  }
+
+  /**
+   * Trunca un valor a centenas (nunca redondea hacia arriba): el dinero no se
+   * redondea, o hay o no hay. Ej: 2.847 → 2.800 (los 47 quedan en la cuenta).
+   */
+  private truncarACentenas(valor: number): number {
+    return Math.floor(Math.max(valor, 0) / 100) * 100;
+  }
+
+  /**
+   * Botón "Todo": calcula cuánto retirar de una cuenta para el retiro
+   * matutino de rutina. Reglas (confirmadas con Milton):
+   *  - Disponible real (saldo - comprometido) < $1.500 → no se toca esa cuenta.
+   *  - $1.500 a $2.999 → CAJERO, tope $2.700 (y el cupo diario disponible).
+   *  - $3.000 o más → CORRESPONSAL, tope $10.000 (y el cupo diario disponible).
+   *    Si después de eso sobran $1.500 o más, ESE sobrante también se pide por
+   *    CAJERO (tope $2.700).
+   * Los montos siempre se truncan a centenas.
+   */
+  private calcularMontosAutomaticos(cuenta: AccountCop): { montoCajero: number; montoCorresponsal: number } {
+    const disponible = this.truncarACentenas(this.disponibleReal(cuenta));
+    // Cupo NETO: el cupo del día menos lo que ya está comprometido hoy en
+    // solicitudes pendientes de ese mismo canal (cajero o corresponsal).
+    const cupoCajero = this.truncarACentenas(this.cupoCajeroDisponibleReal(cuenta));
+    const cupoCorresponsal = this.truncarACentenas(this.cupoCorresponsalDisponibleReal(cuenta));
+
+    let montoCajero = 0;
+    let montoCorresponsal = 0;
+
+    if (disponible >= 3000) {
+      montoCorresponsal = Math.min(disponible, 10000, cupoCorresponsal);
+      const restante = disponible - montoCorresponsal;
+      if (restante >= 1500) {
+        montoCajero = Math.min(restante, 2700, cupoCajero);
+      }
+    } else if (disponible >= 1500) {
+      montoCajero = Math.min(disponible, 2700, cupoCajero);
+    }
+
+    return { montoCajero, montoCorresponsal };
+  }
+
+  /**
+   * Botón "Todo": arma la lista del diálogo con lo que tocaría retirar de cada
+   * cuenta, para que Milton la REVISE (y edite si quiere) antes de enviar.
+   * Nunca usa tipoRetiro COMPLETO: si a una cuenta le toca cajero Y
+   * corresponsal, se generan DOS filas separadas para esa cuenta — cada una
+   * queda como su propia solicitud al enviar (ver enviarFilasSecuencial), en
+   * vez de un solo detalle "completo" o una solicitud combinada.
+   */
+  private calcularSeleccionAutomatica(): CuentaSeleccionada[] {
+    const ordenadas = [...this.cuentasCop].sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
+    const resultado: CuentaSeleccionada[] = [];
+
+    for (const cuenta of ordenadas) {
+      const { montoCajero, montoCorresponsal } = this.calcularMontosAutomaticos(cuenta);
+
+      if (montoCorresponsal > 0) {
+        resultado.push({
+          cuenta, seleccionada: true, tipoRetiro: 'CORRESPONSAL' as TipoRetiro,
+          montoCajero: null, montoCorresponsal
+        });
+      }
+      if (montoCajero > 0) {
+        resultado.push({
+          cuenta, seleccionada: true, tipoRetiro: 'CAJERO' as TipoRetiro,
+          montoCajero, montoCorresponsal: null
+        });
+      }
+      if (montoCajero <= 0 && montoCorresponsal <= 0) {
+        // Nada que retirar hoy: la dejamos visible sin marcar, por si Milton
+        // quiere revisarla o llenarla a mano.
+        resultado.push({
+          cuenta, seleccionada: false, tipoRetiro: 'CAJERO' as TipoRetiro,
+          montoCajero: null, montoCorresponsal: null
+        });
+      }
+    }
+
+    return resultado;
+  }
+
+  /**
+   * Envía las filas seleccionadas UNA POR UNA — cada una es su PROPIA
+   * solicitud independiente (propio número, propio mensaje de Telegram,
+   * propia confirmación), nunca una sola solicitud combinada con varios
+   * detalles. Así queda la misma trazabilidad que si se mandaran a mano.
+   */
+  private enviarFilasSecuencial(
+    filas: FilaAutomatica[], destino: 'retiro' | 'general',
+    index: number, exitosas: number, sinTelegram: number,
+    onFinish: (exitosas: number, total: number, sinTelegram: number) => void
+  ): void {
+    if (index >= filas.length) {
+      onFinish(exitosas, filas.length, sinTelegram);
+      return;
+    }
+
+    const fila = filas[index];
+    const detalle = {
+      cuentaCopId: fila.cuenta.id!,
+      tipoRetiro: fila.tipoRetiro,
+      montoCajero: fila.montoCajero,
+      montoCorresponsal: fila.montoCorresponsal,
+    };
+
+    const obs = destino === 'retiro'
+      ? this.retiradorSvc.crearSolicitud({ retiradorId: this.retiradorActivo!.id!, detalles: [detalle] })
+      : this.retiradorSvc.crearSolicitudGeneral({ detalles: [detalle] });
+
+    obs.subscribe({
+      next: (res: any) => {
+        const noTg = destino === 'retiro' && res?.telegramNotificado === false ? 1 : 0;
+        this.enviarFilasSecuencial(filas, destino, index + 1, exitosas + 1, sinTelegram + noTg, onFinish);
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Error desconocido';
+        this.msgSvc.add({ severity: 'error', summary: `No se pudo pedir ${fila.cuenta.name} (${fila.tipoRetiro})`, detail: msg, life: 6000 });
+        // Seguimos con las demás filas — que una cuenta falle no debe frenar el resto.
+        this.enviarFilasSecuencial(filas, destino, index + 1, exitosas, sinTelegram, onFinish);
+      }
+    });
   }
 
   get cuentasSeleccionadas(): CuentaSeleccionada[] {
@@ -416,32 +596,38 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     const sel = this.cuentasSeleccionadas;
     if (!sel.length || !this.retiradorActivo) return;
 
+    // Cada fila seleccionada se manda como su PROPIA solicitud (propio
+    // mensaje/número en Telegram), nunca todas combinadas en una sola.
+    const filas: FilaAutomatica[] = sel.map(c => ({
+      cuenta: c.cuenta,
+      tipoRetiro: c.tipoRetiro,
+      montoCajero: this.requiresCajero(c.tipoRetiro) ? c.montoCajero : null,
+      montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
+    }));
+
     this.savingRetiro = true;
-    this.retiradorSvc.crearSolicitud({
-      retiradorId: this.retiradorActivo.id!,
-      detalles: sel.map(c => ({
-        cuentaCopId: c.cuenta.id!,
-        tipoRetiro: c.tipoRetiro,
-        montoCajero: this.requiresCajero(c.tipoRetiro) ? c.montoCajero : null,
-        montoCorresponsal: this.requiresCorresponsal(c.tipoRetiro) ? c.montoCorresponsal : null,
-      }))
-    }).pipe(finalize(() => this.savingRetiro = false)).subscribe({
-      next: (res) => {
-        this.showRetiroDialog = false;
-        this.loadAll();
-        if (res.telegramNotificado === false) {
-          this.msgSvc.add({
-            severity: 'warn', summary: 'Solicitud creada, pero no se notificó',
-            detail: 'El retirador aún no ha vinculado su Telegram (debe enviarle /start al bot). Cuando lo haga, usa "Reenviar" en su historial.',
-            life: 8000
-          });
-        } else {
+    this.enviarFilasSecuencial(filas, 'retiro', 0, 0, 0, (exitosas, total, sinTelegram) => {
+      this.savingRetiro = false;
+      this.showRetiroDialog = false;
+      this.loadAll();
+      if (sinTelegram > 0) {
+        this.msgSvc.add({
+          severity: 'warn', summary: 'Faltó notificar por Telegram',
+          detail: `${sinTelegram} solicitud(es) se crearon pero el retirador aún no ha vinculado su Telegram (debe enviarle /start al bot). Usa "Reenviar" en su historial.`,
+          life: 8000
+        });
+      }
+      if (total === 1) {
+        if (exitosas === 1 && sinTelegram === 0) {
           this.msgSvc.add({ severity: 'success', summary: 'Solicitud enviada', detail: 'El retirador fue notificado.', life: 4000 });
         }
-      },
-      error: (err) => {
-        const msg = err?.error?.message ?? 'No se pudo crear la solicitud.';
-        this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+      } else {
+        this.msgSvc.add({
+          severity: exitosas === total ? 'success' : 'warn',
+          summary: exitosas === total ? 'Solicitudes enviadas' : 'Terminado con errores',
+          detail: `${exitosas} de ${total} enviadas correctamente.`,
+          life: 6000
+        });
       }
     });
   }
@@ -455,6 +641,44 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     this.showHistorialDialog = true;
     this.retiradorSvc.historial(r.id!).pipe(finalize(() => this.loadingHistorial = false)).subscribe({
       next: h => this.historial = h ?? []
+    });
+  }
+
+  // ── Movimientos de caja (todo lo que entra/sale del efectivo del retirador:
+  // retiros que confirma, entregas a proveedor, gastos, pagos que recibe, etc).
+  // Reusa el mismo endpoint /movimiento/caja/{id} que ya usa la pestaña Cajas,
+  // así no se duplica ninguna lógica de backend. ────────────────────────────
+  verMovimientosCaja(r: Retirador): void {
+    if (!r.efectivo?.id) {
+      this.msgSvc.add({ severity: 'warn', summary: 'Sin caja', detail: 'Este retirador no tiene caja asignada.' });
+      return;
+    }
+    const cajaId = r.efectivo.id;
+    this.retiradorMovs = r;
+    this.movimientosCaja = [];
+    this.ajustesCaja = [];
+    this.loadingMovsCaja = true;
+    this.loadingAjustesCaja = true;
+    this.showMovsCajaDialog = true;
+
+    this.movimientoSvc.getMovimientosPorCaja(cajaId).subscribe({
+      next: data => {
+        this.movimientosCaja = [...data].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: () => { /* silencioso, la tabla queda vacía */ },
+      complete: () => this.loadingMovsCaja = false
+    });
+
+    this.movimientoSvc.getAjustesCaja(cajaId).subscribe({
+      next: ajustes => {
+        this.ajustesCaja = [...ajustes].sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+      },
+      error: () => { /* silencioso */ },
+      complete: () => this.loadingAjustesCaja = false
     });
   }
 

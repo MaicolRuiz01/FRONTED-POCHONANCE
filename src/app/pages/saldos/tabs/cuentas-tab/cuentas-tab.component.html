@@ -103,22 +103,22 @@
           <div class="cop-stat-row">
             <span class="cop-stat-label">
               <i class="pi pi-credit-card cupo-ico"
-                 [class.cupo-ico-ok]="(account.cupoCajeroDisponibleHoy ?? 0) > 0"
-                 [class.cupo-ico-red]="(account.cupoCajeroDisponibleHoy ?? 0) <= 0"
-                 [title]="(account.cupoCajeroDisponibleHoy ?? 0) > 0 ? 'Cajero: cupo disponible' : 'Cajero: cupo agotado'"></i>
+                 [class.cupo-ico-ok]="cupoCajeroDisponibleReal(account) > 0"
+                 [class.cupo-ico-red]="cupoCajeroDisponibleReal(account) <= 0"
+                 [title]="cupoCajeroDisponibleReal(account) > 0 ? 'Cajero: cupo disponible' : 'Cajero: cupo agotado'"></i>
               Cajero disp.
             </span>
-            <span class="cop-stat-value">{{ (account.cupoCajeroDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
+            <span class="cop-stat-value">{{ cupoCajeroDisponibleReal(account) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
           <div class="cop-stat-row">
             <span class="cop-stat-label">
               <i class="pi pi-building cupo-ico"
-                 [class.cupo-ico-ok]="(account.cupoCorresponsalDisponibleHoy ?? 0) > 0"
-                 [class.cupo-ico-red]="(account.cupoCorresponsalDisponibleHoy ?? 0) <= 0"
-                 [title]="(account.cupoCorresponsalDisponibleHoy ?? 0) > 0 ? 'Corresponsal: cupo disponible' : 'Corresponsal: cupo agotado'"></i>
+                 [class.cupo-ico-ok]="cupoCorresponsalDisponibleReal(account) > 0"
+                 [class.cupo-ico-red]="cupoCorresponsalDisponibleReal(account) <= 0"
+                 [title]="cupoCorresponsalDisponibleReal(account) > 0 ? 'Corresponsal: cupo disponible' : 'Corresponsal: cupo agotado'"></i>
               Corresponsal disp.
             </span>
-            <span class="cop-stat-value">{{ (account.cupoCorresponsalDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</span>
+            <span class="cop-stat-value">{{ cupoCorresponsalDisponibleReal(account) | currency:'COP':'$':'1.0-0' }}</span>
           </div>
         </div>
 
@@ -272,11 +272,11 @@
         <ng-container *ngIf="c.id === selectedCuentaOrigenId">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span style="color:var(--text-color-secondary,#6b7280);">Cupo cajero disponible</span>
-            <strong [style.color]="tipoRetiro==='CAJERO' ? '#2563eb' : 'inherit'">{{ (c.cupoCajeroDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</strong>
+            <strong [style.color]="tipoRetiro==='CAJERO' ? '#2563eb' : 'inherit'">{{ cupoCajeroDisponibleReal(c) | currency:'COP':'$':'1.0-0' }}</strong>
           </div>
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-color-secondary,#6b7280);">Cupo corresponsal disponible</span>
-            <strong [style.color]="tipoRetiro==='CORRESPONSAL' ? '#2563eb' : 'inherit'">{{ (c.cupoCorresponsalDisponibleHoy ?? 0) | currency:'COP':'$':'1.0-0' }}</strong>
+            <strong [style.color]="tipoRetiro==='CORRESPONSAL' ? '#2563eb' : 'inherit'">{{ cupoCorresponsalDisponibleReal(c) | currency:'COP':'$':'1.0-0' }}</strong>
           </div>
         </ng-container>
       </ng-container>

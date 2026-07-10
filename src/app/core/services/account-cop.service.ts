@@ -36,6 +36,10 @@ export interface AccountCop {
   brebeKeys?: BrebeKey[];
   /** Cuánto del balance ya está comprometido en retiros enviados sin confirmar (se llena en el frontend). */
   montoComprometido?: number;
+  /** De montoComprometido, cuánto es por CAJERO (para netear el cupo diario de cajero). */
+  montoCajeroComprometido?: number;
+  /** De montoComprometido, cuánto es por CORRESPONSAL (para netear el cupo diario de corresponsal). */
+  montoCorresponsalComprometido?: number;
   /** Desglose de las solicitudes que generan ese monto comprometido. */
   solicitudesComprometidas?: SolicitudComprometidaDto[];
 }
@@ -51,6 +55,8 @@ export interface SolicitudComprometidaDto {
 export interface CuentaComprometidoDto {
   cuentaCopId: number;
   montoComprometido: number;
+  montoCajeroComprometido: number;
+  montoCorresponsalComprometido: number;
   solicitudes: SolicitudComprometidaDto[];
 }
 

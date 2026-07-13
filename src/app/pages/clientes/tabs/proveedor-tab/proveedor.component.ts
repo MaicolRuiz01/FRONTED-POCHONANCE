@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { Movimiento, PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { FormsModule } from '@angular/forms';
@@ -55,10 +58,14 @@ export interface PagoProveedorDTO {
   templateUrl: './proveedor.component.html',
   styleUrls: ['./proveedor.component.css']
 })
-export class ProveedorComponent implements OnInit {
+export class ProveedorComponent implements OnInit, OnDestroy {
 
   Math = Math;
   suppliers: Supplier[] = [];
+  private saldosSub?: Subscription;
+  /** Poll rápido de respaldo: mantiene el saldo de los proveedores al día aunque el SSE se caiga. */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
   accountCops: AccountCop[] = [];
   selectedAccountCop: AccountCop | null = null;
   selectedSupplier: Supplier | null = null;
@@ -109,7 +116,8 @@ export class ProveedorComponent implements OnInit {
     private cajaService: CajaService,
     private movimientoService: MovimientoService,
     private clienteService: ClienteService,
-    private buyDollarsService: BuyDollarsService
+    private buyDollarsService: BuyDollarsService,
+    private saldosSse: SaldosSseService
   ) { }
 
   ngOnInit(): void {
@@ -117,6 +125,46 @@ export class ProveedorComponent implements OnInit {
     this.accountCopService.getAll().subscribe(accountCops => this.accountCops = accountCops);
     this.cajaService.listar().subscribe(cajas => this.cajas = cajas);
     this.clienteService.listar().subscribe(clientes => this.clientes = clientes);
+
+    // Tiempo real: si un movimiento cambia un saldo (pago a/desde proveedor hecho en otra vista),
+    // el backend avisa por SSE y refrescamos los saldos de los proveedores al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(500))
+      .subscribe(() => this.refrescarSaldosProveedores());
+
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos el saldo cada 5s.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldosProveedores(), this.SALDOS_POLL_MS);
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
+  }
+
+  /**
+   * Refresco liviano del saldo (balance) de los proveedores ya en pantalla, sin volver a disparar
+   * el resumen por proveedor (entradas/salidas del día). Si aparece/desaparece uno, recarga completa.
+   */
+  private refrescarSaldosProveedores(): void {
+    this.supplierService.getAllSuppliers().subscribe({
+      next: data => {
+        const idsActuales = new Set(this.suppliers.map(s => s.id));
+        const cambioDeProveedores =
+          data.length !== this.suppliers.length || data.some(s => !idsActuales.has(s.id));
+        if (cambioDeProveedores) {
+          this.loadSuppliers();
+          return;
+        }
+        const map = new Map(data.map(s => [s.id, s]));
+        this.suppliers.forEach(s => {
+          const fresh = map.get(s.id);
+          if (fresh) s.balance = fresh.balance;
+        });
+        this.emitTotal();
+      },
+      error: () => { /* silencioso */ }
+    });
   }
 
   get pesosProvPC(): number {

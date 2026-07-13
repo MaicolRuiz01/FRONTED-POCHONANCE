@@ -248,4 +248,12 @@ export class CajaComponent implements OnInit {
 totalCuentasAgrupadas(b: BalanceGeneral): number {
   return (b.cuentasCop ?? 0) + (b.saldoCuentasBinance ?? 0) + (b.saldosVES ?? 0);
 }
+
+/** >0 = nosotros DEBEMOS (resta al balance → rojo). <0 = NOS DEBEN (suma → verde). */
+esDebemos(b: BalanceGeneral): boolean {
+  return this.totalClientesProveedores(b) > 0;
+}
+esNosDeben(b: BalanceGeneral): boolean {
+  return this.totalClientesProveedores(b) < 0;
+}
 }

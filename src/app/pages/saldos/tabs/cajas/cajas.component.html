@@ -9,14 +9,14 @@
     </p>
   </div>
   <div class="flex" style="gap:.5rem;">
-    <button pButton icon="pi pi-wallet" label="Pago de proveedor"
+    <button pButton icon="pi pi-wallet" label="Préstamo de proveedor"
       class="p-button-outlined"
-      pTooltip="Un proveedor nos da efectivo → entra a una caja"
+      pTooltip="Un proveedor nos presta efectivo → entra a una caja y sube la deuda con él"
       (click)="abrirProvACaja()">
     </button>
-    <button pButton icon="pi pi-user" label="Pago de cliente"
+    <button pButton icon="pi pi-user" label="Préstamo de cliente"
       class="p-button-outlined"
-      pTooltip="Un cliente nos da efectivo → entra a una caja"
+      pTooltip="Un cliente nos presta efectivo → entra a una caja y sube la deuda con él"
       (click)="abrirCliACaja()">
     </button>
     <button pButton icon="pi pi-plus" label="Nueva caja"
@@ -26,12 +26,12 @@
   </div>
 </div>
 
-<!-- El proveedor nos da efectivo → entra a una caja (sin 4x1000) -->
-<p-dialog header="Pago de proveedor a caja" [(visible)]="showProvACaja" [modal]="true"
+<!-- El proveedor nos presta efectivo → entra a una caja (sin 4x1000) -->
+<p-dialog header="Préstamo de proveedor a caja" [(visible)]="showProvACaja" [modal]="true"
           [style]="{width:'440px'}">
   <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
     <p style="margin:0; color:#64748b;">
-      El proveedor entrega efectivo. Entra como <strong>entrada</strong> a la caja (sin 4x1000).
+      El proveedor nos <strong>presta</strong> efectivo. Entra a la caja y <strong>aumenta la deuda</strong> con el proveedor (sin 4x1000).
     </p>
     <div>
       <label>Proveedor</label>
@@ -60,12 +60,12 @@
   </ng-template>
 </p-dialog>
 
-<!-- El cliente nos da efectivo → entra a una caja (sin 4x1000) -->
-<p-dialog header="Pago de cliente a caja" [(visible)]="showCliACaja" [modal]="true"
+<!-- El cliente nos presta efectivo → entra a una caja (sin 4x1000) -->
+<p-dialog header="Préstamo de cliente a caja" [(visible)]="showCliACaja" [modal]="true"
           [style]="{width:'440px'}">
   <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
     <p style="margin:0; color:#64748b;">
-      El cliente entrega efectivo. Entra como <strong>entrada</strong> a la caja (sin 4x1000).
+      El cliente nos <strong>presta</strong> efectivo. Entra a la caja y <strong>aumenta la deuda</strong> con el cliente (sin 4x1000).
     </p>
     <div>
       <label>Cliente</label>

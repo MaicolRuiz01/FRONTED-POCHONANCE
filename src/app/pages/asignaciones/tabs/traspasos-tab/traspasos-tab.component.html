@@ -1,0 +1,39 @@
+<p-table [value]="traspasos"
+         [lazy]="true"
+         (onLazyLoad)="load($event)"
+         [paginator]="true"
+         [rows]="rows"
+         [totalRecords]="total"
+         [loading]="loading"
+         [rowsPerPageOptions]="[20, 50, 100]"
+         dataKey="idtransaccion"
+         [showCurrentPageReport]="true"
+         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} traspasos">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Fecha</th>
+      <th>De</th>
+      <th>A quién</th>
+      <th>Cantidad</th>
+      <th>Moneda</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-t>
+    <tr>
+      <td>{{ t.fecha | date:'medium' }}</td>
+      <td>{{ t.deQuien || '—' }}</td>
+      <td>{{ t.aQuien || '—' }}</td>
+      <td>{{ t.cantidad | number:'1.0-2' }}</td>
+      <td>{{ t.moneda || 'USDT' }}</td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="5" style="text-align:center; padding:1rem;">No hay traspasos.</td>
+    </tr>
+  </ng-template>
+
+</p-table>

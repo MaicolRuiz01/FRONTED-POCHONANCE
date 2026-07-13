@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { AccountBinanceService, AccountBinance, CryptoBalanceDetail } from '../../../../core/services/account-binance.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -64,7 +67,11 @@ export interface DisplayAccount {
     TooltipModule
   ]
 })
-export class SaldosComponent implements OnInit {
+export class SaldosComponent implements OnInit, OnDestroy {
+  private saldosSub?: Subscription;
+  /** Poll rápido de respaldo para el total COP (con el 4x1000 diferido de hoy). */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 6000;
   totalCriptosUsdt = 0;
   balanceTotalExternoCop = 0;
   totalBalanceUsd = 0;
@@ -82,7 +89,7 @@ export class SaldosComponent implements OnInit {
   noAverageRate: boolean = false;
   tasaVesPromedio: number | null = null;
   viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
-  selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | null = null;
+  selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | 'BYBIT' | null = null;
 
   totalCuentasCop = 0;
   /** Total COP disponible autoritativo (backend): idéntico al label de la vista Cuentas COP.
@@ -94,6 +101,7 @@ export class SaldosComponent implements OnInit {
 
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
+    { label: 'BYBIT', value: 'BYBIT' },
     { label: 'TRUST', value: 'TRUST' },
     { label: 'SOLANA', value: 'SOLANA' }
   ];
@@ -126,10 +134,31 @@ export class SaldosComponent implements OnInit {
     private cryptoRateService: CryptoAverageRateService,
     private averageRateService: AverageRateService,
     private accountVesService: AccountVesService,
-    private vesAverageRateApi: VesAverageRateApiService
+    private vesAverageRateApi: VesAverageRateApiService,
+    private saldosSse: SaldosSseService
   ) { }
 
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
+  }
+
+  /** Refresca SOLO el total COP disponible (liviano) para que la card refleje el 4x1000 diferido de hoy. */
+  private refrescarTotalCop(): void {
+    this.cajaService.getTotalDisponible().subscribe({
+      next: v => this.totalCopDisponible = Number(v) || 0,
+      error: () => { /* silencioso */ }
+    });
+  }
+
   ngOnInit() {
+    // Tiempo real para la card "CUENTAS COP": SSE + poll de respaldo (aunque el SSE se caiga).
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(700))
+      .subscribe(() => this.refrescarTotalCop());
+    this.saldosPollTimer = setInterval(() => this.refrescarTotalCop(), this.SALDOS_POLL_MS);
+
     // 1) Inicializar criptos del día (sincroniza y crea snapshots si hace falta)
     this.cryptoRateService.initDia()
       .pipe(finalize(() => {
@@ -314,30 +343,50 @@ export class SaldosComponent implements OnInit {
   }
   // Mantengo tu método original de creación (lo usa guardarCuenta cuando no está en modo edición)
   crearCuentaBinance() {
-    if (!this.newAccount.name || !this.newAccount.address || !this.newAccount.tipo) {
+    // Nombre y tipo siempre obligatorios.
+    if (!this.newAccount.name || !this.newAccount.tipo) {
       this.messageService.add({
-        severity: 'warn',
-        summary: 'Faltan datos',
-        detail: 'Completa nombre, wallet y tipo de cuenta'
+        severity: 'warn', summary: 'Faltan datos', detail: 'Completa nombre y tipo de cuenta'
       });
       return;
     }
 
-    // Solo Binance necesita Id de cuenta, API Key y API Secret.
-    if (this.newAccount.tipo === 'BINANCE' &&
-        (!this.newAccount.referenceAccount || !this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+    const tipoCuenta = this.newAccount.tipo;
+    const esExchange = tipoCuenta === 'BINANCE' || tipoCuenta === 'BYBIT'; // usan API key
+    const esOnChain  = tipoCuenta === 'TRUST' || tipoCuenta === 'SOLANA';  // usan wallet on-chain
+
+    // Binance y las on-chain necesitan wallet/dirección. Bybit NO (lee el saldo por API).
+    if (tipoCuenta !== 'BYBIT' && !this.newAccount.address) {
       this.messageService.add({
-        severity: 'warn',
-        summary: 'Faltan datos',
-        detail: 'Para cuentas Binance completa Id de cuenta, API Key y API Secret'
+        severity: 'warn', summary: 'Faltan datos', detail: 'Completa la wallet/dirección de la cuenta'
       });
       return;
     }
 
-    // Los tipos que no son Binance no llevan credenciales.
-    if (this.newAccount.tipo !== 'BINANCE') {
+    // Los exchanges (Binance/Bybit) necesitan API Key y API Secret.
+    if (esExchange && (!this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Faltan datos',
+        detail: 'Para cuentas ' + tipoCuenta + ' completa API Key y API Secret'
+      });
+      return;
+    }
+    // Binance además usa el Id de cuenta (referenceAccount).
+    if (tipoCuenta === 'BINANCE' && !this.newAccount.referenceAccount) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Faltan datos', detail: 'Para cuentas Binance completa el Id de cuenta'
+      });
+      return;
+    }
+
+    // Solo las on-chain (Trust/Solana) no llevan credenciales.
+    if (esOnChain) {
       this.newAccount.apiKey = null!;
       this.newAccount.apiSecret = null!;
+    }
+    // Bybit no usa dirección on-chain → null para no chocar con el índice único de address.
+    if (tipoCuenta === 'BYBIT' && !this.newAccount.address) {
+      this.newAccount.address = null!;
     }
 
     this.accountService.crear(this.newAccount).subscribe({
@@ -365,30 +414,50 @@ export class SaldosComponent implements OnInit {
   // NUEVO: método único para guardar (crea o actualiza según editMode)
   guardarCuenta() {
     // Validaciones comunes
-    if (!this.newAccount.name || !this.newAccount.address || !this.newAccount.tipo) {
+    // Nombre y tipo siempre obligatorios.
+    if (!this.newAccount.name || !this.newAccount.tipo) {
       this.messageService.add({
-        severity: 'warn',
-        summary: 'Faltan datos',
-        detail: 'Completa nombre, wallet y tipo de cuenta'
+        severity: 'warn', summary: 'Faltan datos', detail: 'Completa nombre y tipo de cuenta'
       });
       return;
     }
 
-    // Solo Binance necesita Id de cuenta, API Key y API Secret.
-    if (this.newAccount.tipo === 'BINANCE' &&
-        (!this.newAccount.referenceAccount || !this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+    const tipoCuenta = this.newAccount.tipo;
+    const esExchange = tipoCuenta === 'BINANCE' || tipoCuenta === 'BYBIT'; // usan API key
+    const esOnChain  = tipoCuenta === 'TRUST' || tipoCuenta === 'SOLANA';  // usan wallet on-chain
+
+    // Binance y las on-chain necesitan wallet/dirección. Bybit NO (lee el saldo por API).
+    if (tipoCuenta !== 'BYBIT' && !this.newAccount.address) {
       this.messageService.add({
-        severity: 'warn',
-        summary: 'Faltan datos',
-        detail: 'Para cuentas Binance completa Id de cuenta, API Key y API Secret'
+        severity: 'warn', summary: 'Faltan datos', detail: 'Completa la wallet/dirección de la cuenta'
       });
       return;
     }
 
-    // Los tipos que no son Binance no llevan credenciales.
-    if (this.newAccount.tipo !== 'BINANCE') {
+    // Los exchanges (Binance/Bybit) necesitan API Key y API Secret.
+    if (esExchange && (!this.newAccount.apiKey || !this.newAccount.apiSecret)) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Faltan datos',
+        detail: 'Para cuentas ' + tipoCuenta + ' completa API Key y API Secret'
+      });
+      return;
+    }
+    // Binance además usa el Id de cuenta (referenceAccount).
+    if (tipoCuenta === 'BINANCE' && !this.newAccount.referenceAccount) {
+      this.messageService.add({
+        severity: 'warn', summary: 'Faltan datos', detail: 'Para cuentas Binance completa el Id de cuenta'
+      });
+      return;
+    }
+
+    // Solo las on-chain (Trust/Solana) no llevan credenciales.
+    if (esOnChain) {
       this.newAccount.apiKey = null!;
       this.newAccount.apiSecret = null!;
+    }
+    // Bybit no usa dirección on-chain → null para no chocar con el índice único de address.
+    if (tipoCuenta === 'BYBIT' && !this.newAccount.address) {
+      this.newAccount.address = null!;
     }
 
     if (this.editMode && this.selectedAccountId != null) {

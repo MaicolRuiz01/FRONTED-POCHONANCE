@@ -6,17 +6,20 @@ import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TabViewModule } from 'primeng/tabview';
 import { finalize } from 'rxjs/operators';
 
 import { SesionService, ResumenOperador } from '../../core/services/sesion.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { RetiradoresComponent } from '../retiradores/retiradores.component';
 
 @Component({
   selector: 'app-operadores',
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableModule, ButtonModule,
-    CalendarModule, TagModule, ProgressSpinnerModule
+    CalendarModule, TagModule, ProgressSpinnerModule, TabViewModule,
+    RetiradoresComponent
   ],
   templateUrl: './operadores.component.html',
   styleUrls: ['./operadores.component.css']

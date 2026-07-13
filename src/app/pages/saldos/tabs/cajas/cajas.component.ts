@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Caja, CajaService } from '../../../../core/services/caja.service';
 import { MovimientoService, MovimientoAjusteDto } from '../../../../core/services/movimiento.service';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -31,9 +34,13 @@ import { ClienteService } from '../../../../core/services/cliente.service';
   templateUrl: './cajas.component.html',
   styleUrls: ['./cajas.component.css']   // 👈 corregido (plural)
 })
-export class CajasComponent implements OnInit {
+export class CajasComponent implements OnInit, OnDestroy {
 
   cajas: Caja[] = [];
+  private saldosSub?: Subscription;
+  /** Poll rápido de respaldo: mantiene el saldo de las cajas al día aunque el SSE se caiga. */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
   displayCajaDialog = false;
   nuevaCaja: Partial<Caja> = { name: '', saldo: 0 };
   showAjusteCaja = false;
@@ -71,11 +78,56 @@ export class CajasComponent implements OnInit {
   ,
     private notificationService: NotificationService,
     private supplierService: SupplierService,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private saldosSse: SaldosSseService
 ) { }
 
   ngOnInit(): void {
     this.loadCajas();
+
+    // Tiempo real: si CUALQUIER movimiento cambia un saldo (p.ej. un retiro de cuenta COP a
+    // una caja hecho en otra vista), el backend avisa por SSE y refrescamos las cajas al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(500))
+      .subscribe(() => this.refrescarSaldosCajas());
+
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos el saldo de las cajas
+    // por HTTP cada 5s (endpoint liviano), para que nunca haya que darle refresh a mano.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldosCajas(), this.SALDOS_POLL_MS);
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
+  }
+
+  /**
+   * Refresco liviano del saldo de las cajas. Actualiza solo el saldo (y el saldo inicial del día)
+   * de las cajas que ya están en pantalla, SIN volver a disparar el conteo de gastos por caja.
+   * Si aparece/desaparece una caja, hace una recarga completa.
+   */
+  private refrescarSaldosCajas(): void {
+    this.cajaService.listar().subscribe({
+      next: data => {
+        const idsActuales = new Set(this.cajas.map(c => c.id));
+        const cambioDeCajas =
+          data.length !== this.cajas.length || data.some(c => !idsActuales.has(c.id));
+        if (cambioDeCajas) {
+          this.loadCajas();
+          return;
+        }
+        const map = new Map(data.map(c => [c.id, c]));
+        this.cajas.forEach(c => {
+          const fresh = map.get(c.id);
+          if (fresh) {
+            c.saldo = fresh.saldo;
+            if (fresh.saldoInicialDelDia != null) c.saldoInicialDelDia = fresh.saldoInicialDelDia;
+          }
+        });
+      },
+      error: () => { /* silencioso */ }
+    });
   }
 
   /** Abre el diálogo "un proveedor nos da efectivo a una caja". */
@@ -102,11 +154,11 @@ export class CajasComponent implements OnInit {
       return;
     }
     this.guardandoProvACaja = true;
-    this.movimientoService.pagoProveedorACaja(provId, cajaId, monto).subscribe({
+    this.movimientoService.prestamoProveedorACaja(provId, cajaId, monto).subscribe({
       next: () => {
         this.guardandoProvACaja = false;
         this.showProvACaja = false;
-        this.notificationService.success('Entrada de proveedor registrada en la caja.');
+        this.notificationService.success('Préstamo de proveedor registrado en la caja.');
         this.loadCajas();
       },
       error: () => {
@@ -139,11 +191,11 @@ export class CajasComponent implements OnInit {
       return;
     }
     this.guardandoCliACaja = true;
-    this.movimientoService.pagoClienteACaja(cliId, cajaId, monto).subscribe({
+    this.movimientoService.prestamoClienteACaja(cliId, cajaId, monto).subscribe({
       next: () => {
         this.guardandoCliACaja = false;
         this.showCliACaja = false;
-        this.notificationService.success('Entrada de cliente registrada en la caja.');
+        this.notificationService.success('Préstamo de cliente registrado en la caja.');
         this.loadCajas();
       },
       error: () => {
@@ -209,7 +261,8 @@ export class CajasComponent implements OnInit {
   esEliminable(mov: any): boolean {
     const t = (mov?.tipo || '').toUpperCase();
     return t.startsWith('RETIRO') || t === 'PAGO PROVEEDOR' || t === 'TRANSFERENCIA CAJA'
-        || t === 'PAGO PROVEEDOR A CAJA' || t === 'PAGO CLIENTE A CAJA';
+        || t === 'PAGO PROVEEDOR A CAJA' || t === 'PAGO CLIENTE A CAJA'
+        || t === 'PRESTAMO PROVEEDOR A CAJA' || t === 'PRESTAMO CLIENTE A CAJA';
   }
 
   eliminarMovimientoCaja(mov: any) {

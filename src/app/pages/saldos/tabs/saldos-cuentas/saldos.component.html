@@ -315,8 +315,8 @@
 
     <br>
 
-    <!-- Wallet (siempre) -->
-    <div class="p-field">
+    <!-- Wallet: no aplica a Bybit (lee el saldo por API, no on-chain) -->
+    <div class="p-field" *ngIf="newAccount.tipo !== 'BYBIT'">
       <label for="wallet">Wallet (dirección USDT)* :</label>
       <input id="wallet" type="text" pInputText [(ngModel)]="newAccount.address" />
     </div>
@@ -333,7 +333,7 @@
 
     <br>
 
-    <!-- SOLO BINANCE -->
+    <!-- SOLO BINANCE: id de cuenta, correo, usuario -->
     <ng-container *ngIf="newAccount.tipo === 'BINANCE'">
 
       <div class="p-field">
@@ -357,6 +357,11 @@
 
       <br>
 
+    </ng-container>
+
+    <!-- BINANCE o BYBIT: credenciales de API (usar SIEMPRE key de solo lectura) -->
+    <ng-container *ngIf="newAccount.tipo === 'BINANCE' || newAccount.tipo === 'BYBIT'">
+
       <div class="p-field">
         <label>API Key*</label>
         <input type="text" pInputText [(ngModel)]="newAccount.apiKey" />
@@ -368,6 +373,10 @@
         <label>API Secret*</label>
         <input type="text" pInputText [(ngModel)]="newAccount.apiSecret" />
       </div>
+
+      <small *ngIf="newAccount.tipo === 'BYBIT'" style="display:block; color:#64748b; margin-top:4px;">
+        Usa una API key de Bybit de <b>SOLO LECTURA</b> (sin permisos de retiro ni de trade).
+      </small>
 
     </ng-container>
 

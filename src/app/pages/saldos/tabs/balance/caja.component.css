@@ -91,6 +91,75 @@
 /* Color negativo */
 .field-value.negative { color:#c0392b; font-weight:700; }
 
+/* ===== Colores semánticos: Debemos (rojo, resta) / Nos deben (verde, suma) ===== */
+.field-value.value-neg { color:#c0392b; font-weight:800; }   /* debemos → rojo */
+.field-value.value-pos { color:#1aa14a; font-weight:800; }   /* nos deben → verde */
+
+/* ===== Grupo "Cuentas" con desglose ===== */
+.cuentas-group {
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.04);
+}
+.cuentas-head { border-bottom: none; padding-bottom: 2px; }
+.cuentas-head .field-value { font-size: 1.05rem; }
+
+.field-subrow {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding: 3px 0 3px 14px;
+  border-left: 2px solid #e5eefb;
+  margin-left: 2px;
+}
+.sub-label {
+  color:#64748b;
+  font-size: 0.86rem;
+  font-weight: 500;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.sub-value {
+  color:#334155;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* etiqueta chiquita tipo "disponible", "en $", "USDT" */
+.sub-tag {
+  display:inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color:#0b79d0;
+  background:#eaf4ff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Nota explicativa dentro del modal de detalle */
+.dm-note {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  color:#64748b;
+  line-height: 1.4;
+  background:#f8fafc;
+  border-left: 3px solid #2ea0f7;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+/* Fila total del desglose de cuentas en el modal */
+.dm-row-total {
+  border-top: 1px solid rgba(33,53,71,0.10);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+.dm-row-total .dm-row-right { color:#1f3050; font-size: 1.02rem; }
+
 /* Total por tarjeta */
 .total-row {
   display:flex;

@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -49,9 +52,13 @@ import { TooltipModule } from 'primeng/tooltip';
   styleUrls: ['./clientes.component.css'],
   providers: [MessageService]
 })
-export class ClientesComponent implements OnInit {
+export class ClientesComponent implements OnInit, OnDestroy {
   Math = Math;
   clientes: Cliente[] = [];
+  private saldosSub?: Subscription;
+  /** Poll rápido de respaldo: mantiene el saldo de los clientes al día aunque el SSE se caiga. */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
   proveedores: any[] = [];
   movimientos: any[] = [];
   displayModal = false;
@@ -139,13 +146,54 @@ export class ClientesComponent implements OnInit {
     private sellDollarsService: SellDollarsService,
     private ajustesService: AjustesService
   ,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private saldosSse: SaldosSseService
 ) { }
 
   ngOnInit(): void {
     this.cargarClientes();
     this.cargarProveedores();
     this.cargarCuentasCop();
+
+    // Tiempo real: si un movimiento cambia un saldo (pago a/desde cliente hecho en otra vista),
+    // el backend avisa por SSE y refrescamos los saldos de los clientes al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(500))
+      .subscribe(() => this.refrescarSaldosClientes());
+
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos el saldo cada 5s.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldosClientes(), this.SALDOS_POLL_MS);
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
+  }
+
+  /**
+   * Refresco liviano del saldo (DEBEMOS) de los clientes ya en pantalla, sin volver a disparar
+   * el resumen por cliente (entradas/salidas del día). Si aparece/desaparece un cliente, recarga completa.
+   */
+  private refrescarSaldosClientes(): void {
+    this.clienteService.listar().subscribe({
+      next: data => {
+        const idsActuales = new Set(this.clientes.map(c => c.id));
+        const cambioDeClientes =
+          data.length !== this.clientes.length || data.some(c => !idsActuales.has(c.id));
+        if (cambioDeClientes) {
+          this.cargarClientes();
+          return;
+        }
+        const map = new Map(data.map(c => [c.id, c]));
+        this.clientes.forEach(c => {
+          const fresh = map.get(c.id);
+          if (fresh) c.saldo = fresh.saldo;
+        });
+        this.emitTotal();
+      },
+      error: () => { /* silencioso */ }
+    });
   }
   cargarCuentasCop(): void {
     this.accountCopService.getAll().subscribe({

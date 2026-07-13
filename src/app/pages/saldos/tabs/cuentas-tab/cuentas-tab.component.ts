@@ -49,6 +49,9 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 export class CuentasTabComponent implements OnInit, OnDestroy {
   cuentas: AccountCop[] = [];
   private saldosSub?: Subscription;
+  /** Poll rápido de respaldo: mantiene saldo, cupo y TOTAL al día aunque el SSE se caiga. */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
   newAccount: any = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
   displayDialog: boolean = false;
 
@@ -137,6 +140,10 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     this.saldosSub = this.saldosSse.cambioSaldos$
       .pipe(debounceTime(700))
       .subscribe(() => this.refrescarSaldos());
+
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos saldo + cupo + TOTAL
+    // cada 5s, para que el total (con el 4x1000 diferido de hoy) siempre esté al día.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldos(), this.SALDOS_POLL_MS);
   }
 
   /** Refresco liviano de saldo Y cupo diario al recibir el evento SSE. */
@@ -161,6 +168,7 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
     this.saldosSse.disconnect();
   }
 
@@ -217,6 +225,11 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   }
 
   loadCuentas() {
+    // 0) SIEMPRE re-pedir el total autoritativo (Σ saldos − 4x1000 diferido pendiente, × 0.996).
+    //    Antes solo se refrescaba por SSE, así que tras un movimiento el label "TOTAL COP DISPONIBLE"
+    //    quedaba con el valor viejo y parecía que el 4x1000 diferido de hoy no se aplicaba.
+    this.loadTotalDisponible();
+
     // 1) Mostrar al instante lo último cargado (evita la pantalla vacía al re-entrar).
     const cache = this.accountService.getCached();
     if (cache.length && this.cuentas.length === 0) {

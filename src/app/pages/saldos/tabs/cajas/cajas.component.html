@@ -108,7 +108,7 @@
 
 <!-- Grid de cards -->
 <div class="cajas-grid">
-  <div class="caja-card" *ngFor="let caja of cajas" (click)="verMovimientos(caja)">
+  <div class="caja-card" *ngFor="let caja of cajas; trackBy: trackByCaja" (click)="verMovimientos(caja)">
     <div class="caja-card-accent"></div>
     <div class="caja-card-body">
 

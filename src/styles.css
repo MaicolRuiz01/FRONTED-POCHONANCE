@@ -13,6 +13,9 @@
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
 
+/* Sistema de diseño propio — DESPUÉS de PrimeNG para refinar sus controles. */
+@import "design-system.css";
+
 /* ── Topbar: usuario + rol + logout ── */
 .topbar-user-info {
   display: flex;

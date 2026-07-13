@@ -224,6 +224,11 @@ export class CajasComponent implements OnInit, OnDestroy {
     return this.cajas.reduce((acc, caja) => acc + (caja.saldo ?? 0), 0);
   }
 
+  /** trackBy: reutiliza el DOM de cada caja por id en vez de recrearlas al refrescar. */
+  trackByCaja(_i: number, c: Caja): number | undefined {
+    return c.id;
+  }
+
   guardarCaja() {
     if (!this.nuevaCaja.name || this.nuevaCaja.saldo === undefined) return;
 

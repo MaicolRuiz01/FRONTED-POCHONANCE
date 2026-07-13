@@ -59,7 +59,7 @@
 </div>
 <!-- Tarjetas de cuentas COP -->
 <div class="cop-grid">
-  <div *ngFor="let account of filteredCuentas"
+  <div *ngFor="let account of filteredCuentas; trackBy: trackByCuenta"
        class="cop-card"
        [class.cop-card--p2p]="account.activaParaP2P"
        [ngClass]="'cop-card--' + (account.bankType | lowercase)">

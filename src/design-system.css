@@ -1,0 +1,163 @@
+/* ============================================================================
+   POCHONANCE — Sistema de diseño (fundación)
+   Tokens + estilos consistentes para botones, formularios, diálogos, tarjetas
+   y tablas. Se importa DESPUÉS de PrimeNG para poder refinar sus controles.
+   Objetivo: consistencia en toda la app sin reinventar estilos por vista.
+   ============================================================================ */
+
+:root {
+  /* Colores */
+  --ds-primary:        #6366f1;
+  --ds-primary-hover:  #4f46e5;
+  --ds-primary-soft:   #eef2ff;
+  --ds-success:        #16a34a;
+  --ds-success-hover:  #15803d;
+  --ds-danger:         #dc2626;
+  --ds-danger-hover:   #b91c1c;
+  --ds-warning:        #f59e0b;
+  --ds-neutral:        #64748b;
+
+  --ds-text:           #1f2937;
+  --ds-muted:          #64748b;
+  --ds-border:         #e5e7eb;
+  --ds-bg:             #ffffff;
+  --ds-bg-soft:        #f8fafc;
+
+  /* Formas */
+  --ds-radius:         12px;
+  --ds-radius-sm:      9px;
+  --ds-shadow:         0 6px 20px rgba(0, 0, 0, 0.06);
+  --ds-shadow-lg:      0 18px 40px rgba(0, 0, 0, 0.10);
+
+  /* Espaciado */
+  --ds-gap:            0.75rem;
+}
+
+/* ── BOTONES reutilizables (.ds-btn) ─────────────────────────────────────── */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color .15s ease, box-shadow .15s ease, transform .05s ease;
+  white-space: nowrap;
+}
+.ds-btn:active { transform: translateY(1px); }
+.ds-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.ds-btn--primary   { background: var(--ds-primary); color: #fff; }
+.ds-btn--primary:hover   { background: var(--ds-primary-hover); }
+.ds-btn--success   { background: var(--ds-success); color: #fff; }
+.ds-btn--success:hover   { background: var(--ds-success-hover); }
+.ds-btn--danger    { background: var(--ds-danger); color: #fff; }
+.ds-btn--danger:hover    { background: var(--ds-danger-hover); }
+.ds-btn--secondary { background: #f1f5f9; color: var(--ds-text); border-color: var(--ds-border); }
+.ds-btn--secondary:hover { background: #e2e8f0; }
+.ds-btn--ghost     { background: transparent; color: var(--ds-primary); border-color: transparent; }
+.ds-btn--ghost:hover     { background: var(--ds-primary-soft); }
+.ds-btn--outline   { background: #fff; color: var(--ds-primary); border-color: var(--ds-primary); }
+.ds-btn--outline:hover   { background: var(--ds-primary-soft); }
+
+.ds-btn--sm { padding: 0.4rem 0.7rem; font-size: 0.82rem; }
+.ds-btn--lg { padding: 0.7rem 1.3rem; font-size: 1rem; }
+.ds-btn--block { width: 100%; }
+
+/* ── TARJETAS (.ds-card) ─────────────────────────────────────────────────── */
+.ds-card {
+  background: var(--ds-bg);
+  border-radius: var(--ds-radius);
+  box-shadow: var(--ds-shadow);
+  padding: 1.25rem;
+}
+
+/* ── FORMULARIOS (.ds-form / .ds-field / .ds-label) ──────────────────────── */
+.ds-form { display: flex; flex-direction: column; gap: var(--ds-gap); }
+.ds-field { display: flex; flex-direction: column; gap: 0.35rem; }
+.ds-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ds-muted);
+  letter-spacing: .2px;
+}
+.ds-hint { font-size: 0.78rem; color: var(--ds-muted); }
+
+/* ============================================================================
+   Refinamiento GLOBAL de PrimeNG (consistencia inmediata en toda la app)
+   ============================================================================ */
+
+/* Campos de texto / número / dropdown / calendar: mismo borde, radio y foco */
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-inputnumber .p-inputnumber-input,
+.p-calendar .p-inputtext,
+.p-password .p-inputtext {
+  border: 1px solid var(--ds-border) !important;
+  border-radius: var(--ds-radius-sm) !important;
+  transition: border-color .15s ease, box-shadow .15s ease !important;
+  font-size: 0.92rem;
+}
+.p-inputtext { padding: 0.55rem 0.75rem; }
+
+.p-inputtext:enabled:focus,
+.p-dropdown:not(.p-disabled).p-focus,
+.p-inputnumber .p-inputnumber-input:enabled:focus,
+.p-multiselect:not(.p-disabled).p-focus {
+  border-color: var(--ds-primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+  outline: none !important;
+}
+
+/* Dropdown: alto y alineación consistentes */
+.p-dropdown { display: flex; align-items: center; }
+.p-dropdown .p-dropdown-label { padding: 0.55rem 0.75rem; }
+
+/* Botones de PrimeNG: radio y peso consistentes (se respetan las severities/colores) */
+.p-button {
+  border-radius: var(--ds-radius-sm) !important;
+  font-weight: 600 !important;
+}
+.p-button.p-button-sm { border-radius: 8px !important; }
+
+/* Diálogos: radio, cabecera y pie consistentes */
+.p-dialog {
+  border-radius: var(--ds-radius) !important;
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-lg) !important;
+}
+.p-dialog .p-dialog-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--ds-border);
+  font-weight: 700;
+  color: var(--ds-text);
+}
+.p-dialog .p-dialog-content { padding: 1.25rem; }
+.p-dialog .p-dialog-footer {
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid var(--ds-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Tablas: cabecera suave y filas legibles, uniforme en toda la app */
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--ds-bg-soft);
+  color: var(--ds-muted);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  border-bottom: 1px solid var(--ds-border);
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  border-bottom: 1px solid #f1f5f9;
+}
+.p-datatable .p-datatable-tbody > tr:hover { background: var(--ds-bg-soft); }

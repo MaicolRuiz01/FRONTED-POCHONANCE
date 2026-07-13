@@ -13,7 +13,8 @@ import { TraspasosService, TraspasoItem } from '../../../../core/services/traspa
   selector: 'app-traspasos-tab',
   standalone: true,
   imports: [CommonModule, TableModule],
-  templateUrl: './traspasos-tab.component.html'
+  templateUrl: './traspasos-tab.component.html',
+  styleUrls: ['./traspasos-tab.component.css']
 })
 export class TraspasosTabComponent {
   traspasos: TraspasoItem[] = [];

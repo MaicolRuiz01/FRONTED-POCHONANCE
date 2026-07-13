@@ -26,7 +26,7 @@
 
 <!-- ── Grid de cards ── -->
 <div class="cli-grid" *ngIf="clientes.length > 0; else empty">
-  <div *ngFor="let cliente of clientes" class="cli-card" (click)="onSelectCliente(cliente)">
+  <div *ngFor="let cliente of clientes; trackBy: trackByCliente" class="cli-card" (click)="onSelectCliente(cliente)">
     <div class="cli-card-accent"></div>
     <div class="cli-card-body">
 

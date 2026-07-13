@@ -256,4 +256,9 @@ esDebemos(b: BalanceGeneral): boolean {
 esNosDeben(b: BalanceGeneral): boolean {
   return this.totalClientesProveedores(b) < 0;
 }
+
+/** trackBy: reutiliza el DOM de cada tarjeta de balance por id/fecha en vez de recrearlas. */
+trackByBalance(_i: number, b: BalanceGeneral): number | string {
+  return b.id ?? b.date;
+}
 }

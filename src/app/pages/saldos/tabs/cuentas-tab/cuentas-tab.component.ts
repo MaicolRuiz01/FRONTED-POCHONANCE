@@ -190,6 +190,11 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     return this.cuentas.reduce((acc, cuenta) => acc + (cuenta.balance ?? 0), 0);
   }
 
+  /** trackBy: reutiliza el DOM de cada cuenta por id en vez de recrearlas al refrescar. */
+  trackByCuenta(_i: number, c: AccountCop): number | undefined {
+    return c.id;
+  }
+
   /** Total COP disponible = suma de saldos MENOS el 4x1000 de todo (para sacarlo hay que pagarlo). */
   get totalCuentasNeto(): number {
     return this.getDisponible(this.totalCuentas);

@@ -20,7 +20,7 @@
 
 <!-- ── Grid de cards ── -->
 <div class="prov-grid" *ngIf="suppliers.length > 0; else empty">
-  <div *ngFor="let supplier of suppliers" class="prov-card" (click)="onSelectSupplier(supplier)">
+  <div *ngFor="let supplier of suppliers; trackBy: trackBySupplier" class="prov-card" (click)="onSelectSupplier(supplier)">
     <div class="prov-card-accent"></div>
     <div class="prov-card-body">
 

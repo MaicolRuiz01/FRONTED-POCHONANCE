@@ -25,8 +25,7 @@ import { AccountCopService, AccountCop } from '../../../../core/services/account
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { AjustesService } from '../../../../core/services/ajustes.service';
 import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+// xlsx y file-saver NO se importan arriba (son pesados). Se cargan dinámicamente solo al exportar.
 import { Output, EventEmitter } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TooltipModule } from 'primeng/tooltip';
@@ -634,15 +633,11 @@ export class ClientesComponent implements OnInit, OnDestroy {
         );
 
         this.buyDollarsService.getComprasPorCliente(id!).subscribe({
-          next: (compras) => {
+          next: async (compras) => {
 
             this.comprasCliente = [...compras].sort(
               (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             );
-
-            console.log("Movimientos filtrados:", movimientosFiltrados);
-            console.log("Compras del cliente:", this.comprasCliente);
-            console.log("Ventas del cliente:", this.ventasCliente);
 
             if (
               movimientosFiltrados.length === 0 &&
@@ -652,6 +647,10 @@ export class ClientesComponent implements OnInit, OnDestroy {
               console.warn("No hay datos para exportar.");
               return;
             }
+
+            // Carga xlsx y file-saver SOLO ahora (import dinámico) → fuera del bundle inicial.
+            const XLSX = await import('xlsx');
+            const { saveAs } = await import('file-saver');
 
             // -----------------------------
             // 📘 CREAR EXCEL MULTIHOJA
@@ -715,6 +714,11 @@ export class ClientesComponent implements OnInit, OnDestroy {
 }
 private emitTotal() {
   this.totalChange.emit(Number(this.totalClientes ?? 0));
+}
+
+/** trackBy: reutiliza el DOM de cada tarjeta por id en vez de recrearlas al refrescar. */
+trackByCliente(_i: number, c: Cliente): number | undefined {
+  return c.id;
 }
 
 }

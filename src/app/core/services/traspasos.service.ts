@@ -20,8 +20,8 @@ export interface TraspasoItem {
   fecha: string;
   cantidad: number;
   moneda: string;
-  deQuien: string;
-  aQuien: string;
+  origen: string;
+  destino: string;
   idtransaccion: string;
 }
 

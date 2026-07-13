@@ -7,7 +7,7 @@
 
   <!-- Grid de tarjetas dinámicas -->
   <div class="grid cards-container" *ngIf="balances.length > 0">
-    <article class="card" *ngFor="let b of balances; let i = index" role="article"
+    <article class="card" *ngFor="let b of balances; let i = index; trackBy: trackByBalance" role="article"
       [attr.aria-label]="'Balance ' + (b.date | date:'dd/MM/yyyy')">
       <div class="header">
         {{ b.date | date:'dd/MM/yyyy' }}

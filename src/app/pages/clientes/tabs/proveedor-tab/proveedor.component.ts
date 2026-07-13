@@ -479,6 +479,11 @@ export class ProveedorComponent implements OnInit, OnDestroy {
   private emitTotal() {
     this.totalChange.emit(Number(this.totalProveedores ?? 0));
   }
+
+  /** trackBy: reutiliza el DOM de cada tarjeta por id en vez de recrearlas al refrescar. */
+  trackBySupplier(_i: number, s: Supplier): number | undefined {
+    return s.id;
+  }
   onCrearProveedorClick(): void {
   // cierra de una
   this.showform = false;

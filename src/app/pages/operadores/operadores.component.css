@@ -35,30 +35,114 @@
   flex-wrap: wrap;
 }
 
-.op-loading {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 0;
-}
-
-.op-empty {
+/* Tarifa */
+.op-tarifa {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #6b7280;
-  padding: 1.5rem 0;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.op-tarifa-label { color: #6b7280; font-size: 0.8rem; }
+.op-tarifa-valor { color: #16a34a; font-size: 0.9rem; }
+:host ::ng-deep .op-tarifa-input input { width: 120px; }
+
+.op-loading { display: flex; justify-content: center; padding: 2rem 0; }
+.op-empty {
+  display: flex; align-items: center; gap: 0.5rem;
+  color: #6b7280; padding: 1.5rem 0;
 }
 
-.text-center { text-align: center; }
-.text-right { text-align: right; }
+/* Grid de cards */
+.op-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
 
-.op-online {
-  color: #16a34a;
-  font-weight: 600;
-  font-size: 0.8rem;
-  display: inline-flex;
+.op-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.op-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+.op-card--activa {
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.18);
+}
+
+.op-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.op-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #6b7280;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.op-card-id { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
+.op-card-name {
+  font-weight: 700; font-size: 0.95rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.op-badge-online {
+  color: #16a34a; font-weight: 700; font-size: 0.72rem;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  white-space: nowrap;
+}
+.op-badge-online .pi { font-size: 0.55rem; }
+
+.op-card-stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+.op-stat {
+  flex: 1;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+.op-stat-label {
+  display: block; color: #6b7280; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 0.15rem;
+}
+.op-stat-value { font-weight: 700; font-size: 1rem; }
+.op-pago { color: #16a34a; }
+
+.op-card-actions {
+  display: flex;
   align-items: center;
   gap: 0.35rem;
 }
-.op-online .pi { font-size: 0.6rem; }
-.op-offline { color: #9ca3af; }
+.op-btn-copy { flex: 1; }
+
+.op-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  color: #374151;
+}
+.op-total strong { color: #16a34a; font-size: 1.15rem; }
+
+/* Formularios de los diálogos */
+.op-form { display: flex; flex-direction: column; gap: 0.4rem; }
+.op-form label {
+  font-size: 0.8rem; font-weight: 600; color: #374151; margin-top: 0.4rem;
+}
+.op-form input, .op-form :host ::ng-deep .p-dropdown { width: 100%; }
+.op-hint { color: #6b7280; font-size: 0.75rem; margin-top: 0.3rem; }

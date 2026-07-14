@@ -26,6 +26,22 @@
 
     <div #topbarmenu class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active': layoutService.state.profileSidebarVisible}">
 
+        <!-- Jornada de trabajo (solo operarios) -->
+        <div *ngIf="mostrarJornada" class="topbar-jornada">
+            <span *ngIf="jornadaActiva" class="jornada-timer" title="Tiempo trabajando">
+                <i class="pi pi-clock"></i> {{ transcurrido }}
+            </span>
+            <button
+                class="jornada-btn"
+                [class.activa]="jornadaActiva"
+                [disabled]="jornadaCargando"
+                (click)="toggleJornada()"
+                [title]="jornadaActiva ? 'Terminar jornada' : 'Empezar a trabajar'">
+                <i class="pi" [ngClass]="jornadaActiva ? 'pi-stop-circle' : 'pi-play-circle'"></i>
+                <span>{{ jornadaActiva ? 'Terminé' : 'Empecé a trabajar' }}</span>
+            </button>
+        </div>
+
         <!-- Usuario + rol -->
         <div class="topbar-user-info">
             <i class="pi pi-user" style="color: #f59e0b;"></i>

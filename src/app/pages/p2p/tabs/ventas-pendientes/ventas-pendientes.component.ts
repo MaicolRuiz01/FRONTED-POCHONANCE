@@ -108,7 +108,7 @@ export class VentasPendientesComponent implements OnInit, OnDestroy {
     this.selectedAccountSingle = null;
     this.selectedAccounts = [];
     this.selectedAssignments = [];
-    this.accountCopService.getAll().subscribe({
+    this.accountCopService.getP2PView().subscribe({
       next: c => { this.cuentasTodas = c ?? []; this.applyBankFilter(); }
     });
   }

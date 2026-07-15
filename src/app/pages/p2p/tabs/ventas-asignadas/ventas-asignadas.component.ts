@@ -52,7 +52,7 @@ export class VentasAsignadasComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadVentas();
-    this.accountCopService.getAll().subscribe({ next: c => this.cuentasCop = c ?? [] });
+    this.accountCopService.getP2PView().subscribe({ next: c => this.cuentasCop = c ?? [] }); // sin bloqueadas
   }
 
   loadVentas(): void {

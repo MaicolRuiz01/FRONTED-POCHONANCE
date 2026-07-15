@@ -32,6 +32,7 @@ export interface AccountCop {
   numeroCuenta?: string;
   cedula?: string;
   activaParaP2P?: boolean;
+  bloqueada?: boolean;
   cupoTipoP2P?: CupoTipoP2P;
   brebeKeys?: BrebeKey[];
   /** Cuánto del balance ya está comprometido en retiros enviados sin confirmar (se llena en el frontend). */
@@ -172,6 +173,11 @@ export class AccountCopService {
 
   toggleActivaParaP2P(id: number): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-p2p`, {});
+  }
+
+  /** Bloquea / desbloquea la cuenta COP (bloqueada = no seleccionable en ningún lado). */
+  toggleBloqueo(id: number): Observable<AccountCop> {
+    return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-bloqueo`, {});
   }
 
   setCupoTipo(id: number, cupoTipoP2P: CupoTipoP2P): Observable<AccountCop> {

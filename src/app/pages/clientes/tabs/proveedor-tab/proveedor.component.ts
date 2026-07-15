@@ -122,7 +122,7 @@ export class ProveedorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSuppliers();
-    this.accountCopService.getAll().subscribe(accountCops => this.accountCops = accountCops);
+    this.accountCopService.getP2PView().subscribe(accountCops => this.accountCops = accountCops); // sin bloqueadas
     this.cajaService.listar().subscribe(cajas => this.cajas = cajas);
     this.clienteService.listar().subscribe(clientes => this.clientes = clientes);
 

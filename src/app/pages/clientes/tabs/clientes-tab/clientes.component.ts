@@ -123,7 +123,6 @@ export class ClientesComponent implements OnInit, OnDestroy {
   clienteAjuste: Cliente | null = null;
   nuevoSaldoAjuste: number | null = null;
   motivoAjuste: string = '';
-  accountCopService: any;
   showexcelmodal: boolean = false;
 
   ajustesCliente: MovimientoAjusteDto[] = [];
@@ -146,7 +145,8 @@ export class ClientesComponent implements OnInit, OnDestroy {
     private ajustesService: AjustesService
   ,
     private notificationService: NotificationService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private accountCopService: AccountCopService
 ) { }
 
   ngOnInit(): void {
@@ -195,7 +195,8 @@ export class ClientesComponent implements OnInit, OnDestroy {
     });
   }
   cargarCuentasCop(): void {
-    this.accountCopService.getAll().subscribe({
+    // Endpoint liviano (proyección P2P: id + nombre + saldo, sin llaves Brebe) → dropdown rápido.
+    this.accountCopService.getP2PView().subscribe({
       next: (data: AccountCop[]) => this.cuentasCop = data,
       error: (err: any) => {
         console.error('Error al cargar cuentas COP', err);

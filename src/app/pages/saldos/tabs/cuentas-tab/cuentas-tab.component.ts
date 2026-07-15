@@ -498,6 +498,30 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
       error: () => this.notificationService.error('Error al actualizar cuenta')
     });
   }
+
+  /** Bloquea/desbloquea la cuenta. Bloqueada = no seleccionable en ningún lado. */
+  toggleBloqueo(account: AccountCop, event: MouseEvent) {
+    event.stopPropagation();
+    if (!account.id) return;
+    this.accountService.toggleBloqueo(account.id).subscribe({
+      next: updated => {
+        account.bloqueada = updated.bloqueada;
+        if (updated.bloqueada) account.activaParaP2P = false; // al bloquear sale de P2P
+        this.notificationService.success(
+          updated.bloqueada
+            ? `${account.name} BLOQUEADA (no aparecerá para seleccionar en ningún lado)`
+            : `${account.name} desbloqueada`
+        );
+      },
+      error: () => this.notificationService.error('No se pudo bloquear/desbloquear la cuenta')
+    });
+  }
+
+  /** Cuentas seleccionables para los diálogos (retiro/depósito/transferencia): SIN bloqueadas. */
+  get cuentasSeleccionables(): AccountCop[] {
+    return this.cuentas.filter(c => !c.bloqueada);
+  }
+
   getDisponible(balance?: number | null): number {
     const b = Number(balance ?? 0);
     const comision = b * 0.004; // 4x1000

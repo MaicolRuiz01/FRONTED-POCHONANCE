@@ -95,7 +95,7 @@ export class GastosComponent implements OnInit {
     // Mostrar al instante lo último cargado (evita esperar el listado completo).
     const cache = this.accountService.getCached();
     if (cache.length) this.cuentas = cache;
-    this.accountService.getAll().subscribe(data => {
+    this.accountService.getP2PView().subscribe(data => { // sin bloqueadas
       this.cuentas = data;
       this.refreshGastosView();
     });

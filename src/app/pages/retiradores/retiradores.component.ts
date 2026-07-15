@@ -137,7 +137,7 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAll();
-    this.copSvc.getAll().subscribe({
+    this.copSvc.getP2PView().subscribe({ // sin cuentas bloqueadas
       next: c => {
         this.cuentasCop = c ?? [];
         this.loadMontosComprometidos();

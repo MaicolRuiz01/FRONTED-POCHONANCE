@@ -172,7 +172,7 @@ addAccountField() {
 }
 
 loadAccountCops(): void {
-  this.accountCopService.getAll().subscribe({
+  this.accountCopService.getP2PView().subscribe({
     next: (data: AccountCop[]) => {
       this.accountCops = data.filter(c => c.name); // filtramos nulos
       console.log('✅ Cuentas COP cargadas:', this.accountCops);

@@ -188,22 +188,22 @@ export class MovimientoService {
     return this.http.put<MovimientoDto>(`${this.apiUrl}/${id}`, movimiento);
   }
 
-  /** El proveedor nos da efectivo → entra a una caja (sin 4x1000). */
-  pagoProveedorACaja(proveedorId: number, cajaId: number, monto: number): Observable<any> {
+  /** El proveedor nos PRESTA efectivo → entra a una caja (sin 4x1000). Sube la deuda con el proveedor. */
+  prestamoProveedorACaja(proveedorId: number, cajaId: number, monto: number): Observable<any> {
     const params = new HttpParams()
       .set('proveedor', proveedorId.toString())
       .set('cajaId', cajaId.toString())
       .set('monto', monto.toString());
-    return this.http.post(`${this.apiUrl}/pago-proveedor-a-caja`, {}, { params });
+    return this.http.post(`${this.apiUrl}/prestamo-proveedor-a-caja`, {}, { params });
   }
 
-  /** El cliente nos da efectivo → entra a una caja (sin 4x1000). Baja el saldo del cliente. */
-  pagoClienteACaja(clienteId: number, cajaId: number, monto: number): Observable<any> {
+  /** El cliente nos PRESTA efectivo → entra a una caja (sin 4x1000). Sube la deuda con el cliente. */
+  prestamoClienteACaja(clienteId: number, cajaId: number, monto: number): Observable<any> {
     const params = new HttpParams()
       .set('cliente', clienteId.toString())
       .set('cajaId', cajaId.toString())
       .set('monto', monto.toString());
-    return this.http.post(`${this.apiUrl}/pago-cliente-a-caja`, {}, { params });
+    return this.http.post(`${this.apiUrl}/prestamo-cliente-a-caja`, {}, { params });
   }
 
   getMovimientosPorCliente(clienteId: number): Observable<MovimientoVistaDto[]> {

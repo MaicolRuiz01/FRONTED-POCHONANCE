@@ -75,6 +75,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private p2pSub?: Subscription;
   private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
+  /** Polling rápido de saldos: mantiene balance+cupo al día sin depender del SSE (que Railway rompe). */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
 
   constructor(
     private syncService: P2PSyncService,
@@ -105,6 +108,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .pipe(debounceTime(700))
       .subscribe(() => this.refrescarSaldosCop());
 
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos los saldos por HTTP
+    // cada 5s (getSaldos es liviano: id+balance+cupo). Así el saldo/cupo siempre está al día
+    // para saber si una cuenta supera su límite, sin tener que darle refresh a mano.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldosCop(), this.SALDOS_POLL_MS);
+
     // Si otra vista (el modal) cambia el estado P2P de una cuenta, recargamos
     this.p2pSub = this.accountCopService.p2pCambio$.subscribe(() => this.loadCuentasCop());
   }
@@ -116,15 +124,33 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();
     clearInterval(this.countdownTimer);
+    clearInterval(this.saldosPollTimer);
   }
 
-  /** Refresco liviano de saldos COP (id + balance) al recibir el evento SSE. */
+  /** Refresco liviano de saldos COP (id + balance + cupos). Se llama por SSE y por el polling
+   *  rápido de abajo, para que el saldo y el cupo estén siempre al día sin darle refresh a mano. */
   private refrescarSaldosCop(): void {
     this.accountCopService.getSaldos().subscribe({
       next: saldos => {
-        const map = new Map(saldos.map(s => [s.id, s.balance]));
+        // ¿Apareció una cuenta COP nueva (o se eliminó una)? Entonces la lista liviana no
+        // alcanza: recargamos la lista completa para que la cuenta nueva salga sola.
+        const idsActuales = new Set(this.cuentasCop.map(c => c.id));
+        const hayCambioDeCuentas =
+          saldos.length !== this.cuentasCop.length ||
+          saldos.some(s => !idsActuales.has(s.id));
+        if (hayCambioDeCuentas) {
+          this.loadCuentasCop();
+          return;
+        }
+
+        const map = new Map(saldos.map(s => [s.id, s as any]));
         this.cuentasCop.forEach(c => {
-          if (c.id != null && map.has(c.id)) c.balance = map.get(c.id)!;
+          if (c.id != null && map.has(c.id)) {
+            const s = map.get(c.id)!;
+            c.balance = s.balance;
+            if (s.cupoCajeroDisponibleHoy != null) c.cupoCajeroDisponibleHoy = s.cupoCajeroDisponibleHoy;
+            if (s.cupoCorresponsalDisponibleHoy != null) c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
+          }
         });
       },
       error: () => { /* silencioso */ }

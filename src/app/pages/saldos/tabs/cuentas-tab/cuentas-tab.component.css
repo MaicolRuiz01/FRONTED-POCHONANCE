@@ -35,6 +35,23 @@
   border-color: rgba(245,158,11,.35);
 }
 
+/* Cuenta BLOQUEADA — igual que la de P2P pero en ROJO y un poco atenuada. */
+.cop-card--blocked {
+  box-shadow: 0 2px 12px rgba(220,38,38,.18);
+  border-color: rgba(220,38,38,.45);
+  opacity: .85;
+}
+
+/* Botón de candado (bloquear/desbloquear) */
+.cop-block-btn {
+  color: var(--text-color-secondary, #9ca3af) !important;
+  transition: color .15s;
+}
+.cop-block-btn:hover,
+.cop-block-btn.is-blocked {
+  color: #dc2626 !important;
+}
+
 /* Estilos del modal */
 .p-dialog .p-inputtext {
   width: 100%;

@@ -13,6 +13,9 @@
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
 
+/* Sistema de diseño propio — DESPUÉS de PrimeNG para refinar sus controles. */
+@import "design-system.css";
+
 /* ── Topbar: usuario + rol + logout ── */
 .topbar-user-info {
   display: flex;
@@ -46,3 +49,44 @@
 .topbar-logout:hover {
   background: rgba(239, 68, 68, 0.1) !important;
 }
+
+/* ── Topbar: botón "Empecé a trabajar" (jornada del operario) ── */
+.topbar-jornada {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+}
+.jornada-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #34d399;
+  font-variant-numeric: tabular-nums;
+}
+.jornada-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #0b0b0b;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.jornada-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.jornada-btn:active:not(:disabled) { transform: scale(0.97); }
+.jornada-btn:disabled { opacity: 0.6; cursor: default; }
+.jornada-btn.activa {
+  color: #fff;
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+.jornada-btn .pi { font-size: 0.95rem; }

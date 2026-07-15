@@ -95,7 +95,7 @@ export class AsignacionesVentasComponent implements OnInit {
       this.isMobile = window.innerWidth <= 768;
     });
 
-    this.accountCopService.getAll().subscribe({
+    this.accountCopService.getP2PView().subscribe({
       next: (accounts) => this.accountCops = accounts,
       error: () => this.notificationService.error('Error cargando cuentas COP')
     });

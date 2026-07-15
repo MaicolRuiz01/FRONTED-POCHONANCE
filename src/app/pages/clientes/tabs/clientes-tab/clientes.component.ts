@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { ClienteService, Cliente } from '../../../../core/services/cliente.service';
+import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -22,8 +25,7 @@ import { AccountCopService, AccountCop } from '../../../../core/services/account
 import { AjusteSaldoDialogComponent } from '../../../../shared/ajustes-saldo/ajuste-saldo-dialog.component';
 import { AjustesService } from '../../../../core/services/ajustes.service';
 import { AjustesComponent } from '../../../activadades/Ajustes/ajustes.component';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+// xlsx y file-saver NO se importan arriba (son pesados). Se cargan dinámicamente solo al exportar.
 import { Output, EventEmitter } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TooltipModule } from 'primeng/tooltip';
@@ -49,9 +51,13 @@ import { TooltipModule } from 'primeng/tooltip';
   styleUrls: ['./clientes.component.css'],
   providers: [MessageService]
 })
-export class ClientesComponent implements OnInit {
+export class ClientesComponent implements OnInit, OnDestroy {
   Math = Math;
   clientes: Cliente[] = [];
+  private saldosSub?: Subscription;
+  /** Poll rápido de respaldo: mantiene el saldo de los clientes al día aunque el SSE se caiga. */
+  private saldosPollTimer?: ReturnType<typeof setInterval>;
+  private readonly SALDOS_POLL_MS = 5000;
   proveedores: any[] = [];
   movimientos: any[] = [];
   displayModal = false;
@@ -117,7 +123,6 @@ export class ClientesComponent implements OnInit {
   clienteAjuste: Cliente | null = null;
   nuevoSaldoAjuste: number | null = null;
   motivoAjuste: string = '';
-  accountCopService: any;
   showexcelmodal: boolean = false;
 
   ajustesCliente: MovimientoAjusteDto[] = [];
@@ -139,16 +144,59 @@ export class ClientesComponent implements OnInit {
     private sellDollarsService: SellDollarsService,
     private ajustesService: AjustesService
   ,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private saldosSse: SaldosSseService,
+    private accountCopService: AccountCopService
 ) { }
 
   ngOnInit(): void {
     this.cargarClientes();
     this.cargarProveedores();
     this.cargarCuentasCop();
+
+    // Tiempo real: si un movimiento cambia un saldo (pago a/desde cliente hecho en otra vista),
+    // el backend avisa por SSE y refrescamos los saldos de los clientes al instante.
+    this.saldosSse.connect();
+    this.saldosSub = this.saldosSse.cambioSaldos$
+      .pipe(debounceTime(500))
+      .subscribe(() => this.refrescarSaldosClientes());
+
+    // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos el saldo cada 5s.
+    this.saldosPollTimer = setInterval(() => this.refrescarSaldosClientes(), this.SALDOS_POLL_MS);
+  }
+
+  ngOnDestroy(): void {
+    this.saldosSub?.unsubscribe();
+    clearInterval(this.saldosPollTimer);
+  }
+
+  /**
+   * Refresco liviano del saldo (DEBEMOS) de los clientes ya en pantalla, sin volver a disparar
+   * el resumen por cliente (entradas/salidas del día). Si aparece/desaparece un cliente, recarga completa.
+   */
+  private refrescarSaldosClientes(): void {
+    this.clienteService.listar().subscribe({
+      next: data => {
+        const idsActuales = new Set(this.clientes.map(c => c.id));
+        const cambioDeClientes =
+          data.length !== this.clientes.length || data.some(c => !idsActuales.has(c.id));
+        if (cambioDeClientes) {
+          this.cargarClientes();
+          return;
+        }
+        const map = new Map(data.map(c => [c.id, c]));
+        this.clientes.forEach(c => {
+          const fresh = map.get(c.id);
+          if (fresh) c.saldo = fresh.saldo;
+        });
+        this.emitTotal();
+      },
+      error: () => { /* silencioso */ }
+    });
   }
   cargarCuentasCop(): void {
-    this.accountCopService.getAll().subscribe({
+    // Endpoint liviano (proyección P2P: id + nombre + saldo, sin llaves Brebe) → dropdown rápido.
+    this.accountCopService.getP2PView().subscribe({
       next: (data: AccountCop[]) => this.cuentasCop = data,
       error: (err: any) => {
         console.error('Error al cargar cuentas COP', err);
@@ -586,15 +634,11 @@ export class ClientesComponent implements OnInit {
         );
 
         this.buyDollarsService.getComprasPorCliente(id!).subscribe({
-          next: (compras) => {
+          next: async (compras) => {
 
             this.comprasCliente = [...compras].sort(
               (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             );
-
-            console.log("Movimientos filtrados:", movimientosFiltrados);
-            console.log("Compras del cliente:", this.comprasCliente);
-            console.log("Ventas del cliente:", this.ventasCliente);
 
             if (
               movimientosFiltrados.length === 0 &&
@@ -604,6 +648,10 @@ export class ClientesComponent implements OnInit {
               console.warn("No hay datos para exportar.");
               return;
             }
+
+            // Carga xlsx y file-saver SOLO ahora (import dinámico) → fuera del bundle inicial.
+            const XLSX = await import('xlsx');
+            const { saveAs } = await import('file-saver');
 
             // -----------------------------
             // 📘 CREAR EXCEL MULTIHOJA
@@ -667,6 +715,11 @@ export class ClientesComponent implements OnInit {
 }
 private emitTotal() {
   this.totalChange.emit(Number(this.totalClientes ?? 0));
+}
+
+/** trackBy: reutiliza el DOM de cada tarjeta por id en vez de recrearlas al refrescar. */
+trackByCliente(_i: number, c: Cliente): number | undefined {
+  return c.id;
 }
 
 }

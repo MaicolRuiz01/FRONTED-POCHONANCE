@@ -104,7 +104,7 @@ export class AsignacionesComprap2pComponent implements OnInit {
 
   // ✅ si tu AccountCopService ya tiene un método diferente, ajusta el nombre aquí
   loadCuentasCop(): void {
-  this.accountCopService.getAll().subscribe({
+  this.accountCopService.getP2PView().subscribe({
     next: (data: AccountCop[]) => {
       this.cuentasDisponibles = data ?? [];
     },

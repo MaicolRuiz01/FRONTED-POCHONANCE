@@ -1,6 +1,6 @@
 // src/app/services/traspasos.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { map } from 'rxjs/operators';
@@ -13,6 +13,25 @@ export interface TransaccionesDTO {
   cuentaFrom: string;
   fecha: string; // o Date si prefieres
   tipo: string;
+}
+
+/** Fila liviana del listado de traspasos (de, a, fecha, cantidad, moneda). */
+export interface TraspasoItem {
+  fecha: string;
+  cantidad: number;
+  moneda: string;
+  origen: string;
+  destino: string;
+  idtransaccion: string;
+}
+
+/** Respuesta paginada estándar de Spring Data (Page). */
+export interface PageResp<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
 }
 
 @Injectable({
@@ -51,5 +70,13 @@ export class TraspasosService {
 
     getTransaccionesDeHoy(): Observable<TransaccionesDTO[]> {
     return this.http.get<TransaccionesDTO[]>(`${this.baseUrl}/transacciones/hoy`);
+  }
+
+  /** Listado paginado y liviano de TODOS los traspasos (para el tab Asignar → Traspasos). */
+  getTraspasosPaginados(page: number, size: number): Observable<PageResp<TraspasoItem>> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('size', String(size));
+    return this.http.get<PageResp<TraspasoItem>>(`${this.baseUrl}/transacciones/listado`, { params });
   }
 }

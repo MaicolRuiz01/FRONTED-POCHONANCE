@@ -146,7 +146,7 @@ this.selectedAccountSingle = null;
   }
 
   private loadCuentasCop(): void {
-    this.accountCopService.getAll().subscribe({
+    this.accountCopService.getP2PView().subscribe({
       next: (cuentas) => {
         this.cuentasTodas = cuentas ?? [];
         this.applyBankFilter();

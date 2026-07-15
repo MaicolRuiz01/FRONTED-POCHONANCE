@@ -248,4 +248,17 @@ export class CajaComponent implements OnInit {
 totalCuentasAgrupadas(b: BalanceGeneral): number {
   return (b.cuentasCop ?? 0) + (b.saldoCuentasBinance ?? 0) + (b.saldosVES ?? 0);
 }
+
+/** >0 = nosotros DEBEMOS (resta al balance → rojo). <0 = NOS DEBEN (suma → verde). */
+esDebemos(b: BalanceGeneral): boolean {
+  return this.totalClientesProveedores(b) > 0;
+}
+esNosDeben(b: BalanceGeneral): boolean {
+  return this.totalClientesProveedores(b) < 0;
+}
+
+/** trackBy: reutiliza el DOM de cada tarjeta de balance por id/fecha en vez de recrearlas. */
+trackByBalance(_i: number, b: BalanceGeneral): number | string {
+  return b.id ?? b.date;
+}
 }

@@ -7,7 +7,7 @@
 
   <!-- Grid de tarjetas dinámicas -->
   <div class="grid cards-container" *ngIf="balances.length > 0">
-    <article class="card" *ngFor="let b of balances; let i = index" role="article"
+    <article class="card" *ngFor="let b of balances; let i = index; trackBy: trackByBalance" role="article"
       [attr.aria-label]="'Balance ' + (b.date | date:'dd/MM/yyyy')">
       <div class="header">
         {{ b.date | date:'dd/MM/yyyy' }}
@@ -20,42 +20,53 @@
 </div>
 
 
-        <!-- 1) CLIENTES + PROVEEDORES -->
+        <!-- 1) CLIENTES + PROVEEDORES: Debemos = rojo (resta) · Nos deben = verde (suma) -->
         <div class="field-row">
           <div class="field-label">
-            {{
-            totalClientesProveedores(b) < 0 ? 'Nos deben (Clientes/Proveedores)' : (totalClientesProveedores(b)> 0
-              ? 'Debemos (Clientes/Proveedores)'
-              : 'Clientes/Proveedores')
-              }}
+            {{ esNosDeben(b) ? 'Nos deben (Clientes/Proveedores)'
+               : (esDebemos(b) ? 'Debemos (Clientes/Proveedores)' : 'Clientes / Proveedores') }}
           </div>
-
-          <div class="field-value" [ngClass]="{ 'negative': totalClientesProveedores(b) < 0 }">
-            {{ Math.abs(totalClientesProveedores(b)) | number:'1.0-0' }}
+          <div class="field-value"
+               [ngClass]="{ 'value-neg': esDebemos(b), 'value-pos': esNosDeben(b) }">
+            {{ esDebemos(b) ? '−' : (esNosDeben(b) ? '+' : '') }}{{ Math.abs(totalClientesProveedores(b)) | number:'1.0-0' }}
           </div>
         </div>
 
         <hr>
 
-        <!-- 2) CUENTAS = COP + CRIPTOS(PESOS) + VES(PESOS) -->
-        <div class="field-row">
-          <div class="field-label">CUENTAS</div>
-          <div class="field-value">
-            {{ totalCuentasAgrupadas(b) | number:'1.0-0' }}
+        <!-- 2) CUENTAS: total + desglose (COP disponible + cripto + VES) -->
+        <div class="cuentas-group">
+          <div class="field-row cuentas-head">
+            <div class="field-label">Total en cuentas</div>
+            <div class="field-value">{{ totalCuentasAgrupadas(b) | number:'1.0-0' }}</div>
+          </div>
+
+          <div class="field-subrow">
+            <span class="sub-label">Cuentas COP <span class="sub-tag">disponible</span></span>
+            <span class="sub-value">{{ b.cuentasCop | number:'1.0-0' }}</span>
+          </div>
+          <div class="field-subrow">
+            <span class="sub-label">Cripto (Binance) <span class="sub-tag">en $</span></span>
+            <span class="sub-value">{{ b.saldoCuentasBinance | number:'1.0-0' }}</span>
+          </div>
+          <div class="field-subrow">
+            <span class="sub-label">Cuentas VES <span class="sub-tag">en $</span></span>
+            <span class="sub-value">{{ b.saldosVES | number:'1.0-0' }}</span>
           </div>
         </div>
+
         <hr>
 
         <div class="field-row">
-          <div class="field-label">No asignadas (USDT)</div>
-          <div class="field-value" [ngClass]="{ 'negative': b.netoNoAsignadasUsdt < 0 }">
+          <div class="field-label">Cripto no asignado <span class="sub-tag">USDT</span></div>
+          <div class="field-value" [ngClass]="{ 'value-neg': b.netoNoAsignadasUsdt < 0 }">
             {{ b.netoNoAsignadasUsdt | number:'1.2-2' }}
           </div>
         </div>
         <hr>
 
         <div class="field-row">
-          <div class="field-label">Cajas</div>
+          <div class="field-label">Cajas <span class="sub-tag">efectivo</span></div>
           <div class="field-value">
             {{ b.efectivoDelDia | number:'1.0-0' }}
           </div>
@@ -115,6 +126,36 @@
 
         <!-- BODY -->
         <div class="dm-body">
+
+          <!-- SALDO EN TODAS LAS CUENTAS (explicación del desglose) -->
+          <section class="dm-section">
+            <h3 class="dm-section-title">SALDO EN TODAS LAS CUENTAS</h3>
+            <p class="dm-note">
+              Este total agrupa el dinero disponible en tus <b>cuentas COP</b>, más el valor en
+              pesos de tus <b>criptos en Binance</b> y de tus <b>cuentas VES</b>.
+            </p>
+
+            <div class="dm-rows">
+              <div class="dm-row">
+                <div class="dm-row-left">Cuentas COP <span class="sub-tag">disponible, ya con 4x1000</span></div>
+                <div class="dm-row-right">{{ selectedBalance.cuentasCop | number:'1.0-0' }}</div>
+              </div>
+              <div class="dm-row">
+                <div class="dm-row-left">Cripto en Binance <span class="sub-tag">valor en $</span></div>
+                <div class="dm-row-right">{{ selectedBalance.saldoCuentasBinance | number:'1.0-0' }}</div>
+              </div>
+              <div class="dm-row">
+                <div class="dm-row-left">Cuentas VES <span class="sub-tag">valor en $</span></div>
+                <div class="dm-row-right">{{ selectedBalance.saldosVES | number:'1.0-0' }}</div>
+              </div>
+              <div class="dm-row dm-row-total">
+                <div class="dm-row-left"><b>Total en cuentas</b></div>
+                <div class="dm-row-right"><b>{{ totalCuentasAgrupadas(selectedBalance) | number:'1.0-0' }}</b></div>
+              </div>
+            </div>
+          </section>
+
+          <hr class="dm-sep" />
 
           <!-- VENTAS -->
           <section class="dm-section">

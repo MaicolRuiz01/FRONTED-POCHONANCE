@@ -1,14 +1,35 @@
+<p-tabView>
+ <p-tabPanel header="Operadores">
 <div class="card">
+  <!-- Encabezado -->
   <div class="op-header">
     <div class="op-title">
       <span class="op-icon"><i class="pi pi-users"></i></span>
       <div>
         <h2>Operadores</h2>
-        <span class="op-subtitle">Tiempo de sesión e ingresos por día</span>
+        <span class="op-subtitle">Tiempo trabajado y pago por día</span>
       </div>
     </div>
 
     <div class="op-controls">
+      <!-- Tarifa por hora -->
+      <div class="op-tarifa">
+        <ng-container *ngIf="!editandoTarifa">
+          <span class="op-tarifa-label">Hora:</span>
+          <strong class="op-tarifa-valor">{{ formatCop(tarifa) }}</strong>
+          <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+            (click)="editarTarifa()" title="Editar tarifa"></button>
+        </ng-container>
+        <ng-container *ngIf="editandoTarifa">
+          <p-inputNumber [(ngModel)]="tarifaTemp" mode="currency" currency="COP"
+            [maxFractionDigits]="0" locale="es-CO" [min]="0" styleClass="op-tarifa-input"></p-inputNumber>
+          <button pButton icon="pi pi-check" class="p-button-success p-button-sm"
+            (click)="guardarTarifa()" [loading]="guardandoTarifa" title="Guardar"></button>
+          <button pButton icon="pi pi-times" class="p-button-text p-button-sm"
+            (click)="cancelarTarifa()" title="Cancelar"></button>
+        </ng-container>
+      </div>
+
       <p-calendar
         [(ngModel)]="fecha"
         (onSelect)="onFechaChange()"
@@ -18,8 +39,12 @@
         appendTo="body"
         placeholder="Fecha">
       </p-calendar>
+
       <button pButton icon="pi pi-refresh" label="Actualizar"
         class="p-button-sm" (click)="cargar()" [loading]="loading"></button>
+
+      <button pButton icon="pi pi-user-plus" label="Crear operador"
+        class="p-button-sm p-button-success" (click)="abrirCrear()"></button>
     </div>
   </div>
 
@@ -29,43 +54,99 @@
   </div>
 
   <!-- Vacío -->
-  <div *ngIf="!loading && resumen.length === 0" class="op-empty">
+  <div *ngIf="!loading && cards.length === 0" class="op-empty">
     <i class="pi pi-info-circle"></i>
-    <span>Ningún operador registró sesión en esta fecha.</span>
+    <span>No hay usuarios registrados.</span>
   </div>
 
-  <!-- Tabla -->
-  <p-table *ngIf="!loading && resumen.length > 0" [value]="resumen"
-    styleClass="p-datatable-sm" responsiveLayout="scroll">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Operador</th>
-        <th>Rol</th>
-        <th class="text-center">Ingresos</th>
-        <th class="text-right">Tiempo total</th>
-        <th class="text-center">Estado</th>
-      </tr>
-    </ng-template>
+  <!-- Grid de cards -->
+  <div *ngIf="!loading && cards.length > 0" class="op-grid">
+    <div class="op-card" *ngFor="let c of cards" [class.op-card--activa]="c.jornadaActiva">
+      <div class="op-card-top">
+        <div class="op-avatar"><i class="pi pi-user"></i></div>
+        <div class="op-card-id">
+          <span class="op-card-name">{{ c.username }}</span>
+          <p-tag [value]="c.rol || '—'" [severity]="rolSeverity(c.rol)"></p-tag>
+        </div>
+        <span *ngIf="c.jornadaActiva" class="op-badge-online" title="Trabajando ahora">
+          <i class="pi pi-circle-fill"></i> Trabajando
+        </span>
+      </div>
 
-    <ng-template pTemplate="body" let-r>
-      <tr>
-        <td><strong>{{ r.username }}</strong></td>
-        <td><p-tag [value]="r.rol || '—'" [severity]="rolSeverity(r.rol)"></p-tag></td>
-        <td class="text-center">{{ r.ingresos }}</td>
-        <td class="text-right">{{ formatTiempo(r.tiempoTotalSegundos) }}</td>
-        <td class="text-center">
-          <span *ngIf="r.sesionAbierta" class="op-online"><i class="pi pi-circle-fill"></i> En línea</span>
-          <span *ngIf="!r.sesionAbierta" class="op-offline">—</span>
-        </td>
-      </tr>
-    </ng-template>
+      <div class="op-card-stats">
+        <div class="op-stat">
+          <span class="op-stat-label">Tiempo hoy</span>
+          <span class="op-stat-value">{{ formatTiempo(c.tiempoTrabajadoSegundos) }}</span>
+        </div>
+        <div class="op-stat">
+          <span class="op-stat-label">A pagar</span>
+          <span class="op-stat-value op-pago">{{ formatCop(c.pagoCop) }}</span>
+        </div>
+      </div>
 
-    <ng-template pTemplate="footer">
-      <tr>
-        <td colspan="2" class="text-right"><strong>Total ingresos</strong></td>
-        <td class="text-center"><strong>{{ totalIngresos }}</strong></td>
-        <td colspan="2"></td>
-      </tr>
-    </ng-template>
-  </p-table>
+      <div class="op-card-actions">
+        <button pButton icon="pi pi-copy" label="Copiar credenciales"
+          class="p-button-sm p-button-outlined op-btn-copy"
+          (click)="copiarCredenciales(c)"></button>
+        <button pButton icon="pi pi-key"
+          class="p-button-sm p-button-text" title="Restablecer clave"
+          (click)="abrirReset(c)"></button>
+        <button pButton icon="pi pi-trash"
+          class="p-button-sm p-button-text p-button-danger" title="Eliminar"
+          (click)="confirmarEliminar(c)"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total a pagar -->
+  <div *ngIf="!loading && cards.length > 0" class="op-total">
+    <span>Total del día a pagar:</span>
+    <strong>{{ formatCop(totalPago) }}</strong>
+  </div>
 </div>
+ </p-tabPanel>
+
+ <p-tabPanel header="Retiradores">
+   <app-retiradores></app-retiradores>
+ </p-tabPanel>
+</p-tabView>
+
+<!-- Dialog: crear operador -->
+<p-dialog header="Crear operador" [(visible)]="showCrear" [modal]="true"
+  [style]="{ width: '380px' }" [draggable]="false" [resizable]="false">
+  <div class="op-form">
+    <label>Usuario</label>
+    <input type="text" pInputText [(ngModel)]="nuevoUsername" placeholder="Nombre de usuario" autocomplete="off">
+
+    <label>Contraseña</label>
+    <input type="text" pInputText [(ngModel)]="nuevoPassword" placeholder="Contraseña" autocomplete="off">
+
+    <label>Rol</label>
+    <p-dropdown [options]="rolOptions" [(ngModel)]="nuevoRol" optionLabel="label"
+      optionValue="value" appendTo="body"></p-dropdown>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showCrear = false"></button>
+    <button pButton label="Crear" icon="pi pi-check" class="p-button-success"
+      (click)="guardarCrear()" [loading]="creando"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: restablecer clave -->
+<p-dialog header="Restablecer contraseña" [(visible)]="showReset" [modal]="true"
+  [style]="{ width: '360px' }" [draggable]="false" [resizable]="false">
+  <div class="op-form">
+    <label>Usuario</label>
+    <input type="text" pInputText [value]="resetUsername" disabled>
+    <label>Nueva contraseña</label>
+    <input type="text" pInputText [(ngModel)]="resetPassword" placeholder="Nueva contraseña" autocomplete="off">
+    <small class="op-hint">Se guarda para poder copiarla y compartirla.</small>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showReset = false"></button>
+    <button pButton label="Guardar" icon="pi pi-check"
+      (click)="guardarReset()" [loading]="reseteando"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

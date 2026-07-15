@@ -59,9 +59,10 @@
 </div>
 <!-- Tarjetas de cuentas COP -->
 <div class="cop-grid">
-  <div *ngFor="let account of filteredCuentas"
+  <div *ngFor="let account of filteredCuentas; trackBy: trackByCuenta"
        class="cop-card"
        [class.cop-card--p2p]="account.activaParaP2P"
+       [class.cop-card--blocked]="account.bloqueada"
        [ngClass]="'cop-card--' + (account.bankType | lowercase)">
 
     <!-- Header -->
@@ -191,6 +192,12 @@
         [class.has-keys]="(account.brebeKeys?.length ?? 0) > 0"
         (click)="abrirBrebeDialog(account, $event)">
       </button>
+      <button pButton [icon]="account.bloqueada ? 'pi pi-lock' : 'pi pi-lock-open'"
+        class="p-button-text p-button-sm cop-block-btn" [class.is-blocked]="account.bloqueada"
+        [pTooltip]="account.bloqueada ? 'Bloqueada — clic para desbloquear' : 'Bloquear cuenta'"
+        tooltipPosition="top"
+        (click)="toggleBloqueo(account, $event)">
+      </button>
       <span class="cop-footer-hint" (click)="toggleFlip(account, $event)">
         <i class="pi" [class.pi-chevron-right]="!account.isFlipped" [class.pi-chevron-left]="account.isFlipped"></i>
         {{ account.isFlipped ? 'Ver saldo' : 'Ver detalles' }}
@@ -261,7 +268,7 @@
 
     <div>
       <label style="font-weight:600; margin-bottom:6px; display:block;">Cuenta Origen</label>
-      <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
+      <p-dropdown [options]="cuentasSeleccionables" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
         placeholder="Selecciona la Cuenta Origen" [appendTo]="'body'" [style]="{width:'100%'}">
       </p-dropdown>
     </div>
@@ -322,7 +329,7 @@
 <p-dialog header="Registrar Depósito" [(visible)]="displayDialogDeposito" [modal]="true">
   <div class="p-fluid">
     <label>Cuenta Destino</label>
-    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
+    <p-dropdown [options]="cuentasSeleccionables" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
       placeholder="Selecciona la Cuenta Destino" [style]="{'width':'100%'}" [appendTo]="'body'">
     </p-dropdown>
     <label>Caja</label>
@@ -349,12 +356,12 @@
 <p-dialog header="Registrar Transferencia" [(visible)]="displayDialogTransferencia" [modal]="true">
   <div class="p-fluid">
     <label>Cuenta Origen</label>
-    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
+    <p-dropdown [options]="cuentasSeleccionables" [(ngModel)]="selectedCuentaOrigenId" optionLabel="name" optionValue="id"
       placeholder="Selecciona la Cuenta Origen" [style]="{'width':'100%'}" [appendTo]="'body'">
     </p-dropdown>
 
     <label>Cuenta Destino</label>
-    <p-dropdown [options]="cuentas" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
+    <p-dropdown [options]="cuentasSeleccionables" [(ngModel)]="selectedCuentaDestinoId" optionLabel="name" optionValue="id"
       placeholder="Selecciona la Cuenta Destino" [style]="{'width':'100%'}" [appendTo]="'body'">
     </p-dropdown>
 
@@ -379,7 +386,7 @@
     </p-dropdown>
 
     <label>Cuenta COP destino</label>
-    <p-dropdown [options]="cuentas" [(ngModel)]="cuentaPagoId" optionLabel="name" optionValue="id"
+    <p-dropdown [options]="cuentasSeleccionables" [(ngModel)]="cuentaPagoId" optionLabel="name" optionValue="id"
       placeholder="Selecciona cuenta COP" [style.width.%]="100" [appendTo]="'body'">
     </p-dropdown>
 

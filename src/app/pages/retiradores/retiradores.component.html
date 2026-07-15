@@ -449,7 +449,11 @@
       </div>
       <div class="hist-cuentas">
         <span *ngFor="let d of s.detalles; let last = last">
-          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }})<span *ngIf="!last"> · </span>
+          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }}): {{ detalleMontoSolicitado(d) | currency:'COP':'symbol':'1.0-0' }}
+          <span *ngIf="detalleTieneMontoReal(d)" style="color:#f59e0b;" pTooltip="El retirador registró una cifra distinta a la solicitada">
+            → retirado {{ detalleMontoReal(d) | currency:'COP':'symbol':'1.0-0' }}
+          </span>
+          <span *ngIf="!last"> · </span>
         </span>
       </div>
     </div>

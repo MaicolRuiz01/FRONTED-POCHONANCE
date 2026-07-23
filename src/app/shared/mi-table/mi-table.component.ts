@@ -17,6 +17,7 @@ export interface TableColumn {
 export class MiTableComponent {
   @Input() columns: TableColumn[] = [];
   @Input() data: any[] = [];
+  @Input() rows: number = 10;
 
   // evento opcional si quieres capturar clics en filas
    @ContentChild('actionTemplate') actionTemplate!: TemplateRef<any>;

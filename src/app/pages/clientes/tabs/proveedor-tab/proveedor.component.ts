@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { SupplierService, Supplier } from '../../../../core/services/supplier.service';
 import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { Movimiento, PagoProveedorService } from '../../../../core/services/pago-proveedor.service';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { FormsModule } from '@angular/forms';
@@ -117,7 +118,8 @@ export class ProveedorComponent implements OnInit, OnDestroy {
     private movimientoService: MovimientoService,
     private clienteService: ClienteService,
     private buyDollarsService: BuyDollarsService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private notification: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -220,33 +222,47 @@ export class ProveedorComponent implements OnInit, OnDestroy {
   }
 
 
+  guardandoProveedor = false;
+
   createSupplier(data: any): void {
+  if (this.guardandoProveedor) return;
+
+  // Validación: avisa qué falta en vez de mandar y que reviente el backend.
+  if (!data?.name || !String(data.name).trim()) {
+    this.notification.warn('Completa el Nombre para crear el proveedor.');
+    this.showform = true; // mantiene el formulario abierto para corregir
+    return;
+  }
+
   const monto = Math.abs(Number(data.balance || 0));
   const balanceSigned = this.supplierSaldoTipo === 'DEBEMOS' ? monto : -monto;
 
+  this.guardandoProveedor = true;
   this.supplierService.createSupplier({
-    name: data.name,
+    name: String(data.name).trim(),
     balance: balanceSigned
   }).subscribe({
     next: (supplier) => {
       this.suppliers.push(supplier);
+      this.notification.success('Proveedor creado correctamente.');
 
-      // reset
+      // reset + cerrar
       this.Supplier_name = '';
       this.Supplier_balance = 0;
       this.supplierSaldoTipo = 'DEBEMOS';
+      this.showform = false;
+      this.guardandoProveedor = false;
 
-      // actualiza total en wrapper
       this.emitTotal();
-
-      // (opcional) si prefieres datos 100% frescos:
-      // this.loadSuppliers();
     },
     error: (err) => {
+      this.guardandoProveedor = false;
       console.error('Error creating supplier', err);
-
-      // (opcional) si falló, reabre el dialog
-      // this.showform = true;
+      this.showform = true; // reabre para que el usuario no pierda lo escrito
+      const msg = err?.error?.message || err?.error?.error
+        || (typeof err?.error === 'string' ? err.error : null)
+        || 'No se pudo crear el proveedor.';
+      this.notification.error(msg);
     }
   });
 }
@@ -485,10 +501,8 @@ export class ProveedorComponent implements OnInit, OnDestroy {
     return s.id;
   }
   onCrearProveedorClick(): void {
-  // cierra de una
-  this.showform = false;
-
-  // llama tu creación
+  // No cerramos aquí: createSupplier cierra solo si tuvo éxito. Así, si falta un campo o
+  // el backend rechaza, el formulario queda abierto con lo que el usuario ya escribió.
   this.createSupplier({
     name: this.Supplier_name,
     balance: this.Supplier_balance

@@ -283,10 +283,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   // ── Helpers de UI — órdenes ───────────────────────────────────
 
-  statusSeverity(status: string): 'warning' | 'info' | 'secondary' {
+  statusSeverity(status: string): 'warning' | 'info' | 'secondary' | 'danger' {
     switch (status) {
       case 'BUYER_PAYED': return 'warning';
       case 'TRADING':     return 'info';
+      case 'IN_APPEAL':   return 'danger';   // venta apelada / en disputa
       default:            return 'secondary';
     }
   }
@@ -295,6 +296,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     switch (status) {
       case 'BUYER_PAYED': return 'pi pi-clock';
       case 'TRADING':     return 'pi pi-sync';
+      case 'IN_APPEAL':   return 'pi pi-exclamation-triangle';
       default:            return 'pi pi-circle';
     }
   }

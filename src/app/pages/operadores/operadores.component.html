@@ -84,6 +84,16 @@
         </div>
       </div>
 
+      <!-- El admin puede iniciar/terminar la jornada (cronómetro) del operador. -->
+      <button pButton
+        [label]="c.jornadaActiva ? 'Terminar jornada' : 'Iniciar jornada'"
+        [icon]="c.jornadaActiva ? 'pi pi-stop-circle' : 'pi pi-play-circle'"
+        class="p-button-sm op-btn-jornada"
+        [class.p-button-danger]="c.jornadaActiva"
+        [class.p-button-success]="!c.jornadaActiva"
+        [loading]="jornadaCargandoId === c.id"
+        (click)="toggleJornadaOperador(c)"></button>
+
       <div class="op-card-actions">
         <button pButton icon="pi pi-copy" label="Copiar credenciales"
           class="p-button-sm p-button-outlined op-btn-copy"

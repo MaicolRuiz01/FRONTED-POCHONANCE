@@ -2,7 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from "./service/app.layout.service";
 import { AuthService } from '../core/services/auth.service';
-import { JornadaService } from '../core/services/jornada.service';
+import { JornadaService, ModoJornada } from '../core/services/jornada.service';
 import { NotificationService } from '../core/services/notification.service';
 
 @Component({
@@ -17,6 +17,10 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
     jornadaActiva = false;
     jornadaCargando = false;
     transcurrido = '00:00:00';
+    /** Modo de la jornada en curso: en qué está trabajando el operador. */
+    jornadaModo: ModoJornada | null = null;
+    /** Diálogo para elegir el modo al iniciar la jornada. */
+    mostrarSelectorModo = false;
     private inicioJornadaMs: number | null = null;
     private tickTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -39,6 +43,7 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
                     if (est?.activa) {
                         this.inicioJornadaMs = Date.now() - (est.transcurridoSegundos ?? 0) * 1000;
                         this.jornadaActiva = true;
+                        this.jornadaModo = est.modo ?? null;
                         this.startTick();
                     }
                 },
@@ -58,38 +63,62 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
 
     toggleJornada(): void {
         if (this.jornadaCargando) return;
-        this.jornadaCargando = true;
 
         if (!this.jornadaActiva) {
-            this.jornadaService.iniciar().subscribe({
-                next: est => {
-                    this.inicioJornadaMs = Date.now() - (est?.transcurridoSegundos ?? 0) * 1000;
-                    this.jornadaActiva = true;
-                    this.startTick();
-                    this.jornadaCargando = false;
-                    this.notification.success('¡A trabajar! Se registró el inicio de tu jornada.');
-                },
-                error: () => {
-                    this.jornadaCargando = false;
-                    this.notification.error('No se pudo iniciar la jornada.');
-                }
-            });
-        } else {
-            this.jornadaService.finalizar().subscribe({
-                next: () => {
-                    this.jornadaActiva = false;
-                    this.stopTick();
-                    this.transcurrido = '00:00:00';
-                    this.inicioJornadaMs = null;
-                    this.jornadaCargando = false;
-                    this.notification.success('Jornada finalizada. ¡Buen trabajo!');
-                },
-                error: () => {
-                    this.jornadaCargando = false;
-                    this.notification.error('No se pudo finalizar la jornada.');
-                }
-            });
+            // Antes de arrancar, el operador elige en qué va a trabajar.
+            this.mostrarSelectorModo = true;
+            return;
         }
+
+        this.jornadaCargando = true;
+        this.jornadaService.finalizar().subscribe({
+            next: () => {
+                this.jornadaActiva = false;
+                this.jornadaModo = null;
+                this.stopTick();
+                this.transcurrido = '00:00:00';
+                this.inicioJornadaMs = null;
+                this.jornadaCargando = false;
+                this.notification.success('Jornada finalizada. ¡Buen trabajo!');
+            },
+            error: () => {
+                this.jornadaCargando = false;
+                this.notification.error('No se pudo finalizar la jornada.');
+            }
+        });
+    }
+
+    /** Arranca la jornada con el modo elegido en el diálogo. */
+    iniciarJornadaCon(modo: ModoJornada): void {
+        if (this.jornadaCargando) return;
+        this.jornadaCargando = true;
+        this.mostrarSelectorModo = false;
+
+        this.jornadaService.iniciar(modo).subscribe({
+            next: est => {
+                this.inicioJornadaMs = Date.now() - (est?.transcurridoSegundos ?? 0) * 1000;
+                this.jornadaActiva = true;
+                this.jornadaModo = est?.modo ?? modo;
+                this.startTick();
+                this.jornadaCargando = false;
+                this.notification.success(
+                    modo === 'VENTA_USDT'
+                        ? '¡A vender USDT! Se avisará por Telegram si no entran órdenes.'
+                        : '¡A hacer caja! Se registró el inicio de tu jornada.'
+                );
+            },
+            error: () => {
+                this.jornadaCargando = false;
+                this.notification.error('No se pudo iniciar la jornada.');
+            }
+        });
+    }
+
+    /** Etiqueta legible del modo, para mostrar junto al cronómetro. */
+    get modoLabel(): string {
+        if (this.jornadaModo === 'VENTA_USDT') return 'Vendiendo USDT';
+        if (this.jornadaModo === 'CAJA') return 'Haciendo caja';
+        return '';
     }
 
     private startTick(): void {

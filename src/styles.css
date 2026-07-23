@@ -90,3 +90,75 @@
   background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
 }
 .jornada-btn .pi { font-size: 0.95rem; }
+
+/* ── Badge del modo de jornada (en qué está trabajando el operador) ── */
+.jornada-modo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.jornada-modo.modo-venta { color: #065f46; background: #a7f3d0; }
+.jornada-modo.modo-caja  { color: #7c2d12; background: #fed7aa; }
+.jornada-modo .pi { font-size: 0.8rem; }
+
+/* ── Selector de modo al iniciar la jornada ── */
+.modo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+.modo-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 380px;
+  max-width: 92vw;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.modo-title { margin: 0; font-size: 1.15rem; font-weight: 800; color: #1f2937; }
+.modo-sub { margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; }
+.modo-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.05s ease;
+}
+.modo-opt:hover:not(:disabled) { transform: translateY(-1px); }
+.modo-opt:disabled { opacity: 0.6; cursor: default; }
+.modo-opt .pi { font-size: 1.2rem; }
+.modo-opt-title { font-weight: 800; font-size: 0.95rem; color: #111827; }
+.modo-opt-desc { font-size: 0.78rem; color: #6b7280; line-height: 1.35; }
+.modo-opt--venta:hover:not(:disabled) { border-color: #10b981; background: #ecfdf5; }
+.modo-opt--venta .pi { color: #10b981; }
+.modo-opt--caja:hover:not(:disabled) { border-color: #f59e0b; background: #fffbeb; }
+.modo-opt--caja .pi { color: #f59e0b; }
+.modo-cancel {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+.modo-cancel:hover { color: #374151; }

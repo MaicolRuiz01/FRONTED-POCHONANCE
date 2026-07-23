@@ -293,7 +293,19 @@ export class ClientesComponent implements OnInit, OnDestroy {
   }
 
 
+  guardando = false;
+
   guardarCliente(): void {
+    if (this.guardando) return;
+
+    // Validación: avisa qué falta en vez de mandar y que reviente el backend.
+    const faltantes: string[] = [];
+    if (!this.nuevoCliente.nombre || !this.nuevoCliente.nombre.trim()) faltantes.push('Nombre');
+    if (faltantes.length > 0) {
+      this.notificationService.warn(`Completa ${faltantes.join(', ')} para crear el cliente.`);
+      return;
+    }
+
     const monto = Math.abs(Number(this.nuevoCliente.saldo || 0));
     const saldoSigned = this.clienteSaldoTipo === 'DEBEMOS' ? monto : -monto;
 
@@ -302,13 +314,28 @@ export class ClientesComponent implements OnInit, OnDestroy {
       saldo: saldoSigned
     };
 
+    this.guardando = true;
     this.clienteService.crear(payload).subscribe({
       next: () => {
+        this.notificationService.success('Cliente creado correctamente.');
         this.displayModal = false;
+        this.resetNuevoCliente();
+        this.guardando = false;
         this.cargarClientes();
       },
-      error: () => this.notificationService.error('Error al guardar el cliente')
+      error: (err) => {
+        this.guardando = false;
+        const msg = err?.error?.message || err?.error?.error
+          || (typeof err?.error === 'string' ? err.error : null)
+          || 'No se pudo crear el cliente.';
+        this.notificationService.error(msg);
+      }
     });
+  }
+
+  private resetNuevoCliente(): void {
+    this.nuevoCliente = { nombre: '', correo: '', nameUser: '', saldo: 0, wallet: '' };
+    this.clienteSaldoTipo = 'DEBEMOS';
   }
 
 

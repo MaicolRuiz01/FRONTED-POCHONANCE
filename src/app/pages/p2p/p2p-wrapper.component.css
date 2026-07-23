@@ -180,6 +180,20 @@
   font-size: 0.75rem;
 }
 
+/* Cupo disponible del medio filtrado, por cuenta (verde si hay, rojo si agotado). */
+.cuenta-modal-cupo-disp {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary, #64748b);
+  margin-top: 1px;
+}
+.cuenta-modal-cupo-disp b {
+  color: #059669;
+  font-variant-numeric: tabular-nums;
+}
+.cuenta-modal-cupo-disp.cupo-disp--agotado b {
+  color: #dc2626;
+}
+
 .cuenta-modal-controls {
   display: flex;
   align-items: center;

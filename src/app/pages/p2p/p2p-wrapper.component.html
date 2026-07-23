@@ -53,6 +53,13 @@
             </b>
           </span>
           <span class="cuenta-modal-bank text-xs text-color-secondary">{{ c.bankType }}</span>
+          <!-- Cupo disponible del medio seleccionado en el filtro de arriba (cajero/corresponsal),
+               visible para TODAS las cuentas, no solo las activas. -->
+          <span class="cuenta-modal-cupo-disp"
+                [class.cupo-disp--agotado]="cupoEfectivo(c) <= 0">
+            Cupo {{ filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal' }}:
+            <b>${{ cupoEfectivo(c) | number:'1.0-0' }}</b>
+          </span>
         </div>
         <!-- Botón "Retirar": solicita el retiro del medio seleccionado (cajero/corresponsal) -->
         <button *ngIf="c.activaParaP2P" pButton

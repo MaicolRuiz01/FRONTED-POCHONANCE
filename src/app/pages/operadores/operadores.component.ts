@@ -217,6 +217,31 @@ export class OperadoresComponent implements OnInit {
     });
   }
 
+  // -- Jornada de un operador (el admin arranca/detiene su cronómetro) --
+  /** Id del operador cuya jornada se está iniciando/terminando (para el spinner del botón). */
+  jornadaCargandoId: number | null = null;
+
+  toggleJornadaOperador(c: OperadorCard): void {
+    if (this.jornadaCargandoId === c.id) return;
+    this.jornadaCargandoId = c.id;
+
+    const accion$ = c.jornadaActiva
+      ? this.operadorService.finalizarJornadaDe(c.id)
+      : this.operadorService.iniciarJornadaDe(c.id);
+
+    accion$.pipe(finalize(() => this.jornadaCargandoId = null)).subscribe({
+      next: () => {
+        this.notification.success(
+          c.jornadaActiva
+            ? `Jornada de ${c.username} finalizada.`
+            : `Se inició la jornada de ${c.username}.`
+        );
+        this.cargar();
+      },
+      error: () => this.notification.error('No se pudo cambiar la jornada del operador.')
+    });
+  }
+
   // -- Tarifa --
   editarTarifa(): void {
     this.tarifaTemp = this.tarifa;

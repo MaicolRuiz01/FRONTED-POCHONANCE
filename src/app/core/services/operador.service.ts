@@ -56,4 +56,14 @@ export class OperadorService {
   setTarifa(valorHora: number): Observable<{ valorHora: number }> {
     return this.http.put<{ valorHora: number }>(`${this.apiUrl}/operadores/tarifa`, { valorHora });
   }
+
+  /** ADMIN: inicia la jornada (cronómetro) de un operador. Modo opcional. */
+  iniciarJornadaDe(id: number, modo?: 'VENTA_USDT' | 'CAJA'): Observable<any> {
+    return this.http.put(`${this.apiUrl}/operadores/${id}/jornada/iniciar`, modo ? { modo } : {});
+  }
+
+  /** ADMIN: termina la jornada en curso de un operador. */
+  finalizarJornadaDe(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/operadores/${id}/jornada/finalizar`, {});
+  }
 }

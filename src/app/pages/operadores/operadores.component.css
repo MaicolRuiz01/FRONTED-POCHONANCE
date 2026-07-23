@@ -120,6 +120,12 @@
 .op-stat-value { font-weight: 700; font-size: 1rem; }
 .op-pago { color: #16a34a; }
 
+.op-btn-jornada {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
 .op-card-actions {
   display: flex;
   align-items: center;

@@ -198,7 +198,8 @@
     </ng-template>
 
     <ng-template pTemplate="body" let-orden>
-      <tr [class.vc-row-payed]="orden.status === 'BUYER_PAYED'">
+      <tr [class.vc-row-payed]="orden.status === 'BUYER_PAYED'"
+          [class.vc-row-appeal]="orden.status === 'IN_APPEAL'">
 
         <!-- Estado + Cuenta Binance combinados -->
         <td>

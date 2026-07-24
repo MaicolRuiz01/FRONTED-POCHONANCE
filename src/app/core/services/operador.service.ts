@@ -12,6 +12,20 @@ export interface OperadorCard {
   tiempoTrabajadoSegundos: number;
   pagoCop: number;
   jornadaActiva: boolean;
+  pagadoHoy?: boolean;
+}
+
+/** Un pago hecho a un operador (para el historial de la card). */
+export interface PagoOperador {
+  id: number;
+  username: string;
+  dia: string;
+  fecha: string;
+  segundos: number;
+  tarifaHora: number;
+  monto: number;
+  gastoId: number;
+  origen: string;
 }
 
 export interface CrearOperadorRequest {
@@ -65,5 +79,15 @@ export class OperadorService {
   /** ADMIN: termina la jornada en curso de un operador. */
   finalizarJornadaDe(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/operadores/${id}/jornada/finalizar`, {});
+  }
+
+  /** ADMIN: paga el día trabajado del operador. Origen: cuenta COP o caja. */
+  pagarOperador(id: number, req: { fecha?: string; cuentaCopId?: number; cajaId?: number }): Observable<PagoOperador> {
+    return this.http.put<PagoOperador>(`${this.apiUrl}/operadores/${id}/pagar`, req);
+  }
+
+  /** ADMIN: historial de pagos de un operador. */
+  historialPagos(id: number): Observable<PagoOperador[]> {
+    return this.http.get<PagoOperador[]>(`${this.apiUrl}/operadores/${id}/pagos`);
   }
 }

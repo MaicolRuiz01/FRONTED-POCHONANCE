@@ -3,108 +3,87 @@
 
 
 
-<!-- ===== RESUMEN: 4 CARDS (AHORA FUERA DEL TOOLBAR) ===== -->
-<div class="saldo-header-cards" *ngIf="viewMode === 'RESUMEN'">
-
-  <!-- 1) SALDO TOTAL -->
-<div class="saldo-card saldo-card-main">
-  <h4 class="saldo-title">Saldo total</h4>
-
-  <p class="saldo-cop" style="margin:0;">
-    {{ saldoTotalCop | currency:'COP':'symbol':'1.0-0' }}
-  </p>
-  <p class="saldo-warning" *ngIf="latestRate <= 0" style="margin-top:6px;">
-  * No hay tasa USDT→COP, criptos no se incluyen.
-</p>
+<!-- ===== BARRA DE VOLVER (en cualquier sub-vista) ===== -->
+<div class="sv-backbar" *ngIf="viewMode !== 'RESUMEN'">
+  <button type="button" class="sv-back-btn" (click)="volverResumen()">
+    <i class="pi pi-arrow-left"></i> Saldos
+  </button>
+  <span class="sv-back-title">{{ tituloVista }}</span>
 </div>
 
+<!-- ===== HUB DE SALDOS: CARDS DE NAVEGACIÓN ===== -->
+<div class="hub-grid" *ngIf="viewMode === 'RESUMEN'">
 
-
-  <!-- 2) CRIPTOS HOY -->
-  <div class="saldo-card saldo-card-crypto" style="cursor:pointer" (click)="verBinance()">
-    <h4 class="saldo-title">Criptos</h4>
-    <p class="saldo-usdt" style="margin:0;">
-  {{ (balanceTotalExterno ?? 0) / 1000 | number:'1.2-2' }}
-  <span class="saldo-unit">USDT</span>
-
-
-</p>
-
-<!-- 👇 COP equivalente (saldo EXTERNO real × tasa, ÷1000 como el resto) -->
-<p class="saldo-cop" *ngIf="latestRate > 0" style="margin:4px 0 0 0;">
-  ≈ {{ (criptoExternoCop / 1000) | currency:'COP':'symbol':'1.0-0' }}
-  <span class="saldo-unit">(USDT→COP)</span>
-</p>
-
-<p class="saldo-warning" *ngIf="latestRate <= 0" style="margin:4px 0 0 0;">
-  Sin tasa USDT → COP disponible
-</p>
-
-<p class="saldo-rate" *ngIf="latestRate > 0" style="margin:6px 0 0 0;">
-    <span class="label">Tasa promedio día</span>
-    <span class="value">{{ latestRate | number:'1.0-0' }} COP/USDT</span>
-  </p>
-
-    <ng-template #noCriptoData>
-      <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
-    </ng-template>
-  </div>
-
-  <!-- 3) COP -->
-  <div class="saldo-card saldo-card-cop" style="cursor:pointer" (click)="verCop()">
-    <h4 class="saldo-title">Cuentas COP</h4>
-
-    <p *ngIf="loadingCop">
-      <i class="pi pi-spin pi-spinner"></i> Cargando...
-    </p>
-
-    <p class="saldo-cop" *ngIf="!loadingCop">
-      {{ totalCopDisponible | currency:'COP':'symbol':'1.0-0' }}
-    </p>
-
-    <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
-      Click para ver cuentas COP
+  <!-- SALDO TOTAL → Balance general -->
+  <div class="hub-card hub-total" (click)="verBalance()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-wallet"></i></span>
+      <span class="hub-name">Saldo total</span>
     </div>
+    <div class="hub-value">{{ saldoTotalCop | currency:'COP':'symbol':'1.0-0' }}</div>
+    <div class="hub-hint" *ngIf="latestRate > 0">Ver balance general <i class="pi pi-arrow-right"></i></div>
+    <div class="hub-warn" *ngIf="latestRate <= 0">Sin tasa USDT→COP, criptos no incluidas</div>
   </div>
 
+  <!-- CRIPTOS → detalle Binance -->
+  <div class="hub-card hub-cripto" (click)="verBinance()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-bitcoin"></i></span>
+      <span class="hub-name">Criptos</span>
+    </div>
+    <div class="hub-value">
+      {{ (balanceTotalExterno ?? 0) / 1000 | number:'1.2-2' }} <small>USDT</small>
+    </div>
+    <div class="hub-sub" *ngIf="latestRate > 0">≈ {{ (criptoExternoCop / 1000) | currency:'COP':'symbol':'1.0-0' }}</div>
+    <div class="hub-sub muted" *ngIf="latestRate > 0">Tasa {{ latestRate | number:'1.0-0' }} COP/USDT</div>
+    <div class="hub-warn" *ngIf="latestRate <= 0">Sin tasa USDT→COP</div>
+  </div>
 
+  <!-- CUENTAS COP -->
+  <div class="hub-card hub-cop" (click)="verCop()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-building"></i></span>
+      <span class="hub-name">Cuentas COP</span>
+    </div>
+    <div class="hub-value" *ngIf="!loadingCop">{{ totalCopDisponible | currency:'COP':'symbol':'1.0-0' }}</div>
+    <div class="hub-value" *ngIf="loadingCop"><i class="pi pi-spin pi-spinner"></i></div>
+    <div class="hub-hint">Ver cuentas COP <i class="pi pi-arrow-right"></i></div>
+  </div>
 
-  <!-- 4) VES -->
-  <div class="saldo-card saldo-card-ves" style="cursor:pointer" (click)="verVes()">
-    <h4 class="saldo-title">Cuentas VES</h4>
-
-    <p *ngIf="loadingVes">
-      <i class="pi pi-spin pi-spinner"></i> Cargando...
-    </p>
-
+  <!-- CUENTAS VES -->
+  <div class="hub-card hub-ves" (click)="verVes()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-dollar"></i></span>
+      <span class="hub-name">Cuentas VES</span>
+    </div>
     <ng-container *ngIf="!loadingVes">
-      <!-- Total VES -->
-      <p class="saldo-usdt">
-        {{ totalCuentasVes | number:'1.2-2' }}
-        <span class="saldo-unit">VES</span>
-      </p>
-
-      <!-- Tasa y equivalente en COP -->
-      <p class="saldo-rate" *ngIf="tasaVesPromedio !== null">
-        <span class="label">Tasa promedio día</span>
-        <span class="value">{{ tasaVesPromedio | number:'1.2-2' }} COP/VES</span>
-      </p>
-
-      <p class="saldo-cop" *ngIf="tasaVesPromedio !== null">
-        ≈ {{ totalCuentasVesCop | currency:'COP':'symbol':'1.0-0' }}
-      </p>
-
-      <p class="saldo-warning" *ngIf="tasaVesPromedio === null">
-        Sin tasa VES promedio disponible
-      </p>
+      <div class="hub-value">{{ totalCuentasVes | number:'1.2-2' }} <small>VES</small></div>
+      <div class="hub-sub" *ngIf="tasaVesPromedio !== null">≈ {{ totalCuentasVesCop | currency:'COP':'symbol':'1.0-0' }}</div>
+      <div class="hub-warn" *ngIf="tasaVesPromedio === null">Sin tasa VES</div>
     </ng-container>
-
-    <div style="margin-top:8px; opacity:.7; font-size:.85rem;">
-      Click para ver cuentas VES
-    </div>
+    <div class="hub-value" *ngIf="loadingVes"><i class="pi pi-spin pi-spinner"></i></div>
+    <div class="hub-hint">Ver cuentas VES <i class="pi pi-arrow-right"></i></div>
   </div>
 
+  <!-- CAJAS -->
+  <div class="hub-card hub-cajas" (click)="verCajas()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-money-bill"></i></span>
+      <span class="hub-name">Cajas</span>
+    </div>
+    <div class="hub-nav-desc">Efectivo y cajas del negocio</div>
+    <div class="hub-hint">Ver cajas <i class="pi pi-arrow-right"></i></div>
+  </div>
 
+  <!-- CLIENTES -->
+  <div class="hub-card hub-clientes" (click)="verClientes()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-users"></i></span>
+      <span class="hub-name">Clientes</span>
+    </div>
+    <div class="hub-nav-desc">Saldos y pagos de clientes y proveedores</div>
+    <div class="hub-hint">Ver clientes <i class="pi pi-arrow-right"></i></div>
+  </div>
 
 </div>
 <!-- ================= VISTA BINANCE ================= -->
@@ -278,6 +257,18 @@
 
 <div *ngIf="viewMode === 'VES'" class="ves-view">
   <app-cuentas-ves></app-cuentas-ves>
+</div>
+
+<div *ngIf="viewMode === 'CAJAS'" class="cajas-view">
+  <app-cajas-tab></app-cajas-tab>
+</div>
+
+<div *ngIf="viewMode === 'CLIENTES'" class="clientes-view">
+  <app-clientes-wrapper></app-clientes-wrapper>
+</div>
+
+<div *ngIf="viewMode === 'BALANCE'" class="balance-view">
+  <app-caja></app-caja>
 </div>
 
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -15,9 +15,10 @@ import { ConfirmationService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import { OperadorService, OperadorCard } from '../../core/services/operador.service';
+import { OperadorService, OperadorCard, PagoOperador } from '../../core/services/operador.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { RetiradoresComponent } from '../retiradores/retiradores.component';
+import { AccountCop, AccountCopService } from '../../core/services/account-cop.service';
 
 @Component({
   selector: 'app-operadores',
@@ -32,11 +33,14 @@ import { RetiradoresComponent } from '../retiradores/retiradores.component';
   templateUrl: './operadores.component.html',
   styleUrls: ['./operadores.component.css']
 })
-export class OperadoresComponent implements OnInit {
+export class OperadoresComponent implements OnInit, OnDestroy {
 
   fecha: Date = new Date();
   cards: OperadorCard[] = [];
   loading = false;
+
+  /** Tick de 1s que hace correr el cronómetro de las jornadas activas en vivo. */
+  private tickTimer: ReturnType<typeof setInterval> | null = null;
 
   // Tarifa
   tarifa = 7500;
@@ -63,14 +67,62 @@ export class OperadoresComponent implements OnInit {
     { label: 'Admin', value: 'ADMIN' }
   ];
 
+  // -- Pago al operador --
+  cuentasCop: AccountCop[] = [];
+  cajas: { id: number; name: string; saldo: number }[] = [];
+  showPagar = false;
+  pagarCard: OperadorCard | null = null;
+  pagarTipo: 'cuenta' | 'caja' = 'cuenta';
+  cuentaPagoId: number | null = null;
+  cajaPagoId: number | null = null;
+  pagando = false;
+
+  // -- Historial de pagos por operador (en modal) --
+  showHistorial = false;
+  historialCard: OperadorCard | null = null;
+  historialPagos: PagoOperador[] = [];
+  cargandoHistorial = false;
+
   constructor(
     private operadorService: OperadorService,
     private notification: NotificationService,
-    private confirm: ConfirmationService
+    private confirm: ConfirmationService,
+    private accountService: AccountCopService
   ) {}
 
   ngOnInit(): void {
     this.cargar();
+    // Cuentas COP y cajas para el selector de origen del pago.
+    this.accountService.getP2PView().subscribe({ next: d => this.cuentasCop = d, error: () => {} });
+    this.accountService.getAllCajas().subscribe({ next: d => this.cajas = d, error: () => {} });
+    // Cada segundo suma tiempo a las jornadas activas y recalcula el pago, para que el
+    // cronómetro no se vea congelado en "0 s" mientras el operador está trabajando.
+    this.tickTimer = setInterval(() => this.tickJornadasActivas(), 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
+  }
+
+  /** Solo tiene efecto visual cuando la fecha seleccionada es HOY (no tiene sentido correr el
+   *  cronómetro sobre un día pasado). Suma 1s y recalcula el pago de cada jornada activa. */
+  private tickJornadasActivas(): void {
+    if (!this.esHoy()) return;
+    for (const c of this.cards) {
+      if (c.jornadaActiva) {
+        c.tiempoTrabajadoSegundos = (c.tiempoTrabajadoSegundos ?? 0) + 1;
+        c.pagoCop = Math.round((c.tiempoTrabajadoSegundos / 3600) * this.tarifa);
+      }
+    }
+  }
+
+  /** ¿La fecha seleccionada en el filtro es el día de hoy? */
+  private esHoy(): boolean {
+    const hoy = new Date();
+    const d = this.fecha ?? hoy;
+    return d.getFullYear() === hoy.getFullYear()
+      && d.getMonth() === hoy.getMonth()
+      && d.getDate() === hoy.getDate();
   }
 
   private fechaStr(): string {
@@ -225,21 +277,103 @@ export class OperadoresComponent implements OnInit {
     if (this.jornadaCargandoId === c.id) return;
     this.jornadaCargandoId = c.id;
 
-    const accion$ = c.jornadaActiva
-      ? this.operadorService.finalizarJornadaDe(c.id)
-      : this.operadorService.iniciarJornadaDe(c.id);
+    const iniciando = !c.jornadaActiva; // acción según el estado ACTUAL, antes de cambiarlo
+    const accion$ = iniciando
+      ? this.operadorService.iniciarJornadaDe(c.id)
+      : this.operadorService.finalizarJornadaDe(c.id);
 
     accion$.pipe(finalize(() => this.jornadaCargandoId = null)).subscribe({
       next: () => {
+        // Cambio OPTIMISTA y AUTORITATIVO en la UI: el botón y el cronómetro cambian al
+        // instante y NO se recargan del backend (para que un resumen desfasado no los revierta).
+        // Los números se recalculan en vivo con el ticker; el botón "Actualizar" sincroniza.
+        c.jornadaActiva = iniciando;
+        if (iniciando && !c.tiempoTrabajadoSegundos) c.tiempoTrabajadoSegundos = 0;
         this.notification.success(
-          c.jornadaActiva
-            ? `Jornada de ${c.username} finalizada.`
-            : `Se inició la jornada de ${c.username}.`
+          iniciando
+            ? `Se inició la jornada de ${c.username}.`
+            : `Jornada de ${c.username} finalizada.`
         );
-        this.cargar();
       },
       error: () => this.notification.error('No se pudo cambiar la jornada del operador.')
     });
+  }
+
+  // -- Pago al operador -------------------------------------------------
+
+  /** ¿Se puede pagar? Jornada detenida, con tiempo trabajado y aún sin pagar ese día. */
+  puedePagar(c: OperadorCard): boolean {
+    return !c.jornadaActiva && (c.tiempoTrabajadoSegundos ?? 0) > 0 && !c.pagadoHoy;
+  }
+
+  abrirPagar(c: OperadorCard): void {
+    this.pagarCard = c;
+    this.pagarTipo = 'cuenta';
+    this.cuentaPagoId = null;
+    this.cajaPagoId = null;
+    this.showPagar = true;
+  }
+
+  confirmarPago(): void {
+    if (this.pagando || !this.pagarCard) return;
+
+    const req: { fecha?: string; cuentaCopId?: number; cajaId?: number } = { fecha: this.fechaStr() };
+    if (this.pagarTipo === 'cuenta') {
+      if (!this.cuentaPagoId) { this.notification.warn('Elige la cuenta COP de donde sale el pago.'); return; }
+      req.cuentaCopId = this.cuentaPagoId;
+    } else {
+      if (!this.cajaPagoId) { this.notification.warn('Elige la caja de donde sale el pago.'); return; }
+      req.cajaId = this.cajaPagoId;
+    }
+
+    this.pagando = true;
+    this.operadorService.pagarOperador(this.pagarCard.id, req)
+      .pipe(finalize(() => this.pagando = false))
+      .subscribe({
+        next: (pago) => {
+          this.notification.success(`Pago de ${this.formatCop(pago.monto)} a ${this.pagarCard!.username} registrado.`);
+          this.showPagar = false;
+          // Marca la card como pagada al instante y recarga números.
+          this.pagarCard!.pagadoHoy = true;
+          // Si el historial de ese operador está abierto en el modal, lo refrescamos.
+          if (this.showHistorial && this.historialCard?.id === this.pagarCard!.id) this.cargarHistorial(this.pagarCard!);
+          this.cargar();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'No se pudo registrar el pago.';
+          this.notification.error(msg);
+        }
+      });
+  }
+
+  // -- Historial de pagos (modal) --------------------------------------
+
+  abrirHistorial(c: OperadorCard): void {
+    this.historialCard = c;
+    this.historialPagos = [];
+    this.showHistorial = true;
+    this.cargarHistorial(c);
+  }
+
+  private cargarHistorial(c: OperadorCard): void {
+    this.cargandoHistorial = true;
+    this.operadorService.historialPagos(c.id)
+      .pipe(finalize(() => this.cargandoHistorial = false))
+      .subscribe({
+        next: pagos => this.historialPagos = pagos ?? [],
+        error: () => { this.historialPagos = []; this.notification.error('No se pudo cargar el historial de pagos.'); }
+      });
+  }
+
+  /** Total pagado histórico al operador del modal abierto. */
+  get totalHistorial(): number {
+    return this.historialPagos.reduce((s, p) => s + (p.monto ?? 0), 0);
+  }
+
+  formatFecha(iso: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d);
   }
 
   // -- Tarifa --

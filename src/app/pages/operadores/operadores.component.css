@@ -126,6 +126,108 @@
   font-weight: 700;
 }
 
+/* Botón pagar */
+.op-btn-pagar {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+/* Badge "Pagado" */
+.op-pagado-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.45rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #065f46;
+  background: #d1fae5;
+}
+
+/* Historial */
+.op-hist-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #6366f1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.op-hist-toggle:hover { text-decoration: underline; }
+
+/* Historial en modal */
+.op-histm-loading, .op-histm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+.op-histm-empty .pi { font-size: 1.8rem; }
+.op-histm-list { display: flex; flex-direction: column; max-height: 55vh; overflow-y: auto; }
+.op-histm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.op-histm-left { display: flex; flex-direction: column; }
+.op-histm-monto { font-weight: 800; color: #16a34a; font-size: 1rem; }
+.op-histm-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
+.op-histm-right { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.op-histm-fecha { font-size: 0.78rem; color: #475569; }
+.op-histm-origen { font-size: 0.72rem; color: #94a3b8; margin-top: 1px; }
+.op-histm-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.op-histm-footer strong { color: #16a34a; font-size: 1rem; }
+
+/* Diálogo de pago */
+.op-pagar-form { display: flex; flex-direction: column; gap: 0.6rem; }
+.op-pagar-resumen {
+  display: flex;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+.op-pagar-resumen div { display: flex; flex-direction: column; }
+.op-pagar-resumen span { font-size: 0.72rem; color: #64748b; }
+.op-pagar-resumen strong { font-size: 1rem; color: #1e293b; }
+.op-pagar-monto { color: #16a34a !important; }
+.op-pagar-form > label { font-size: 0.82rem; font-weight: 600; color: #475569; }
+.op-pagar-seg { display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
+.op-seg-btn {
+  flex: 1; border: none; background: transparent; cursor: pointer;
+  padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  color: #64748b; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.op-seg-btn.active { background: #fff; color: #6366f1; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.w-full { width: 100%; }
+
 .op-card-actions {
   display: flex;
   align-items: center;

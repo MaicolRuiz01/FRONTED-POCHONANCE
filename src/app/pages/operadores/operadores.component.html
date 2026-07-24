@@ -94,6 +94,15 @@
         [loading]="jornadaCargandoId === c.id"
         (click)="toggleJornadaOperador(c)"></button>
 
+      <!-- Pagar el día: solo si la jornada está detenida y aún no se ha pagado ese día. -->
+      <button *ngIf="puedePagar(c)" pButton
+        label="Pagar al operador" icon="pi pi-dollar"
+        class="p-button-sm op-btn-pagar"
+        (click)="abrirPagar(c)"></button>
+      <div *ngIf="c.pagadoHoy" class="op-pagado-badge">
+        <i class="pi pi-check-circle"></i> Pagado
+      </div>
+
       <div class="op-card-actions">
         <button pButton icon="pi pi-copy" label="Copiar credenciales"
           class="p-button-sm p-button-outlined op-btn-copy"
@@ -105,6 +114,11 @@
           class="p-button-sm p-button-text p-button-danger" title="Eliminar"
           (click)="confirmarEliminar(c)"></button>
       </div>
+
+      <!-- Historial de pagos del operador (abre modal) -->
+      <button type="button" class="op-hist-toggle" (click)="abrirHistorial(c)">
+        <i class="pi pi-history"></i> Ver historial de pagos
+      </button>
     </div>
   </div>
 
@@ -156,6 +170,77 @@
     <button pButton label="Cancelar" class="p-button-text" (click)="showReset = false"></button>
     <button pButton label="Guardar" icon="pi pi-check"
       (click)="guardarReset()" [loading]="reseteando"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: pagar al operador -->
+<p-dialog [header]="'Pagar a ' + (pagarCard?.username || '')" [(visible)]="showPagar" [modal]="true"
+  [style]="{ width: '420px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+  <div *ngIf="pagarCard" class="op-pagar-form">
+    <div class="op-pagar-resumen">
+      <div><span>Tiempo</span><strong>{{ formatTiempo(pagarCard.tiempoTrabajadoSegundos) }}</strong></div>
+      <div><span>A pagar</span><strong class="op-pagar-monto">{{ formatCop(pagarCard.pagoCop) }}</strong></div>
+    </div>
+
+    <label>El pago sale de</label>
+    <div class="op-pagar-seg">
+      <button type="button" class="op-seg-btn" [class.active]="pagarTipo === 'cuenta'"
+        (click)="pagarTipo = 'cuenta'"><i class="pi pi-building"></i> Cuenta COP</button>
+      <button type="button" class="op-seg-btn" [class.active]="pagarTipo === 'caja'"
+        (click)="pagarTipo = 'caja'"><i class="pi pi-money-bill"></i> Caja</button>
+    </div>
+
+    <p-dropdown *ngIf="pagarTipo === 'cuenta'"
+      [options]="cuentasCop" optionLabel="name" optionValue="id"
+      [(ngModel)]="cuentaPagoId" [filter]="true" placeholder="Seleccione una cuenta"
+      styleClass="w-full" appendTo="body"></p-dropdown>
+
+    <p-dropdown *ngIf="pagarTipo === 'caja'"
+      [options]="cajas" optionLabel="name" optionValue="id"
+      [(ngModel)]="cajaPagoId" [filter]="true" placeholder="Seleccione una caja"
+      styleClass="w-full" appendTo="body"></p-dropdown>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showPagar = false" [disabled]="pagando"></button>
+    <button pButton label="Pagar" icon="pi pi-check" class="p-button-success"
+      (click)="confirmarPago()" [loading]="pagando"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: historial de pagos -->
+<p-dialog [header]="'Historial de pagos · ' + (historialCard?.username || '')" [(visible)]="showHistorial"
+  [modal]="true" [style]="{ width: '480px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+
+  <div *ngIf="cargandoHistorial" class="op-histm-loading">
+    <i class="pi pi-spin pi-spinner"></i> Cargando…
+  </div>
+
+  <ng-container *ngIf="!cargandoHistorial">
+    <div *ngIf="historialPagos.length === 0" class="op-histm-empty">
+      <i class="pi pi-inbox"></i>
+      <span>Este operador no tiene pagos registrados.</span>
+    </div>
+
+    <div *ngIf="historialPagos.length > 0" class="op-histm-list">
+      <div *ngFor="let p of historialPagos" class="op-histm-row">
+        <div class="op-histm-left">
+          <span class="op-histm-monto">{{ formatCop(p.monto) }}</span>
+          <span class="op-histm-sub">{{ formatTiempo(p.segundos) }} · {{ formatCop(p.tarifaHora) }}/h</span>
+        </div>
+        <div class="op-histm-right">
+          <span class="op-histm-fecha">{{ formatFecha(p.fecha) }}</span>
+          <span class="op-histm-origen">{{ p.origen }}</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template pTemplate="footer">
+    <div class="op-histm-footer" *ngIf="historialPagos.length > 0">
+      <span>Total pagado</span>
+      <strong>{{ formatCop(totalHistorial) }}</strong>
+    </div>
+    <button pButton label="Cerrar" class="p-button-text" (click)="showHistorial = false"></button>
   </ng-template>
 </p-dialog>
 

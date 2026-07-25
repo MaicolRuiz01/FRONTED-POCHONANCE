@@ -6,6 +6,92 @@ body {
   padding: 2rem;
 }
 
+/* ===== HUB DE SALDOS (cards de navegación) ===== */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+  padding: 0.25rem;
+}
+
+.hub-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  min-height: 138px;
+}
+.hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--accent, #6366f1);
+}
+.hub-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+  border-color: var(--accent, #6366f1);
+}
+
+.hub-head { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.6rem; }
+.hub-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--accent, #6366f1);
+  background: color-mix(in srgb, var(--accent, #6366f1) 14%, #fff);
+}
+.hub-name { font-size: 0.9rem; font-weight: 700; color: #334155; }
+
+.hub-value { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1.15; }
+.hub-value small { font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+.hub-sub { font-size: 0.82rem; color: #475569; margin-top: 2px; }
+.hub-sub.muted { color: #94a3b8; font-size: 0.75rem; }
+.hub-nav-desc { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+.hub-warn { font-size: 0.75rem; color: #b45309; margin-top: 4px; }
+
+.hub-hint {
+  position: absolute;
+  bottom: 0.8rem; left: 1.2rem;
+  font-size: 0.75rem; font-weight: 600; color: var(--accent, #6366f1);
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity .15s ease, transform .15s ease;
+}
+.hub-card:hover .hub-hint { opacity: 1; transform: translateX(0); }
+
+/* Acentos por card */
+.hub-total    { --accent: #6366f1; }
+.hub-cripto   { --accent: #f59e0b; }
+.hub-cop      { --accent: #10b981; }
+.hub-ves      { --accent: #3b82f6; }
+.hub-cajas    { --accent: #8b5cf6; }
+.hub-clientes { --accent: #ec4899; }
+
+/* ===== Barra de volver (sub-vistas) ===== */
+.sv-backbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eef2f7;
+}
+.sv-back-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  border: 1px solid #e2e8f0; background: #fff;
+  border-radius: 10px; padding: 0.45rem 0.9rem;
+  font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer;
+  transition: all .15s ease;
+}
+.sv-back-btn:hover { border-color: #6366f1; color: #6366f1; background: #f5f3ff; }
+.sv-back-title { font-size: 1.05rem; font-weight: 800; color: #1e293b; }
+
 /* ===== VISTA BINANCE ===== */
 
 .binance-view {

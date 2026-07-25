@@ -25,6 +25,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { AccountVesService } from '../../../../core/services/AccountVes.service';
 import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
 import { CuentasVesComponent } from '../cuentas-ves/cuentas-ves.component';
+import { CajasComponent } from '../cajas/cajas.component';
+import { CajaComponent } from '../balance/caja.component';
+import { ClientesComponentW } from '../../../clientes/container/clientes-wrapper.component';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -64,6 +67,9 @@ export interface DisplayAccount {
     ProgressSpinnerModule,
     CuentasTabComponent,
     CuentasVesComponent,
+    CajasComponent,
+    CajaComponent,
+    ClientesComponentW,
     TooltipModule
   ]
 })
@@ -88,7 +94,7 @@ export class SaldosComponent implements OnInit, OnDestroy {
   selectedAccountType: string | null = null;
   noAverageRate: boolean = false;
   tasaVesPromedio: number | null = null;
-  viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' = 'RESUMEN';
+  viewMode: 'RESUMEN' | 'BINANCE' | 'COP' | 'VES' | 'CAJAS' | 'CLIENTES' | 'BALANCE' = 'RESUMEN';
   selectedWalletType: 'BINANCE' | 'TRUST' | 'SOLANA' | 'BYBIT' | null = null;
 
   totalCuentasCop = 0;
@@ -740,6 +746,28 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
   verVes() {
     this.viewMode = 'VES';
+  }
+  verCajas() {
+    this.viewMode = 'CAJAS';
+  }
+  verClientes() {
+    this.viewMode = 'CLIENTES';
+  }
+  verBalance() {
+    this.viewMode = 'BALANCE';
+  }
+
+  /** Título de la sub-vista abierta (para la barra de "volver"). */
+  get tituloVista(): string {
+    switch (this.viewMode) {
+      case 'BINANCE':  return 'Criptos';
+      case 'COP':      return 'Cuentas COP';
+      case 'VES':      return 'Cuentas VES';
+      case 'CAJAS':    return 'Cajas';
+      case 'CLIENTES': return 'Clientes';
+      case 'BALANCE':  return 'Balance general';
+      default:         return '';
+    }
   }
   get totalCuentasVesCop(): number {
     const tasa = this.tasaVesPromedio ?? 0;

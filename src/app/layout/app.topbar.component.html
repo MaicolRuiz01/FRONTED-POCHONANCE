@@ -28,6 +28,13 @@
 
         <!-- Jornada de trabajo (solo operarios) -->
         <div *ngIf="mostrarJornada" class="topbar-jornada">
+            <span *ngIf="jornadaActiva && modoLabel" class="jornada-modo"
+                  [class.modo-venta]="jornadaModo === 'VENTA_USDT'"
+                  [class.modo-caja]="jornadaModo === 'CAJA'"
+                  title="En qué estás trabajando">
+                <i class="pi" [ngClass]="jornadaModo === 'VENTA_USDT' ? 'pi-dollar' : 'pi-calculator'"></i>
+                {{ modoLabel }}
+            </span>
             <span *ngIf="jornadaActiva" class="jornada-timer" title="Tiempo trabajando">
                 <i class="pi pi-clock"></i> {{ transcurrido }}
             </span>
@@ -40,6 +47,32 @@
                 <i class="pi" [ngClass]="jornadaActiva ? 'pi-stop-circle' : 'pi-play-circle'"></i>
                 <span>{{ jornadaActiva ? 'Terminé' : 'Empecé a trabajar' }}</span>
             </button>
+        </div>
+
+        <!-- Selector de modo al iniciar la jornada -->
+        <div *ngIf="mostrarSelectorModo" class="modo-overlay" (click)="mostrarSelectorModo = false">
+            <div class="modo-card" (click)="$event.stopPropagation()">
+                <h3 class="modo-title">¿En qué vas a trabajar?</h3>
+                <p class="modo-sub">Elige una opción para empezar tu jornada.</p>
+
+                <button class="modo-opt modo-opt--venta"
+                        [disabled]="jornadaCargando"
+                        (click)="iniciarJornadaCon('VENTA_USDT')">
+                    <i class="pi pi-dollar"></i>
+                    <span class="modo-opt-title">Vender USDT</span>
+                    <span class="modo-opt-desc">Se activan las ventas en curso. Si pasan 5 min sin órdenes, se avisa por Telegram.</span>
+                </button>
+
+                <button class="modo-opt modo-opt--caja"
+                        [disabled]="jornadaCargando"
+                        (click)="iniciarJornadaCon('CAJA')">
+                    <i class="pi pi-calculator"></i>
+                    <span class="modo-opt-title">Hacer caja</span>
+                    <span class="modo-opt-desc">Sin alarma. Cada hora se informa cuánto llevas cuadrando caja.</span>
+                </button>
+
+                <button class="modo-cancel" (click)="mostrarSelectorModo = false">Cancelar</button>
+            </div>
         </div>
 
         <!-- Usuario + rol -->

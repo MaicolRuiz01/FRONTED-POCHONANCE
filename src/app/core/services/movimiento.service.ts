@@ -43,6 +43,9 @@ export interface MovimientoVistaDto {
   cuentaOrigen?: string;
   cuentaDestino?: string;
   caja?: number;
+  /** Histórico de caja: saldo de la caja justo después de este movimiento. */
+  saldoCajaResultante?: number;
+  saldoCajaDestinoResultante?: number;
 }
 export interface PagoClienteAProveedorDto {
   clienteOrigenId: number;

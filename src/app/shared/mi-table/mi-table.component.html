@@ -1,4 +1,6 @@
-<p-table [value]="data" stripedRows [tableStyle]="{'min-width': '50rem'}" styleClass="custom-table">
+<p-table [value]="data" stripedRows [tableStyle]="{'min-width': '50rem'}" styleClass="custom-table"
+  [paginator]="true" [rows]="rows" [rowsPerPageOptions]="[10, 25, 50, 100]"
+  [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}">
   <ng-template pTemplate="header">
     <tr>
       <th *ngFor="let col of columns">{{ col.columna }}</th>

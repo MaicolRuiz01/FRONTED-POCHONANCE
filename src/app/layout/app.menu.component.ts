@@ -39,27 +39,30 @@ export class AppMenuComponent implements OnInit {
         ];
 
         // Items exclusivos del ADMIN
+        // Ocultos a pedido del cliente (las rutas siguen existiendo, solo se quitó el acceso del
+        // menú): CLIENTES, CAMBIOS ARABES, ACTIVIDADES, HISTORIAL. Para volver a mostrarlos,
+        // descomentar los items correspondientes.
         const itemsAdmin = [
             {
                 label: 'RETIRADORES', icon: 'pi pi-fw pi-users',
                 routerLink: ['/retiradores']
             },
-            {
-                label: 'CLIENTES', icon: 'pi pi-fw pi-id-card',
-                routerLink: ['/clientes']
-            },
-            {
-                label: 'CAMBIOS ARABES', icon: 'pi pi-fw pi-globe',
-                routerLink: ['/cambios-arabes']
-            },
-            {
-                label: 'ACTIVIDADES', icon: 'pi pi-fw pi-cog',
-                routerLink: ['/actividades']
-            },
-            {
-                label: 'HISTORIAL', icon: 'pi pi-fw pi-history',
-                routerLink: ['/historial']
-            },
+            // {
+            //     label: 'CLIENTES', icon: 'pi pi-fw pi-id-card',
+            //     routerLink: ['/clientes']
+            // },
+            // {
+            //     label: 'CAMBIOS ARABES', icon: 'pi pi-fw pi-globe',
+            //     routerLink: ['/cambios-arabes']
+            // },
+            // {
+            //     label: 'ACTIVIDADES', icon: 'pi pi-fw pi-cog',
+            //     routerLink: ['/actividades']
+            // },
+            // {
+            //     label: 'HISTORIAL', icon: 'pi pi-fw pi-history',
+            //     routerLink: ['/historial']
+            // },
             {
                 label: 'OPERADORES', icon: 'pi pi-fw pi-users',
                 routerLink: ['/operadores']

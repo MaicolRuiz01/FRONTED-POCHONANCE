@@ -19,7 +19,7 @@ import { finalize, debounceTime } from 'rxjs/operators';
 
 import {
   RetiradorService, Retirador, SolicitudRetiro, TipoRetiro,
-  FuentePago, PagoRetiradorRequest, RankingRetirador, EstadoSolicitud
+  FuentePago, PagoRetiradorRequest, RankingRetirador, EstadoSolicitud, DetalleRetiro
 } from '../../core/services/retirador.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 import { SaldosSseService } from '../../core/services/saldos-sse.service';
@@ -227,6 +227,23 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   /** Igual que cupoCajeroDisponibleReal(), pero para CORRESPONSAL. */
   cupoCorresponsalDisponibleReal(cuenta: AccountCop): number {
     return Math.max((cuenta.cupoCorresponsalDisponibleHoy ?? 0) - (cuenta.montoCorresponsalComprometido ?? 0), 0);
+  }
+
+  /** Monto que se le SOLICITÓ retirar en este detalle (cajero + corresponsal). */
+  detalleMontoSolicitado(d: DetalleRetiro): number {
+    return (d.montoCajero ?? 0) + (d.montoCorresponsal ?? 0);
+  }
+
+  /** true si el retirador registró una cifra REAL distinta a la solicitada ("Otra cifra" en Telegram). */
+  detalleTieneMontoReal(d: DetalleRetiro): boolean {
+    return d.montoCajeroReal != null || d.montoCorresponsalReal != null;
+  }
+
+  /** Monto que el retirador dijo que REALMENTE retiró (cae al solicitado si no registró uno distinto). */
+  detalleMontoReal(d: DetalleRetiro): number {
+    const cajero = d.montoCajeroReal ?? d.montoCajero ?? 0;
+    const corresponsal = d.montoCorresponsalReal ?? d.montoCorresponsal ?? 0;
+    return cajero + corresponsal;
   }
 
   /** Texto para el tooltip: qué solicitudes generan el monto comprometido de una cuenta. */
@@ -437,8 +454,8 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
    * Botón "Todo": calcula cuánto retirar de una cuenta para el retiro
    * matutino de rutina. Reglas (confirmadas con Milton):
    *  - Disponible real (saldo - comprometido) < $1.500 → no se toca esa cuenta.
-   *  - $1.500 a $2.999 → CAJERO, tope $2.700 (y el cupo diario disponible).
-   *  - $3.000 o más → CORRESPONSAL, tope $10.000 (y el cupo diario disponible).
+   *  - $1.500 a $3.999 → CAJERO, tope $2.700 (y el cupo diario disponible).
+   *  - $4.000 o más → CORRESPONSAL, tope $10.000 (y el cupo diario disponible).
    *    Si después de eso sobran $1.500 o más, ESE sobrante también se pide por
    *    CAJERO (tope $2.700).
    * Los montos siempre se truncan a centenas.
@@ -453,7 +470,7 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     let montoCajero = 0;
     let montoCorresponsal = 0;
 
-    if (disponible >= 3000) {
+    if (disponible >= 4000) {
       montoCorresponsal = Math.min(disponible, 10000, cupoCorresponsal);
       const restante = disponible - montoCorresponsal;
       if (restante >= 1500) {

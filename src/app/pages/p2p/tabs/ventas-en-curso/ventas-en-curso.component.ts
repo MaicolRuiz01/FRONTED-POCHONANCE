@@ -332,6 +332,21 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     return m[bank] ?? '#6b7280';
   }
 
+  /** Copia al portapapeles los datos de la cuenta COP: nombre, banco, cédula y número de cuenta. */
+  copiarCuenta(c: AccountCop): void {
+    const lineas = [
+      `Nombre: ${c.name || '—'}`,
+      `Banco: ${c.bankType || '—'}`,
+      `Cédula: ${c.cedula || '—'}`,
+      `Número de cuenta: ${c.numeroCuenta || '—'}`,
+    ];
+    const texto = lineas.join('\n');
+    navigator.clipboard.writeText(texto).then(
+      () => this.notification.success(`Datos de ${c.name} copiados.`),
+      () => this.notification.error('No se pudieron copiar los datos.')
+    );
+  }
+
   /** Solo muestra las cuentas marcadas como activas para P2P.
    *  Si ninguna está marcada, muestra todas como fallback.
    *  Las cuentas con el cupo lleno se marcan en la etiqueta, pero NO se bloquean

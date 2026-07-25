@@ -28,6 +28,10 @@ import { CuentasVesComponent } from '../cuentas-ves/cuentas-ves.component';
 import { CajasComponent } from '../cajas/cajas.component';
 import { CajaComponent } from '../balance/caja.component';
 import { ClientesComponentW } from '../../../clientes/container/clientes-wrapper.component';
+import { ClienteService } from '../../../../core/services/cliente.service';
+import { SupplierService } from '../../../../core/services/supplier.service';
+import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
+import { Router } from '@angular/router';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -105,6 +109,19 @@ export class SaldosComponent implements OnInit, OnDestroy {
   loadingCop = false;
   loadingVes = false;
 
+  // Totales para las cards de Cajas y Clientes del hub.
+  totalCajas = 0;
+  loadingCajas = false;
+
+  // Card "Asignar": neto de compras/ventas sin asignar (mismo cálculo que el balance general).
+  netoNoAsignadoUsdt = 0;
+  loadingAsignar = false;
+  private sumClientes = 0;
+  private sumProveedores = 0;
+  loadingClientes = false;
+  /** Total combinado clientes + proveedores. */
+  get totalClientesProveedores(): number { return this.sumClientes + this.sumProveedores; }
+
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'BYBIT', value: 'BYBIT' },
@@ -141,7 +158,11 @@ export class SaldosComponent implements OnInit, OnDestroy {
     private averageRateService: AverageRateService,
     private accountVesService: AccountVesService,
     private vesAverageRateApi: VesAverageRateApiService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private clienteService: ClienteService,
+    private supplierService: SupplierService,
+    private balanceGeneralService: BalanceGeneralService,
+    private router: Router
   ) { }
 
   ngOnDestroy(): void {
@@ -178,6 +199,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
         this.loadTotalCop();
         this.loadTotalVes();
         this.loadTasaVesPromedio();
+        this.loadTotalCajas();
+        this.loadTotalClientes();
+        this.loadNetoNoAsignado();
       }))
       .subscribe({
         next: () => {
@@ -752,6 +776,52 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
   verClientes() {
     this.viewMode = 'CLIENTES';
+  }
+
+  /** Total de las cajas de efectivo (suma de saldos). */
+  loadTotalCajas(): void {
+    this.loadingCajas = true;
+    this.cajaService.getAllCajas()
+      .pipe(finalize(() => this.loadingCajas = false))
+      .subscribe({
+        next: cajas => this.totalCajas = (cajas || []).reduce((acc, c: any) => acc + (c.saldo || 0), 0),
+        error: () => this.totalCajas = 0
+      });
+  }
+
+  /** Neto de compras/ventas SIN asignar (USDT), tomado del balance general del día más reciente. */
+  loadNetoNoAsignado(): void {
+    this.loadingAsignar = true;
+    this.balanceGeneralService.listar()
+      .pipe(finalize(() => this.loadingAsignar = false))
+      .subscribe({
+        next: (data: any[]) => {
+          const ordenados = (data || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          this.netoNoAsignadoUsdt = ordenados.length ? (ordenados[0].netoNoAsignadasUsdt ?? 0) : 0;
+        },
+        error: () => this.netoNoAsignadoUsdt = 0
+      });
+  }
+
+  /** Navega a la vista de Asignaciones (la misma del sidebar). */
+  irAsignar(): void {
+    this.router.navigate(['/asignaciones']);
+  }
+
+  /** Total combinado de clientes y proveedores (suma de sus saldos). */
+  loadTotalClientes(): void {
+    this.loadingClientes = true;
+    let pendientes = 2;
+    const fin = () => { if (--pendientes <= 0) this.loadingClientes = false; };
+
+    this.clienteService.listar().subscribe({
+      next: (cl: any[]) => { this.sumClientes = (cl || []).reduce((a, c) => a + (c.saldo || 0), 0); fin(); },
+      error: () => { this.sumClientes = 0; fin(); }
+    });
+    this.supplierService.getAllSuppliers().subscribe({
+      next: (sp: any[]) => { this.sumProveedores = (sp || []).reduce((a, s) => a + (s.balance || 0), 0); fin(); },
+      error: () => { this.sumProveedores = 0; fin(); }
+    });
   }
   verBalance() {
     this.viewMode = 'BALANCE';

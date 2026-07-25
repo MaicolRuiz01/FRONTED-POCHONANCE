@@ -72,6 +72,9 @@ body {
 .hub-ves      { --accent: #3b82f6; }
 .hub-cajas    { --accent: #8b5cf6; }
 .hub-clientes { --accent: #ec4899; }
+.hub-asignar  { --accent: #0ea5e9; }
+
+.hub-value.hub-neg { color: #dc2626; }
 
 /* ===== Barra de volver (sub-vistas) ===== */
 .sv-backbar {

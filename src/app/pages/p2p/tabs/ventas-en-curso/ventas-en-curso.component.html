@@ -4,7 +4,11 @@
        SECCIÓN 0 — CUENTAS COP ACTIVAS P2P
   ══════════════════════════════════════════ -->
   <div *ngIf="cuentasActivasP2P.length > 0" class="cop-strip">
-    <div *ngFor="let c of cuentasActivasP2P" class="cop-mini-card">
+    <div *ngFor="let c of cuentasActivasP2P" class="cop-mini-card"
+         (click)="copiarCuenta(c)"
+         pTooltip="Clic para copiar: nombre, banco, cédula y número de cuenta"
+         tooltipPosition="top"
+         style="cursor:pointer">
 
       <!-- Punto de color por banco -->
       <span class="cop-mini-dot" [style.background]="bankColor(c.bankType)"></span>
@@ -44,10 +48,10 @@
         </span>
       </div>
 
-      <!-- Quitar de P2P (deseleccionar) -->
+      <!-- Quitar de P2P (deseleccionar). stopPropagation: no dispara el copiar del card. -->
       <button type="button" class="cop-mini-remove"
               [disabled]="desactivandoId === c.id"
-              (click)="desactivarP2P(c)"
+              (click)="$event.stopPropagation(); desactivarP2P(c)"
               pTooltip="Quitar de P2P" tooltipPosition="top">
         <i class="pi" [ngClass]="desactivandoId === c.id ? 'pi-spin pi-spinner' : 'pi-times'"></i>
       </button>

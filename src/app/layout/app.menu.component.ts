@@ -24,10 +24,7 @@ export class AppMenuComponent implements OnInit {
                 label: 'SALDOS', icon: 'pi pi-fw pi-wallet',
                 routerLink: ['/saldos']
             },
-            {
-                label: 'ASIGNAR', icon: 'pi pi-fw pi-address-book',
-                routerLink: ['/asignaciones']
-            },
+            // ASIGNAR se quitó del sidebar: ahora se accede desde la card "Asignar" del hub de Saldos.
             {
                 label: 'P2P', icon: 'pi pi-fw pi-bitcoin',
                 routerLink: ['/p2p']

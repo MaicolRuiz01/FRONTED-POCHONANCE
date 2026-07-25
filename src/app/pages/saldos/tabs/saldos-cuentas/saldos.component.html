@@ -71,7 +71,9 @@
       <span class="hub-icon"><i class="pi pi-money-bill"></i></span>
       <span class="hub-name">Cajas</span>
     </div>
-    <div class="hub-nav-desc">Efectivo y cajas del negocio</div>
+    <div class="hub-value" *ngIf="!loadingCajas">{{ totalCajas | currency:'COP':'symbol':'1.0-0' }}</div>
+    <div class="hub-value" *ngIf="loadingCajas"><i class="pi pi-spin pi-spinner"></i></div>
+    <div class="hub-sub muted">Efectivo del negocio</div>
     <div class="hub-hint">Ver cajas <i class="pi pi-arrow-right"></i></div>
   </div>
 
@@ -81,8 +83,24 @@
       <span class="hub-icon"><i class="pi pi-users"></i></span>
       <span class="hub-name">Clientes</span>
     </div>
-    <div class="hub-nav-desc">Saldos y pagos de clientes y proveedores</div>
+    <div class="hub-value" *ngIf="!loadingClientes">{{ totalClientesProveedores | currency:'COP':'symbol':'1.0-0' }}</div>
+    <div class="hub-value" *ngIf="loadingClientes"><i class="pi pi-spin pi-spinner"></i></div>
+    <div class="hub-sub muted">Clientes + proveedores</div>
     <div class="hub-hint">Ver clientes <i class="pi pi-arrow-right"></i></div>
+  </div>
+
+  <!-- ASIGNAR → neto de compras/ventas sin asignar -->
+  <div class="hub-card hub-asignar" (click)="irAsignar()">
+    <div class="hub-head">
+      <span class="hub-icon"><i class="pi pi-address-book"></i></span>
+      <span class="hub-name">Asignar</span>
+    </div>
+    <div class="hub-value" *ngIf="!loadingAsignar" [class.hub-neg]="netoNoAsignadoUsdt < 0">
+      {{ netoNoAsignadoUsdt | number:'1.2-2' }} <small>USDT</small>
+    </div>
+    <div class="hub-value" *ngIf="loadingAsignar"><i class="pi pi-spin pi-spinner"></i></div>
+    <div class="hub-sub muted">Compras/ventas sin asignar</div>
+    <div class="hub-hint">Ir a asignar <i class="pi pi-arrow-right"></i></div>
   </div>
 
 </div>

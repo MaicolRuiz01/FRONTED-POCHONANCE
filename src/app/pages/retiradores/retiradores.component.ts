@@ -437,8 +437,8 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
    * Botón "Todo": calcula cuánto retirar de una cuenta para el retiro
    * matutino de rutina. Reglas (confirmadas con Milton):
    *  - Disponible real (saldo - comprometido) < $1.500 → no se toca esa cuenta.
-   *  - $1.500 a $2.999 → CAJERO, tope $2.700 (y el cupo diario disponible).
-   *  - $3.000 o más → CORRESPONSAL, tope $10.000 (y el cupo diario disponible).
+   *  - $1.500 a $3.999 → CAJERO, tope $2.700 (y el cupo diario disponible).
+   *  - $4.000 o más → CORRESPONSAL, tope $10.000 (y el cupo diario disponible).
    *    Si después de eso sobran $1.500 o más, ESE sobrante también se pide por
    *    CAJERO (tope $2.700).
    * Los montos siempre se truncan a centenas.
@@ -453,7 +453,7 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     let montoCajero = 0;
     let montoCorresponsal = 0;
 
-    if (disponible >= 3000) {
+    if (disponible >= 4000) {
       montoCorresponsal = Math.min(disponible, 10000, cupoCorresponsal);
       const restante = disponible - montoCorresponsal;
       if (restante >= 1500) {

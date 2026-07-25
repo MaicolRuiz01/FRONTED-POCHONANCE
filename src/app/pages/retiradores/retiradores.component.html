@@ -480,6 +480,7 @@
             <th>Origen</th>
             <th>Destino</th>
             <th>Caja</th>
+            <th>Saldo caja</th>
             <th>Cliente</th>
             <th>Proveedor</th>
             <th>Motivo</th>
@@ -493,13 +494,18 @@
             <td>{{ mov.cuentaOrigen || '-' }}</td>
             <td>{{ mov.cuentaDestino || mov.cajaDestino || '-' }}</td>
             <td>{{ mov.caja || '-' }}</td>
+            <td>
+              {{ (mov.saldoCajaResultante ?? mov.saldoCajaDestinoResultante) != null
+                  ? ((mov.saldoCajaResultante ?? mov.saldoCajaDestinoResultante) | currency:'COP':'symbol':'1.0-0')
+                  : '-' }}
+            </td>
             <td>{{ mov.pagoCliente || '-' }}</td>
             <td>{{ mov.pagoProveedor || '-' }}</td>
             <td>{{ mov.motivo || '-' }}</td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="9" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
+          <tr><td colspan="10" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
         </ng-template>
       </p-table>
     </p-tabPanel>

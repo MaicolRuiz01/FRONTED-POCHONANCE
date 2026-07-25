@@ -449,7 +449,11 @@
       </div>
       <div class="hist-cuentas">
         <span *ngFor="let d of s.detalles; let last = last">
-          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }})<span *ngIf="!last"> · </span>
+          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }}): {{ detalleMontoSolicitado(d) | currency:'COP':'symbol':'1.0-0' }}
+          <span *ngIf="detalleTieneMontoReal(d)" style="color:#f59e0b;" pTooltip="El retirador registró una cifra distinta a la solicitada">
+            → retirado {{ detalleMontoReal(d) | currency:'COP':'symbol':'1.0-0' }}
+          </span>
+          <span *ngIf="!last"> · </span>
         </span>
       </div>
     </div>
@@ -480,6 +484,7 @@
             <th>Origen</th>
             <th>Destino</th>
             <th>Caja</th>
+            <th>Saldo caja</th>
             <th>Cliente</th>
             <th>Proveedor</th>
             <th>Motivo</th>
@@ -493,13 +498,18 @@
             <td>{{ mov.cuentaOrigen || '-' }}</td>
             <td>{{ mov.cuentaDestino || mov.cajaDestino || '-' }}</td>
             <td>{{ mov.caja || '-' }}</td>
+            <td>
+              {{ (mov.saldoCajaResultante ?? mov.saldoCajaDestinoResultante) != null
+                  ? ((mov.saldoCajaResultante ?? mov.saldoCajaDestinoResultante) | currency:'COP':'symbol':'1.0-0')
+                  : '-' }}
+            </td>
             <td>{{ mov.pagoCliente || '-' }}</td>
             <td>{{ mov.pagoProveedor || '-' }}</td>
             <td>{{ mov.motivo || '-' }}</td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="9" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
+          <tr><td colspan="10" class="p-text-center text-color-secondary">Sin movimientos.</td></tr>
         </ng-template>
       </p-table>
     </p-tabPanel>

@@ -50,6 +50,9 @@ export interface DetalleRetiro {
   tipoRetiro: TipoRetiro;
   montoCajero?: number;
   montoCorresponsal?: number;
+  /** Solo viene poblado si el retirador registró una cifra distinta a la solicitada ("Otra cifra" en Telegram). */
+  montoCajeroReal?: number | null;
+  montoCorresponsalReal?: number | null;
 }
 
 export interface SolicitudRetiro {

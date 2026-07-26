@@ -1,0 +1,22 @@
+.asig-backbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.asig-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.asig-back-btn:hover { border-color: #6366f1; color: #6366f1; background: #f5f3ff; }
+.asig-back-title { font-size: 1.05rem; font-weight: 800; color: #1e293b; }

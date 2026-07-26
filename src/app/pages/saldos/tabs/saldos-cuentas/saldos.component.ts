@@ -30,8 +30,8 @@ import { CajaComponent } from '../balance/caja.component';
 import { ClientesComponentW } from '../../../clientes/container/clientes-wrapper.component';
 import { ClienteService } from '../../../../core/services/cliente.service';
 import { SupplierService } from '../../../../core/services/supplier.service';
-import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
 import { Router } from '@angular/router';
+import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -122,6 +122,17 @@ export class SaldosComponent implements OnInit, OnDestroy {
   /** Total combinado clientes + proveedores. */
   get totalClientesProveedores(): number { return this.sumClientes + this.sumProveedores; }
 
+  /** Etiqueta según el signo: ≥0 = "Debemos" (nosotros), <0 = "Nos deben". */
+  get clientesLabel(): string {
+    if (this.totalClientesProveedores > 0) return 'Debemos';
+    if (this.totalClientesProveedores < 0) return 'Nos deben';
+    return 'Al día';
+  }
+  get clientesEsDebemos(): boolean { return this.totalClientesProveedores > 0; }
+  get clientesEsNosDeben(): boolean { return this.totalClientesProveedores < 0; }
+  /** Valor a mostrar (absoluto; el signo lo comunica la etiqueta). */
+  get clientesAbs(): number { return Math.abs(this.totalClientesProveedores); }
+
   tiposCuenta = [
     { label: 'BINANCE', value: 'BINANCE' },
     { label: 'BYBIT', value: 'BYBIT' },
@@ -161,8 +172,8 @@ export class SaldosComponent implements OnInit, OnDestroy {
     private saldosSse: SaldosSseService,
     private clienteService: ClienteService,
     private supplierService: SupplierService,
-    private balanceGeneralService: BalanceGeneralService,
-    private router: Router
+    private router: Router,
+    private balanceGeneralService: BalanceGeneralService
   ) { }
 
   ngOnDestroy(): void {
@@ -789,7 +800,12 @@ export class SaldosComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Neto de compras/ventas SIN asignar (USDT), tomado del balance general del día más reciente. */
+  /**
+   * Neto de TODO lo no asignado (compras/ventas dollars + P2P), tomado del balance general del
+   * día más reciente — el mismo valor que la fila "Cripto no asignado" del balance.
+   * OJO: ese campo del backend ya viene multiplicado por la tasa, así que en realidad es un
+   * valor en COP (el nombre "Usdt" es engañoso), por eso lo mostramos como COP.
+   */
   loadNetoNoAsignado(): void {
     this.loadingAsignar = true;
     this.balanceGeneralService.listar()
@@ -917,13 +933,25 @@ export class SaldosComponent implements OnInit, OnDestroy {
     return (Number(this.balanceTotalExterno) || 0) * rate;
   }
 
-  /** SALDO TOTAL = suma EXACTA de la card "Cuentas COP" + la card "Criptos" (+ VES→COP).
-   *  Ambas en la misma escala (÷1000): la de COP ya viene en miles (totalCopDisponible) y
-   *  la de criptos en COP se divide entre 1000 como el resto de saldos. */
+  /**
+   * SALDO TOTAL = suma de TODAS las cards del hub, con la misma fórmula del balance general:
+   *   + Cuentas COP + Criptos + Cuentas VES + Cajas − (Clientes+Proveedores) + no asignado.
+   *
+   * Escalas (todo llevado a "miles" de COP, que es como está totalCopDisponible):
+   *   - cop, cajas, clientes/proveedores → ya vienen en miles.
+   *   - cripto (COP) → se divide entre 1000 como el resto de saldos.
+   *   - no asignado → viene en COP completo (neto × tasa), así que se divide entre 1000.
+   *
+   * Clientes/Proveedores se RESTAN: saldo ≥ 0 = "debemos" (baja el balance); < 0 = "nos deben" (sube).
+   */
   get saldoTotalCop(): number {
-    const cop = Number(this.totalCopDisponible) || 0;              // = card Cuentas COP
-    const cripto = (Number(this.criptoExternoCop) || 0) / 1000;    // = card Criptos (en COP, ÷1000)
-    const vesCop = Number(this.totalCuentasVesCop) || 0;
-    return cop + cripto + vesCop;
+    const cop         = Number(this.totalCopDisponible) || 0;            // card Cuentas COP (miles)
+    const cripto      = (Number(this.criptoExternoCop) || 0) / 1000;     // card Criptos (COP, ÷1000)
+    const vesCop      = Number(this.totalCuentasVesCop) || 0;            // card Cuentas VES (COP)
+    const cajas       = Number(this.totalCajas) || 0;                    // card Cajas (miles)
+    const clientesProv = Number(this.totalClientesProveedores) || 0;     // card Clientes (miles, con signo)
+    const noAsignado  = (Number(this.netoNoAsignadoUsdt) || 0) / 1000;   // card Asignar (COP → ÷1000)
+
+    return cop + cripto + vesCop + cajas - clientesProv + noAsignado;
   }
 }

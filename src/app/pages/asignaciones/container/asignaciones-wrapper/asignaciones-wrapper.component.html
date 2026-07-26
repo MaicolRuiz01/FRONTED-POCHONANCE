@@ -1,3 +1,11 @@
+<!-- Barra para volver al hub de Saldos (Asignar ya no está en el sidebar). -->
+<div class="asig-backbar">
+  <button type="button" class="asig-back-btn" (click)="volverSaldos()">
+    <i class="pi pi-arrow-left"></i> Saldos
+  </button>
+  <span class="asig-back-title">Asignar</span>
+</div>
+
 <p-tabView [(activeIndex)]="tabIndex">
     <p-tabPanel header="ASIGNACIONES">
       <app-asignaciones-tab />

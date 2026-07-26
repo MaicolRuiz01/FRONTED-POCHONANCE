@@ -76,6 +76,19 @@ body {
 
 .hub-value.hub-neg { color: #dc2626; }
 
+/* Badge Debemos / Nos deben en la card de Clientes */
+.hub-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.hub-badge.badge-debe     { color: #b91c1c; background: #fee2e2; }
+.hub-badge.badge-nosdeben { color: #047857; background: #d1fae5; }
+
 /* ===== Barra de volver (sub-vistas) ===== */
 .sv-backbar {
   display: flex;

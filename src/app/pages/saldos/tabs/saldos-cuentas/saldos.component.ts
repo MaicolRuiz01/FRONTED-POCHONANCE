@@ -940,7 +940,7 @@ export class SaldosComponent implements OnInit, OnDestroy {
    * Escalas (todo llevado a "miles" de COP, que es como está totalCopDisponible):
    *   - cop, cajas, clientes/proveedores → ya vienen en miles.
    *   - cripto (COP) → se divide entre 1000 como el resto de saldos.
-   *   - no asignado → viene en COP completo (neto × tasa), así que se divide entre 1000.
+   *   - no asignado → (USDT sin asignar ÷1000) × tasa: YA viene en miles, NO se divide otra vez.
    *
    * Clientes/Proveedores se RESTAN: saldo ≥ 0 = "debemos" (baja el balance); < 0 = "nos deben" (sube).
    */
@@ -950,7 +950,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
     const vesCop      = Number(this.totalCuentasVesCop) || 0;            // card Cuentas VES (COP)
     const cajas       = Number(this.totalCajas) || 0;                    // card Cajas (miles)
     const clientesProv = Number(this.totalClientesProveedores) || 0;     // card Clientes (miles, con signo)
-    const noAsignado  = (Number(this.netoNoAsignadoUsdt) || 0) / 1000;   // card Asignar (COP → ÷1000)
+    // card Asignar: netoNoAsignadasUsdt = (USDT sin asignar ÷1000) × tasa → YA está en miles,
+    // igual que el resto de cards y que el saldoTotal del backend. NO dividir otra vez.
+    const noAsignado  = Number(this.netoNoAsignadoUsdt) || 0;
 
     return cop + cripto + vesCop + cajas - clientesProv + noAsignado;
   }

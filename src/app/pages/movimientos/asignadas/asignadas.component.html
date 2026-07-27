@@ -1,0 +1,177 @@
+<p-toast></p-toast>
+
+<p-tabView styleClass="asig-inner-tabs">
+  <!-- ============ COMPRAS / VENTAS ============ -->
+  <p-tabPanel header="Compras / Ventas">
+    <!-- Filtros -->
+    <div class="asig-filtros">
+      <div class="asig-filtro">
+        <label>Tipo</label>
+        <select [(ngModel)]="filtroTipo" class="asig-select">
+          <option value="">Todos</option>
+          <option value="COMPRA">Compras</option>
+          <option value="VENTA">Ventas</option>
+        </select>
+      </div>
+      <div class="asig-filtro">
+        <label>Cliente / Proveedor</label>
+        <select [(ngModel)]="filtroContraparte" class="asig-select">
+          <option value="">Todos</option>
+          <option *ngFor="let c of contrapartesDisponibles" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="asig-filtro">
+        <label>Desde</label>
+        <input type="date" [(ngModel)]="filtroDesde" class="asig-input" />
+      </div>
+      <div class="asig-filtro">
+        <label>Hasta</label>
+        <input type="date" [(ngModel)]="filtroHasta" class="asig-input" />
+      </div>
+      <div class="asig-filtro asig-filtro-btn">
+        <button pButton type="button" label="Limpiar" icon="pi pi-filter-slash"
+                class="p-button-text" (click)="limpiarFiltros()"></button>
+      </div>
+    </div>
+
+    <p-table [value]="filasFiltradas" [paginator]="true" [rows]="15"
+             [rowsPerPageOptions]="[15,30,50]" [loading]="loading"
+             [showCurrentPageReport]="true"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Cuenta</th>
+          <th class="text-right">Dólares</th>
+          <th class="text-right">Tasa</th>
+          <th class="text-right">Pesos</th>
+          <th>Cliente / Proveedor</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-fila>
+        <tr>
+          <td>{{ fila.date | date:'short' }}</td>
+          <td>
+            <span class="asig-tag"
+                  [class.asig-tag-compra]="fila.tipoOp === 'COMPRA'"
+                  [class.asig-tag-venta]="fila.tipoOp === 'VENTA'">
+              {{ fila.tipoOp }}
+            </span>
+          </td>
+          <td>{{ fila.nameAccount }}</td>
+          <td class="text-right">{{ fila.dolares | number:'1.0-2' }}</td>
+          <td class="text-right">{{ fila.tasa | number:'1.0-2' }}</td>
+          <td class="text-right">{{ fila.pesos | number:'1.0-2' }}</td>
+          <td>{{ fila.contraparte }}</td>
+          <td>
+            <button pButton pRipple type="button" icon="pi pi-pencil"
+                    class="p-button-rounded p-button-text asig-btn-edit"
+                    pTooltip="Editar" tooltipPosition="top"
+                    (click)="editarFila(fila)"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="8" class="asig-empty">No hay registros que coincidan con los filtros.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+
+  <!-- ============ P2P ============ -->
+  <p-tabPanel header="P2P">
+    <div class="asig-p2p-toggle">
+      <p-selectButton [options]="p2pOpciones" [(ngModel)]="p2pVista"
+                      optionLabel="label" optionValue="value"></p-selectButton>
+    </div>
+
+    <div [hidden]="p2pVista !== 'VENTAS'">
+      <app-ventas-asignadas></app-ventas-asignadas>
+    </div>
+    <div [hidden]="p2pVista !== 'COMPRAS'">
+      <app-compras-p2p></app-compras-p2p>
+    </div>
+  </p-tabPanel>
+</p-tabView>
+
+<!-- ===== Dialog editar COMPRA ===== -->
+<p-dialog header="Editar compra" [(visible)]="dialogCompra" [modal]="true" [style]="{width:'400px'}">
+  <ng-container *ngIf="selectedCompra">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label>Dólares</label>
+        <p>{{ selectedCompra.amount | number:'1.2-2' }}</p>
+      </div>
+      <div class="p-field">
+        <label>Tasa</label>
+        <p-inputNumber [(ngModel)]="selectedCompra.tasa" (onInput)="recalcPesosCompra()"
+                       mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"
+                       inputStyleClass="w-full"></p-inputNumber>
+      </div>
+      <div class="p-field">
+        <label>Pesos</label>
+        <p>{{ selectedCompra.pesos | number:'1.2-2' }}</p>
+      </div>
+      <div class="p-field">
+        <label>Proveedor</label>
+        <p-dropdown [options]="suppliers" optionLabel="name" optionValue="id"
+                    [(ngModel)]="selectedCompra.supplierId" [appendTo]="'body'"
+                    placeholder="Seleccione proveedor"></p-dropdown>
+      </div>
+    </div>
+    <div class="p-dialog-footer">
+      <button pButton label="Cancelar" class="p-button-text" (click)="dialogCompra=false"></button>
+      <button pButton label="Guardar" class="p-button-success" (click)="saveCompra()"></button>
+    </div>
+  </ng-container>
+</p-dialog>
+
+<!-- ===== Dialog editar VENTA ===== -->
+<p-dialog header="Editar Venta" [(visible)]="dialogVenta" [modal]="true" [style]="{width:'600px'}">
+  <form *ngIf="editableSale">
+    <div class="field">
+      <label class="font-bold">Tasa:</label><br>
+      <p-inputNumber [(ngModel)]="editableSale.tasa" name="tasa" mode="decimal"
+                     [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
+    </div>
+    <div class="field">
+      <label class="font-bold">Dólares:</label><br>
+      <p-inputNumber [(ngModel)]="editableSale.dollars" name="dollars" mode="decimal"
+                     [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
+    </div>
+    <div class="field">
+      <label class="font-bold">Pesos:</label><br>
+      <div class="readonly-box">{{ (editableSale.dollars * editableSale.tasa) | number:'1.2-2' }}</div>
+    </div>
+    <div>
+      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="true" label="Cliente Especial"></p-radioButton><br>
+      <p-radioButton name="tipo" [(ngModel)]="isSpecialClient" [value]="false" label="Proveedor"></p-radioButton>
+    </div>
+    <br>
+    <ng-container *ngIf="isSpecialClient">
+      <p-dropdown [(ngModel)]="editableSale.clienteId" [options]="clientes" optionLabel="nombre"
+                  optionValue="id" name="clienteId" placeholder="Seleccione cliente"></p-dropdown>
+    </ng-container>
+    <ng-container *ngIf="!isSpecialClient">
+      <p-dropdown [(ngModel)]="editableSale.supplier" [options]="suppliers" optionLabel="name"
+                  optionValue="id" name="supplierId" placeholder="Seleccione proveedor"></p-dropdown>
+      <div *ngFor="let acc of editableSale.accounts; let i = index" class="p-field p-grid">
+        <div class="p-col-6">
+          <p-dropdown [(ngModel)]="editableSale.accounts[i].accountCop" [options]="accountCops"
+                      optionValue="id" optionLabel="name" [name]="'accCop' + i"
+                      placeholder="Seleccione cuenta COP"></p-dropdown>
+        </div>
+        <div class="p-col-6">
+          <p-inputNumber [(ngModel)]="editableSale.accounts[i].amount" [name]="'amt' + i" mode="decimal"
+                         [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="w-full"></p-inputNumber>
+        </div>
+      </div>
+      <button type="button" pButton label="Agregar cuenta" (click)="addAccountField()" class="p-mt-2"></button>
+    </ng-container>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" (click)="dialogVenta=false" class="p-button-text"></button>
+    <button pButton label="Guardar" (click)="saveVenta()" class="p-button-success"></button>
+  </ng-template>
+</p-dialog>

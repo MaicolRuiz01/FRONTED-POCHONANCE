@@ -32,6 +32,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   ordenes: ActiveP2POrder[] = [];
   cuentasCop: AccountCop[]  = [];
+  /** Cuentas activas para P2P — cacheado (NO getter) para no recalcular en cada ciclo de CD. */
+  cuentasActivasP2P: AccountCop[] = [];
+  /** Opciones del dropdown de asignación — cacheadas. Solo se reconstruyen cuando cambian
+   *  las cuentas o las órdenes, NO en cada ciclo de detección de cambios (que corre cada segundo). */
+  copOptionsList: { label: string; value: number }[] = [];
   loading = false;
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
@@ -152,6 +157,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             if (s.cupoCorresponsalDisponibleHoy != null) c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
           }
         });
+        this.recomputarVistaCop();
       },
       error: () => { /* silencioso */ }
     });
@@ -208,6 +214,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
+          // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
+          this.recomputarVistaCop();
         },
         error: () => this.notification.error('No se pudo cargar las órdenes activas.')
       });
@@ -218,6 +226,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.accountCopService.getP2PView().subscribe({
       next: cuentas => {
         this.cuentasCop = cuentas;
+        this.recomputarVistaCop();
       }
     });
   }
@@ -258,6 +267,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         if (!target.estadoManual) target.estadoManual = 'PENDIENTE'; // por defecto, amarillo
         // Nuevo objeto para forzar CD
         this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: copId };
+        this.recomputarVistaCop();
         this.notification.success('Pre-asignación guardada.');
         // Aviso (NO bloqueo) si con esta asignación el amarillo se pasa del cupo.
         this.avisarSiExcedeCupo(copId);
@@ -275,6 +285,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         target.preAsignadoCopId = null;
         target.preAsignadoCopNombre = null;
         this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: null };
+        this.recomputarVistaCop();
         this.notification.success('Pre-asignación removida.');
       },
       error: () => this.notification.error('Error al remover pre-asignación.')
@@ -301,8 +312,19 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     }
   }
 
-  get cuentasActivasP2P() {
-    return this.cuentasCop.filter(c => c.activaParaP2P);
+  /** trackBy para que el *ngFor no re-renderice todas las cards/filas en cada refresco. */
+  trackByCuenta = (_: number, c: AccountCop) => c.id;
+  trackByOrden = (_: number, o: ActiveP2POrder) => o.orderNumber;
+
+  /** Reconstruye lo derivado de cuentasCop + ordenes (activas y opciones del dropdown).
+   *  Se llama SOLO cuando esos datos cambian, no en cada ciclo de detección de cambios. */
+  private recomputarVistaCop(): void {
+    this.cuentasActivasP2P = this.cuentasCop.filter(c => c.activaParaP2P);
+    const lista = this.cuentasActivasP2P.length > 0 ? this.cuentasActivasP2P : this.cuentasCop;
+    this.copOptionsList = lista.map(c => ({
+      label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
+      value: c.id!
+    }));
   }
 
   /** ID de la cuenta que se está quitando de P2P (para el spinner del botón). */
@@ -318,6 +340,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         next: updated => {
           c.activaParaP2P = updated.activaParaP2P;
           if (c.id != null) this.cupoLlenoAvisado.delete(c.id); // permitir re-avisar si se reactiva
+          this.recomputarVistaCop();
           this.accountCopService.notificarCambioP2P();
           this.notification.success(`${c.name} quitada de P2P`);
         },
@@ -351,14 +374,6 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
    *  Si ninguna está marcada, muestra todas como fallback.
    *  Las cuentas con el cupo lleno se marcan en la etiqueta, pero NO se bloquean
    *  (el cliente pidió advertencia, no prohibición). */
-  copOptions() {
-    const activas = this.cuentasCop.filter(c => c.activaParaP2P);
-    const lista   = activas.length > 0 ? activas : this.cuentasCop;
-    return lista.map(c => ({
-      label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
-      value: c.id
-    }));
-  }
 
   // ── Saldos verde (recibido) / amarillo (pendiente) por cuenta ──
 

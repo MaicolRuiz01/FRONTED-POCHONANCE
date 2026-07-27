@@ -4,7 +4,7 @@
        SECCIÓN 0 — CUENTAS COP ACTIVAS P2P
   ══════════════════════════════════════════ -->
   <div *ngIf="cuentasActivasP2P.length > 0" class="cop-strip">
-    <div *ngFor="let c of cuentasActivasP2P" class="cop-mini-card"
+    <div *ngFor="let c of cuentasActivasP2P; trackBy: trackByCuenta" class="cop-mini-card"
          (click)="copiarCuenta(c)"
          pTooltip="Clic para copiar: nombre, banco, cédula y número de cuenta"
          tooltipPosition="top"
@@ -231,7 +231,7 @@
         <td class="vc-dropdown-cell">
           <div class="vc-cop-assign">
             <p-dropdown
-              [options]="copOptions()"
+              [options]="copOptionsList"
               [ngModel]="seleccionPendiente[orden.orderNumber]"
               (ngModelChange)="dropdownChanged(orden, $event)"
               placeholder="Sin asignar"

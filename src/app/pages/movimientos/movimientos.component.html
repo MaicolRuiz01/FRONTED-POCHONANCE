@@ -1,12 +1,55 @@
 <p-tabView>
-  <!-- 🔹 Retiros -->
-  <p-tabPanel header="Retiros">
-    <p-table [value]="retiros">
+  <!-- 🔹 Movimientos (Retiros + Depósitos + Transferencias unificados) -->
+  <p-tabPanel header="Movimientos">
+    <!-- Filtros -->
+    <div class="mov-filtros">
+      <div class="mov-filtro">
+        <label>Desde</label>
+        <input type="date" pInputText [(ngModel)]="filtroDesde" />
+      </div>
+      <div class="mov-filtro">
+        <label>Hasta</label>
+        <input type="date" pInputText [(ngModel)]="filtroHasta" />
+      </div>
+      <div class="mov-filtro">
+        <label>Tipo</label>
+        <select [(ngModel)]="filtroTipo" class="mov-select">
+          <option value="">Todos</option>
+          <option value="RETIRO">Retiros</option>
+          <option value="DEPOSITO">Depósitos</option>
+          <option value="TRANSFERENCIA">Transferencias</option>
+        </select>
+      </div>
+      <div class="mov-filtro">
+        <label>Cuenta</label>
+        <select [(ngModel)]="filtroCuenta" class="mov-select">
+          <option value="">Todas</option>
+          <option *ngFor="let c of cuentasDisponibles" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="mov-filtro">
+        <label>Caja</label>
+        <select [(ngModel)]="filtroCaja" class="mov-select">
+          <option value="">Todas</option>
+          <option *ngFor="let c of cajasDisponibles" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="mov-filtro mov-filtro-btn">
+        <button pButton type="button" label="Limpiar" icon="pi pi-filter-slash"
+                class="p-button-text" (click)="limpiarFiltros()"></button>
+      </div>
+    </div>
+
+    <p-table [value]="movimientosFiltrados" [paginator]="true" [rows]="15"
+             [rowsPerPageOptions]="[15,30,50]" [showCurrentPageReport]="true"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} movimientos">
       <ng-template pTemplate="header">
         <tr>
           <th>Fecha</th>
+          <th>Tipo</th>
           <th>Monto</th>
           <th>Cuenta Origen</th>
+          <th>Cuenta Destino</th>
           <th>Caja</th>
           <th>Saldo caja (histórico)</th>
           <th>Acciones</th>
@@ -15,123 +58,51 @@
       <ng-template pTemplate="body" let-row>
         <tr>
           <td>{{ row.fecha | date:'short' }}</td>
+          <td>
+            <span class="mov-tag"
+                  [class.mov-tag-retiro]="row.tipo === 'RETIRO'"
+                  [class.mov-tag-deposito]="row.tipo === 'DEPOSITO'"
+                  [class.mov-tag-transfer]="row.tipo === 'TRANSFERENCIA'">
+              {{ row.tipo }}
+            </span>
+          </td>
           <td>{{ row.monto | currency:'USD' }}</td>
-          <td>{{ row.cuentaOrigen }}</td>
-          <td>{{ row.caja }}</td>
+          <td>{{ row.cuentaOrigen || '—' }}</td>
+          <td>{{ row.cuentaDestino || '—' }}</td>
+          <td>{{ row.caja ?? '—' }}</td>
           <td>{{ row.saldoCajaResultante != null ? (row.saldoCajaResultante | currency:'USD') : '—' }}</td>
           <td>
-            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'RETIRO')"></button>
-            <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(row)"></button>
+            <div class="mov-acciones">
+              <button pButton pRipple type="button" icon="pi pi-pencil"
+                      class="p-button-rounded p-button-text mov-btn-edit"
+                      pTooltip="Editar" tooltipPosition="top"
+                      (click)="abrirDialogo(row, row.tipo)"></button>
+              <button pButton pRipple type="button" icon="pi pi-trash"
+                      class="p-button-rounded p-button-text mov-btn-del"
+                      pTooltip="Eliminar" tooltipPosition="top"
+                      (click)="eliminarMovimiento(row)"></button>
+            </div>
           </td>
         </tr>
       </ng-template>
-    </p-table>
-  </p-tabPanel>
-
-  <!-- 🔹 Depósitos -->
-  <p-tabPanel header="Depósitos">
-    <p-table [value]="depositos">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Fecha</th>
-          <th>Monto</th>
-          <th>Cuenta Destino</th>
-          <th>Caja</th>
-          <th>Acciones</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-row>
-        <tr>
-          <td>{{ row.fecha | date:'short' }}</td>
-          <td>{{ row.monto | currency:'USD' }}</td>
-          <td>{{ row.cuentaDestino }}</td>
-          <td>{{ row.caja }}</td>
-          <td>
-            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'DEPOSITO')"></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-tabPanel>
-
-  <!-- 🔹 Transferencias -->
-  <p-tabPanel header="Transferencias">
-    <p-table [value]="transferencias">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Fecha</th>
-          <th>Monto</th>
-          <th>Cuenta Origen</th>
-          <th>Cuenta Destino</th>
-          <th>Acciones</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-row>
-        <tr>
-          <td>{{ row.fecha | date:'short' }}</td>
-          <td>{{ row.monto | currency:'USD' }}</td>
-          <td>{{ row.cuentaOrigen }}</td>
-          <td>{{ row.cuentaDestino }}</td>
-          <td>
-            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(row, 'TRANSFERENCIA')"></button>
-          </td>
-        </tr>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="8" class="mov-empty">No hay movimientos que coincidan con los filtros.</td></tr>
       </ng-template>
     </p-table>
   </p-tabPanel>
 
   <!-- 🔹 Traspasos -->
+  <!-- Traspasos REALES (movidos desde Asignar): traspasos de cripto entre cuentas propias. -->
   <p-tabPanel header="Traspasos">
-    <div *ngIf="traspasos.length === 0" style="text-align: center; margin-top: 2rem;">
-      <p>No hay traspasos el día de hoy.</p>
-    </div>
-
-    <p-table
-      *ngIf="!cargando && traspasos.length > 0"
-      [value]="traspasos"
-      [paginator]="true"
-      [rows]="10"
-      [responsiveLayout]="'scroll'">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Fecha</th>
-          <th>Cuenta Origen</th>
-          <th>Cuenta Destino</th>
-          <th>Monto</th>
-          <th>Tipo</th>
-          <th>Acciones</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-traspaso>
-        <tr>
-          <td>{{ traspaso.fecha | date:'short' }}</td>
-          <td>{{ traspaso.cuentaFrom }}</td>
-          <td>{{ traspaso.cuentaTo }}</td>
-          <td>{{ traspaso.monto | currency:'USD' }}</td>
-          <td>{{ traspaso.tipo || '-' }}</td>
-          <td>
-            <button pButton label="Editar" icon="pi pi-pencil" (click)="abrirDialogo(traspaso, 'TRASPASO')"></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+    <app-traspasos-tab></app-traspasos-tab>
   </p-tabPanel>
-
-<p-tabPanel header="cripto">
-  <app-completada></app-completada>
-</p-tabPanel>
 
 <p-tabPanel header="orden cripto">
   <app-ordenes-cripto> </app-ordenes-cripto>
 </p-tabPanel>
 
-<p-tabPanel header="Ventas Asginadas">
- <app-sell-tab></app-sell-tab>
-</p-tabPanel>
-
-<p-tabPanel header="Compras Asginadas">
- <app-buy-tap></app-buy-tap>
+<p-tabPanel header="Asignadas">
+ <app-asignadas></app-asignadas>
 </p-tabPanel>
 
 </p-tabView>

@@ -7,7 +7,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { MovimientosComponent } from "../../tabs/cajas-tab/cajas-tab.component";
 import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
 import { ContainerComponent } from '../../../cambios-arabes/container/container.component';
-import { TraspasosTabComponent } from '../../tabs/traspasos-tab/traspasos-tab.component';
+import { VentasPendientesComponent } from '../../../p2p/tabs/ventas-pendientes/ventas-pendientes.component';
 
 @Component({
   selector: 'app-asignaciones-wrapper',
@@ -20,7 +20,7 @@ import { TraspasosTabComponent } from '../../tabs/traspasos-tab/traspasos-tab.co
     MovimientosComponent,
     GastosComponent,
     ContainerComponent,
-    TraspasosTabComponent
+    VentasPendientesComponent
 ],
   templateUrl: './asignaciones-wrapper.component.html',
   styleUrls: ['./asignaciones-wrapper.component.css']

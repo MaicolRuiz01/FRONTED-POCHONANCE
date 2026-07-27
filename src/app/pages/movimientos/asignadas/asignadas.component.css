@@ -1,4 +1,4 @@
-.mov-filtros {
+.asig-filtros {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -9,13 +9,13 @@
   border-radius: 8px;
 }
 
-.mov-filtro {
+.asig-filtro {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.mov-filtro label {
+.asig-filtro label {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-color-secondary, #6c757d);
@@ -23,21 +23,19 @@
   letter-spacing: 0.03em;
 }
 
-.mov-filtro input,
-.mov-select {
+.asig-input,
+.asig-select {
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--surface-300, #ced4da);
   border-radius: 6px;
   font-size: 0.9rem;
-  min-width: 150px;
+  min-width: 160px;
   background: #fff;
 }
 
-.mov-filtro-btn {
-  justify-content: flex-end;
-}
+.asig-filtro-btn { justify-content: flex-end; }
 
-.mov-tag {
+.asig-tag {
   display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
@@ -48,36 +46,29 @@
   background: #6c757d;
 }
 
-.mov-tag-retiro { background: #e74c3c; }
-.mov-tag-deposito { background: #2ecc71; }
-.mov-tag-transfer { background: #3498db; }
+.asig-tag-compra { background: #27ae60; }
+.asig-tag-venta { background: #e67e22; }
 
-.mov-empty {
+.asig-btn-edit.p-button { color: #3498db; }
+.asig-btn-edit.p-button:hover {
+  background: rgba(52, 152, 219, 0.12) !important;
+  color: #2980b9;
+}
+
+.asig-empty {
   text-align: center;
   color: var(--text-color-secondary, #6c757d);
   padding: 1.5rem 0;
 }
 
-/* ---- Botones de acción (icono redondo) ---- */
-.mov-acciones {
-  display: flex;
-  gap: 0.35rem;
-  justify-content: center;
+.asig-p2p-toggle {
+  margin-bottom: 1rem;
 }
 
-.mov-btn-edit.p-button {
-  color: #3498db;
+.readonly-box {
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-100, #f1f3f5);
+  border-radius: 6px;
+  display: inline-block;
+  min-width: 120px;
 }
-.mov-btn-edit.p-button:hover {
-  background: rgba(52, 152, 219, 0.12) !important;
-  color: #2980b9;
-}
-
-.mov-btn-del.p-button {
-  color: #e74c3c;
-}
-.mov-btn-del.p-button:hover {
-  background: rgba(231, 76, 60, 0.12) !important;
-  color: #c0392b;
-}
-

@@ -200,41 +200,14 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <p-tabView styleClass="p2p-tabs">
-
-      <p-tabPanel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-sync mr-2 text-yellow-500"></i>
-          <span>En curso</span>
-        </ng-template>
-        <app-ventas-en-curso></app-ventas-en-curso>
-      </p-tabPanel>
-
-      <p-tabPanel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-arrow-up-right mr-2 text-green-500"></i>
-          <span>Ventas Pendientes</span>
-        </ng-template>
-        <app-ventas-pendientes (sseRefresh)="onSseRefresh()"></app-ventas-pendientes>
-      </p-tabPanel>
-
-      <p-tabPanel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-check-circle mr-2 text-blue-500"></i>
-          <span>Ventas Asignadas</span>
-        </ng-template>
-        <app-ventas-asignadas></app-ventas-asignadas>
-      </p-tabPanel>
-
-      <p-tabPanel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-arrow-down-left mr-2 text-purple-500"></i>
-          <span>Compras</span>
-        </ng-template>
-        <app-compras-p2p></app-compras-p2p>
-      </p-tabPanel>
-
-    </p-tabView>
+    <!-- Ventas Asignadas y Compras P2P se movieron a Movimientos → Asignadas → P2P.
+         Aquí queda una única vista de ventas en curso. -->
+    <div class="card p-3">
+      <div class="flex align-items-center gap-2 mb-3">
+        <i class="pi pi-sync text-yellow-500"></i>
+        <h3 class="m-0">Ventas en curso</h3>
+      </div>
+      <app-ventas-en-curso></app-ventas-en-curso>
+    </div>
   </div>
 </div>

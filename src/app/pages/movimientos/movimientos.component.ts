@@ -7,14 +7,15 @@ import { CurrencyPipe } from '@angular/common';
 import { Caja, CajaService } from '../../core/services/caja.service';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { RippleModule } from 'primeng/ripple';
+import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { TraspasosService,TransaccionesDTO } from '../../core/services/traspasos.service';
 import { OrdenesCriptoComponent } from './criptos/cripto-tab/ordenes-cripto.component';
-import { CompletadaComponent } from './criptos/listadocripto/completada.component';
+import { TraspasosTabComponent } from '../asignaciones/tabs/traspasos-tab/traspasos-tab.component';
 import { Movimiento } from '../../core/services/pago-proveedor.service';
-import { BuyTapComponent } from '../historial/tabs/buy-tap/buy-tap.component';
-import { SellTabComponent } from '../historial/tabs/sell-tab/sell-tab.component';
+import { AsignadasComponent } from './asignadas/asignadas.component';
 import { NotificationService } from '../../core/services/notification.service';
 
 
@@ -29,11 +30,12 @@ import { NotificationService } from '../../core/services/notification.service';
     DialogModule,
     FormsModule,
     ButtonModule,
+    RippleModule,
+    TooltipModule,
     InputTextModule,
     OrdenesCriptoComponent,
-    CompletadaComponent,
-    SellTabComponent,
-    BuyTapComponent
+    TraspasosTabComponent,
+    AsignadasComponent
 ],
   templateUrl: './movimientos.component.html',
   styleUrl: './movimientos.component.css'
@@ -45,6 +47,16 @@ export class MovimientosComponent implements OnInit {
   transferencias: MovimientoVistaDto[] = [];
   traspasos: TransaccionesDTO[] = [];
   cargando: boolean = false;
+
+  /** Lista unificada de todos los movimientos (retiros + depósitos + transferencias). */
+  movimientos: MovimientoVistaDto[] = [];
+
+  // ---- Filtros de la vista unificada ----
+  filtroDesde: string = '';
+  filtroHasta: string = '';
+  filtroTipo: string = '';   // '', 'RETIRO', 'DEPOSITO', 'TRANSFERENCIA'
+  filtroCuenta: string = ''; // coincide con cuentaOrigen o cuentaDestino
+  filtroCaja: string = '';   // nombre/valor de caja
 
   cajas: Caja[] = [];
   displayCajaDialog: boolean = false;
@@ -60,14 +72,77 @@ export class MovimientosComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.movimientoService.getRetiros().subscribe(data => this.retiros = data);
-    this.movimientoService.getDepositos().subscribe(data => this.depositos = data);
-    this.movimientoService.getTransferencias().subscribe(data => this.transferencias = data);
-    this.movimientoService.getRetiros().subscribe(data => this.retiros = data);
+    this.movimientoService.getRetiros().subscribe(data => {
+      this.retiros = data;
+      this.combinarMovimientos();
+    });
+    this.movimientoService.getDepositos().subscribe(data => {
+      this.depositos = data;
+      this.combinarMovimientos();
+    });
+    this.movimientoService.getTransferencias().subscribe(data => {
+      this.transferencias = data;
+      this.combinarMovimientos();
+    });
     this.loadCajas();
     this.traspasos = [];
     this.cargando = false;
      this.cargarTraspasos();
+  }
+
+  /** Une los tres orígenes en una sola lista, etiquetando el tipo de cada movimiento. */
+  private combinarMovimientos(): void {
+    const marcar = (arr: MovimientoVistaDto[], tipo: string) =>
+      (arr || []).map(m => ({ ...m, tipo: m.tipo || tipo }));
+
+    this.movimientos = [
+      ...marcar(this.retiros, 'RETIRO'),
+      ...marcar(this.depositos, 'DEPOSITO'),
+      ...marcar(this.transferencias, 'TRANSFERENCIA'),
+    ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+  }
+
+  /** Movimientos tras aplicar todos los filtros activos. */
+  get movimientosFiltrados(): MovimientoVistaDto[] {
+    const desde = this.filtroDesde ? new Date(this.filtroDesde + 'T00:00:00') : null;
+    const hasta = this.filtroHasta ? new Date(this.filtroHasta + 'T23:59:59') : null;
+
+    return this.movimientos.filter(m => {
+      const f = new Date(m.fecha);
+      if (desde && f < desde) return false;
+      if (hasta && f > hasta) return false;
+      if (this.filtroTipo && m.tipo !== this.filtroTipo) return false;
+      if (this.filtroCaja && String(m.caja ?? '') !== this.filtroCaja) return false;
+      if (this.filtroCuenta && m.cuentaOrigen !== this.filtroCuenta && m.cuentaDestino !== this.filtroCuenta) return false;
+      return true;
+    });
+  }
+
+  /** Cuentas distintas (origen o destino) presentes en los movimientos. */
+  get cuentasDisponibles(): string[] {
+    const set = new Set<string>();
+    this.movimientos.forEach(m => {
+      if (m.cuentaOrigen) set.add(m.cuentaOrigen);
+      if (m.cuentaDestino) set.add(m.cuentaDestino);
+    });
+    return Array.from(set).sort();
+  }
+
+  /** Cajas distintas presentes en los movimientos (para el filtro). */
+  get cajasDisponibles(): string[] {
+    const set = new Set<string>();
+    this.movimientos.forEach(m => {
+      if (m.caja != null && m.caja !== undefined && String(m.caja) !== '') set.add(String(m.caja));
+    });
+    return Array.from(set).sort();
+  }
+
+  limpiarFiltros(): void {
+    this.filtroDesde = '';
+    this.filtroHasta = '';
+    this.filtroTipo = '';
+    this.filtroCuenta = '';
+    this.filtroCaja = '';
   }
   
   loadCajas() {
@@ -127,6 +202,7 @@ guardarEdicion() {
      const lista = this.obtenerListaPorTipo(this.tipoEditando);
       const index = lista.findIndex((m: any) => m.id === movimientoActualizado.id);
       if (index > -1) lista[index] = movimientoActualizado;
+      this.combinarMovimientos();
     
       this.cerrarDialogo();
     },
@@ -150,7 +226,9 @@ eliminarMovimiento(movimiento: Movimiento) {
     next: () => {
       this.retiros = this.retiros.filter(m => m.id !== movimiento.id);
       this.depositos = this.depositos.filter(m => m.id !== movimiento.id);
+      this.transferencias = this.transferencias.filter(m => m.id !== movimiento.id);
       this.traspasos = this.traspasos.filter(m => m.idtransaccion !== movimiento.idtransaccion);
+      this.combinarMovimientos();
       // Los saldos de caja/cuenta cambiaron con la reversa → refrescar.
       this.loadCajas();
       this.notificationService.success('Movimiento eliminado y saldos revertidos');

@@ -192,12 +192,31 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => { this.loading = false; this.refreshing = false; }))
       .subscribe({
         next: data => {
+          // ── Detectar órdenes marcadas "ya cayó" (RECIBIDO) que YA salieron de la lista de
+          //    activas: significa que la venta se completó y el backend ya acreditó su COP en el
+          //    saldo real. Para que el VERDE no baje ni un segundo (el monto pasa de "recibido en
+          //    curso" a "saldo real"), refrescamos los saldos AL INSTANTE en vez de esperar el
+          //    polling de 5s. Sin esto, el amarillo desaparece pero el verde tarda en sumar. ──
+          const numerosNuevos = new Set(data.map(o => o.orderNumber));
+          const recibidosQueSalieron = Object.keys(this.estadoManualLocal).filter(
+            on => this.estadoManualLocal[on] === 'RECIBIDO' && !numerosNuevos.has(on)
+          );
+
           // Conservar el estado manual recién marcado por el usuario (que el refresco no lo pise).
           for (const o of data) {
             const local = this.estadoManualLocal[o.orderNumber];
             if (local) o.estadoManual = local;
           }
           this.ordenes = data;
+
+          if (recibidosQueSalieron.length > 0) {
+            // El saldo real ya debería incluir estas ventas → traerlo de una, y de nuevo a los 2s
+            // por si el backend aún estaba acreditando cuando la orden salió de Binance.
+            this.refrescarSaldosCop();
+            setTimeout(() => this.refrescarSaldosCop(), 2000);
+            // Limpiar los overrides locales que ya cumplieron su función.
+            recibidosQueSalieron.forEach(on => delete this.estadoManualLocal[on]);
+          }
           // Sincronizar seleccionPendiente:
           // Si el servidor tiene un valor definido → es la fuente de verdad (override).
           // Si el servidor no tiene pre-asignación y el cliente ya tiene una selección

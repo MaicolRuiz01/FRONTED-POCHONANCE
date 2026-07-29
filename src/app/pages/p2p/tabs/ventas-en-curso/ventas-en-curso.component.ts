@@ -37,6 +37,13 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Opciones del dropdown de asignación — cacheadas. Solo se reconstruyen cuando cambian
    *  las cuentas o las órdenes, NO en cada ciclo de detección de cambios (que corre cada segundo). */
   copOptionsList: { label: string; value: number }[] = [];
+
+  /** Saldos por cuenta (verde=recibido, amarillo=pendiente, proyectado=verde+amarillo), CACHEADOS.
+   *  Se recalculan explícitamente en cada evento (asignar, marcar, refrescar) y en cada tick, para
+   *  que el naranja SIEMPRE sume todas las órdenes pre-asignadas y no se quede "pegado" en la 1ª. */
+  verdePorCuenta: Record<number, number> = {};
+  amarilloPorCuenta: Record<number, number> = {};
+  proyectadoPorCuenta: Record<number, number> = {};
   loading = false;
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
@@ -169,6 +176,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.countdown = this.REFRESH_INTERVAL;
     this.countdownTimer = setInterval(() => {
       this.countdown--;
+      // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
+      // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
+      this.recomputarSaldos();
       if (this.countdown <= 0) {
         this.loadOrdenes();
         this.countdown = this.REFRESH_INTERVAL;
@@ -233,6 +243,22 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
+
+          // ── FIX naranja "pegado en la 1ª venta" ──────────────────────────────────
+          // sumaOrdenes() (verde/amarillo) usa o.preAsignadoCopId, que viene del SERVIDOR.
+          // Cuando el operador asigna una 2ª/3ª venta y justo entra un refresco (SSE o 15s)
+          // ANTES de que el backend refleje ese guardado, el servidor devuelve la orden con
+          // preAsignadoCopId=null y el naranja dejaba de sumarla (aunque el dropdown la muestre
+          // asignada). Reconciliamos con la selección del cliente: si el cliente ya la asignó y
+          // el server aún no lo refleja, preservamos la asignación para que el naranja la sume.
+          for (const o of this.ordenes) {
+            const sel = this.seleccionPendiente[o.orderNumber];
+            if (sel != null && o.preAsignadoCopId == null) {
+              o.preAsignadoCopId = sel;
+              o.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === sel)?.name ?? o.preAsignadoCopNombre;
+            }
+          }
+
           // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
           this.recomputarVistaCop();
         },
@@ -344,6 +370,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
       value: c.id!
     }));
+    // Los saldos verde/amarillo dependen de las órdenes → recalcular junto con la vista.
+    this.recomputarSaldos();
   }
 
   /** ID de la cuenta que se está quitando de P2P (para el spinner del botón). */
@@ -404,20 +432,41 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .reduce((s, o) => s + (o.pesosCop ?? 0), 0);
   }
 
+  /** Recalcula los saldos verde/amarillo/proyectado de TODAS las cuentas a partir de this.ordenes.
+   *  Se llama en cada evento (asignar, quitar, marcar, refrescar saldos, cargar órdenes) y en el
+   *  tick de 1s, así el naranja siempre refleja la suma de TODAS las órdenes pre-asignadas. */
+  private recomputarSaldos(): void {
+    const verde: Record<number, number> = {};
+    const amarillo: Record<number, number> = {};
+    const proyectado: Record<number, number> = {};
+    for (const c of this.cuentasCop) {
+      if (c.id == null) continue;
+      const v = (c.balance ?? 0) + this.sumaOrdenes(c.id, true);
+      const a = this.sumaOrdenes(c.id, false);
+      verde[c.id] = v;
+      amarillo[c.id] = a;
+      proyectado[c.id] = v + a;
+    }
+    // Reasignar (nuevas referencias) para que la vista se actualice sí o sí.
+    this.verdePorCuenta = verde;
+    this.amarilloPorCuenta = amarillo;
+    this.proyectadoPorCuenta = proyectado;
+  }
+
   /** VERDE (solo visual): saldo real + órdenes marcadas como RECIBIDO. */
   saldoVerdeDe(c: AccountCop): number {
-    return (c.balance ?? 0) + this.sumaOrdenes(c.id, true);
+    return c.id != null ? (this.verdePorCuenta[c.id] ?? (c.balance ?? 0)) : (c.balance ?? 0);
   }
 
   /** AMARILLO (monto pendiente por caer) — se usa para el aviso de cupo y el *ngIf. */
   saldoAmarilloDe(c: AccountCop): number {
-    return this.sumaOrdenes(c.id, false);
+    return c.id != null ? (this.amarilloPorCuenta[c.id] ?? 0) : 0;
   }
 
   /** AMARILLO que se MUESTRA: con cuánto quedará la cuenta cuando caiga lo pendiente
    *  = verde (saldo real + recibidas) + lo pendiente por caer. */
   saldoProyectadoDe(c: AccountCop): number {
-    return this.saldoVerdeDe(c) + this.saldoAmarilloDe(c);
+    return c.id != null ? (this.proyectadoPorCuenta[c.id] ?? this.saldoVerdeDe(c)) : this.saldoVerdeDe(c);
   }
 
   medioLabel(c: AccountCop): string {
@@ -456,6 +505,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     if (live) live.estadoManual = estado;
     // Override local: el refresco de 15s NO debe pisar lo que el usuario acaba de marcar.
     this.estadoManualLocal[orden.orderNumber] = estado;
+    // Mover el monto de amarillo↔verde al instante.
+    this.recomputarSaldos();
 
     this.syncService.setEstadoManual(orden.orderNumber, estado).subscribe({
       next: () => {

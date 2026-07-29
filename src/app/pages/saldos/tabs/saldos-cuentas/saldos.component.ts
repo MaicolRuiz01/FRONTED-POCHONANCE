@@ -808,13 +808,12 @@ export class SaldosComponent implements OnInit, OnDestroy {
    */
   loadNetoNoAsignado(): void {
     this.loadingAsignar = true;
-    this.balanceGeneralService.listar()
+    // Endpoint aislado: calcula SOLO el neto pendiente por asignar (no corre el balance
+    // general completo, que podía fallar o devolver un registro viejo por el orden de fechas).
+    this.balanceGeneralService.netoNoAsignado()
       .pipe(finalize(() => this.loadingAsignar = false))
       .subscribe({
-        next: (data: any[]) => {
-          const ordenados = (data || []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          this.netoNoAsignadoUsdt = ordenados.length ? (ordenados[0].netoNoAsignadasUsdt ?? 0) : 0;
-        },
+        next: (res) => this.netoNoAsignadoUsdt = res?.neto ?? 0,
         error: () => this.netoNoAsignadoUsdt = 0
       });
   }

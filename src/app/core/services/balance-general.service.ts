@@ -45,6 +45,11 @@ export class BalanceGeneralService {
     return this.http.get<BalanceGeneral[]>(`${this.apiUrl}/hoy`);
   }
 
+  /** Neto (COP) de compras/ventas pendientes por asignar hoy — cálculo aislado del backend. */
+  netoNoAsignado(): Observable<{ neto: number }> {
+    return this.http.get<{ neto: number }>(`${this.apiUrl}/neto-no-asignado`);
+  }
+
 totalCaja(): Observable<Record<string, number>> {
   return this.http.get<Record<string, number>>(`${this.apiUrl}/cajas/total`);
 }

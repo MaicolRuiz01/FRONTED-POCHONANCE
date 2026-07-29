@@ -243,6 +243,22 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             // Si clave ya existe y servidor devuelve null → mantener selección cliente
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
+
+          // ── FIX naranja "pegado en la 1ª venta" ──────────────────────────────────
+          // sumaOrdenes() (verde/amarillo) usa o.preAsignadoCopId, que viene del SERVIDOR.
+          // Cuando el operador asigna una 2ª/3ª venta y justo entra un refresco (SSE o 15s)
+          // ANTES de que el backend refleje ese guardado, el servidor devuelve la orden con
+          // preAsignadoCopId=null y el naranja dejaba de sumarla (aunque el dropdown la muestre
+          // asignada). Reconciliamos con la selección del cliente: si el cliente ya la asignó y
+          // el server aún no lo refleja, preservamos la asignación para que el naranja la sume.
+          for (const o of this.ordenes) {
+            const sel = this.seleccionPendiente[o.orderNumber];
+            if (sel != null && o.preAsignadoCopId == null) {
+              o.preAsignadoCopId = sel;
+              o.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === sel)?.name ?? o.preAsignadoCopNombre;
+            }
+          }
+
           // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
           this.recomputarVistaCop();
         },

@@ -367,7 +367,22 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   }
 
   enviarSolicitudGeneral(): void {
-    const sel = this.cuentasSeleccionadasGeneral;
+    const seleccionadas = this.cuentasSeleccionadasGeneral;
+    if (!seleccionadas.length) return;
+
+    // Filtra filas marcadas pero con monto $0/vacío (ej: se dejó el checkbox
+    // marcado de una selección anterior, o se olvidó llenar el campo) — antes
+    // esto mandaba igual una solicitud "fantasma" de $0 y notificaba al
+    // retirador por Telegram sin que hubiera nada real que retirar.
+    const sel = seleccionadas.filter(c => this.tieneMontoValido(c));
+    const omitidas = seleccionadas.length - sel.length;
+    if (omitidas > 0) {
+      this.msgSvc.add({
+        severity: 'warn', summary: 'Filas con monto $0 omitidas',
+        detail: `${omitidas} cuenta(s) estaban marcadas pero sin monto y no se enviaron.`,
+        life: 6000
+      });
+    }
     if (!sel.length) return;
 
     // Cada fila seleccionada se manda como su PROPIA solicitud (propio
@@ -577,6 +592,15 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     return tipo === 'CORRESPONSAL' || tipo === 'COMPLETO';
   }
 
+  /** true si la fila realmente pide algo (>$0) en el canal que le corresponde
+   *  según su tipoRetiro — evita mandar una solicitud "fantasma" de $0 cuando
+   *  una fila quedó marcada/seleccionada pero sin monto. */
+  private tieneMontoValido(c: CuentaSeleccionada): boolean {
+    const cajero = this.requiresCajero(c.tipoRetiro) ? (c.montoCajero ?? 0) : 0;
+    const corresponsal = this.requiresCorresponsal(c.tipoRetiro) ? (c.montoCorresponsal ?? 0) : 0;
+    return (cajero + corresponsal) > 0;
+  }
+
   get pagoEstimado(): number {
     return this.cuentasSeleccionadas.reduce((sum, c) => {
       const pago = c.tipoRetiro === 'CAJERO' ? 2 : c.tipoRetiro === 'CORRESPONSAL' ? 3 : 4;
@@ -610,8 +634,23 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   }
 
   enviarRetiro(): void {
-    const sel = this.cuentasSeleccionadas;
-    if (!sel.length || !this.retiradorActivo) return;
+    const seleccionadas = this.cuentasSeleccionadas;
+    if (!seleccionadas.length || !this.retiradorActivo) return;
+
+    // Filtra filas marcadas pero con monto $0/vacío (ej: se dejó el checkbox
+    // marcado de una selección anterior, o se olvidó llenar el campo) — antes
+    // esto mandaba igual una solicitud "fantasma" de $0 y notificaba al
+    // retirador por Telegram sin que hubiera nada real que retirar.
+    const sel = seleccionadas.filter(c => this.tieneMontoValido(c));
+    const omitidas = seleccionadas.length - sel.length;
+    if (omitidas > 0) {
+      this.msgSvc.add({
+        severity: 'warn', summary: 'Filas con monto $0 omitidas',
+        detail: `${omitidas} cuenta(s) estaban marcadas pero sin monto y no se enviaron.`,
+        life: 6000
+      });
+    }
+    if (!sel.length) return;
 
     // Cada fila seleccionada se manda como su PROPIA solicitud (propio
     // mensaje/número en Telegram), nunca todas combinadas en una sola.

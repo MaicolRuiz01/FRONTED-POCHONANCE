@@ -183,6 +183,21 @@
   white-space: nowrap;
 }
 
+/* ID de la cuenta en la esquina superior derecha del card. Discreto, para consultarlo
+   rápido sin competir visualmente con el nombre ni con el saldo. */
+.cop-card-id {
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #6b7280;
+  background: #eef0f3;
+  border: 1px solid #e0e3e8;
+  border-radius: 999px;
+  padding: 3px 7px;
+}
+
 /* ── Flip body ── */
 .cop-flip {
   perspective: 1000px;

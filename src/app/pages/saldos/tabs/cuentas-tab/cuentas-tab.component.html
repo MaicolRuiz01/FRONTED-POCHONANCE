@@ -70,6 +70,10 @@
       <div class="cop-header-inner">
         <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
         <span class="cop-card-name">{{ account.name }}</span>
+        <!-- ID de la cuenta, en la esquina del card. Va como último item del flex (no absoluto)
+             para que nunca se monte encima del nombre cuando este es largo. -->
+        <span class="cop-card-id" *ngIf="account.id != null"
+              pTooltip="ID de la cuenta" tooltipPosition="top">#{{ account.id }}</span>
       </div>
     </div>
 

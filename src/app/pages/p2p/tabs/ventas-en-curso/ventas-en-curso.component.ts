@@ -44,6 +44,12 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   verdePorCuenta: Record<number, number> = {};
   amarilloPorCuenta: Record<number, number> = {};
   proyectadoPorCuenta: Record<number, number> = {};
+
+  /** NARANJA 100% VISUAL (del lado del cliente). key = orderNumber.
+   *  Acumula las ventas que el operador asignó y que siguen EN CURSO. NO depende de ningún campo
+   *  del servidor que se pierda en los refrescos. Solo se limpia cuando la orden se COMPLETA
+   *  (sale de la lista de en curso → su dinero pasa al saldo real) o el operador la DESASIGNA. */
+  private naranjaAsignada: Record<string, { copId: number; pesos: number; recibido: boolean }> = {};
   loading = false;
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
@@ -244,18 +250,33 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
           }
           this.seleccionPendiente = nuevo; // nuevo objeto → Angular detecta cambio
 
-          // ── FIX naranja "pegado en la 1ª venta" ──────────────────────────────────
-          // sumaOrdenes() (verde/amarillo) usa o.preAsignadoCopId, que viene del SERVIDOR.
-          // Cuando el operador asigna una 2ª/3ª venta y justo entra un refresco (SSE o 15s)
-          // ANTES de que el backend refleje ese guardado, el servidor devuelve la orden con
-          // preAsignadoCopId=null y el naranja dejaba de sumarla (aunque el dropdown la muestre
-          // asignada). Reconciliamos con la selección del cliente: si el cliente ya la asignó y
-          // el server aún no lo refleja, preservamos la asignación para que el naranja la sume.
+          // ── Sincronizar el registro VISUAL del naranja (naranjaAsignada) ──────────
+          // Regla: los refrescos NUNCA quitan una asignación por el null del servidor.
+          //  (1) Se QUITA una venta del naranja solo cuando ya NO está en curso (se completó/canceló):
+          //      su dinero pasó al saldo real. (2) Se SIEMBRA desde el servidor lo que ya venía
+          //      asignado (para que al abrir la vista se vea lo existente), y se refresca su monto.
+          const activos = new Set(this.ordenes.map(o => o.orderNumber));
+          for (const on of Object.keys(this.naranjaAsignada)) {
+            if (!activos.has(on)) delete this.naranjaAsignada[on]; // se completó → al saldo real
+          }
           for (const o of this.ordenes) {
-            const sel = this.seleccionPendiente[o.orderNumber];
-            if (sel != null && o.preAsignadoCopId == null) {
-              o.preAsignadoCopId = sel;
-              o.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === sel)?.name ?? o.preAsignadoCopNombre;
+            const ex = this.naranjaAsignada[o.orderNumber];
+            if (o.preAsignadoCopId != null) {
+              // El servidor confirma una asignación → asegurarla (add si falta, refrescar monto).
+              this.naranjaAsignada[o.orderNumber] = {
+                copId: o.preAsignadoCopId,
+                pesos: o.pesosCop ?? ex?.pesos ?? 0,
+                recibido: ex ? ex.recibido : (o.estadoManual === 'RECIBIDO'),
+              };
+            } else if (ex) {
+              // El servidor aún no refleja lo que el cliente asignó → conservar, solo refrescar monto.
+              ex.pesos = o.pesosCop ?? ex.pesos;
+            }
+            // Reflejar la asignación visual en la orden (para la sub-fila y el dropdown).
+            const vis = this.naranjaAsignada[o.orderNumber];
+            if (vis && o.preAsignadoCopId == null) {
+              o.preAsignadoCopId = vis.copId;
+              o.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === vis.copId)?.name ?? o.preAsignadoCopNombre;
             }
           }
 
@@ -330,6 +351,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         target.preAsignadoCopId = null;
         target.preAsignadoCopNombre = null;
         this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: null };
+        delete this.naranjaAsignada[orderNumber]; // sale del naranja visual
         this.recomputarVistaCop();
         this.notification.success('Pre-asignación removida.');
       },
@@ -436,17 +458,37 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
    *  Se llama en cada evento (asignar, quitar, marcar, refrescar saldos, cargar órdenes) y en el
    *  tick de 1s, así el naranja siempre refleja la suma de TODAS las órdenes pre-asignadas. */
   private recomputarSaldos(): void {
-    const verde: Record<number, number> = {};
-    const amarillo: Record<number, number> = {};
-    const proyectado: Record<number, number> = {};
+    const verde: Record<number, number> = {};      // saldo real + ventas asignadas YA recibidas
+    const amarillo: Record<number, number> = {};   // ventas asignadas pendientes por caer
+    const proyectado: Record<number, number> = {}; // saldo real + TODAS las ventas asignadas
+
+    // Arranca cada cuenta en su saldo real (lo que YA tiene la cuenta).
+    // Number(...) defensivo: si el backend llega a mandar el balance como string (p.ej. BigDecimal
+    // serializado), evita que el "+=" de abajo concatene texto en vez de sumar.
     for (const c of this.cuentasCop) {
       if (c.id == null) continue;
-      const v = (c.balance ?? 0) + this.sumaOrdenes(c.id, true);
-      const a = this.sumaOrdenes(c.id, false);
-      verde[c.id] = v;
-      amarillo[c.id] = a;
-      proyectado[c.id] = v + a;
+      verde[c.id] = Number(c.balance ?? 0) || 0;
+      amarillo[c.id] = 0;
     }
+
+    // Suma las ventas asignadas desde el registro VISUAL del cliente (naranjaAsignada).
+    // 100% cliente → los refrescos no lo tocan, así que suma TODAS, no solo la primera.
+    // Number(...) defensivo por la misma razón: pesosCop debe sumarse como número siempre,
+    // incluso si en algún punto llega como string desde el servidor.
+    for (const on of Object.keys(this.naranjaAsignada)) {
+      const { copId, pesos, recibido } = this.naranjaAsignada[on];
+      const monto = Number(pesos ?? 0) || 0;
+      if (verde[copId] == null) { verde[copId] = 0; amarillo[copId] = 0; }
+      if (recibido) verde[copId] += monto;
+      else amarillo[copId] += monto;
+    }
+
+    // Proyectado (naranja) = saldo real + TODAS las ventas asignadas (recibidas + pendientes).
+    for (const c of this.cuentasCop) {
+      if (c.id == null) continue;
+      proyectado[c.id] = (verde[c.id] ?? (c.balance ?? 0)) + (amarillo[c.id] ?? 0);
+    }
+
     // Reasignar (nuevas referencias) para que la vista se actualice sí o sí.
     this.verdePorCuenta = verde;
     this.amarilloPorCuenta = amarillo;
@@ -505,7 +547,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     if (live) live.estadoManual = estado;
     // Override local: el refresco de 15s NO debe pisar lo que el usuario acaba de marcar.
     this.estadoManualLocal[orden.orderNumber] = estado;
-    // Mover el monto de amarillo↔verde al instante.
+    // Mover el monto de amarillo↔verde al instante en el registro visual.
+    const ev = this.naranjaAsignada[orden.orderNumber];
+    if (ev) ev.recibido = (estado === 'RECIBIDO');
     this.recomputarSaldos();
 
     this.syncService.setEstadoManual(orden.orderNumber, estado).subscribe({
@@ -599,6 +643,20 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
     // Spread para nuevo objeto → Angular detecta cambio inmediatamente en [ngModel]
     this.seleccionPendiente = { ...this.seleccionPendiente, [orden.orderNumber]: copId };
+
+    // Registro VISUAL del naranja (100% cliente): sumar/quitar de una, sin esperar al servidor.
+    if (copId) {
+      const ex = this.naranjaAsignada[orden.orderNumber];
+      this.naranjaAsignada[orden.orderNumber] = {
+        copId,
+        pesos: orden.pesosCop ?? ex?.pesos ?? 0,
+        recibido: ex?.recibido ?? false,
+      };
+    } else {
+      delete this.naranjaAsignada[orden.orderNumber];
+    }
+    this.recomputarSaldos();
+
     if (copId) {
       // Recordar la última cuenta asignada para el botón "=".
       this.ultimaCopId = copId;

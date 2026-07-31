@@ -40,7 +40,7 @@
           <span class="sin-asignar-fecha">{{ s.fechaCreacion | date:'dd/MM HH:mm' }}</span>
           <span class="sin-asignar-cuentas">
             <span *ngFor="let d of s.detalles; let last = last">
-              {{ d.cuentaCop.name }}<span *ngIf="!last">, </span>
+              {{ d.cuentaCop.name }} #{{ d.cuentaCop.id }}<span *ngIf="!last">, </span>
             </span>
           </span>
         </div>
@@ -183,6 +183,9 @@
         <label (click)="item.seleccionada = !item.seleccionada">
           <img [src]="bankIcon(item.cuenta.bankType)" style="height:18px;width:auto;" alt="">
           {{ item.cuenta.name }}
+          <span style="font-size:0.72rem;color:#6b7280;font-weight:600;" pTooltip="ID de la cuenta (esto es lo que ve el retirador)" tooltipPosition="top">
+            #{{ item.cuenta.id }}
+          </span>
           <span style="font-size:0.78rem;color:#9ca3af;font-weight:400;">
             — {{ item.cuenta.balance | currency:'COP':'symbol':'1.0-0' }}
           </span>
@@ -271,6 +274,9 @@
         <label (click)="item.seleccionada = !item.seleccionada">
           <img [src]="bankIcon(item.cuenta.bankType)" style="height:18px;width:auto;" alt="">
           {{ item.cuenta.name }}
+          <span style="font-size:0.72rem;color:#6b7280;font-weight:600;" pTooltip="ID de la cuenta (esto es lo que ve el retirador)" tooltipPosition="top">
+            #{{ item.cuenta.id }}
+          </span>
           <span style="font-size:0.78rem;color:#9ca3af;font-weight:400;">
             — {{ item.cuenta.balance | currency:'COP':'symbol':'1.0-0' }}
           </span>
@@ -449,7 +455,7 @@
       </div>
       <div class="hist-cuentas">
         <span *ngFor="let d of s.detalles; let last = last">
-          {{ d.cuentaCop.name }} ({{ d.tipoRetiro }}): {{ detalleMontoSolicitado(d) | currency:'COP':'symbol':'1.0-0' }}
+          {{ d.cuentaCop.name }} <span style="color:#6b7280;font-weight:600;">#{{ d.cuentaCop.id }}</span> ({{ d.tipoRetiro }}): {{ detalleMontoSolicitado(d) | currency:'COP':'symbol':'1.0-0' }}
           <span *ngIf="detalleTieneMontoReal(d)" style="color:#f59e0b;" pTooltip="El retirador registró una cifra distinta a la solicitada">
             → retirado {{ detalleMontoReal(d) | currency:'COP':'symbol':'1.0-0' }}
           </span>
@@ -495,8 +501,8 @@
             <td>{{ mov.fecha | date:'dd/MM/yy HH:mm' }}</td>
             <td>{{ mov.tipo }}</td>
             <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ mov.cuentaOrigen || '-' }}</td>
-            <td>{{ mov.cuentaDestino || mov.cajaDestino || '-' }}</td>
+            <td>{{ mov.cuentaOrigen ? (mov.cuentaOrigen + ' #' + mov.cuentaOrigenId) : '-' }}</td>
+            <td>{{ mov.cuentaDestino ? (mov.cuentaDestino + ' #' + mov.cuentaDestinoId) : (mov.cajaDestino || '-') }}</td>
             <td>{{ mov.caja || '-' }}</td>
             <td>
               {{ (mov.saldoCajaResultante ?? mov.saldoCajaDestinoResultante) != null

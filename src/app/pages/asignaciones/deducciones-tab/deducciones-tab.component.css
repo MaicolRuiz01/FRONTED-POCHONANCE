@@ -1,0 +1,93 @@
+/* ── Encabezado ── */
+.ded-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ded-title {
+  margin: 0 0 3px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ded-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+  max-width: 620px;
+  line-height: 1.45;
+}
+
+/* ── Estados ── */
+.ded-loading,
+.ded-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 34px 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.ded-spinner { width: 34px; height: 34px; }
+.ded-empty i { font-size: 1.15rem; }
+
+/* ── Tabla ── */
+.ded-pesos { font-weight: 700; color: #059669; }
+
+.ded-nota {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.text-right { text-align: right; }
+
+/* ── Formulario ── */
+.ded-form { display: flex; flex-direction: column; gap: 13px; }
+
+.ded-row { display: flex; gap: 12px; }
+.ded-row .ded-field { flex: 1; min-width: 0; }
+
+.ded-field { display: flex; flex-direction: column; gap: 5px; }
+
+.ded-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ded-opt { font-weight: 400; color: #9ca3af; }
+.ded-req { font-weight: 400; color: #dc2626; }
+
+/* Aviso cuando los pesos no cuadran con usdt × tasa (informativo, no bloquea) */
+.ded-warn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.73rem;
+  color: #b45309;
+}
+
+.ded-warn a { color: #2563eb; text-decoration: underline; }
+
+/* Resumen del efecto sobre el saldo */
+.ded-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  color: #1e40af;
+  font-size: 0.76rem;
+}

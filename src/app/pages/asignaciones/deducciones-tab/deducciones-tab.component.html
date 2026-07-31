@@ -1,0 +1,184 @@
+<div class="card">
+
+  <!-- Encabezado -->
+  <div class="ded-head">
+    <div>
+      <h3 class="ded-title">Deducciones</h3>
+      <p class="ded-sub">
+        Ventas P2P registradas a mano, para las órdenes que quedan en modo restricción.
+        No entran a la tabla de ventas P2P, pero sí suman al saldo de la cuenta COP.
+      </p>
+    </div>
+    <button pButton type="button" icon="pi pi-plus" label="Nueva deducción"
+            class="p-button-sm" (click)="abrirNueva()"></button>
+  </div>
+
+  <!-- Cargando -->
+  <div *ngIf="loading" class="ded-loading">
+    <p-progressSpinner strokeWidth="4" styleClass="ded-spinner"></p-progressSpinner>
+    <span>Cargando deducciones…</span>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!loading && deducciones.length === 0" class="ded-empty">
+    <i class="pi pi-inbox"></i>
+    <span>Aún no hay deducciones registradas.</span>
+  </div>
+
+  <!-- Tabla -->
+  <p-table *ngIf="!loading && deducciones.length > 0"
+           [value]="deducciones"
+           dataKey="id"
+           [rowHover]="true"
+           responsiveLayout="scroll"
+           styleClass="p-datatable-sm">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Cuenta Binance</th>
+        <th class="text-right">USDT</th>
+        <th class="text-right">Tasa</th>
+        <th class="text-right">Pesos COP</th>
+        <th>Cuenta COP</th>
+        <th>Nota</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-d>
+      <tr>
+        <td>{{ d.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ d.accountBinanceNombre || '—' }}</td>
+        <td class="text-right">{{ d.dollarsUs | number:'1.0-2' }}</td>
+        <td class="text-right">{{ d.tasa | number:'1.0-0' }}</td>
+        <td class="text-right ded-pesos">{{ d.pesosCop | number:'1.0-0' }}</td>
+        <td>{{ d.accountCopNombre || '—' }}</td>
+        <td class="ded-nota">{{ d.nota || '—' }}</td>
+        <td class="text-right">
+          <button pButton type="button" icon="pi pi-pencil"
+                  class="p-button-text p-button-sm"
+                  pTooltip="Editar" tooltipPosition="top"
+                  (click)="abrirEditar(d)"></button>
+          <button pButton type="button" icon="pi pi-trash"
+                  class="p-button-text p-button-sm p-button-danger"
+                  pTooltip="Eliminar" tooltipPosition="top"
+                  (click)="pedirEliminar(d)"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="4" class="text-right"><b>Total</b></td>
+        <td class="text-right ded-pesos"><b>{{ totalPesos | number:'1.0-0' }}</b></td>
+        <td colspan="3"></td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — crear / editar deducción
+══════════════════════════════════════════ -->
+<p-dialog [(visible)]="dialogVisible"
+          [header]="editandoId == null ? 'Nueva deducción' : 'Editar deducción'"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: '520px', maxWidth: '95vw' }">
+
+  <div class="ded-form">
+
+    <div class="ded-field">
+      <label>Cuenta Binance <span class="ded-opt">(de dónde salió)</span></label>
+      <p-dropdown [options]="cuentasBinance" [(ngModel)]="form.accountBinanceId"
+                  optionLabel="name" optionValue="id"
+                  placeholder="Selecciona la cuenta Binance"
+                  [showClear]="true" appendTo="body"
+                  [style]="{ width: '100%' }"></p-dropdown>
+    </div>
+
+    <div class="ded-row">
+      <div class="ded-field">
+        <label>USDT</label>
+        <p-inputNumber [(ngModel)]="form.dollarsUs" mode="decimal"
+                       [minFractionDigits]="0" [maxFractionDigits]="2" [min]="0"
+                       (ngModelChange)="recalcularPesos()"
+                       [style]="{ width: '100%' }" [inputStyle]="{ width: '100%' }"></p-inputNumber>
+      </div>
+
+      <div class="ded-field">
+        <label>Tasa</label>
+        <p-inputNumber [(ngModel)]="form.tasa" mode="decimal"
+                       [minFractionDigits]="0" [maxFractionDigits]="2" [min]="0"
+                       (ngModelChange)="recalcularPesos()"
+                       [style]="{ width: '100%' }" [inputStyle]="{ width: '100%' }"></p-inputNumber>
+      </div>
+    </div>
+
+    <div class="ded-field">
+      <label>Pesos COP <span class="ded-opt">(lo que realmente cayó)</span></label>
+      <p-inputNumber [(ngModel)]="form.pesosCop" mode="decimal"
+                     [minFractionDigits]="0" [maxFractionDigits]="0" [min]="0"
+                     (ngModelChange)="pesosCambiadosAMano()"
+                     [style]="{ width: '100%' }" [inputStyle]="{ width: '100%' }"></p-inputNumber>
+
+      <!-- Aviso, NO bloqueo: puede diferir por comisiones o redondeo. -->
+      <small *ngIf="pesosDifierenDelCalculo" class="ded-warn">
+        <i class="pi pi-info-circle"></i>
+        USDT × tasa daría {{ pesosCalculados | number:'1.0-0' }}.
+        <a href="javascript:void(0)" (click)="recalcularDeNuevo()">Usar ese valor</a>
+      </small>
+    </div>
+
+    <div class="ded-field">
+      <label>Cuenta COP <span class="ded-req">(a la que cayó)</span></label>
+      <p-dropdown [options]="cuentasCop" [(ngModel)]="form.accountCopId"
+                  optionLabel="name" optionValue="id"
+                  placeholder="Selecciona la cuenta COP"
+                  [filter]="true" filterBy="name" appendTo="body"
+                  [style]="{ width: '100%' }"></p-dropdown>
+    </div>
+
+    <div class="ded-field">
+      <label>Nota <span class="ded-opt">(opcional)</span></label>
+      <input pInputText type="text" [(ngModel)]="form.nota"
+             placeholder="Ej: número de la orden restringida" style="width:100%">
+    </div>
+
+    <div class="ded-hint">
+      <i class="pi pi-exclamation-circle"></i>
+      Al guardar se <b>suman {{ (form.pesosCop || 0) | number:'1.0-0' }} COP</b>
+      al saldo de la cuenta seleccionada.
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text"
+            (click)="dialogVisible = false" [disabled]="guardando"></button>
+    <button pButton type="button"
+            [label]="editandoId == null ? 'Registrar' : 'Guardar cambios'"
+            icon="pi pi-check"
+            (click)="guardar()" [loading]="guardando"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- ══════════════════════════════════════════
+     MODAL — confirmar borrado
+══════════════════════════════════════════ -->
+<p-dialog [(visible)]="confirmVisible" header="Eliminar deducción"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: '420px', maxWidth: '95vw' }">
+  <p *ngIf="aEliminar" style="margin:0">
+    Se van a <b>restar {{ aEliminar.pesosCop | number:'1.0-0' }} COP</b>
+    del saldo de <b>{{ aEliminar.accountCopNombre }}</b>, revirtiendo esta deducción.
+    ¿Continuar?
+  </p>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text"
+            (click)="confirmVisible = false" [disabled]="eliminando"></button>
+    <button pButton type="button" label="Eliminar" icon="pi pi-trash"
+            class="p-button-danger" (click)="confirmarEliminar()" [loading]="eliminando"></button>
+  </ng-template>
+</p-dialog>

@@ -8,6 +8,7 @@ import { MovimientosComponent } from "../../tabs/cajas-tab/cajas-tab.component";
 import { GastosComponent } from '../../gastos-tab/gastos-tab.component';
 import { ContainerComponent } from '../../../cambios-arabes/container/container.component';
 import { VentasPendientesComponent } from '../../../p2p/tabs/ventas-pendientes/ventas-pendientes.component';
+import { DeduccionesComponent } from '../../deducciones-tab/deducciones-tab.component';
 
 @Component({
   selector: 'app-asignaciones-wrapper',
@@ -20,7 +21,8 @@ import { VentasPendientesComponent } from '../../../p2p/tabs/ventas-pendientes/v
     MovimientosComponent,
     GastosComponent,
     ContainerComponent,
-    VentasPendientesComponent
+    VentasPendientesComponent,
+    DeduccionesComponent
 ],
   templateUrl: './asignaciones-wrapper.component.html',
   styleUrls: ['./asignaciones-wrapper.component.css']

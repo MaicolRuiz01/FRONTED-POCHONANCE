@@ -33,13 +33,6 @@ export interface AccountCop {
   cedula?: string;
   activaParaP2P?: boolean;
   bloqueada?: boolean;
-  /** true si el bloqueo actual lo puso el bot de conciliación bancaria (no un humano a mano). */
-  bloqueadaPorBot?: boolean;
-  /** Resultado de la última conciliación bancaria: null = nunca se ha conciliado. */
-  disponibleBanco?: boolean | null;
-  ultimaConciliacion?: string | null;
-  ultimoDesfaseBanco?: number | null;
-  ultimoErrorConciliacion?: string | null;
   cupoTipoP2P?: CupoTipoP2P;
   brebeKeys?: BrebeKey[];
   /** Cuánto del balance ya está comprometido en retiros enviados sin confirmar (se llena en el frontend). */

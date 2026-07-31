@@ -74,10 +74,6 @@
              para que nunca se monte encima del nombre cuando este es largo. -->
         <span class="cop-card-id" *ngIf="account.id != null"
               pTooltip="ID de la cuenta" tooltipPosition="top">#{{ account.id }}</span>
-        <!-- Bloqueada automáticamente por el bot de conciliación (no manual) -->
-        <i *ngIf="account.bloqueadaPorBot" class="pi pi-exclamation-triangle cop-bot-block-badge"
-           [pTooltip]="'Bloqueada automáticamente por el bot de conciliación: ' + (account.ultimoErrorConciliacion || 'no se pudo leer la cuenta en Bancolombia')"
-           tooltipPosition="top"></i>
       </div>
     </div>
 
@@ -202,11 +198,7 @@
       </button>
       <button pButton [icon]="account.bloqueada ? 'pi pi-lock' : 'pi pi-lock-open'"
         class="p-button-text p-button-sm cop-block-btn" [class.is-blocked]="account.bloqueada"
-        [pTooltip]="account.bloqueada
-          ? (account.bloqueadaPorBot
-              ? 'Bloqueada por el bot de conciliación (' + (account.ultimoErrorConciliacion || 'error de lectura') + ') — clic para desbloquear a mano'
-              : 'Bloqueada — clic para desbloquear')
-          : 'Bloquear cuenta'"
+        [pTooltip]="account.bloqueada ? 'Bloqueada — clic para desbloquear' : 'Bloquear cuenta'"
         tooltipPosition="top"
         (click)="toggleBloqueo(account, $event)">
       </button>

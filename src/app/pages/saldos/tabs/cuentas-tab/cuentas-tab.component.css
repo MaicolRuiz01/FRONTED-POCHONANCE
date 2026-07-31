@@ -198,6 +198,14 @@
   padding: 3px 7px;
 }
 
+/* Bandera cuando el bloqueo lo puso el bot de conciliación (no manual). */
+.cop-bot-block-badge {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: #d97706;
+  cursor: help;
+}
+
 /* ── Flip body ── */
 .cop-flip {
   perspective: 1000px;

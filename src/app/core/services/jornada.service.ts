@@ -13,7 +13,16 @@ export interface JornadaEstado {
   modo?: ModoJornada | null;
   startedAt?: string | null;
   endedAt?: string | null;
+  /** Ya viene con el tiempo en pausa descontado (ese tiempo no se paga). */
   transcurridoSegundos?: number;
+
+  /** La vigilancia automática detuvo el cronómetro. */
+  pausada?: boolean;
+  /** Por qué se detuvo (se le muestra al operador). */
+  motivoPausa?: string | null;
+  pausadaAt?: string | null;
+  /** Mensaje que el operador todavía no ha visto (respaldo por si el SSE se cayó). */
+  avisoPendiente?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,5 +44,15 @@ export class JornadaService {
   /** Estado actual (para restaurar el botón al recargar la página). */
   actual(): Observable<JornadaEstado> {
     return this.http.get<JornadaEstado>(`${this.apiUrl}/actual`);
+  }
+
+  /** Reanuda una jornada que la vigilancia pausó. El tiempo detenido no se paga. */
+  reanudar(): Observable<JornadaEstado> {
+    return this.http.post<JornadaEstado>(`${this.apiUrl}/reanudar`, {});
+  }
+
+  /** Confirma que el operador ya vio el aviso, para que no se le repita. */
+  marcarAvisoVisto(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/aviso-visto`, {});
   }
 }

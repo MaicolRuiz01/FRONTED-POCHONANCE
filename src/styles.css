@@ -162,3 +162,116 @@
   padding: 0.4rem;
 }
 .modo-cancel:hover { color: #374151; }
+
+/* ══════════════════════════════════════════════════════════════
+   VIGILANCIA DE JORNADA — cronómetro detenido y avisos al operador
+   ══════════════════════════════════════════════════════════════ */
+
+/* Cronómetro congelado: en ámbar para que se note que el tiempo no está contando. */
+.jornada-timer.pausado {
+  color: #fbbf24;
+  animation: jornadaPausaLatido 1.6s ease-in-out infinite;
+}
+
+@keyframes jornadaPausaLatido {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+.jornada-btn.jornada-reanudar {
+  color: #0b0b0b;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+/* ── Aviso modal ── */
+.aviso-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.aviso-card {
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 26px 24px 20px;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  border-top: 5px solid #f59e0b;
+}
+
+.aviso-card--pausa { border-top-color: #ef4444; }
+
+.aviso-icono {
+  font-size: 2.4rem;
+  line-height: 1;
+  color: #f59e0b;
+  margin-bottom: 10px;
+}
+
+.aviso-card--pausa .aviso-icono { color: #ef4444; }
+
+.aviso-title {
+  margin: 0 0 8px;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.aviso-msg {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.aviso-nota {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #991b1b;
+}
+
+.aviso-acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.aviso-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  border-radius: 9px;
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.aviso-btn:hover:not(:disabled) { filter: brightness(0.97); }
+.aviso-btn:active:not(:disabled) { transform: scale(0.97); }
+.aviso-btn:disabled { opacity: 0.6; cursor: default; }
+
+.aviso-btn--primary {
+  border-color: transparent;
+  color: #0b0b0b;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}

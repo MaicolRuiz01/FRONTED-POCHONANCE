@@ -68,9 +68,20 @@
           <span class="op-card-name">{{ c.username }}</span>
           <p-tag [value]="c.rol || '—'" [severity]="rolSeverity(c.rol)"></p-tag>
         </div>
-        <span *ngIf="c.jornadaActiva" class="op-badge-online" title="Trabajando ahora">
+        <span *ngIf="c.jornadaActiva && !c.jornadaPausada" class="op-badge-online" title="Trabajando ahora">
           <i class="pi pi-circle-fill"></i> Trabajando
         </span>
+        <!-- Pausado por la vigilancia: sigue en jornada pero su tiempo NO está corriendo. -->
+        <span *ngIf="c.jornadaActiva && c.jornadaPausada" class="op-badge-pausado"
+              [title]="c.motivoPausa || 'La vigilancia detuvo su cronómetro'">
+          <i class="pi pi-pause-circle"></i> Detenido
+        </span>
+      </div>
+
+      <!-- Motivo de la detención, para que el administrador sepa qué pasó. -->
+      <div *ngIf="c.jornadaActiva && c.jornadaPausada && c.motivoPausa" class="op-motivo-pausa">
+        <i class="pi pi-info-circle"></i>
+        <span>{{ c.motivoPausa }}</span>
       </div>
 
       <div class="op-card-stats">

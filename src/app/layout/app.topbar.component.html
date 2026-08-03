@@ -35,9 +35,22 @@
                 <i class="pi" [ngClass]="jornadaModo === 'VENTA_USDT' ? 'pi-dollar' : 'pi-calculator'"></i>
                 {{ modoLabel }}
             </span>
-            <span *ngIf="jornadaActiva" class="jornada-timer" title="Tiempo trabajando">
-                <i class="pi pi-clock"></i> {{ transcurrido }}
+            <span *ngIf="jornadaActiva" class="jornada-timer"
+                  [class.pausado]="jornadaPausada"
+                  [title]="jornadaPausada ? 'Cronómetro detenido: este tiempo no cuenta' : 'Tiempo trabajando'">
+                <i class="pi" [ngClass]="jornadaPausada ? 'pi-pause' : 'pi-clock'"></i> {{ transcurrido }}
             </span>
+
+            <!-- Cronómetro detenido por la vigilancia: el operador lo reanuda tras corregir. -->
+            <button *ngIf="jornadaActiva && jornadaPausada"
+                    class="jornada-btn jornada-reanudar"
+                    [disabled]="reanudando"
+                    (click)="reanudarJornada()"
+                    title="Reanudar el cronómetro">
+                <i class="pi" [ngClass]="reanudando ? 'pi-spin pi-spinner' : 'pi-play'"></i>
+                <span>Reanudar</span>
+            </button>
+
             <button
                 class="jornada-btn"
                 [class.activa]="jornadaActiva"
@@ -47,6 +60,35 @@
                 <i class="pi" [ngClass]="jornadaActiva ? 'pi-stop-circle' : 'pi-play-circle'"></i>
                 <span>{{ jornadaActiva ? 'Terminé' : 'Empecé a trabajar' }}</span>
             </button>
+        </div>
+
+        <!-- Aviso de la vigilancia (bajar la tasa / cronómetro detenido) -->
+        <div *ngIf="mostrarAviso" class="aviso-overlay">
+            <div class="aviso-card" [class.aviso-card--pausa]="jornadaPausada">
+                <div class="aviso-icono">
+                    <i class="pi" [ngClass]="jornadaPausada ? 'pi-pause-circle' : 'pi-exclamation-triangle'"></i>
+                </div>
+                <h3 class="aviso-title">
+                    {{ jornadaPausada ? 'Tu tiempo de trabajo se detuvo' : 'Atención' }}
+                </h3>
+                <p class="aviso-msg">{{ mensajeAviso }}</p>
+
+                <p *ngIf="jornadaPausada" class="aviso-nota">
+                    El cronómetro está detenido y este tiempo no cuenta. Corrige lo indicado
+                    y oprime Reanudar para que vuelva a correr.
+                </p>
+
+                <div class="aviso-acciones">
+                    <button *ngIf="jornadaPausada" class="aviso-btn aviso-btn--primary"
+                            [disabled]="reanudando" (click)="reanudarJornada()">
+                        <i class="pi" [ngClass]="reanudando ? 'pi-spin pi-spinner' : 'pi-play'"></i>
+                        Ya lo corregí, reanudar
+                    </button>
+                    <button class="aviso-btn" (click)="cerrarAviso()">
+                        {{ jornadaPausada ? 'Cerrar' : 'Entendido' }}
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Selector de modo al iniciar la jornada -->
@@ -60,7 +102,7 @@
                         (click)="iniciarJornadaCon('VENTA_USDT')">
                     <i class="pi pi-dollar"></i>
                     <span class="modo-opt-title">Vender USDT</span>
-                    <span class="modo-opt-desc">Se activan las ventas en curso. Si pasan 5 min sin órdenes, se avisa por Telegram.</span>
+                    <span class="modo-opt-desc">Debes tener el anuncio publicado. Si no hay anuncio en 10 min, o si pasas 10 min sin ventas y no bajas la tasa, el cronómetro se detiene.</span>
                 </button>
 
                 <button class="modo-opt modo-opt--caja"

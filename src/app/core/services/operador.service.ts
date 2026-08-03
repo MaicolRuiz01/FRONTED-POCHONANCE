@@ -12,6 +12,10 @@ export interface OperadorCard {
   tiempoTrabajadoSegundos: number;
   pagoCop: number;
   jornadaActiva: boolean;
+  /** La vigilancia automática le detuvo el cronómetro: sigue en jornada pero su tiempo no corre. */
+  jornadaPausada?: boolean;
+  /** Por qué se le detuvo (para que el administrador sepa qué pasó). */
+  motivoPausa?: string | null;
   pagadoHoy?: boolean;
 }
 

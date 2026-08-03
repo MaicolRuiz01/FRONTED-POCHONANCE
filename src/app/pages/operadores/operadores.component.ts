@@ -109,7 +109,10 @@ export class OperadoresComponent implements OnInit, OnDestroy {
   private tickJornadasActivas(): void {
     if (!this.esHoy()) return;
     for (const c of this.cards) {
-      if (c.jornadaActiva) {
+      // Si la vigilancia le detuvo el cronómetro, su tiempo NO avanza ni le suma pago:
+      // el servidor ya lo descuenta, y si acá se siguiera sumando el panel mostraría un
+      // valor inflado hasta el próximo refresco.
+      if (c.jornadaActiva && !c.jornadaPausada) {
         c.tiempoTrabajadoSegundos = (c.tiempoTrabajadoSegundos ?? 0) + 1;
         c.pagoCop = Math.round((c.tiempoTrabajadoSegundos / 3600) * this.tarifa);
       }

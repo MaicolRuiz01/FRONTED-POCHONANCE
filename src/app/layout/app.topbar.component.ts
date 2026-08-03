@@ -2,8 +2,10 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from "./service/app.layout.service";
 import { AuthService } from '../core/services/auth.service';
-import { JornadaService, ModoJornada } from '../core/services/jornada.service';
+import { JornadaService, ModoJornada, JornadaEstado } from '../core/services/jornada.service';
+import { JornadaSseService } from '../core/services/jornada-sse.service';
 import { NotificationService } from '../core/services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-topbar',
@@ -24,6 +26,25 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
     private inicioJornadaMs: number | null = null;
     private tickTimer: ReturnType<typeof setInterval> | null = null;
 
+    // ── Vigilancia automática (control de operadores en ventas P2P) ──
+
+    /** La vigilancia detuvo el cronómetro: el tiempo dejó de contar y de pagarse. */
+    jornadaPausada = false;
+    motivoPausa = '';
+    reanudando = false;
+
+    /** Aviso en pantalla (ej: "bájale un punto a la tasa"). */
+    mostrarAviso = false;
+    mensajeAviso = '';
+
+    /** Segundos congelados mientras está en pausa (para que el cronómetro no avance). */
+    private segundosCongelados = 0;
+
+    private sseSubs: Subscription[] = [];
+    /** Respaldo por HTTP: si el SSE se cae en Railway, igual se entera del estado real. */
+    private estadoTimer: ReturnType<typeof setInterval> | null = null;
+    private readonly ESTADO_POLL_MS = 30000;
+
     @ViewChild('menubutton') menuButton!: ElementRef;
     @ViewChild('topbarmenubutton') topbarMenuButton!: ElementRef;
     @ViewChild('topbarmenu') menu!: ElementRef;
@@ -32,28 +53,115 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
         public layoutService: LayoutService,
         public auth: AuthService,
         private jornadaService: JornadaService,
+        private jornadaSse: JornadaSseService,
         private notification: NotificationService
     ) {}
 
     ngOnInit(): void {
         // Solo los operarios registran jornada. Restaura el estado si ya había una en curso.
-        if (this.auth.isOperario()) {
-            this.jornadaService.actual().subscribe({
-                next: est => {
-                    if (est?.activa) {
-                        this.inicioJornadaMs = Date.now() - (est.transcurridoSegundos ?? 0) * 1000;
-                        this.jornadaActiva = true;
-                        this.jornadaModo = est.modo ?? null;
-                        this.startTick();
-                    }
-                },
-                error: () => {}
-            });
-        }
+        if (!this.auth.isOperario()) return;
+
+        this.jornadaService.actual().subscribe({
+            next: est => this.aplicarEstado(est),
+            error: () => {}
+        });
+
+        // Canal rápido: el aviso aparece al instante.
+        this.jornadaSse.connect(this.auth.getUsername());
+        this.sseSubs.push(
+            this.jornadaSse.aviso$.subscribe(msg => this.mostrarAvisoOperador(msg)),
+            this.jornadaSse.pausa$.subscribe(motivo => {
+                // Se refresca contra el servidor para tomar el tiempo exacto ya descontado.
+                this.refrescarEstado();
+                this.mostrarAvisoOperador(motivo);
+            }),
+            this.jornadaSse.reanudada$.subscribe(() => this.refrescarEstado())
+        );
+
+        // Respaldo: aunque el SSE nunca conecte, el estado real llega igual cada 30 s.
+        this.estadoTimer = setInterval(() => this.refrescarEstado(), this.ESTADO_POLL_MS);
     }
 
     ngOnDestroy(): void {
         this.stopTick();
+        this.sseSubs.forEach(s => s.unsubscribe());
+        this.jornadaSse.disconnect();
+        if (this.estadoTimer) clearInterval(this.estadoTimer);
+    }
+
+    /** Trae el estado real del servidor (es la fuente de verdad, no el SSE). */
+    private refrescarEstado(): void {
+        if (!this.auth.isOperario()) return;
+        this.jornadaService.actual().subscribe({
+            next: est => this.aplicarEstado(est),
+            error: () => {}
+        });
+    }
+
+    /** Vuelca el estado del servidor al componente, incluida la pausa y el aviso pendiente. */
+    private aplicarEstado(est: JornadaEstado | null): void {
+        if (!est?.activa) {
+            this.jornadaActiva = false;
+            this.jornadaPausada = false;
+            this.jornadaModo = null;
+            this.stopTick();
+            this.transcurrido = '00:00:00';
+            this.inicioJornadaMs = null;
+            return;
+        }
+
+        this.jornadaActiva = true;
+        this.jornadaModo = est.modo ?? null;
+
+        const seg = est.transcurridoSegundos ?? 0;
+        this.jornadaPausada = !!est.pausada;
+        this.motivoPausa = est.motivoPausa ?? '';
+
+        if (this.jornadaPausada) {
+            // Congelado: el cronómetro se queda quieto en el tiempo que sí se paga.
+            this.segundosCongelados = seg;
+            this.inicioJornadaMs = null;
+            this.stopTick();
+            this.pintarTiempo(seg);
+        } else {
+            this.inicioJornadaMs = Date.now() - seg * 1000;
+            this.startTick();
+        }
+
+        // Aviso que quedó pendiente (por SSE caído o porque recargó la página).
+        if (est.avisoPendiente && !this.mostrarAviso) {
+            this.mostrarAvisoOperador(est.avisoPendiente);
+        }
+    }
+
+    private mostrarAvisoOperador(msg: string): void {
+        if (!msg) return;
+        this.mensajeAviso = msg;
+        this.mostrarAviso = true;
+    }
+
+    /** El operador cerró el aviso: se le confirma al servidor para que no se repita. */
+    cerrarAviso(): void {
+        this.mostrarAviso = false;
+        this.jornadaService.marcarAvisoVisto().subscribe({ next: () => {}, error: () => {} });
+    }
+
+    /** Reanuda la jornada pausada. El tiempo detenido ya quedó descontado en el servidor. */
+    reanudarJornada(): void {
+        if (this.reanudando) return;
+        this.reanudando = true;
+        this.jornadaService.reanudar().subscribe({
+            next: est => {
+                this.reanudando = false;
+                this.mostrarAviso = false;
+                this.aplicarEstado(est);
+                this.notification.success('Jornada reanudada. El cronómetro volvió a correr.');
+            },
+            error: () => {
+                this.reanudando = false;
+                this.notification.error('No se pudo reanudar la jornada.');
+            }
+        });
     }
 
     /** ¿Debe mostrarse el botón de jornada? */
@@ -74,6 +182,9 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
         this.jornadaService.finalizar().subscribe({
             next: () => {
                 this.jornadaActiva = false;
+                this.jornadaPausada = false;
+                this.motivoPausa = '';
+                this.mostrarAviso = false;
                 this.jornadaModo = null;
                 this.stopTick();
                 this.transcurrido = '00:00:00';
@@ -96,14 +207,12 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
 
         this.jornadaService.iniciar(modo).subscribe({
             next: est => {
-                this.inicioJornadaMs = Date.now() - (est?.transcurridoSegundos ?? 0) * 1000;
-                this.jornadaActiva = true;
+                this.aplicarEstado(est);
                 this.jornadaModo = est?.modo ?? modo;
-                this.startTick();
                 this.jornadaCargando = false;
                 this.notification.success(
                     modo === 'VENTA_USDT'
-                        ? '¡A vender USDT! Se avisará por Telegram si no entran órdenes.'
+                        ? '¡A vender USDT! Recuerda publicar el anuncio: si no hay ninguno en 10 minutos, el cronómetro se detiene.'
                         : '¡A hacer caja! Se registró el inicio de tu jornada.'
                 );
             },
@@ -135,8 +244,13 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
     }
 
     private actualizarTranscurrido(): void {
+        // En pausa el cronómetro no avanza: se queda en el tiempo que efectivamente se paga.
+        if (this.jornadaPausada) { this.pintarTiempo(this.segundosCongelados); return; }
         if (this.inicioJornadaMs == null) { this.transcurrido = '00:00:00'; return; }
-        const seg = Math.max(0, Math.floor((Date.now() - this.inicioJornadaMs) / 1000));
+        this.pintarTiempo(Math.max(0, Math.floor((Date.now() - this.inicioJornadaMs) / 1000)));
+    }
+
+    private pintarTiempo(seg: number): void {
         const h = Math.floor(seg / 3600);
         const m = Math.floor((seg % 3600) / 60);
         const s = seg % 60;

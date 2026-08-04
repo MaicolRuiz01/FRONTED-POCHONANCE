@@ -41,6 +41,9 @@ export class OperadoresComponent implements OnInit, OnDestroy {
 
   /** Tick de 1s que hace correr el cronómetro de las jornadas activas en vivo. */
   private tickTimer: ReturnType<typeof setInterval> | null = null;
+  /** Resincroniza el panel con el servidor (pausas, reanudaciones, tiempo real pagable). */
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly REFRESH_MS = 20000;
 
   // Tarifa
   tarifa = 7500;
@@ -98,10 +101,31 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     // Cada segundo suma tiempo a las jornadas activas y recalcula el pago, para que el
     // cronómetro no se vea congelado en "0 s" mientras el operador está trabajando.
     this.tickTimer = setInterval(() => this.tickJornadasActivas(), 1000);
+
+    // Resincronizar con el servidor cada 20 s.
+    // El tick de arriba es solo cosmético: suma segundos a ciegas. Sin este refresco, el panel
+    // NUNCA se entera de que la vigilancia le detuvo el cronómetro a alguien (seguiría marcando
+    // "Trabajando" y sumando pago indefinidamente), ni de que el operador reanudó. El servidor
+    // es la única fuente de verdad del tiempo pagable.
+    this.refreshTimer = setInterval(() => this.refrescarSilencioso(), this.REFRESH_MS);
   }
 
   ngOnDestroy(): void {
     if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
+    if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; }
+  }
+
+  /**
+   * Recarga los datos reales sin mostrar el spinner ni molestar al administrador si falla
+   * (puede estar con un modal abierto). Si hay un pago en curso no toca nada, para no
+   * pisar el estado del diálogo.
+   */
+  private refrescarSilencioso(): void {
+    if (this.pagando || this.loading) return;
+    this.operadorService.getResumen(this.fechaStr()).subscribe({
+      next: resumen => { if (resumen) this.cards = resumen; },
+      error: () => { /* silencioso: el próximo ciclo reintenta */ }
+    });
   }
 
   /** Solo tiene efecto visual cuando la fecha seleccionada es HOY (no tiene sentido correr el

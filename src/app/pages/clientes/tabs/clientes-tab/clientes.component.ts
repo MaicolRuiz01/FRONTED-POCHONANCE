@@ -92,8 +92,15 @@ export class ClientesComponent implements OnInit, OnDestroy {
   clienteMovimientos: any[] = [];
 
 
-  clienteAjustes: any[] = [];
   ajustesSeleccionado: any[] = [];
+
+  // ── Carga perezosa del detalle del cliente ──
+  // Cada pestaña se pide solo cuando se abre, y recuerda si ya se cargó para no repetir.
+  // El estado de error es por pestaña, para poder ofrecer "Reintentar" ahí mismo.
+  loadingMovsCliente = false;    movsLoaded = false;    errorMovs = false;
+  loadingComprasCliente = false; comprasLoaded = false; errorCompras = false;
+  loadingVentasCliente = false;  ventasLoaded = false;  errorVentas = false;
+  ajustesLoaded = false;         errorAjustes = false;
 
   displayEditModal = false;
   editCliente: Cliente | null = null;
@@ -440,77 +447,124 @@ export class ClientesComponent implements OnInit, OnDestroy {
   }
 
 
+  /**
+   * Abre el detalle del cliente.
+   *
+   * CARGA PEREZOSA: solo se pide la pestaña que se está viendo. Antes se disparaban CINCO
+   * peticiones de golpe al abrir el modal —incluso para pestañas que el usuario nunca miraba—,
+   * lo que hacía lento el abrir y saturaba el servidor. Una de esas cinco además no se usaba
+   * en ninguna parte de la vista y era la única que mostraba un toast de error, así que
+   * cualquier lentitud del servidor se traducía en el mensaje "Error al cargar los ajustes"
+   * apareciendo a cada rato sin motivo. Esa llamada se eliminó.
+   */
   onSelectCliente(cliente: Cliente): void {
     this.selectedCliente = cliente;
+
+    // Reiniciar datos y banderas: cada cliente arranca de cero.
     this.clienteMovimientos = [];
     this.comprasCliente = [];
     this.ventasCliente = [];
-    this.selectedCliente = cliente;
-    this.clienteMovimientos = [];
-    this.comprasCliente = [];
-    this.ventasCliente = [];
+    this.ajustesCliente = [];
     this.ajustesSeleccionado = [];
-    this.clienteAjustes = [];
 
-    if (!cliente.id) {
-      this.showMovimientosDialog = true;
-      return;
-    }
-
-    // Movimientos (ya lo tenías)
-    this.movimientoService.getMovimientosPorCliente(cliente.id).subscribe({
-      next: (data) => {
-        this.clienteMovimientos = [...data].sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
-        console.log('Movimientos del cliente:', this.clienteMovimientos);
-      },
-      error: (err) => console.error('Error al cargar historial de movimientos', err),
-    });
-
-    this.buyDollarsService.getComprasPorCliente(cliente.id).subscribe({
-      next: (compras) => {
-        this.comprasCliente = [...compras].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-      },
-      error: (err) => console.error('Error al cargar compras del cliente', err),
-    });
-
-    this.sellDollarsService.getVentasPorCliente(cliente.id).subscribe({
-      next: (ventas) => {
-        this.ventasCliente = [...ventas].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-      },
-      error: (err) => console.error('Error al cargar ventas del cliente', err),
-    });
-
-    this.loadingAjustesCliente = true;
-    this.movimientoService.getAjustesCliente(cliente.id).subscribe({
-      next: (ajustes) => {
-        this.ajustesCliente = [...ajustes].sort(
-          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-        );
-      },
-      error: (err) => console.error('Error al cargar ajustes del cliente', err),
-      complete: () => this.loadingAjustesCliente = false
-    });
-
-    // 👇 Ajustes asignados al cliente
-    this.ajustesService.obtenerporcliente(cliente.id).subscribe({
-      next: data => {
-        console.log("Ajustes recibidos:", data);
-        this.clienteAjustes = data;
-        this.ajustesSeleccionado = [];
-      },
-      error: () => this.notificationService.error('Error al cargar los ajustes del cliente')
-    });
-
-
-
+    this.movsLoaded = false;   this.errorMovs = false;
+    this.comprasLoaded = false; this.errorCompras = false;
+    this.ventasLoaded = false;  this.errorVentas = false;
+    this.ajustesLoaded = false; this.errorAjustes = false;
 
     this.showMovimientosDialog = true;
+
+    if (!cliente.id) return;
+
+    // Solo la primera pestaña. El resto se carga al abrirla (ver onDetalleTabChange).
+    this.cargarMovimientosCliente();
+  }
+
+  /** Índices: 0 Movimientos · 1 Compras USDT · 2 Ventas USDT · 3 Ajustes de saldo */
+  onDetalleTabChange(e: any): void {
+    switch (e?.index) {
+      case 1: this.cargarComprasCliente(); break;
+      case 2: this.cargarVentasCliente(); break;
+      case 3: this.cargarAjustesCliente(); break;
+    }
+  }
+
+  cargarMovimientosCliente(): void {
+    const id = this.selectedCliente?.id;
+    if (!id || this.movsLoaded || this.loadingMovsCliente) return;
+    this.loadingMovsCliente = true;
+    this.errorMovs = false;
+    this.movimientoService.getMovimientosPorCliente(id).subscribe({
+      next: data => {
+        this.clienteMovimientos = this.ordenarPorFecha(data, 'fecha');
+        this.movsLoaded = true;
+        this.loadingMovsCliente = false;
+      },
+      error: () => { this.errorMovs = true; this.loadingMovsCliente = false; }
+    });
+  }
+
+  cargarComprasCliente(): void {
+    const id = this.selectedCliente?.id;
+    if (!id || this.comprasLoaded || this.loadingComprasCliente) return;
+    this.loadingComprasCliente = true;
+    this.errorCompras = false;
+    this.buyDollarsService.getComprasPorCliente(id).subscribe({
+      next: data => {
+        this.comprasCliente = this.ordenarPorFecha(data, 'date');
+        this.comprasLoaded = true;
+        this.loadingComprasCliente = false;
+      },
+      error: () => { this.errorCompras = true; this.loadingComprasCliente = false; }
+    });
+  }
+
+  cargarVentasCliente(): void {
+    const id = this.selectedCliente?.id;
+    if (!id || this.ventasLoaded || this.loadingVentasCliente) return;
+    this.loadingVentasCliente = true;
+    this.errorVentas = false;
+    this.sellDollarsService.getVentasPorCliente(id).subscribe({
+      next: data => {
+        this.ventasCliente = this.ordenarPorFecha(data, 'date');
+        this.ventasLoaded = true;
+        this.loadingVentasCliente = false;
+      },
+      error: () => { this.errorVentas = true; this.loadingVentasCliente = false; }
+    });
+  }
+
+  cargarAjustesCliente(): void {
+    const id = this.selectedCliente?.id;
+    if (!id || this.ajustesLoaded || this.loadingAjustesCliente) return;
+    this.loadingAjustesCliente = true;
+    this.errorAjustes = false;
+    this.movimientoService.getAjustesCliente(id).subscribe({
+      next: data => {
+        this.ajustesCliente = this.ordenarPorFecha(data, 'fecha');
+        this.ajustesLoaded = true;
+        this.loadingAjustesCliente = false;
+      },
+      // El error se muestra DENTRO de la pestaña con un botón de reintentar, no como
+      // notificación flotante: así no molesta cuando el usuario ni siquiera la abrió.
+      error: () => { this.errorAjustes = true; this.loadingAjustesCliente = false; }
+    });
+  }
+
+  /** Ordena de más reciente a más antiguo por el campo de fecha indicado. */
+  private ordenarPorFecha<T>(datos: T[] | null, campo: string): T[] {
+    return [...(datos ?? [])].sort(
+      (a: any, b: any) => new Date(b?.[campo]).getTime() - new Date(a?.[campo]).getTime()
+    );
+  }
+
+  /** Copia un identificador largo (hash de transacción) al portapapeles. */
+  copiarId(valor?: string | null): void {
+    if (!valor) return;
+    navigator.clipboard.writeText(valor).then(
+      () => this.notificationService.success('Identificador copiado.'),
+      () => this.notificationService.error('No se pudo copiar.')
+    );
   }
 
   pagoCP = {

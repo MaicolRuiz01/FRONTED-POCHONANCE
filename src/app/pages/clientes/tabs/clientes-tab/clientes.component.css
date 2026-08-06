@@ -262,3 +262,93 @@
   .cli-stats { flex-direction: column; }
   .cli-actions-bar { flex-direction: column; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DETALLE DEL CLIENTE — estados de carga, error y tablas
+   ══════════════════════════════════════════════════════════════ */
+
+/* Estados: mismo alto que una tabla corta, para que no salte el layout al cambiar de pestaña */
+.det-estado,
+.det-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 150px;
+  font-size: 0.86rem;
+  color: #6b7280;
+}
+
+.det-error {
+  flex-direction: column;
+  gap: 12px;
+  color: #b45309;
+}
+
+.det-error .pi-exclamation-triangle { font-size: 1.6rem; }
+
+.det-vacio {
+  text-align: center;
+  padding: 26px 0;
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+/* ── Tabla ── */
+.det-tabla th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.det-tabla td { font-size: 0.82rem; }
+
+/* Cifras alineadas a la derecha y con ancho de dígito fijo: así las columnas
+   de dinero se pueden comparar de un vistazo sin que bailen los números. */
+.det-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.det-monto { font-weight: 700; color: #111827; }
+
+.det-fecha {
+  white-space: nowrap;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+.det-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Hash recortado: el completo se ve en el title y se copia al hacer clic */
+.det-hash {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  color: #4b5563;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.det-hash:hover { color: #4338ca; }
+.det-hash .pi-copy { font-size: 0.7rem; opacity: 0.6; }
+.det-hash:hover .pi-copy { opacity: 1; }
+
+.det-motivo {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

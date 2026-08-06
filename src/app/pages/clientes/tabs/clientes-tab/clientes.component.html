@@ -99,114 +99,175 @@
   [modal]="true" position="top" [style]="{ width: '95vw' }" styleClass="dialog-full-vert"
   [closable]="true" (onHide)="showMovimientosDialog = false">
 
-  <p-tabView styleClass="tabview-fill">
+  <!-- (onChange) dispara la carga perezosa: cada pestaña pide sus datos al abrirse. -->
+  <p-tabView styleClass="tabview-fill" (onChange)="onDetalleTabChange($event)">
 
     <p-tabPanel header="Movimientos">
-      <p-table [value]="clienteMovimientos" scrollable="true" scrollHeight="flex"
-        [responsive]="true" styleClass="fill-table" [style]="{ height: '100%' }">
+      <div *ngIf="loadingMovsCliente" class="det-estado">
+        <i class="pi pi-spin pi-spinner"></i> Cargando movimientos…
+      </div>
+      <div *ngIf="errorMovs && !loadingMovsCliente" class="det-error">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>No se pudieron cargar los movimientos.</span>
+        <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
+                class="p-button-sm p-button-outlined" (click)="cargarMovimientosCliente()"></button>
+      </div>
+
+      <p-table *ngIf="!loadingMovsCliente && !errorMovs"
+        [value]="clienteMovimientos" scrollable="true" scrollHeight="flex"
+        [responsive]="true" styleClass="fill-table det-tabla" [style]="{ height: '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Fecha</th><th>Tipo</th><th>Monto (COP)</th><th>Cuenta Origen</th>
-            <th>Cuenta Destino</th><th>Caja</th><th>Cliente</th><th>Proveedor</th>
+            <th>Fecha</th><th>Tipo</th><th class="det-num">Monto (COP)</th><th>Cuenta origen</th>
+            <th>Cuenta destino</th><th>Caja</th><th>Cliente</th><th>Proveedor</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-mov>
           <tr>
-            <td>{{ mov.fecha | date:'short' }}</td>
+            <td class="det-fecha">{{ mov.fecha | date:'dd/MM/yy HH:mm' }}</td>
             <td>{{ mov.tipo }}</td>
-            <td>{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ mov.cuentaOrigen || '-' }}</td>
-            <td>{{ mov.cuentaDestino || '-' }}</td>
-            <td>{{ mov.caja || '-' }}</td>
-            <td>{{ mov.pagoCliente || '-' }}</td>
-            <td>{{ mov.pagoProveedor || '-' }}</td>
+            <td class="det-num det-monto">{{ mov.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ mov.cuentaOrigen || '—' }}</td>
+            <td>{{ mov.cuentaDestino || '—' }}</td>
+            <td>{{ mov.caja || '—' }}</td>
+            <td>{{ mov.pagoCliente || '—' }}</td>
+            <td>{{ mov.pagoProveedor || '—' }}</td>
           </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="det-vacio">Sin movimientos registrados.</td></tr>
         </ng-template>
       </p-table>
     </p-tabPanel>
 
     <p-tabPanel header="Compras USDT">
-      <p-table [value]="comprasCliente" scrollable="true" scrollHeight="flex"
-        [responsive]="true" styleClass="fill-table" [style]="{ height: '100%' }">
+      <div *ngIf="loadingComprasCliente" class="det-estado">
+        <i class="pi pi-spin pi-spinner"></i> Cargando compras…
+      </div>
+      <div *ngIf="errorCompras && !loadingComprasCliente" class="det-error">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>No se pudieron cargar las compras.</span>
+        <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
+                class="p-button-sm p-button-outlined" (click)="cargarComprasCliente()"></button>
+      </div>
+
+      <p-table *ngIf="!loadingComprasCliente && !errorCompras"
+        [value]="comprasCliente" scrollable="true" scrollHeight="flex"
+        [responsive]="true" styleClass="fill-table det-tabla" [style]="{ height: '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Fecha</th><th>Crypto</th><th>Símbolo</th><th>Tasa</th>
-            <th>COP</th><th>Cuenta</th><th>Id Depósito</th>
+            <th>Fecha</th><th class="det-num">Cripto</th><th>Símbolo</th><th class="det-num">Tasa</th>
+            <th class="det-num">COP</th><th>Cuenta</th><th>Id depósito</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-compra>
           <tr>
-            <td>{{ compra.date | date:'short' }}</td>
-            <td>{{ compra.amount }}</td>
-            <td>{{ compra.cryptoSymbol || '-' }}</td>
-            <td>{{ compra.tasa | number:'1.2-2' }}</td>
-            <td>{{ compra.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ compra.nameAccount || '-' }}</td>
-            <td>{{ compra.idDeposit || '-' }}</td>
+            <td class="det-fecha">{{ compra.date | date:'dd/MM/yy HH:mm' }}</td>
+            <td class="det-num">{{ compra.amount | number:'1.0-4' }}</td>
+            <td><span class="det-chip">{{ compra.cryptoSymbol || 'USDT' }}</span></td>
+            <td class="det-num">{{ compra.tasa | number:'1.0-2' }}</td>
+            <td class="det-num det-monto">{{ compra.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ compra.nameAccount || '—' }}</td>
+            <!-- El hash es larguísimo y desbordaba la tabla: se recorta y se puede copiar. -->
+            <td>
+              <span *ngIf="compra.idDeposit; else sinIdC" class="det-hash"
+                    [title]="compra.idDeposit" (click)="copiarId(compra.idDeposit)">
+                {{ compra.idDeposit | slice:0:10 }}…{{ compra.idDeposit | slice:-6 }}
+                <i class="pi pi-copy"></i>
+              </span>
+              <ng-template #sinIdC>—</ng-template>
+            </td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="7" class="p-text-center">Sin compras asignadas.</td></tr>
+          <tr><td colspan="7" class="det-vacio">Sin compras asignadas.</td></tr>
         </ng-template>
       </p-table>
     </p-tabPanel>
 
     <p-tabPanel header="Ventas USDT">
-      <p-table [value]="ventasCliente" scrollable="true" scrollHeight="400px" [responsive]="true">
+      <div *ngIf="loadingVentasCliente" class="det-estado">
+        <i class="pi pi-spin pi-spinner"></i> Cargando ventas…
+      </div>
+      <div *ngIf="errorVentas && !loadingVentasCliente" class="det-error">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>No se pudieron cargar las ventas.</span>
+        <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
+                class="p-button-sm p-button-outlined" (click)="cargarVentasCliente()"></button>
+      </div>
+
+      <p-table *ngIf="!loadingVentasCliente && !errorVentas"
+        [value]="ventasCliente" scrollable="true" scrollHeight="flex"
+        [responsive]="true" styleClass="fill-table det-tabla" [style]="{ height: '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Fecha</th><th>Crypto</th><th>Símbolo</th><th>Tasa</th>
-            <th>COP</th><th>Cuenta</th><th>Id Retiro</th>
+            <th>Fecha</th><th class="det-num">Cripto</th><th>Símbolo</th><th class="det-num">Tasa</th>
+            <th class="det-num">COP</th><th>Cuenta</th><th>Id retiro</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-venta>
           <tr>
-            <td>{{ venta.date | date:'short' }}</td>
-            <td>{{ venta.dollars }}</td>
-            <td>{{ venta.cryptoSymbol || '-' }}</td>
-            <td>{{ venta.tasa | number:'1.2-2' }}</td>
-            <td>{{ venta.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
-            <td>{{ venta.nameAccount || '-' }}</td>
-            <td>{{ venta.idWithdrawals || '-' }}</td>
+            <td class="det-fecha">{{ venta.date | date:'dd/MM/yy HH:mm' }}</td>
+            <td class="det-num">{{ venta.dollars | number:'1.0-4' }}</td>
+            <td><span class="det-chip">{{ venta.cryptoSymbol || 'USDT' }}</span></td>
+            <td class="det-num">{{ venta.tasa | number:'1.0-2' }}</td>
+            <td class="det-num det-monto">{{ venta.pesos | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td>{{ venta.nameAccount || '—' }}</td>
+            <td>
+              <span *ngIf="venta.idWithdrawals; else sinIdV" class="det-hash"
+                    [title]="venta.idWithdrawals" (click)="copiarId(venta.idWithdrawals)">
+                {{ venta.idWithdrawals | slice:0:10 }}…{{ venta.idWithdrawals | slice:-6 }}
+                <i class="pi pi-copy"></i>
+              </span>
+              <ng-template #sinIdV>—</ng-template>
+            </td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="7" class="p-text-center">Sin ventas asignadas.</td></tr>
+          <tr><td colspan="7" class="det-vacio">Sin ventas asignadas.</td></tr>
         </ng-template>
       </p-table>
     </p-tabPanel>
 
     <p-tabPanel header="Ajustes de saldo">
-      <ng-container *ngIf="!loadingAjustesCliente; else ajustesLoading">
-        <p-table [value]="ajustesCliente" scrollable="true" scrollHeight="400px" [responsive]="true">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Fecha</th><th>Tipo</th><th>Monto</th><th>Motivo</th>
-              <th>Actor</th><th>Saldo anterior</th><th>Saldo nuevo</th><th>Diferencia</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-aj>
-            <tr>
-              <td>{{ aj.fecha | date:'short' }}</td>
-              <td>{{ aj.tipo }}</td>
-              <td>{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.motivo || '-' }}</td>
-              <td>{{ aj.actor || '-' }}</td>
-              <td>{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td [ngClass]="{'cli-green': aj.diferencia > 0, 'cli-red': aj.diferencia < 0}">
-                {{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr><td colspan="8" class="p-text-center">Sin ajustes para este cliente.</td></tr>
-          </ng-template>
-        </p-table>
-      </ng-container>
-      <ng-template #ajustesLoading>
-        <div class="cli-loading">Cargando ajustes...</div>
-      </ng-template>
+      <div *ngIf="loadingAjustesCliente" class="det-estado">
+        <i class="pi pi-spin pi-spinner"></i> Cargando ajustes…
+      </div>
+      <div *ngIf="errorAjustes && !loadingAjustesCliente" class="det-error">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>No se pudieron cargar los ajustes de saldo.</span>
+        <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
+                class="p-button-sm p-button-outlined" (click)="cargarAjustesCliente()"></button>
+      </div>
+
+      <p-table *ngIf="!loadingAjustesCliente && !errorAjustes"
+        [value]="ajustesCliente" scrollable="true" scrollHeight="flex"
+        [responsive]="true" styleClass="fill-table det-tabla" [style]="{ height: '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Fecha</th><th>Tipo</th><th class="det-num">Monto</th><th>Motivo</th>
+            <th>Actor</th><th class="det-num">Saldo anterior</th>
+            <th class="det-num">Saldo nuevo</th><th class="det-num">Diferencia</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-aj>
+          <tr>
+            <td class="det-fecha">{{ aj.fecha | date:'dd/MM/yy HH:mm' }}</td>
+            <td>{{ aj.tipo }}</td>
+            <td class="det-num">{{ aj.monto | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td class="det-motivo" [title]="aj.motivo">{{ aj.motivo || '—' }}</td>
+            <td>{{ aj.actor || '—' }}</td>
+            <td class="det-num">{{ aj.saldoAnterior | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td class="det-num">{{ aj.saldoNuevo | currency:'COP':'symbol':'1.0-0' }}</td>
+            <td class="det-num" [ngClass]="{'cli-green': aj.diferencia > 0, 'cli-red': aj.diferencia < 0}">
+              {{ aj.diferencia > 0 ? '+' : '' }}{{ aj.diferencia | currency:'COP':'symbol':'1.0-0' }}
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="det-vacio">Sin ajustes para este cliente.</td></tr>
+        </ng-template>
+      </p-table>
     </p-tabPanel>
 
   </p-tabView>

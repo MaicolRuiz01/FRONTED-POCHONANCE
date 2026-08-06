@@ -254,3 +254,36 @@
 }
 .op-form input, .op-form :host ::ng-deep .p-dropdown { width: 100%; }
 .op-hint { color: #6b7280; font-size: 0.75rem; margin-top: 0.3rem; }
+
+/* ── Jornada detenida por la vigilancia automática ──
+   Se distingue del verde "Trabajando" para que el administrador vea de un vistazo
+   que ese operador está en jornada pero su tiempo NO está corriendo ni sumando pago. */
+.op-badge-pausado {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.op-badge-pausado .pi { font-size: 0.75rem; }
+
+.op-motivo-pausa {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}

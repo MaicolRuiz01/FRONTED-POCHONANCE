@@ -173,10 +173,16 @@
       <p-checkbox [binary]="true" [ngModel]="seleccionConciliacionActiva(c.id)"
         (click)="$event.stopPropagation()" (onChange)="toggleSeleccionConciliacion(c.id)">
       </p-checkbox>
-      <span class="conciliacion-nombre">{{ c.name }}</span>
-      <span class="conciliacion-p2p" *ngIf="c.activaParaP2P" pTooltip="Activa en P2P ahora mismo">
-        <i class="pi pi-bolt"></i>
-      </span>
+      <div class="conciliacion-texts">
+        <span class="conciliacion-nombre">
+          {{ c.name }}
+          <i class="pi pi-bolt conciliacion-p2p" *ngIf="c.activaParaP2P" pTooltip="Activa en P2P ahora mismo"></i>
+        </span>
+        <span class="conciliacion-badge" [ngClass]="estadoConciliacion(c)?.clase"
+          *ngIf="estadoConciliacion(c) as estado">
+          {{ estado.texto }}
+        </span>
+      </div>
       <span class="conciliacion-saldo">{{ c.balance | currency:'COP':'$':'1.0-0' }}</span>
     </div>
   </div>

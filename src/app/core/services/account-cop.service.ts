@@ -43,6 +43,11 @@ export interface AccountCop {
   montoCorresponsalComprometido?: number;
   /** Desglose de las solicitudes que generan ese monto comprometido. */
   solicitudesComprometidas?: SolicitudComprometidaDto[];
+  /** Resultado de la última conciliación del bot bancario (null si nunca se ha revisado). */
+  disponibleBanco?: boolean | null;
+  ultimaConciliacion?: string | null;
+  ultimoDesfaseBanco?: number | null;
+  ultimoErrorConciliacion?: string | null;
 }
 
 export interface SolicitudComprometidaDto {

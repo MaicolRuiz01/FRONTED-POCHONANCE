@@ -91,6 +91,38 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
     else this.conciliacionSeleccionadas.add(id);
   }
 
+  /** Texto + clase para el badge de última conciliación de una cuenta,
+   *  o null si nunca se ha revisado (no se muestra nada en ese caso). */
+  estadoConciliacion(c: AccountCop): { texto: string; clase: string } | null {
+    if (!c.ultimaConciliacion) return null;
+
+    const hace = this.tiempoRelativo(c.ultimaConciliacion);
+
+    if (c.disponibleBanco === false) {
+      const motivo = c.ultimoErrorConciliacion ? `: ${c.ultimoErrorConciliacion}` : '';
+      return { texto: `${hace} · no disponible${motivo}`, clase: 'conciliacion-badge--error' };
+    }
+    if (c.disponibleBanco === true) {
+      const desfase = c.ultimoDesfaseBanco;
+      if (desfase != null && Math.abs(desfase) >= 1) {
+        return { texto: `${hace} · desfase $${Math.round(desfase).toLocaleString('es-CO')}`, clase: 'conciliacion-badge--warn' };
+      }
+      return { texto: `${hace} · disponible`, clase: 'conciliacion-badge--ok' };
+    }
+    return { texto: hace, clase: '' };
+  }
+
+  private tiempoRelativo(iso: string): string {
+    const ms = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(ms / 60000);
+    if (min < 1) return 'hace instantes';
+    if (min < 60) return `hace ${min} min`;
+    const horas = Math.floor(min / 60);
+    if (horas < 24) return `hace ${horas} h`;
+    const dias = Math.floor(horas / 24);
+    return `hace ${dias} d`;
+  }
+
   /** Manda al bot, una por una, SOLO las cuentas que se marcaron a mano. */
   enviarSolicitudesConciliacion(): void {
     const ids = Array.from(this.conciliacionSeleccionadas);

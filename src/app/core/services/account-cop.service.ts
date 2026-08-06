@@ -175,6 +175,12 @@ export class AccountCopService {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-p2p`, {});
   }
 
+  /** Botón de prueba: le avisa al bot de conciliación que revise esta cuenta YA,
+   *  sin tocar el estado de P2P (solo cuentas Bancolombia). */
+  solicitarConciliacionManual(id: number): Observable<{ ok: boolean; cuenta: string }> {
+    return this.http.post<{ ok: boolean; cuenta: string }>(`${this.apiUrl}/${id}/solicitar-conciliacion`, {});
+  }
+
   /** Bloquea / desbloquea la cuenta COP (bloqueada = no seleccionable en ningún lado). */
   toggleBloqueo(id: number): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-bloqueo`, {});

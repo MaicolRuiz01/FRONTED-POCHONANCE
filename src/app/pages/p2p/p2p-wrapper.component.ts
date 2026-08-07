@@ -9,6 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -35,6 +36,7 @@ import { RetiradorService } from '../../core/services/retirador.service';
     SelectButtonModule,
     DialogModule,
     ConfirmDialogModule,
+    CheckboxModule,
     VentasPendientesComponent,
     VentasAsignadasComponent,
     ComprasP2pComponent,
@@ -55,8 +57,102 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   loadingCuentas = false;
   togglingId: number | null = null;
 
+  // ── Revisión manual con el bot de conciliación (aparte de P2P a propósito:
+  // no queremos que revisar cuentas dependa de cuáles están activas para
+  // vender ahora mismo, ni arriesgarnos a tocar una cuenta en uso). ──
+  showConciliacionModal = false;
+  conciliacionSeleccionadas = new Set<number>();
+  enviandoConciliacion = false;
+
   get cuentasActivasCount(): number {
     return this.cuentasCop.filter(c => c.activaParaP2P).length;
+  }
+
+  /** TODAS las cuentas Bancolombia del sistema, estén o no activas en P2P —
+   *  a propósito independiente de cuentasFiltradas (que solo muestra las de P2P). */
+  get cuentasBancolombia(): AccountCop[] {
+    return this.cuentasCop
+      .filter(c => c.bankType === 'BANCOLOMBIA')
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+  }
+
+  abrirConciliacionModal(): void {
+    this.conciliacionSeleccionadas.clear();
+    this.showConciliacionModal = true;
+  }
+
+  seleccionConciliacionActiva(id: number | undefined): boolean {
+    return id != null && this.conciliacionSeleccionadas.has(id);
+  }
+
+  toggleSeleccionConciliacion(id: number | undefined): void {
+    if (id == null) return;
+    if (this.conciliacionSeleccionadas.has(id)) this.conciliacionSeleccionadas.delete(id);
+    else this.conciliacionSeleccionadas.add(id);
+  }
+
+  /** Texto + clase para el badge de última conciliación de una cuenta,
+   *  o null si nunca se ha revisado (no se muestra nada en ese caso). */
+  estadoConciliacion(c: AccountCop): { texto: string; clase: string } | null {
+    if (!c.ultimaConciliacion) return null;
+
+    const hace = this.tiempoRelativo(c.ultimaConciliacion);
+
+    if (c.disponibleBanco === false) {
+      const motivo = c.ultimoErrorConciliacion ? `: ${c.ultimoErrorConciliacion}` : '';
+      return { texto: `${hace} · no disponible${motivo}`, clase: 'conciliacion-badge--error' };
+    }
+    if (c.disponibleBanco === true) {
+      const desfase = c.ultimoDesfaseBanco;
+      if (desfase != null && Math.abs(desfase) >= 1) {
+        return { texto: `${hace} · desfase $${Math.round(desfase).toLocaleString('es-CO')}`, clase: 'conciliacion-badge--warn' };
+      }
+      return { texto: `${hace} · disponible`, clase: 'conciliacion-badge--ok' };
+    }
+    return { texto: hace, clase: '' };
+  }
+
+  private tiempoRelativo(iso: string): string {
+    const ms = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(ms / 60000);
+    if (min < 1) return 'hace instantes';
+    if (min < 60) return `hace ${min} min`;
+    const horas = Math.floor(min / 60);
+    if (horas < 24) return `hace ${horas} h`;
+    const dias = Math.floor(horas / 24);
+    return `hace ${dias} d`;
+  }
+
+  /** Manda al bot, una por una, SOLO las cuentas que se marcaron a mano. */
+  enviarSolicitudesConciliacion(): void {
+    const ids = Array.from(this.conciliacionSeleccionadas);
+    if (ids.length === 0 || this.enviandoConciliacion) return;
+
+    this.enviandoConciliacion = true;
+    let hechas = 0;
+    let fallidas = 0;
+
+    ids.forEach(id => {
+      this.copService.solicitarConciliacionManual(id)
+        .pipe(finalize(() => {
+          hechas++;
+          if (hechas === ids.length) {
+            this.enviandoConciliacion = false;
+            this.showConciliacionModal = false;
+            this.messageService.add({
+              severity: fallidas === 0 ? 'success' : 'warn',
+              summary: 'Enviado al bot',
+              detail: fallidas === 0
+                ? `${ids.length} cuenta(s) en cola para el bot — debería reaccionar en el próximo ciclo (~1s).`
+                : `${ids.length - fallidas} de ${ids.length} enviadas; ${fallidas} fallaron.`,
+              life: 4000
+            });
+          }
+        }))
+        .subscribe({
+          error: () => { fallidas++; }
+        });
+    });
   }
 
   // ── Filtro por tipo de cupo de retiro (modal Cuentas COP en P2P) ──

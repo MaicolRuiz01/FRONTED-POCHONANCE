@@ -151,6 +151,53 @@
   </div>
 </p-dialog>
 
+<!-- Revisión manual con el bot de conciliación bancaria — a propósito SEPARADO
+     del modal de P2P: acá se listan TODAS las cuentas Bancolombia (estén o no
+     activas en P2P) y tú marcas a mano exactamente cuáles quieres que el bot
+     revise ahora, para no arriesgarte a mandarlo a cuentas que están en uso. -->
+<p-dialog header="Revisar cuentas con el bot (Bancolombia)"
+  [(visible)]="showConciliacionModal" [modal]="true"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  [draggable]="false" [resizable]="false">
+
+  <p class="text-sm text-color-secondary mb-3">
+    Marca las cuentas que quieres que el bot revise ahora. No afecta su estado en P2P.
+  </p>
+
+  <div *ngIf="cuentasBancolombia.length === 0" class="text-center text-color-secondary py-3">
+    No hay cuentas Bancolombia registradas.
+  </div>
+
+  <div class="conciliacion-lista" *ngIf="cuentasBancolombia.length > 0">
+    <div class="conciliacion-fila" *ngFor="let c of cuentasBancolombia" (click)="toggleSeleccionConciliacion(c.id)">
+      <p-checkbox [binary]="true" [ngModel]="seleccionConciliacionActiva(c.id)"
+        (click)="$event.stopPropagation()" (onChange)="toggleSeleccionConciliacion(c.id)">
+      </p-checkbox>
+      <div class="conciliacion-texts">
+        <span class="conciliacion-nombre">
+          {{ c.name }}
+          <i class="pi pi-bolt conciliacion-p2p" *ngIf="c.activaParaP2P" pTooltip="Activa en P2P ahora mismo"></i>
+        </span>
+        <span class="conciliacion-badge" [ngClass]="estadoConciliacion(c)?.clase"
+          *ngIf="estadoConciliacion(c) as estado">
+          {{ estado.texto }}
+        </span>
+      </div>
+      <span class="conciliacion-saldo">{{ c.balance | currency:'COP':'$':'1.0-0' }}</span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
+      (click)="showConciliacionModal = false"></button>
+    <button pButton label="Solicitar revisión" icon="pi pi-search"
+      [disabled]="conciliacionSeleccionadas.size === 0"
+      [loading]="enviandoConciliacion"
+      (click)="enviarSolicitudesConciliacion()">
+    </button>
+  </ng-template>
+</p-dialog>
+
 <div class="grid">
   <div class="col-12">
 
@@ -208,6 +255,19 @@
         <h3 class="m-0">Ventas en curso</h3>
       </div>
       <app-ventas-en-curso></app-ventas-en-curso>
+    </div>
+
+    <!-- Botón discreto al final de la página: revisar cuentas Bancolombia con el
+         bot de conciliación, a propósito SEPARADO del panel de cuentas P2P para
+         no arriesgarse a mandar el bot a cuentas que ya están en uso. -->
+    <div class="flex justify-content-end mt-2">
+      <button pButton
+        icon="pi pi-search"
+        class="p-button-rounded p-button-text p-button-sm conciliacion-lupa-btn"
+        (click)="abrirConciliacionModal()"
+        pTooltip="Revisar cuentas Bancolombia con el bot"
+        tooltipPosition="left">
+      </button>
     </div>
   </div>
 </div>

@@ -47,6 +47,11 @@ export interface AccountCop {
   montoCorresponsalComprometido?: number;
   /** Desglose de las solicitudes que generan ese monto comprometido. */
   solicitudesComprometidas?: SolicitudComprometidaDto[];
+  /** Resultado de la última conciliación del bot bancario (null si nunca se ha revisado). */
+  disponibleBanco?: boolean | null;
+  ultimaConciliacion?: string | null;
+  ultimoDesfaseBanco?: number | null;
+  ultimoErrorConciliacion?: string | null;
 }
 
 export interface SolicitudComprometidaDto {
@@ -178,6 +183,12 @@ export class AccountCopService {
 
   toggleActivaParaP2P(id: number): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-p2p`, {});
+  }
+
+  /** Botón de prueba: le avisa al bot de conciliación que revise esta cuenta YA,
+   *  sin tocar el estado de P2P (solo cuentas Bancolombia). */
+  solicitarConciliacionManual(id: number): Observable<{ ok: boolean; cuenta: string }> {
+    return this.http.post<{ ok: boolean; cuenta: string }>(`${this.apiUrl}/${id}/solicitar-conciliacion`, {});
   }
 
   /** Bloquea / desbloquea la cuenta COP (bloqueada = no seleccionable en ningún lado). */

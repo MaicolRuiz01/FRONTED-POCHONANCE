@@ -52,7 +52,13 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   /** Poll rápido de respaldo: mantiene saldo, cupo y TOTAL al día aunque el SSE se caiga. */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
   private readonly SALDOS_POLL_MS = 5000;
-  newAccount: any = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
+  newAccount: any = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '', tipoCuenta: 'AHORROS' };
+
+  /** Opciones de tipo de cuenta bancaria (va en los datos que se le pasan al cliente). */
+  tiposCuenta = [
+    { label: 'Ahorros', value: 'AHORROS' },
+    { label: 'Corriente', value: 'CORRIENTE' }
+  ];
   displayDialog: boolean = false;
 
   // ── Flags anti doble-submit ──
@@ -349,7 +355,7 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     this.accountService.create(this.newAccount).subscribe({
       next: () => {
         this.displayDialog = false;
-        this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
+        this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '', tipoCuenta: 'AHORROS' };
         this.submittingCreate = false;
         // Refresca lista + caché desde el servidor (así la cuenta nueva aparece seguro).
         this.loadCuentas();
@@ -365,7 +371,7 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
   }
 
   showCreateDialog() {
-    this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '' };
+    this.newAccount = { name: '', balance: 0, bankType: null, numeroCuenta: '', cedula: '', tipoCuenta: 'AHORROS' };
     this.displayDialog = true;
   }
 
@@ -699,10 +705,17 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Texto legible del tipo de cuenta. Las cuentas creadas antes de que existiera el campo
+   *  no lo traen: se muestran como Ahorros, que es el valor por defecto con el que quedaron. */
+  tipoCuentaLabel(account: AccountCop): string {
+    return account.tipoCuenta === 'CORRIENTE' ? 'Corriente' : 'Ahorros';
+  }
+
   private buildAccountClipboardText(account: AccountCop): string {
     const lines = [
       `${account.name ?? ''}`,
       `${account.bankType ?? ''}`,
+      `Tipo: ${this.tipoCuentaLabel(account)}`,
       `Cuenta: ${account.numeroCuenta ?? ''}`,
       `Cédula: ${account.cedula ?? ''}`
     ];

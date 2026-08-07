@@ -54,6 +54,15 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
 
+  /** Momento de la última respuesta CONFIRMADA por Binance. null = todavía no hubo ninguna. */
+  private ultimaCargaOkMs: number | null = null;
+  /** La última consulta falló. */
+  errorCarga = false;
+  /** Segundos desde la última confirmación (se refresca en el tick de 1s). */
+  segundosDesdeConfirmacion = 0;
+  /** A partir de acá la lista se considera NO confiable y se avisa en pantalla. */
+  private readonly MAX_SEG_SIN_CONFIRMAR = 60;
+
   anuncios: AnuncioDto[] = [];
   loadingAnuncios = false;
   ultimaActualizacionAnuncios: string | null = null;
@@ -182,6 +191,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.countdown = this.REFRESH_INTERVAL;
     this.countdownTimer = setInterval(() => {
       this.countdown--;
+      // Antigüedad de la lista: si lleva mucho sin confirmarse, la vista lo avisa.
+      if (this.ultimaCargaOkMs != null) {
+        this.segundosDesdeConfirmacion = Math.floor((Date.now() - this.ultimaCargaOkMs) / 1000);
+      }
       // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
       // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
       this.recomputarSaldos();
@@ -208,6 +221,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => { this.loading = false; this.refreshing = false; }))
       .subscribe({
         next: data => {
+          // Respuesta confirmada por Binance: a partir de acá la lista es de fiar.
+          this.ultimaCargaOkMs = Date.now();
+          this.errorCarga = false;
+          this.segundosDesdeConfirmacion = 0;
+
           // ── Detectar órdenes marcadas "ya cayó" (RECIBIDO) que YA salieron de la lista de
           //    activas: significa que la venta se completó y el backend ya acreditó su COP en el
           //    saldo real. Para que el VERDE no baje ni un segundo (el monto pasa de "recibido en
@@ -283,8 +301,30 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
           // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
           this.recomputarVistaCop();
         },
-        error: () => this.notification.error('No se pudo cargar las órdenes activas.')
+        // OJO: al fallar NO se vacía la lista a propósito (un corte de un segundo no debe
+        // borrar órdenes reales que el operador está gestionando), pero SÍ se marca como no
+        // confirmada. Sin esta marca, un fallo sostenido dejaba en pantalla órdenes que ya no
+        // existían en Binance y el operador podía pre-asignarles plata que nunca iba a llegar.
+        error: () => {
+          this.errorCarga = true;
+          this.notification.error('No se pudo confirmar las órdenes con Binance.');
+        }
       });
+  }
+
+  /** True si la lista lleva demasiado tiempo sin confirmarse contra Binance. */
+  get listaNoConfirmada(): boolean {
+    if (this.ultimaCargaOkMs == null) return this.errorCarga;
+    return this.errorCarga && this.segundosDesdeConfirmacion >= this.MAX_SEG_SIN_CONFIRMAR;
+  }
+
+  /** Texto legible de hace cuánto se confirmó la lista por última vez. */
+  get desdeUltimaConfirmacion(): string {
+    if (this.ultimaCargaOkMs == null) return 'nunca';
+    const s = this.segundosDesdeConfirmacion;
+    if (s < 60) return `hace ${s} s`;
+    const m = Math.floor(s / 60);
+    return m < 60 ? `hace ${m} min` : `hace ${Math.floor(m / 60)} h`;
   }
 
   loadCuentasCop(): void {
@@ -424,11 +464,18 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     return m[bank] ?? '#6b7280';
   }
 
-  /** Copia al portapapeles los datos de la cuenta COP: nombre, banco, cédula y número de cuenta. */
+  /** Texto legible del tipo de cuenta. Las cuentas viejas no lo tienen: se asume Ahorros,
+   *  que es el default con el que quedaron al agregar el campo. */
+  tipoCuentaLabel(c: AccountCop): string {
+    return c.tipoCuenta === 'CORRIENTE' ? 'Corriente' : 'Ahorros';
+  }
+
+  /** Copia al portapapeles los datos de la cuenta COP: nombre, banco, tipo, cédula y número. */
   copiarCuenta(c: AccountCop): void {
     const lineas = [
       `Nombre: ${c.name || '—'}`,
       `Banco: ${c.bankType || '—'}`,
+      `Tipo de cuenta: ${this.tipoCuentaLabel(c)}`,
       `Cédula: ${c.cedula || '—'}`,
       `Número de cuenta: ${c.numeroCuenta || '—'}`,
     ];

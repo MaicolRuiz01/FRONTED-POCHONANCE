@@ -6,6 +6,8 @@ import { SaleP2PDto } from './sale-p2p.service';
 
 export type BankTypeCop = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
 export type CupoTipoP2P = 'CAJERO' | 'CORRESPONSAL' | 'AMBOS';
+/** Tipo de cuenta bancaria — hace falta al pasarle los datos al cliente para consignar. */
+export type TipoCuentaCop = 'AHORROS' | 'CORRIENTE';
 
 export interface BrebeKey {
   id?: number;
@@ -31,6 +33,8 @@ export interface AccountCop {
   cupoCorresponsalDisponibleHoy?: number;
   numeroCuenta?: string;
   cedula?: string;
+  /** AHORROS (default) o CORRIENTE. */
+  tipoCuenta?: TipoCuentaCop;
   activaParaP2P?: boolean;
   bloqueada?: boolean;
   cupoTipoP2P?: CupoTipoP2P;
@@ -78,6 +82,7 @@ export interface AccountCopCreate {
   bankType: BankTypeCop;
   numeroCuenta?: string;
   cedula?: string;
+  tipoCuenta?: TipoCuentaCop;
 }
 
 export interface CompraP2PCuenta {

@@ -168,6 +168,23 @@
        SECCIÓN 2 — ÓRDENES EN CURSO
   ══════════════════════════════════════════ -->
 
+  <!-- ══════════════════════════════════════════
+       AVISO: la lista no se pudo confirmar con Binance.
+       Es importante que se vea: sin esto, un fallo sostenido dejaba órdenes
+       fantasma en pantalla y el operador podía asignarles plata que nunca iba a llegar.
+  ══════════════════════════════════════════ -->
+  <div *ngIf="listaNoConfirmada && ordenes.length > 0" class="vc-stale">
+    <i class="pi pi-exclamation-triangle"></i>
+    <div class="vc-stale-txt">
+      <b>Esta lista no está confirmada con Binance.</b>
+      Última confirmación {{ desdeUltimaConfirmacion }}. Puede que estas órdenes ya no existan
+      — no las asignes hasta que vuelva a actualizarse.
+    </div>
+    <button pButton type="button" icon="pi pi-refresh" label="Reintentar"
+            class="p-button-sm p-button-warning"
+            (click)="loadOrdenes(); resetCountdown()" [loading]="refreshing"></button>
+  </div>
+
   <!-- Vacío órdenes -->
   <div *ngIf="!loading && ordenes.length === 0" class="vc-empty">
     <i class="pi pi-check-circle vc-empty-icon"></i>

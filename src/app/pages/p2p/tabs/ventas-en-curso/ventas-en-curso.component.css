@@ -475,3 +475,31 @@
   gap: 12px; flex-wrap: wrap;
 }
 .vc-estado-btns { display: flex; gap: 6px; }
+
+/* ── Aviso de lista sin confirmar contra Binance ──
+   Deliberadamente llamativo: mientras esté visible, las órdenes de la tabla pueden ser
+   fantasma (quedaron de una carga anterior porque la consulta a Binance está fallando). */
+.vc-stale {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 14px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.vc-stale > .pi-exclamation-triangle {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.vc-stale-txt {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.79rem;
+  line-height: 1.45;
+}

@@ -70,6 +70,13 @@
       <div class="cop-header-inner">
         <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
         <span class="cop-card-name">{{ account.name }}</span>
+        <!-- Tipo de cuenta: se muestra acá porque es dato que el operador le pasa al cliente
+             para consignar; si se equivoca de tipo, la transferencia rebota. -->
+        <span class="cop-card-tipo"
+              [class.cop-card-tipo--corriente]="account.tipoCuenta === 'CORRIENTE'"
+              pTooltip="Tipo de cuenta bancaria" tooltipPosition="top">
+          {{ tipoCuentaLabel(account) }}
+        </span>
         <!-- ID de la cuenta, en la esquina del card. Va como último item del flex (no absoluto)
              para que nunca se monte encima del nombre cuando este es largo. -->
         <span class="cop-card-id" *ngIf="account.id != null"
@@ -229,6 +236,13 @@
       <label>Tipo de banco</label>
       <p-dropdown [options]="bankTypes" [(ngModel)]="newAccount.bankType" optionLabel="label" optionValue="value"
         placeholder="Seleccione" [appendTo]="'body'">
+      </p-dropdown>
+    </div>
+
+    <div class="p-col-12">
+      <label>Tipo de cuenta</label>
+      <p-dropdown [options]="tiposCuenta" [(ngModel)]="newAccount.tipoCuenta"
+        optionLabel="label" optionValue="value" [appendTo]="'body'">
       </p-dropdown>
     </div>
 

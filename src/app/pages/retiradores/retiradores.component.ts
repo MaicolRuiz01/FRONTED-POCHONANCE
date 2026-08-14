@@ -115,6 +115,19 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
   ranking: RankingRetirador[] = [];
   loadingRanking = false;
 
+  // ── Ventana de deshacer para Confirmar/Cancelar solicitud ──
+  // Evita que un clic apurado (o el clic equivocado entre Confirmar/Cancelar
+  // cuando se procesan varias solicitudes seguidas rápido) quede en firme al
+  // instante: la acción real contra el backend se demora unos segundos, y
+  // durante ese tiempo se puede deshacer sin que se haya tocado nada.
+  private readonly UNDO_SEGUNDOS = 5;
+  pendingAcciones = new Map<number, {
+    tipo: 'confirmar' | 'cancelar';
+    segundosRestantes: number;
+    intervalId: ReturnType<typeof setInterval>;
+    timeoutId: ReturnType<typeof setTimeout>;
+  }>();
+
   fuenteOptions = [
     { label: 'Cuenta COP', value: 'COP' as FuentePago },
     { label: 'Caja / Efectivo', value: 'CAJA' as FuentePago },
@@ -165,6 +178,8 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();
     this.sinAsignarPollSub?.unsubscribe();
+    this.pendingAcciones.forEach(p => { clearTimeout(p.timeoutId); clearInterval(p.intervalId); });
+    this.pendingAcciones.clear();
   }
 
   /** Refresco liviano de saldo Y cupo diario al recibir el evento SSE.
@@ -746,18 +761,92 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
       acceptLabel: 'Sí, confirmar',
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-success',
-      accept: () => {
-        this.retiradorSvc.confirmarSolicitud(s.id).subscribe({
-          next: updated => {
-            const idx = this.historial.findIndex(x => x.id === updated.id);
-            if (idx > -1) this.historial[idx] = updated;
-            this.loadAll();
-            this.msgSvc.add({ severity: 'success', summary: 'Retiro confirmado', detail: 'El dinero fue descontado de las cuentas.', life: 3000 });
-          },
-          error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo confirmar.' })
-        });
-      }
+      accept: () => this.iniciarAccionConDeshacer(s, 'confirmar')
     });
+  }
+
+  /**
+   * Arranca la cuenta regresiva de deshacer para Confirmar/Cancelar. La
+   * llamada real al backend (confirmarSolicitud/cancelarSolicitud) solo pasa
+   * si nadie le da "Deshacer" dentro de UNDO_SEGUNDOS — pensado para el caso
+   * de procesar muchas solicitudes seguidas rápido y tocar el botón
+   * equivocado por error.
+   */
+  private iniciarAccionConDeshacer(s: SolicitudRetiro, tipo: 'confirmar' | 'cancelar'): void {
+    if (this.pendingAcciones.has(s.id)) return; // ya hay una acción pendiente para esta solicitud
+
+    const pending = {
+      tipo,
+      segundosRestantes: this.UNDO_SEGUNDOS,
+      intervalId: undefined as any,
+      timeoutId: undefined as any,
+    };
+    this.pendingAcciones.set(s.id, pending);
+
+    pending.intervalId = setInterval(() => {
+      pending.segundosRestantes--;
+      if (pending.segundosRestantes <= 0) {
+        clearInterval(pending.intervalId);
+      }
+    }, 1000);
+
+    pending.timeoutId = setTimeout(() => {
+      this.pendingAcciones.delete(s.id);
+      this.ejecutarAccion(s, tipo);
+    }, this.UNDO_SEGUNDOS * 1000);
+  }
+
+  /** Cancela la cuenta regresiva: no se llama al backend, la solicitud queda tal cual estaba. */
+  deshacerAccion(s: SolicitudRetiro): void {
+    const pending = this.pendingAcciones.get(s.id);
+    if (!pending) return;
+    clearTimeout(pending.timeoutId);
+    clearInterval(pending.intervalId);
+    this.pendingAcciones.delete(s.id);
+    this.msgSvc.add({
+      severity: 'info',
+      summary: 'Deshecho',
+      detail: `No se ${pending.tipo === 'confirmar' ? 'confirmó' : 'canceló'} la solicitud #${s.id}.`,
+      life: 2500
+    });
+  }
+
+  /** Tipo de acción pendiente de deshacer para esta solicitud, o null si no hay ninguna en curso. */
+  pendingTipo(s: SolicitudRetiro): 'confirmar' | 'cancelar' | null {
+    return this.pendingAcciones.get(s.id)?.tipo ?? null;
+  }
+
+  /** Segundos restantes de la cuenta regresiva, para mostrarlos en el botón "Deshacer". */
+  pendingSegundos(s: SolicitudRetiro): number {
+    return this.pendingAcciones.get(s.id)?.segundosRestantes ?? 0;
+  }
+
+  private ejecutarAccion(s: SolicitudRetiro, tipo: 'confirmar' | 'cancelar'): void {
+    if (tipo === 'confirmar') {
+      this.retiradorSvc.confirmarSolicitud(s.id).subscribe({
+        next: updated => {
+          const idx = this.historial.findIndex(x => x.id === updated.id);
+          if (idx > -1) this.historial[idx] = updated;
+          this.loadAll();
+          this.msgSvc.add({ severity: 'success', summary: 'Retiro confirmado', detail: 'El dinero fue descontado de las cuentas.', life: 3000 });
+        },
+        error: () => this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo confirmar.' })
+      });
+    } else {
+      this.retiradorSvc.cancelarSolicitud(s.id).subscribe({
+        next: (res) => {
+          const idxHist = this.historial.findIndex(x => x.id === res.id);
+          if (idxHist > -1) this.historial[idxHist] = res;
+          this.solicitudesSinAsignar = this.solicitudesSinAsignar.filter(x => x.id !== res.id);
+          this.loadAll();
+          this.msgSvc.add({ severity: 'success', summary: 'Solicitud cancelada', detail: 'No se movió ningún saldo.', life: 3000 });
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'No se pudo cancelar la solicitud.';
+          this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
+        }
+      });
+    }
   }
 
   /** Reintenta notificar por Telegram una solicitud PENDIENTE (ej: el retirador ya le dio /start al bot). */
@@ -792,21 +881,7 @@ export class RetiradoresComponent implements OnInit, OnDestroy {
       acceptLabel: 'Sí, cancelar',
       rejectLabel: 'Volver',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.retiradorSvc.cancelarSolicitud(s.id).subscribe({
-          next: (res) => {
-            const idxHist = this.historial.findIndex(x => x.id === res.id);
-            if (idxHist > -1) this.historial[idxHist] = res;
-            this.solicitudesSinAsignar = this.solicitudesSinAsignar.filter(x => x.id !== res.id);
-            this.loadAll();
-            this.msgSvc.add({ severity: 'success', summary: 'Solicitud cancelada', detail: 'No se movió ningún saldo.', life: 3000 });
-          },
-          error: (err) => {
-            const msg = err?.error?.message ?? 'No se pudo cancelar la solicitud.';
-            this.msgSvc.add({ severity: 'error', summary: 'Error', detail: msg });
-          }
-        });
-      }
+      accept: () => this.iniciarAccionConDeshacer(s, 'cancelar')
     });
   }
 

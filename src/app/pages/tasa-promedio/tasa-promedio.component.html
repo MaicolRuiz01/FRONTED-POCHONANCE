@@ -1,0 +1,199 @@
+<div class="card">
+
+  <!-- Encabezado -->
+  <div class="tp-head">
+    <div>
+      <h3 class="tp-title">Diagnóstico de la tasa promedio</h3>
+      <p class="tp-sub">
+        Cada fila es un recálculo provocado por una compra asignada. Muestra con qué números
+        se hizo, para poder ver en qué compra se desvía la tasa. Es solo lectura.
+      </p>
+    </div>
+    <button pButton type="button" icon="pi pi-refresh" label="Actualizar"
+            class="p-button-sm" (click)="cargar()" [loading]="loading"></button>
+  </div>
+
+  <!-- Resumen de señales de alerta -->
+  <div class="tp-resumen" *ngIf="!loading && filas.length > 0">
+    <div class="tp-señal" [class.tp-señal--mal]="conBaseRecortada > 0">
+      <i class="pi" [ngClass]="conBaseRecortada > 0 ? 'pi-exclamation-triangle' : 'pi-check-circle'"></i>
+      <div>
+        <b>{{ conBaseRecortada }}</b> con base perdida
+        <small>El saldo era menor que la compra, así que la tasa quedó igual a la de esa compra.</small>
+      </div>
+    </div>
+    <div class="tp-señal" [class.tp-señal--mal]="conErrorAritmetico > 0">
+      <i class="pi" [ngClass]="conErrorAritmetico > 0 ? 'pi-times-circle' : 'pi-check-circle'"></i>
+      <div>
+        <b>{{ conErrorAritmetico }}</b> con la cuenta mal
+        <small>La división no da la tasa guardada. Si es 0, la fórmula está bien aplicada.</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estados -->
+  <div *ngIf="loading" class="tp-estado">
+    <p-progressSpinner strokeWidth="4" styleClass="tp-spinner"></p-progressSpinner>
+    <span>Cargando diagnóstico…</span>
+  </div>
+
+  <div *ngIf="error && !loading" class="tp-error">
+    <i class="pi pi-exclamation-triangle"></i>
+    <span>No se pudo cargar el diagnóstico.</span>
+    <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
+            class="p-button-sm p-button-outlined" (click)="cargar()"></button>
+  </div>
+
+  <div *ngIf="!loading && !error && filas.length === 0" class="tp-vacio">
+    <i class="pi pi-inbox"></i>
+    <span>Todavía no hay registros. Aparecen a medida que se asignan compras de USDT.</span>
+  </div>
+
+  <!-- Tabla -->
+  <p-table *ngIf="!loading && !error && filas.length > 0"
+           [value]="filas" dataKey="id" [rowHover]="true"
+           responsiveLayout="scroll" styleClass="p-datatable-sm tp-tabla">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Evento</th>
+        <th class="tp-num">Compra USDT</th>
+        <th class="tp-num">Tasa compra</th>
+        <th class="tp-num">Saldo leído</th>
+        <th class="tp-num">Base usada</th>
+        <th class="tp-num">Tasa antes</th>
+        <th class="tp-num">Tasa después</th>
+        <th class="tp-num">Variación</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-f let-i="rowIndex">
+      <tr [class.tp-row-alerta]="f.baseRecortadaACero || cuadra(f) === false">
+        <td class="tp-fecha">{{ f.fecha | date:'dd/MM/yy HH:mm:ss' }}</td>
+        <td>
+          <p-tag [value]="eventoLabel(f.evento)" [severity]="eventoSeverity(f.evento)"></p-tag>
+        </td>
+        <td class="tp-num">{{ f.compraUsdt | number:'1.0-4' }}</td>
+        <td class="tp-num">{{ f.compraTasa | number:'1.0-2' }}</td>
+
+        <!-- Saldo leído de Binance: el sospechoso principal -->
+        <td class="tp-num">
+          {{ f.saldoExternoLeido | number:'1.0-2' }}
+          <span *ngIf="derivaSaldo(f, i) as d" class="tp-deriva"
+                [class.tp-deriva--alta]="d > 1 || d < -1"
+                pTooltip="Cuánto se movió el saldo leído respecto al recálculo anterior. Si no es cero, el inventario cambió solo."
+                tooltipPosition="top">
+            {{ d > 0 ? '+' : '' }}{{ d | number:'1.0-2' }}
+          </span>
+        </td>
+
+        <td class="tp-num">
+          {{ f.saldoBaseUsdt | number:'1.0-2' }}
+          <i *ngIf="f.baseRecortadaACero" class="pi pi-exclamation-triangle tp-ico-alerta"
+             pTooltip="La base se perdió: el saldo era menor que la compra. La tasa quedó igual a la de esta compra."
+             tooltipPosition="top"></i>
+        </td>
+
+        <td class="tp-num">{{ f.tasaAnterior | number:'1.0-2' }}</td>
+        <td class="tp-num tp-fuerte">{{ f.tasaResultante | number:'1.0-2' }}</td>
+
+        <td class="tp-num">
+          <span *ngIf="variacion(f) as v"
+                [ngClass]="{ 'tp-sube': v > 0, 'tp-baja': v < 0 }">
+            {{ v > 0 ? '+' : '' }}{{ v | number:'1.0-2' }}
+          </span>
+        </td>
+
+        <td class="tp-acciones">
+          <i *ngIf="cuadra(f) === false" class="pi pi-times-circle tp-ico-error"
+             pTooltip="La división no da la tasa guardada" tooltipPosition="left"></i>
+          <button pButton type="button"
+                  [icon]="expandidaId === f.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                  class="p-button-text p-button-sm"
+                  pTooltip="Ver la cuenta completa" tooltipPosition="left"
+                  (click)="toggleDetalle(f)"></button>
+        </td>
+      </tr>
+
+      <!-- Detalle: la cuenta desarmada paso a paso -->
+      <tr *ngIf="expandidaId === f.id" class="tp-detalle-row">
+        <td colspan="10">
+          <div class="tp-detalle">
+
+            <div class="tp-bloque">
+              <h4>Cómo se armó la base</h4>
+              <div class="tp-linea">
+                <span>Saldo leído de Binance (todo el portafolio)</span>
+                <b>{{ f.saldoExternoLeido | number:'1.0-2' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>− Esta compra</span>
+                <b>{{ f.compraUsdt | number:'1.0-4' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>− Otras compras sin asignar</span>
+                <b>{{ f.otrosPendientesUsdt | number:'1.0-4' }}</b>
+              </div>
+              <div class="tp-linea tp-linea--total">
+                <span>= Base usada</span>
+                <b>{{ f.saldoBaseUsdt | number:'1.0-2' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>Valorada a</span>
+                <b>{{ f.tasaBase | number:'1.0-2' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>= Pesos de la base</span>
+                <b>{{ f.pesosBase | number:'1.0-0' }}</b>
+              </div>
+            </div>
+
+            <div class="tp-bloque">
+              <h4>La división final</h4>
+              <div class="tp-linea">
+                <span>USDT acumulados de compras</span>
+                <b>{{ f.usdtAcumSesion | number:'1.0-4' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>Pesos acumulados de compras</span>
+                <b>{{ f.pesosAcumSesion | number:'1.0-0' }}</b>
+              </div>
+              <div class="tp-linea tp-linea--total">
+                <span>Total pesos ÷ Total USDT</span>
+                <b>{{ f.totalPesos | number:'1.0-0' }} ÷ {{ f.totalUsdt | number:'1.0-2' }}</b>
+              </div>
+              <div class="tp-linea tp-linea--total">
+                <span>= Tasa resultante</span>
+                <b>{{ f.tasaResultante | number:'1.0-2' }}</b>
+              </div>
+              <div class="tp-veredicto" [class.tp-veredicto--mal]="cuadra(f) === false">
+                <i class="pi" [ngClass]="cuadra(f) === false ? 'pi-times-circle' : 'pi-check-circle'"></i>
+                {{ cuadra(f) === false
+                    ? 'La cuenta NO cierra: la fórmula no coincide con lo guardado.'
+                    : 'La cuenta cierra. Si el número igual está mal, el problema está en la base.' }}
+              </div>
+            </div>
+
+            <div class="tp-bloque">
+              <h4>Referencias</h4>
+              <div class="tp-linea"><span>Compra</span><b>#{{ f.buyDollarsId ?? '—' }}</b></div>
+              <div class="tp-linea"><span>Fila de tasa</span><b>#{{ f.averageRateId ?? '—' }}</b></div>
+              <div class="tp-linea">
+                <span>Sesión</span>
+                <b>{{ f.sesionAbierta ? 'Quedó abierta' : 'Se cerró' }}</b>
+              </div>
+              <div class="tp-linea">
+                <span>Día contable</span>
+                <b>{{ (f.inicioDia | date:'dd/MM/yy') || '—' }}</b>
+              </div>
+            </div>
+
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>

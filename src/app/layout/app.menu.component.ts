@@ -64,6 +64,11 @@ export class AppMenuComponent implements OnInit {
                 label: 'OPERADORES', icon: 'pi pi-fw pi-users',
                 routerLink: ['/operadores']
             },
+            {
+                // Diagnóstico de la tasa promedio: para revisar en qué compra se desvía.
+                label: 'TASA PROMEDIO', icon: 'pi pi-fw pi-chart-line',
+                routerLink: ['/tasa-promedio']
+            },
         ];
 
         this.model = [

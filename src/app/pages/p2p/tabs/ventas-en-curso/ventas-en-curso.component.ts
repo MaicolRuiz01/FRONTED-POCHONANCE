@@ -8,6 +8,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
+import { TabViewModule } from 'primeng/tabview';
 import { Subscription } from 'rxjs';
 import { finalize, debounceTime } from 'rxjs/operators';
 import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
@@ -23,7 +24,8 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableModule, ButtonModule,
-    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule
+    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule,
+    TabViewModule
   ],
   templateUrl: './ventas-en-curso.component.html',
   styleUrls: ['./ventas-en-curso.component.css']
@@ -31,6 +33,16 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
 export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   ordenes: ActiveP2POrder[] = [];
+
+  /** Órdenes partidas por estado. La pestaña principal muestra solo las que están EN CURSO
+   *  (el caso habitual); el resto —pago recibido, pendientes y apeladas— va en la otra, para
+   *  que el operador no tenga que buscarlas entre decenas de filas.
+   *  Se cachean en vez de calcularse con getters porque la vista se repinta cada segundo. */
+  ordenesEnCurso: ActiveP2POrder[] = [];
+  ordenesOtras: ActiveP2POrder[] = [];
+
+  /** Estado que se considera "en curso" para la partición. */
+  private readonly ESTADO_EN_CURSO = 'TRADING';
   cuentasCop: AccountCop[]  = [];
   /** Cuentas activas para P2P — cacheado (NO getter) para no recalcular en cada ciclo de CD. */
   cuentasActivasP2P: AccountCop[] = [];
@@ -298,6 +310,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             }
           }
 
+          this.particionarOrdenes();
           // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
           this.recomputarVistaCop();
         },
@@ -310,6 +323,18 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
           this.notification.error('No se pudo confirmar las órdenes con Binance.');
         }
       });
+  }
+
+  /** Separa las órdenes en las dos pestañas. Se llama cada vez que llega una lista nueva. */
+  private particionarOrdenes(): void {
+    const enCurso: ActiveP2POrder[] = [];
+    const otras: ActiveP2POrder[] = [];
+    for (const o of this.ordenes) {
+      if ((o.status || '').toUpperCase() === this.ESTADO_EN_CURSO) enCurso.push(o);
+      else otras.push(o);
+    }
+    this.ordenesEnCurso = enCurso;
+    this.ordenesOtras = otras;
   }
 
   /** True si la lista lleva demasiado tiempo sin confirmarse contra Binance. */

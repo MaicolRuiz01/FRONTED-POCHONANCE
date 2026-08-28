@@ -199,9 +199,49 @@
     Por ahora se muestran todas.
   </div>
 
-  <!-- Tabla órdenes — usa [loading] nativo para NO destruir el componente en cada refresh -->
-  <p-table *ngIf="ordenes.length > 0 || loading"
-           [value]="ordenes"
+  <!-- ══════════════════════════════════════════
+       Dos pestañas: "En curso" (el caso habitual, se abre por defecto) y el resto
+       de estados. Ambas usan la MISMA plantilla de tabla (tablaOrdenes, abajo) en vez de
+       duplicarla, para que cualquier cambio futuro aplique a las dos sí o sí.
+  ══════════════════════════════════════════ -->
+  <p-tabView *ngIf="ordenes.length > 0 || loading" styleClass="vc-tabs">
+
+    <p-tabPanel>
+      <ng-template pTemplate="header">
+        <i class="pi pi-sync"></i>
+        <span class="vc-tab-label">En curso</span>
+        <span class="vc-tab-badge">{{ ordenesEnCurso.length }}</span>
+      </ng-template>
+      <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
+        $implicit: ordenesEnCurso,
+        vacio: 'No hay ventas en curso en este momento.'
+      }"></ng-container>
+    </p-tabPanel>
+
+    <p-tabPanel>
+      <ng-template pTemplate="header">
+        <i class="pi pi-flag"></i>
+        <span class="vc-tab-label">Otros estados</span>
+        <span class="vc-tab-badge" [class.vc-tab-badge--alerta]="ordenesOtras.length > 0">
+          {{ ordenesOtras.length }}
+        </span>
+      </ng-template>
+      <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
+        $implicit: ordenesOtras,
+        vacio: 'No hay ventas en otros estados (pago recibido, pendientes o apeladas).'
+      }"></ng-container>
+    </p-tabPanel>
+
+  </p-tabView>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     PLANTILLA COMPARTIDA DE LA TABLA DE ÓRDENES
+     Recibe la lista a mostrar y el texto de "sin resultados".
+══════════════════════════════════════════ -->
+<ng-template #tablaOrdenes let-lista let-vacio="vacio">
+  <p-table [value]="lista"
            dataKey="orderNumber"
            [loading]="loading"
            [rowHover]="true"
@@ -300,9 +340,14 @@
 
     </ng-template>
 
-  </p-table>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="vc-tab-vacio">{{ vacio }}</td>
+      </tr>
+    </ng-template>
 
-</div>
+  </p-table>
+</ng-template>
 
 <!-- ══════════════════════════════════════════
      MODAL AUTOMÁTICO — CUPO LLENO

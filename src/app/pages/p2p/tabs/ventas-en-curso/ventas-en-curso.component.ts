@@ -378,7 +378,28 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         // Aviso (NO bloqueo) si con esta asignación el amarillo se pasa del cupo.
         this.avisarSiExcedeCupo(copId);
       },
-      error: () => this.notification.error('Error al guardar pre-asignación.')
+      // El guardado FALLÓ → hay que DESHACER lo que ya se pintó de forma optimista.
+      // Sin esto, la venta seguía viéndose asignada en pantalla (sub-fila con "Ya cayó /
+      // Pendiente", la cuenta en el dropdown y el monto sumando al saldo naranja) mientras el
+      // servidor no tenía nada guardado. De ahí venía el "ya está asignada pero el sistema
+      // dice que no": la pantalla mostraba un estado que nunca se persistió.
+      error: (err) => {
+        delete this.naranjaAsignada[orderNumber];
+
+        const live = this.ordenes.find(o => o.orderNumber === orderNumber);
+        const target = live ?? orden;
+        target.preAsignadoCopId = null;
+        target.preAsignadoCopNombre = null;
+
+        this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: null };
+        this.recomputarVistaCop();
+
+        // Se muestra el motivo REAL que manda el servidor en vez de un texto genérico:
+        // sin él no había forma de saber por qué falló.
+        this.notification.error(
+          err?.error?.error || 'No se pudo guardar la pre-asignación. Quedó sin asignar, intenta de nuevo.'
+        );
+      }
     });
   }
 

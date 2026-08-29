@@ -388,10 +388,16 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private recomputarVistaCop(): void {
     this.cuentasActivasP2P = this.cuentasCop.filter(c => c.activaParaP2P);
     const lista = this.cuentasActivasP2P.length > 0 ? this.cuentasActivasP2P : this.cuentasCop;
-    this.copOptionsList = lista.map(c => ({
-      label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
-      value: c.id!
-    }));
+    // Las cuentas con verificacionPendiente=true todavía no han sido
+    // confirmadas por el bot (recién activadas en P2P, esperando respuesta
+    // de pochonance.py) — se quedan visibles en la tira de arriba (en gris),
+    // pero NO se pueden asignar a ninguna venta hasta que se auditen.
+    this.copOptionsList = lista
+      .filter(c => !c.verificacionPendiente)
+      .map(c => ({
+        label: this.cupoLlenoDe(c) ? `${c.name} — cupo lleno` : c.name,
+        value: c.id!
+      }));
     // Los saldos verde/amarillo dependen de las órdenes → recalcular junto con la vista.
     this.recomputarSaldos();
   }

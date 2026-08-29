@@ -5,13 +5,18 @@
   ══════════════════════════════════════════ -->
   <div *ngIf="cuentasActivasP2P.length > 0" class="cop-strip">
     <div *ngFor="let c of cuentasActivasP2P; trackBy: trackByCuenta" class="cop-mini-card"
-         (click)="copiarCuenta(c)"
-         pTooltip="Clic para copiar: nombre, banco, cédula y número de cuenta"
+         [class.cop-mini-card--pendiente]="c.verificacionPendiente"
+         (click)="c.verificacionPendiente ? null : copiarCuenta(c)"
+         [pTooltip]="c.verificacionPendiente
+           ? 'El bot todavía está verificando esta cuenta — no se puede usar hasta que termine'
+           : 'Clic para copiar: nombre, banco, cédula y número de cuenta'"
          tooltipPosition="top"
-         style="cursor:pointer">
+         [style.cursor]="c.verificacionPendiente ? 'default' : 'pointer'">
 
-      <!-- Punto de color por banco -->
-      <span class="cop-mini-dot" [style.background]="bankColor(c.bankType)"></span>
+      <!-- Punto de color por banco (o spinner mientras se verifica) -->
+      <span class="cop-mini-dot" *ngIf="!c.verificacionPendiente" [style.background]="bankColor(c.bankType)"></span>
+      <i class="pi pi-spin pi-spinner cop-mini-spinner" *ngIf="c.verificacionPendiente"
+         pTooltip="Verificando con el bot..." tooltipPosition="top"></i>
 
       <!-- Nombre y saldos: verde (ya cayó) + amarillo (pendiente por caer) -->
       <div class="cop-mini-body">

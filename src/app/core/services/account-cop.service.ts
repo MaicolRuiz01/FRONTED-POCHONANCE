@@ -48,6 +48,10 @@ export interface AccountCop {
   ultimaConciliacion?: string | null;
   ultimoDesfaseBanco?: number | null;
   ultimoErrorConciliacion?: string | null;
+  /** true mientras el bot todavía no ha contestado la última solicitud de conciliación
+   *  (encolada al activar la cuenta en P2P). Mientras esté en true, no se puede asignar
+   *  a ninguna venta — ver ventas-en-curso.component. */
+  verificacionPendiente?: boolean | null;
 }
 
 export interface SolicitudComprometidaDto {

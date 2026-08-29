@@ -387,6 +387,22 @@
   flex-shrink: 0;
 }
 
+/* Cuenta recién activada en P2P, esperando que el bot confirme que está
+   disponible — se ve opaca y no se puede asignar a ninguna venta todavía
+   (ver copOptionsList en el .ts, que la excluye del dropdown). */
+.cop-mini-card--pendiente {
+  opacity: 0.55;
+  filter: grayscale(60%);
+}
+
+.cop-mini-spinner {
+  width: 8px;
+  height: 8px;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  color: var(--text-color-secondary, #6b7280);
+}
+
 .cop-mini-body {
   flex: 1;
   display: flex;

@@ -61,7 +61,7 @@
 
   <!-- Grid de cards -->
   <div *ngIf="!loading && cards.length > 0" class="op-grid">
-    <div class="op-card" *ngFor="let c of cards" [class.op-card--activa]="c.jornadaActiva">
+    <div class="op-card" *ngFor="let c of cards; trackBy: trackByOperador" [class.op-card--activa]="c.jornadaActiva">
       <div class="op-card-top">
         <div class="op-avatar"><i class="pi pi-user"></i></div>
         <div class="op-card-id">
@@ -233,7 +233,7 @@
     </div>
 
     <div *ngIf="historialPagos.length > 0" class="op-histm-list">
-      <div *ngFor="let p of historialPagos" class="op-histm-row">
+      <div *ngFor="let p of historialPagos; trackBy: trackByPago" class="op-histm-row">
         <div class="op-histm-left">
           <span class="op-histm-monto">{{ formatCop(p.monto) }}</span>
           <span class="op-histm-sub">{{ formatTiempo(p.segundos) }} · {{ formatCop(p.tarifaHora) }}/h</span>

@@ -259,11 +259,11 @@
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
       [disabled]="savingRetiro"
       (click)="showRetiroDialog = false"></button>
+    <!-- savingRetiro va también en [disabled]: [loading] solo muestra el spinner, NO bloquea
+         el clic. Sin esto, cada clic durante el envío disparaba otra tanda completa de
+         solicitudes sobre las mismas cuentas y se descontaba el dinero varias veces. -->
     <button pButton label="Enviar solicitud" icon="pi pi-send"
       style="background:#4f46e5;border:none;"
-      <!-- savingRetiro va también en [disabled]: [loading] solo muestra el spinner, NO bloquea
-           el clic. Sin esto, cada clic durante el envío disparaba otra tanda completa de
-           solicitudes sobre las mismas cuentas y se descontaba el dinero varias veces. -->
       [loading]="savingRetiro" [disabled]="savingRetiro || cuentasSeleccionadas.length === 0"
       (click)="enviarRetiro()">
     </button>

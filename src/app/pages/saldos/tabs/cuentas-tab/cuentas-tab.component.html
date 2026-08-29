@@ -293,7 +293,7 @@
 
     <!-- Info cupo de la cuenta seleccionada -->
     <div *ngIf="selectedCuentaOrigenId" style="background:var(--surface-100,#f9fafb); border:1px solid var(--surface-border,#e5e7eb); border-radius:8px; padding:10px 14px; font-size:.83rem;">
-      <ng-container *ngFor="let c of cuentas">
+      <ng-container *ngFor="let c of cuentas; trackBy: trackByCuenta">
         <ng-container *ngIf="c.id === selectedCuentaOrigenId">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span style="color:var(--text-color-secondary,#6b7280);">Cupo cajero disponible</span>

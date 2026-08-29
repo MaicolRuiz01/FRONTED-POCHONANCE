@@ -90,7 +90,7 @@
   <!-- Grid de tarjetas de anuncios -->
   <div *ngIf="!loadingAnuncios && anuncios.length > 0" class="vc-anuncios-grid">
 
-    <div *ngFor="let a of anuncios" class="vc-anuncio-card"
+    <div *ngFor="let a of anuncios; trackBy: trackByAnuncio" class="vc-anuncio-card"
          [class.sell]="a.tipo?.toUpperCase() === 'SELL'"
          [class.buy]="a.tipo?.toUpperCase() === 'BUY'">
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -76,6 +76,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private readonly MAX_SEG_SIN_CONFIRMAR = 60;
 
   anuncios: AnuncioDto[] = [];
+
+  /** AnuncioDto no trae id, así que la identidad es la cuenta más el tipo de anuncio:
+   *  una cuenta no puede tener dos anuncios del mismo tipo a la vez. */
+  trackByAnuncio = (i: number, a: AnuncioDto) =>
+    a ? `${a.cuenta}|${a.tipo}` : i;
   loadingAnuncios = false;
   ultimaActualizacionAnuncios: string | null = null;
 
@@ -116,7 +121,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private countdownTimer?: ReturnType<typeof setInterval>;
   /** Polling rápido de saldos: mantiene balance+cupo al día sin depender del SSE (que Railway rompe). */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
-  private readonly SALDOS_POLL_MS = 5000;
+  /** Respaldo por si el SSE se cae (Railway). El SSE ya empuja los cambios al instante,
+   *  así que esto es solo una red de seguridad: no hace falta que sea agresivo.
+   *  Estaba en 5s y, con varias pantallas abiertas, saturaba el backend sin aportar nada. */
+  private readonly SALDOS_POLL_MS = 20000;
 
   constructor(
     private syncService: P2PSyncService,
@@ -124,8 +132,14 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     private sseService: P2PSseService,
     private notification: NotificationService,
     private anunciosService: AnunciosService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  /** El cronómetro sigue latiendo un instante después de destruir la vista; sin esto,
+   *  detectChanges() sobre una vista ya destruida lanza error. */
+  private destruido = false;
 
   ngOnInit(): void {
     this.loadCuentasCop();
@@ -157,6 +171,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destruido = true;
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
@@ -199,22 +214,44 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   // ── Countdown ────────────────────────────────────────────────
 
+  /**
+   * El tick corre FUERA de la zona de Angular a propósito.
+   *
+   * Por defecto, cualquier setInterval dentro de la zona hace que Angular revise TODA la
+   * aplicación —los 64 componentes y todas sus expresiones— en cada latido. Con este reloj más
+   * el de la barra superior y el de operadores, eso pasaba tres veces por segundo, siempre,
+   * aunque no hubiera cambiado nada.
+   *
+   * Corriendo afuera, el latido no dispara nada; al final refrescamos SOLO este componente con
+   * detectChanges(). El usuario ve exactamente lo mismo, pero el trabajo es una fracción.
+   */
   private startCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
-    this.countdownTimer = setInterval(() => {
-      this.countdown--;
-      // Antigüedad de la lista: si lleva mucho sin confirmarse, la vista lo avisa.
-      if (this.ultimaCargaOkMs != null) {
-        this.segundosDesdeConfirmacion = Math.floor((Date.now() - this.ultimaCargaOkMs) / 1000);
-      }
-      // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
-      // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
-      this.recomputarSaldos();
-      if (this.countdown <= 0) {
-        this.loadOrdenes();
-        this.countdown = this.REFRESH_INTERVAL;
-      }
-    }, 1000);
+    this.zone.runOutsideAngular(() => {
+      this.countdownTimer = setInterval(() => {
+        if (this.destruido) return;
+
+        this.countdown--;
+        // Antigüedad de la lista: si lleva mucho sin confirmarse, la vista lo avisa.
+        if (this.ultimaCargaOkMs != null) {
+          this.segundosDesdeConfirmacion = Math.floor((Date.now() - this.ultimaCargaOkMs) / 1000);
+        }
+        // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
+        // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
+        this.recomputarSaldos();
+
+        if (this.countdown <= 0) {
+          this.countdown = this.REFRESH_INTERVAL;
+          // loadOrdenes hace una petición HTTP: vuelve a la zona para que, cuando llegue la
+          // respuesta, Angular se entere y pinte las órdenes nuevas.
+          this.zone.run(() => this.loadOrdenes());
+          return;
+        }
+
+        // Refresca solo este componente y sus hijos, no la aplicación entera.
+        this.cdr.detectChanges();
+      }, 1000);
+    });
   }
 
   resetCountdown(): void {

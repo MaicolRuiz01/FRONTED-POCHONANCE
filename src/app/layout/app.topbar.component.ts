@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from "./service/app.layout.service";
 import { AuthService } from '../core/services/auth.service';
@@ -54,8 +54,14 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
         public auth: AuthService,
         private jornadaService: JornadaService,
         private jornadaSse: JornadaSseService,
-        private notification: NotificationService
+        private notification: NotificationService,
+        private zone: NgZone,
+        private cdr: ChangeDetectorRef
     ) {}
+
+    /** El cronómetro late un instante más después de destruir la vista; sin esto,
+     *  detectChanges() sobre una vista ya destruida lanza error. */
+    private destruido = false;
 
     ngOnInit(): void {
         // Solo los operarios registran jornada. Restaura el estado si ya había una en curso.
@@ -83,6 +89,7 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.destruido = true;
         this.stopTick();
         this.sseSubs.forEach(s => s.unsubscribe());
         this.jornadaSse.disconnect();
@@ -230,10 +237,23 @@ export class AppTopBarComponent implements OnInit, OnDestroy {
         return '';
     }
 
+    /**
+     * Este cronómetro es el más caro de los tres, porque la barra superior está montada en
+     * TODAS las pantallas: latía una vez por segundo, siempre, y cada latido obligaba a Angular
+     * a revisar la aplicación completa aunque lo único que cambiara fuera el texto del reloj.
+     *
+     * Ahora late fuera de la zona y solo se refresca este componente.
+     */
     private startTick(): void {
         this.stopTick();
         this.actualizarTranscurrido();
-        this.tickTimer = setInterval(() => this.actualizarTranscurrido(), 1000);
+        this.zone.runOutsideAngular(() => {
+            this.tickTimer = setInterval(() => {
+                if (this.destruido) return;
+                this.actualizarTranscurrido();
+                this.cdr.detectChanges();
+            }, 1000);
+        });
     }
 
     private stopTick(): void {

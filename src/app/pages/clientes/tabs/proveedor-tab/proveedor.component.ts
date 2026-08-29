@@ -66,7 +66,10 @@ export class ProveedorComponent implements OnInit, OnDestroy {
   private saldosSub?: Subscription;
   /** Poll rápido de respaldo: mantiene el saldo de los proveedores al día aunque el SSE se caiga. */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
-  private readonly SALDOS_POLL_MS = 5000;
+  /** Respaldo por si el SSE se cae (Railway). El SSE ya empuja los cambios al instante,
+   *  así que esto es solo una red de seguridad: no hace falta que sea agresivo.
+   *  Estaba en 5s y, con varias pantallas abiertas, saturaba el backend sin aportar nada. */
+  private readonly SALDOS_POLL_MS = 20000;
   accountCops: AccountCop[] = [];
   selectedAccountCop: AccountCop | null = null;
   selectedSupplier: Supplier | null = null;

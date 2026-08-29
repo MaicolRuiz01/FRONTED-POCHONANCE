@@ -81,7 +81,10 @@ export class SaldosComponent implements OnInit, OnDestroy {
   private saldosSub?: Subscription;
   /** Poll rápido de respaldo para el total COP (con el 4x1000 diferido de hoy). */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
-  private readonly SALDOS_POLL_MS = 6000;
+  /** Respaldo por si el SSE se cae (Railway). El SSE ya empuja los cambios al instante,
+   *  así que esto es solo una red de seguridad: no hace falta que sea agresivo.
+   *  Estaba en 5s y, con varias pantallas abiertas, saturaba el backend sin aportar nada. */
+  private readonly SALDOS_POLL_MS = 20000;
   totalCriptosUsdt = 0;
   balanceTotalExternoCop = 0;
   totalBalanceCop = 0;
@@ -140,6 +143,15 @@ export class SaldosComponent implements OnInit, OnDestroy {
   ];
 
   accounts: DisplayAccount[] = [];
+
+  /**
+   * Identidad de cada tarjeta de cuenta.
+   *
+   * Importa más de lo habitual acá: estas tarjetas tienen estado propio en la vista
+   * (isFlipped, syncing). Sin identidad, cualquier refresco las destruía y reconstruía, así que
+   * una tarjeta girada se enderezaba sola y el spinner de sincronización se cortaba a la mitad.
+   */
+  trackByCuentaCripto = (i: number, a: DisplayAccount) => a?.id ?? a?.correo ?? a?.address ?? i;
 
   newAccount: AccountBinance = {
     // incluye id opcional si tu interfaz lo tiene en el service

@@ -160,7 +160,7 @@
     <button pButton type="button"
             [label]="editandoId == null ? 'Registrar' : 'Guardar cambios'"
             icon="pi pi-check"
-            (click)="guardar()" [loading]="guardando"></button>
+            (click)="guardar()" [loading]="guardando" [disabled]="guardando"></button>
   </ng-template>
 </p-dialog>
 
@@ -179,6 +179,6 @@
     <button pButton type="button" label="Cancelar" class="p-button-text"
             (click)="confirmVisible = false" [disabled]="eliminando"></button>
     <button pButton type="button" label="Eliminar" icon="pi pi-trash"
-            class="p-button-danger" (click)="confirmarEliminar()" [loading]="eliminando"></button>
+            class="p-button-danger" (click)="confirmarEliminar()" [loading]="eliminando" [disabled]="eliminando"></button>
   </ng-template>
 </p-dialog>

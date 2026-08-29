@@ -24,7 +24,7 @@
           <p-inputNumber [(ngModel)]="tarifaTemp" mode="currency" currency="COP"
             [maxFractionDigits]="0" locale="es-CO" [min]="0" styleClass="op-tarifa-input"></p-inputNumber>
           <button pButton icon="pi pi-check" class="p-button-success p-button-sm"
-            (click)="guardarTarifa()" [loading]="guardandoTarifa" title="Guardar"></button>
+            (click)="guardarTarifa()" [loading]="guardandoTarifa" [disabled]="guardandoTarifa" title="Guardar"></button>
           <button pButton icon="pi pi-times" class="p-button-text p-button-sm"
             (click)="cancelarTarifa()" title="Cancelar"></button>
         </ng-container>
@@ -163,7 +163,7 @@
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" class="p-button-text" (click)="showCrear = false"></button>
     <button pButton label="Crear" icon="pi pi-check" class="p-button-success"
-      (click)="guardarCrear()" [loading]="creando"></button>
+      (click)="guardarCrear()" [loading]="creando" [disabled]="creando"></button>
   </ng-template>
 </p-dialog>
 
@@ -180,7 +180,7 @@
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" class="p-button-text" (click)="showReset = false"></button>
     <button pButton label="Guardar" icon="pi pi-check"
-      (click)="guardarReset()" [loading]="reseteando"></button>
+      (click)="guardarReset()" [loading]="reseteando" [disabled]="reseteando"></button>
   </ng-template>
 </p-dialog>
 
@@ -214,7 +214,7 @@
   <ng-template pTemplate="footer">
     <button pButton label="Cancelar" class="p-button-text" (click)="showPagar = false" [disabled]="pagando"></button>
     <button pButton label="Pagar" icon="pi pi-check" class="p-button-success"
-      (click)="confirmarPago()" [loading]="pagando"></button>
+      (click)="confirmarPago()" [loading]="pagando" [disabled]="pagando"></button>
   </ng-template>
 </p-dialog>
 

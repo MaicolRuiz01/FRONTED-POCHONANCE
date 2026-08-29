@@ -84,7 +84,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
   private readonly SALDOS_POLL_MS = 6000;
   totalCriptosUsdt = 0;
   balanceTotalExternoCop = 0;
-  totalBalanceUsd = 0;
   totalBalanceCop = 0;
   latestRate = 0;
   balanceTotalExterno = 0;
@@ -203,7 +202,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
         // 2) Una vez hecho (o aunque falle), cargamos todo lo demás
         this.loadAccounts();
         this.getTotalBalance();
-        this.getBalanceTotalInterno();
         this.getBalanceTotalExterno();
         this.loadCryptoRatesToday();
         this.loadAverageRate();
@@ -266,12 +264,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
 
 
-  getBalanceTotalInterno() {
-    this.accountService.getBalanceTotalInterno().subscribe({
-      next: res => this.totalBalanceUsd = res,
-      error: err => console.error('Error obteniendo saldo total interno:', err)
-    });
-  }
+  // Se eliminó getBalanceTotalInterno(): el saldo interno ya no existe en el sistema.
+  // Además nunca se mostraba en pantalla — se pedía tres veces por carga y el resultado
+  // se guardaba en una variable que nadie leía. Todo el saldo se lee ahora en vivo.
 
   loadAccounts() {
     this.loading = true;  // 👈 empieza la carga
@@ -668,7 +663,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
           });
           // refresca tarjetas y totales
           this.loadAccounts();
-          this.getBalanceTotalInterno();
           this.getTotalBalance();
         },
         error: _ => {
@@ -700,7 +694,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
 
           // refresca tarjetas y totales internos
           this.loadAccounts();
-          this.getBalanceTotalInterno();
           this.getTotalBalance();
         },
         error: _ => {

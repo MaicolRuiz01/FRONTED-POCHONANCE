@@ -66,6 +66,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
 
+  /** Interruptor de asignación automática de cuentas COP (estado global, viene del backend). */
+  autoAsignacion = false;
+  autoAsignacionCargando = false;
+
   /** Momento de la última respuesta CONFIRMADA por Binance. null = todavía no hubo ninguna. */
   private ultimaCargaOkMs: number | null = null;
   /** La última consulta falló. */
@@ -145,6 +149,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.loadCuentasCop();
     this.loadOrdenes();
     this.loadAnuncios();
+    this.loadAutoAsignacion();
     this.startCountdown();
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
@@ -256,6 +261,35 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   resetCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
+  }
+
+  // ── Asignación automática ─────────────────────────────────────
+
+  /** Lee el estado del interruptor (global) al entrar a la vista. */
+  loadAutoAsignacion(): void {
+    this.syncService.getAutoAsignacion().subscribe({
+      next: r => this.autoAsignacion = !!r?.activa,
+      error: () => { /* silencioso: si falla, queda en OFF visual */ }
+    });
+  }
+
+  /** Prende/apaga la asignación automática de cuentas COP a las ventas en curso. */
+  toggleAutoAsignacion(): void {
+    if (this.autoAsignacionCargando) return;
+    this.autoAsignacionCargando = true;
+    const nuevo = !this.autoAsignacion;
+    this.syncService.setAutoAsignacion(nuevo)
+      .pipe(finalize(() => this.autoAsignacionCargando = false))
+      .subscribe({
+        next: r => {
+          this.autoAsignacion = !!r?.activa;
+          this.notification.success(this.autoAsignacion
+            ? 'Asignación automática ACTIVADA. El sistema asignará las cuentas COP solo.'
+            : 'Asignación automática apagada. Vuelve al modo manual.');
+          if (this.autoAsignacion) { this.loadOrdenes(); this.resetCountdown(); }
+        },
+        error: () => this.notification.error('No se pudo cambiar la asignación automática.')
+      });
   }
 
   // ── Carga de datos ────────────────────────────────────────────

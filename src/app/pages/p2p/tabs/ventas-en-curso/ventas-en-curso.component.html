@@ -155,6 +155,20 @@
       {{ sseConectado ? 'En vivo' : 'Reconectando' }}
     </span>
 
+    <!-- Interruptor: asignación automática de cuentas COP a las ventas en curso -->
+    <button type="button"
+            class="vc-auto-btn"
+            [class.on]="autoAsignacion"
+            [disabled]="autoAsignacionCargando"
+            (click)="toggleAutoAsignacion()"
+            [pTooltip]="autoAsignacion
+              ? 'Asignación automática ACTIVA — el sistema asigna las cuentas COP solo'
+              : 'Asignación automática apagada — asignación manual'"
+            tooltipPosition="top">
+      <i class="pi" [ngClass]="autoAsignacionCargando ? 'pi-spin pi-spinner' : (autoAsignacion ? 'pi-bolt' : 'pi-power-off')"></i>
+      Auto: {{ autoAsignacion ? 'ON' : 'OFF' }}
+    </button>
+
     <span class="vc-countdown" [class.urgent]="countdown <= 5">
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>

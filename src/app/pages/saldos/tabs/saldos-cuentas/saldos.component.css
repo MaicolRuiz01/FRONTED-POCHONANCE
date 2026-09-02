@@ -692,6 +692,47 @@ body {
 
 /* ==================== RESPONSIVE MOBILE ==================== */
 @media (max-width: 768px) {
+
+  /* ===== HUB DE SALDOS: dos cards por fila en celular =====
+     El grid usa minmax(230px, 1fr). En una pantalla de ~375 px, descontando márgenes, no
+     entran dos columnas de 230, así que auto-fill caía a UNA sola: cada card ocupaba el
+     ancho completo y había que bajar mucho para llegar a las de abajo.
+     Acá se fuerzan dos columnas y se achica el contenido para que quepa sin cortarse. */
+  .hub-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0;
+  }
+
+  .hub-card {
+    padding: 0.85rem 0.8rem;
+    border-radius: 12px;
+    min-height: 112px;
+    /* Sin esto, un saldo largo empuja el ancho mínimo de la celda y rompe las dos columnas:
+       el grid le da más espacio a esa card y la fila se descuadra. */
+    min-width: 0;
+  }
+
+  .hub-head { gap: 0.4rem; margin-bottom: 0.45rem; }
+  .hub-icon { width: 28px; height: 28px; border-radius: 8px; font-size: 0.85rem; }
+  .hub-name { font-size: 0.78rem; }
+
+  .hub-value {
+    font-size: 1.05rem;
+    /* Un saldo de varios millones parte en dos líneas en vez de desbordar la card. */
+    overflow-wrap: anywhere;
+  }
+  .hub-value small { font-size: 0.7rem; }
+
+  .hub-sub        { font-size: 0.72rem; }
+  .hub-sub.muted  { font-size: 0.68rem; }
+  .hub-nav-desc   { font-size: 0.74rem; line-height: 1.3; }
+  .hub-warn       { font-size: 0.66rem; line-height: 1.25; }
+
+  /* En pantalla táctil no existe el hover, así que esta pista no se puede mostrar nunca.
+     Ocultarla evita que aparezca pegada tras un toque y libera el alto de la card. */
+  .hub-hint { display: none; }
+
   /* 4 cards en grid 2×2 */
   .saldo-header-cards {
     display: grid;

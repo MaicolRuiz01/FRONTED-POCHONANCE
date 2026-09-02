@@ -15,6 +15,13 @@
       <app-ventas-pendientes></app-ventas-pendientes>
     </p-tabPanel>
 
+    <!-- Compras P2P pendientes: USDT comprados por P2P a los que todavía no se les indicó
+         de qué cuenta COP salió la plata. Restaban en la card "Asignar" sin tener pantalla
+         propia para saldarlas. El componente ya existía pero nunca se había renderizado. -->
+    <p-tabPanel header="COMPRAS P2P">
+      <app-asignaciones-comprap2p></app-asignaciones-comprap2p>
+    </p-tabPanel>
+
     <!-- <p-tabPanel header="CAJAS">
       <app-cajas-tab></app-cajas-tab>
     </p-tabPanel> -->

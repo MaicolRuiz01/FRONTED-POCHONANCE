@@ -129,11 +129,8 @@
         </div>
       </div>
 
-      <!-- Footer: hora -->
-      <div class="vc-anuncio-footer">
-        <i class="pi pi-clock text-xs"></i>
-        <span>{{ a.horaAnuncio }}</span>
-      </div>
+      <!-- Se quitó el footer con la hora del anuncio: no aportaba nada y además venía vacío,
+           así que se pintaba el epoch cero ("1969-12-31 19:00:00") en todas las tarjetas. -->
 
     </div>
 
@@ -226,9 +223,12 @@
         <span class="vc-tab-label">En curso</span>
         <span class="vc-tab-badge">{{ ordenesEnCurso.length }}</span>
       </ng-template>
+      <!-- mostrarEstado: false — acá todas las órdenes están "En curso", que es justo lo que ya
+           dice la pestaña. Repetir la etiqueta en cada fila solo gastaba ancho de columna. -->
       <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
         $implicit: ordenesEnCurso,
-        vacio: 'No hay ventas en curso en este momento.'
+        vacio: 'No hay ventas en curso en este momento.',
+        mostrarEstado: false
       }"></ng-container>
     </p-tabPanel>
 
@@ -240,9 +240,12 @@
           {{ ordenesOtras.length }}
         </span>
       </ng-template>
+      <!-- mostrarEstado: true — acá sí conviven varios estados (pago recibido, pendiente,
+           apelada), así que la etiqueta es el dato que distingue una fila de otra. -->
       <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
         $implicit: ordenesOtras,
-        vacio: 'No hay ventas en otros estados (pago recibido, pendientes o apeladas).'
+        vacio: 'No hay ventas en otros estados (pago recibido, pendientes o apeladas).',
+        mostrarEstado: true
       }"></ng-container>
     </p-tabPanel>
 
@@ -254,7 +257,7 @@
      PLANTILLA COMPARTIDA DE LA TABLA DE ÓRDENES
      Recibe la lista a mostrar y el texto de "sin resultados".
 ══════════════════════════════════════════ -->
-<ng-template #tablaOrdenes let-lista let-vacio="vacio">
+<ng-template #tablaOrdenes let-lista let-vacio="vacio" let-mostrarEstado="mostrarEstado">
   <p-table [value]="lista"
            dataKey="orderNumber"
            [loading]="loading"
@@ -264,7 +267,7 @@
 
     <ng-template pTemplate="header">
       <tr>
-        <th>Estado · Cuenta</th>
+        <th>{{ mostrarEstado ? 'Estado · Cuenta' : 'Cuenta' }}</th>
         <th>Hora</th>
         <th class="text-right">COP (miles)</th>
         <th class="text-right">Tasa</th>
@@ -279,7 +282,8 @@
         <!-- Estado + Cuenta Binance combinados -->
         <td>
           <div class="vc-estado-cuenta">
-            <p-tag [severity]="statusSeverity(orden.status)"
+            <p-tag *ngIf="mostrarEstado"
+                   [severity]="statusSeverity(orden.status)"
                    [icon]="statusIcon(orden.status)"
                    [value]="orden.statusLabel">
             </p-tag>

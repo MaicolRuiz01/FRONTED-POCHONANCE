@@ -572,3 +572,80 @@
   color: #9ca3af;
   font-size: 0.85rem;
 }
+
+/* ══════════════════════════════════════════
+   CELULAR
+   Este componente no tenía NINGUNA regla para pantallas chicas, y es el que más usa el
+   operador desde el teléfono. Todo lo de abajo corrige eso.
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Nada puede empujar la página a lo ancho ──
+     La tabla es más ancha que un teléfono y arrastraba la página entera hacia la derecha:
+     el encabezado y las tarjetas quedaban cortados por la izquierda. Ahora el desborde
+     lo absorbe la tabla con su propio scroll, no la página. */
+  .vc-wrapper {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── Barra "Ventas en curso" ──
+     Era un flex de una sola línea con cinco elementos (título, En vivo, Auto, cuenta
+     regresiva y refrescar). Sin permiso para pasar de renglón, el título se partía en tres
+     líneas ("Ventas / en / curso") y el botón de refrescar se salía de la pantalla. */
+  .vc-divider {
+    flex-wrap: wrap;
+    gap: 8px;
+    row-gap: 10px;
+  }
+
+  /* El título ocupa su propio renglón completo y ya no se parte. */
+  .vc-divider-label {
+    flex: 1 0 100%;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  /* Los controles caen al renglón de abajo y, si no caben, siguen bajando en vez de
+     desbordarse. Se achican un poco para que entren los cuatro en una sola línea. */
+  .vc-sse-badge,
+  .vc-auto-btn,
+  .vc-countdown {
+    font-size: 0.68rem;
+  }
+  .vc-auto-btn { padding: 3px 8px; }
+
+  /* Pega el botón de refrescar al borde derecho, alineado con la tabla. */
+  .vc-divider-btn { margin-left: auto; }
+
+  /* ── Tabla ──
+     Se aprieta para que quepan más columnas antes de tener que desplazar. */
+  .vc-table { font-size: 0.78rem; }
+
+  /* El scroll horizontal DEBE vivir dentro de la tabla, no en la página.
+     Se fuerza explícitamente porque de esto depende que la columna "Cuenta COP" siga siendo
+     alcanzable: con overflow-x oculto arriba y sin scroll propio acá, esa columna quedaría
+     inaccesible y el operador no podría asignar nada desde el teléfono.
+     Va con ::ng-deep porque .p-datatable-wrapper lo genera PrimeNG, fuera de esta plantilla. */
+  :host ::ng-deep .vc-table .p-datatable-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Tarjetas de anuncios ──
+     minmax(230px) ya daba una sola columna en el teléfono; se quita el ancho mínimo
+     para que la tarjeta use todo el ancho disponible sin provocar desborde. */
+  .vc-anuncios-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* ── Aviso de lista sin confirmar ──
+     Es el aviso más importante de la pantalla: en celular pasa a columna para que el texto
+     se lea completo y el botón de reintentar quede accesible en vez de comprimido. */
+  .vc-stale {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

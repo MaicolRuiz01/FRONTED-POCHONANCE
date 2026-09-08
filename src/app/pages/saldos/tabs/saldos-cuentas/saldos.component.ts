@@ -20,7 +20,7 @@ import { BalanceService } from '../../../../core/services/balance.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core/services/crypto-average-rate.service';
 import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
-import { finalize, switchMap } from 'rxjs/operators';
+import { finalize, switchMap, filter } from 'rxjs/operators';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { AccountVesService } from '../../../../core/services/AccountVes.service';
 import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
@@ -30,7 +30,7 @@ import { CajaComponent } from '../balance/caja.component';
 import { ClientesComponentW } from '../../../clientes/container/clientes-wrapper.component';
 import { ClienteService } from '../../../../core/services/cliente.service';
 import { SupplierService } from '../../../../core/services/supplier.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 import { TooltipModule } from 'primeng/tooltip';
@@ -189,7 +189,30 @@ export class SaldosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.saldosSub?.unsubscribe();
+    this.routerSub?.unsubscribe();
     clearInterval(this.saldosPollTimer);
+  }
+
+  /** Suscripción al router para volver al hub cuando se reclica "SALDOS" en el menú. */
+  private routerSub?: Subscription;
+
+  /**
+   * Si el usuario está en una sub-vista (Cuentas COP, Criptos, etc.) y vuelve a hacer clic en
+   * "SALDOS" en el menú, la ruta no cambia (sigue en /saldos), así que aquí escuchamos la
+   * navegación (habilitada con onSameUrlNavigation:'reload') y regresamos al hub RESUMEN.
+   * No se resetea cuando viene el query param ?tab=... (deep-link directo a una sub-vista).
+   */
+  private escucharNavegacionSaldos(): void {
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        const url = this.router.url;
+        const esSaldos = url === '/' || url === '/saldos'
+          || url.startsWith('/saldos?') || url.startsWith('/?');
+        if (esSaldos && !url.includes('tab=')) {
+          this.viewMode = 'RESUMEN';
+        }
+      });
   }
 
   /** Refresca SOLO el total COP disponible (liviano) para que la card refleje el 4x1000 diferido de hoy. */
@@ -201,6 +224,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Volver al hub al reclicar "SALDOS" en el menú estando en una sub-vista.
+    this.escucharNavegacionSaldos();
+
     // Tiempo real para la card "CUENTAS COP": SSE + poll de respaldo (aunque el SSE se caiga).
     this.saldosSse.connect();
     this.saldosSub = this.saldosSse.cambioSaldos$

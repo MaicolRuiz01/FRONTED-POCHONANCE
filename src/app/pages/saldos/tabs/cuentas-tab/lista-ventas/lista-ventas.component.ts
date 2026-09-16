@@ -67,7 +67,15 @@ export class ListaVentasComponent implements OnInit {
   cargarVentas(): void {
     this.loadingVentas = true;
     this.accountCopService.getSalesByAccountCopId(this.accountId).subscribe({
-      next: (v) => { this.ventas = v ?? []; this.loadingVentas = false; },
+      next: (v) => {
+        // 16/09/2026: el backend devuelve las ventas en orden ascendente (más
+        // vieja primero) — sin este sort, la página 1 del paginador mostraba
+        // las ventas más antiguas y había que navegar hasta la última página
+        // para ver las de hoy. Mismo criterio que ya usan cargarMovimientos()/
+        // cargarAjustes() más abajo.
+        this.ventas = (v ?? []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.loadingVentas = false;
+      },
       error: () => { this.loadingVentas = false; }
     });
   }
@@ -76,7 +84,10 @@ export class ListaVentasComponent implements OnInit {
     if (this.comprasLoaded || this.loadingCompras) return;
     this.loadingCompras = true;
     this.accountCopService.getComprasP2PByAccountCopId(this.accountId).subscribe({
-      next: (c) => { this.compras = c ?? []; this.comprasLoaded = true; this.loadingCompras = false; },
+      next: (c) => {
+        this.compras = (c ?? []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.comprasLoaded = true; this.loadingCompras = false;
+      },
       error: () => { this.loadingCompras = false; }
     });
   }

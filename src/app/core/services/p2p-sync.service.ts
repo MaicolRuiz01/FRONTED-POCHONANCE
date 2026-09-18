@@ -26,13 +26,26 @@ export interface ActiveP2POrder {
   createTime: string;
   preAsignadoCopId: number | null;
   preAsignadoCopNombre: string | null;
-  estadoManual?: string; // 'PENDIENTE' (amarillo) | 'RECIBIDO' (verde)
+  estadoManual?: string; // lo sigue mandando el backend, pero ya no se usa (se quitaron los botones)
 }
 
 export interface PreAsignacionRequest {
   orderNumber: string;
   copId: number;
   accountBinance: string;
+  /** Monto de la orden (miles). El backend lo guarda para sumar el verde/amarillo desde la BD. */
+  pesosCop?: number;
+}
+
+/** Saldo de una cuenta COP para la vista de ventas en curso, calculado en el backend.
+ *  verde = balance; amarillo (lo que se muestra) = balance + enCurso. */
+export interface SaldoEnCurso {
+  id: number;
+  balance: number;
+  cupoCajeroDisponibleHoy: number | null;
+  cupoCorresponsalDisponibleHoy: number | null;
+  /** Pesos (miles) de las ventas en curso pre-asignadas a la cuenta, aún no importadas. */
+  enCurso: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,17 +69,17 @@ export class P2PSyncService {
     return this.http.get<ActiveP2POrder[]>(`${this.activeUrl}/active-orders`);
   }
 
+  /** Saldo real + ventas en curso asignadas, por cuenta COP. */
+  getSaldosEnCurso(): Observable<SaldoEnCurso[]> {
+    return this.http.get<SaldoEnCurso[]>(`${this.activeUrl}/saldos-en-curso`);
+  }
+
   savePreAsignacion(req: PreAsignacionRequest): Observable<any> {
     return this.http.post(`${this.activeUrl}/pre-asignacion`, req);
   }
 
   deletePreAsignacion(orderNumber: string): Observable<any> {
     return this.http.delete(`${this.activeUrl}/pre-asignacion/${orderNumber}`);
-  }
-
-  /** Clasifica el dinero de la orden: 'RECIBIDO' (verde) o 'PENDIENTE' (amarillo). */
-  setEstadoManual(orderNumber: string, estado: 'RECIBIDO' | 'PENDIENTE'): Observable<any> {
-    return this.http.put(`${this.activeUrl}/pre-asignacion/${orderNumber}/estado`, {}, { params: { estado } });
   }
 
   // ── Asignación automática (interruptor global) ───────────────

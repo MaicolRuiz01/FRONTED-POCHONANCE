@@ -438,17 +438,18 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       next: () => {
         this.extenderCambioLocal(orderNumber);
         this.refrescarSaldosCop();
-        this.notification.success('Pre-asignación guardada.');
+        // Sin toast de "guardada": el cliente lo pidió quitar (molestaba en cada asignación).
+        // La confirmación visual es la sub-fila "Cuando complete → cuenta".
         // Aviso (NO bloqueo) si con esta asignación la cuenta se pasa del cupo.
         this.avisarSiExcedeCupo(copId);
       },
       // El guardado FALLÓ → se deshace lo pintado de forma optimista y se vuelve a lo que había.
       // Se muestra el motivo REAL que manda el servidor en vez de un texto genérico.
       error: (err) => {
+        // Sin toast de error (el cliente lo pidió quitar): el dropdown vuelve solo a como estaba,
+        // y esa es la señal de que no se guardó. El motivo queda en la consola para diagnóstico.
         this.revertirCambioLocal(orden, prevCopId);
-        this.notification.error(
-          err?.error?.error || 'No se pudo guardar la pre-asignación. Quedó como estaba, intenta de nuevo.'
-        );
+        console.error('[VentasEnCurso] No se guardó la pre-asignación', orderNumber, err?.error?.error ?? err);
       }
     });
   }
@@ -459,11 +460,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       next: () => {
         this.extenderCambioLocal(orderNumber);
         this.refrescarSaldosCop();
-        this.notification.success('Pre-asignación removida.');
       },
-      error: () => {
+      error: (err) => {
+        // Igual que al guardar: sin toast, el dropdown vuelve a la cuenta que tenía.
         this.revertirCambioLocal(orden, prevCopId);
-        this.notification.error('Error al remover pre-asignación.');
+        console.error('[VentasEnCurso] No se quitó la pre-asignación', orderNumber, err?.error?.error ?? err);
       }
     });
   }

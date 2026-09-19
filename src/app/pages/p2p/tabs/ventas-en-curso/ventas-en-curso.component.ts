@@ -213,6 +213,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         // Pedida ANTES del último cambio del operador → puede no incluirlo; ya viene otra.
         if (pedidoEn < this.ultimoCambioLocalMs) return;
         this.saldosAplicadoSeq = seq;
+        this.saldosEnCursoFallando = false;
 
         // ¿Apareció una cuenta COP nueva? Se recarga la lista completa para que salga sola.
         // El backend también manda las bloqueadas (que la lista P2P no muestra), así que solo
@@ -239,8 +240,51 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         });
         this.recomputarVistaCop();
       },
-      error: () => { /* silencioso: el próximo refresco lo corrige */ }
+      // OJO — antes esto era silencioso y NO tocaba nada. Resultado: cada asignación le sumaba su
+      // monto al amarillo en pantalla (ajuste optimista) y, como el servidor nunca respondía bien,
+      // nada lo corregía jamás: las ventas ya completadas seguían sumando y el amarillo crecía todo
+      // el día hasta diferencias absurdas. Ahora, si el servidor falla, lo en curso se recalcula
+      // desde las órdenes VISIBLES (nunca puede sumar más que lo que hay en la tabla) y el saldo
+      // real se trae por el endpoint liviano de siempre.
+      error: (err) => {
+        if (seq < this.saldosAplicadoSeq) return;
+        this.saldosAplicadoSeq = seq;
+        if (!this.saldosEnCursoFallando) {
+          console.error('[VentasEnCurso] /api/p2p/saldos-en-curso falló; se usa el respaldo desde las órdenes visibles', err);
+        }
+        this.saldosEnCursoFallando = true;
+        this.enCursoPorCuenta = this.enCursoDesdeOrdenesVisibles();
+        this.recomputarVistaCop();
+        this.accountCopService.getSaldos().subscribe({
+          next: saldos => {
+            const map = new Map(saldos.map(s => [s.id, s as any]));
+            this.cuentasCop.forEach(c => {
+              if (c.id != null && map.has(c.id)) {
+                const s = map.get(c.id)!;
+                c.balance = s.balance;
+                if (s.cupoCajeroDisponibleHoy != null) c.cupoCajeroDisponibleHoy = s.cupoCajeroDisponibleHoy;
+                if (s.cupoCorresponsalDisponibleHoy != null) c.cupoCorresponsalDisponibleHoy = s.cupoCorresponsalDisponibleHoy;
+              }
+            });
+            this.recomputarVistaCop();
+          },
+          error: () => { /* sin saldo nuevo: se queda el último conocido */ }
+        });
+      }
     });
+  }
+
+  /** true mientras el endpoint de saldos en curso esté fallando (se usa el respaldo). */
+  saldosEnCursoFallando = false;
+
+  /** Respaldo: lo en curso de cada cuenta = suma de las órdenes visibles asignadas a ella. */
+  private enCursoDesdeOrdenesVisibles(): Record<number, number> {
+    const r: Record<number, number> = {};
+    for (const o of this.ordenes) {
+      if (o.preAsignadoCopId == null) continue;
+      r[o.preAsignadoCopId] = (r[o.preAsignadoCopId] ?? 0) + (Number(o.pesosCop) || 0);
+    }
+    return r;
   }
 
   // ── Countdown ────────────────────────────────────────────────

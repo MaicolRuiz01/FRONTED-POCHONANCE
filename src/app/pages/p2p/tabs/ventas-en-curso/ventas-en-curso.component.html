@@ -152,6 +152,15 @@
       {{ sseConectado ? 'En vivo' : 'Reconectando' }}
     </span>
 
+    <!-- Marca discreta (sin toast): el servidor no está respondiendo los saldos en curso y el
+         amarillo se está calculando con las órdenes visibles. Si aparece, revisar el backend. -->
+    <span *ngIf="saldosEnCursoFallando" class="vc-sse-badge disconnected"
+          pTooltip="El servidor no respondió los saldos en curso: el amarillo se calcula con las órdenes visibles"
+          tooltipPosition="top">
+      <span class="vc-sse-dot"></span>
+      Saldos: respaldo
+    </span>
+
     <!-- Interruptor: asignación automática de cuentas COP a las ventas en curso -->
     <button type="button"
             class="vc-auto-btn"

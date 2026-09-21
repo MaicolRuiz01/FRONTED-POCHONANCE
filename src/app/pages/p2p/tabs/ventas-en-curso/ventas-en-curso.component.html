@@ -22,7 +22,7 @@
         </span>
         <span class="cop-mini-saldo cop-saldo-amarillo"
               *ngIf="saldoAmarilloDe(c) > 0"
-              pTooltip="Con cuánto quedará la cuenta cuando se completen sus ventas en curso" tooltipPosition="top">
+              [pTooltip]="detalleEnCursoDe(c)" tooltipPosition="top">
           ${{ saldoProyectadoDe(c) | number:'1.0-0' }}
         </span>
       </div>

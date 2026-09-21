@@ -226,8 +226,19 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         }
 
         const enCurso: Record<number, number> = {};
-        for (const x of saldos) enCurso[x.id] = Number(x.enCurso) || 0;
+        const detalle: Record<number, string> = {};
+        for (const x of saldos) {
+          enCurso[x.id] = Number(x.enCurso) || 0;
+          // Detalle de qué ventas componen el amarillo: se muestra al pasar el mouse. Sin esto,
+          // cuando el amarillo no cuadra con la tabla no hay forma de saber qué lo está sumando.
+          if (x.detalle?.length) {
+            detalle[x.id] = x.detalle
+              .map(d => `#${d.orderNumber}: $${Math.round(Number(d.pesos) || 0).toLocaleString('es-CO')}`)
+              .join('\n');
+          }
+        }
         this.enCursoPorCuenta = enCurso;
+        this.detalleEnCursoPorCuenta = detalle;
 
         const map = new Map(saldos.map(x => [x.id, x]));
         this.cuentasCop.forEach(c => {
@@ -276,6 +287,16 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   /** true mientras el endpoint de saldos en curso esté fallando (se usa el respaldo). */
   saldosEnCursoFallando = false;
+
+  /** Texto con las ventas que componen el amarillo de cada cuenta (para el tooltip). */
+  private detalleEnCursoPorCuenta: Record<number, string> = {};
+
+  /** Tooltip del saldo amarillo: dice exactamente qué ventas lo están sumando. */
+  detalleEnCursoDe(c: AccountCop): string {
+    const base = 'Con cuánto quedará la cuenta cuando se completen sus ventas en curso';
+    const d = c.id != null ? this.detalleEnCursoPorCuenta[c.id] : null;
+    return d ? `${base}\n\n${d}` : base;
+  }
 
   /** Respaldo: lo en curso de cada cuenta = suma de las órdenes visibles asignadas a ella. */
   private enCursoDesdeOrdenesVisibles(): Record<number, number> {

@@ -46,6 +46,8 @@ export interface SaldoEnCurso {
   cupoCorresponsalDisponibleHoy: number | null;
   /** Pesos (miles) de las ventas en curso pre-asignadas a la cuenta, aún no importadas. */
   enCurso: number;
+  /** Qué ventas componen ese monto — para poder ver de dónde sale el amarillo. */
+  detalle?: { orderNumber: string; pesos: number }[];
 }
 
 @Injectable({ providedIn: 'root' })

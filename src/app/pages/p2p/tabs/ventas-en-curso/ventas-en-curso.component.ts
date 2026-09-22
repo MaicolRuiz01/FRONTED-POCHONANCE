@@ -581,21 +581,23 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   // ── Helpers de UI — órdenes ───────────────────────────────────
 
-  statusSeverity(status: string): 'warning' | 'info' | 'secondary' | 'danger' {
+  statusSeverity(status: string): 'warning' | 'info' | 'secondary' | 'danger' | 'success' {
     switch (status) {
-      case 'BUYER_PAYED': return 'warning';
-      case 'TRADING':     return 'info';
-      case 'IN_APPEAL':   return 'danger';   // venta apelada / en disputa
-      default:            return 'secondary';
+      case 'BUYER_PAYED':  return 'warning';
+      case 'TRADING':      return 'info';
+      case 'IN_APPEAL':    return 'danger';   // venta apelada / en disputa
+      case 'DISTRIBUTING': return 'success';  // ya liberada, Binance está entregando el cripto
+      default:             return 'secondary';
     }
   }
 
   statusIcon(status: string): string {
     switch (status) {
-      case 'BUYER_PAYED': return 'pi pi-clock';
-      case 'TRADING':     return 'pi pi-sync';
-      case 'IN_APPEAL':   return 'pi pi-exclamation-triangle';
-      default:            return 'pi pi-circle';
+      case 'BUYER_PAYED':  return 'pi pi-clock';
+      case 'TRADING':      return 'pi pi-sync';
+      case 'IN_APPEAL':    return 'pi pi-exclamation-triangle';
+      case 'DISTRIBUTING': return 'pi pi-send';
+      default:             return 'pi pi-circle';
     }
   }
 

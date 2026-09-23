@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -8,6 +8,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
+import { TabViewModule } from 'primeng/tabview';
 import { Subscription } from 'rxjs';
 import { finalize, debounceTime } from 'rxjs/operators';
 import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
@@ -23,7 +24,8 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableModule, ButtonModule,
-    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule
+    TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule,
+    TabViewModule
   ],
   templateUrl: './ventas-en-curso.component.html',
   styleUrls: ['./ventas-en-curso.component.css']
@@ -31,6 +33,16 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
 export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   ordenes: ActiveP2POrder[] = [];
+
+  /** Órdenes partidas por estado. La pestaña principal muestra solo las que están EN CURSO
+   *  (el caso habitual); el resto —pago recibido, pendientes y apeladas— va en la otra, para
+   *  que el operador no tenga que buscarlas entre decenas de filas.
+   *  Se cachean en vez de calcularse con getters porque la vista se repinta cada segundo. */
+  ordenesEnCurso: ActiveP2POrder[] = [];
+  ordenesOtras: ActiveP2POrder[] = [];
+
+  /** Estado que se considera "en curso" para la partición. */
+  private readonly ESTADO_EN_CURSO = 'TRADING';
   cuentasCop: AccountCop[]  = [];
   /** Cuentas activas para P2P — cacheado (NO getter) para no recalcular en cada ciclo de CD. */
   cuentasActivasP2P: AccountCop[] = [];
@@ -54,7 +66,25 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   /** Refresco en segundo plano (no vacía la tabla, solo marca el botón). */
   refreshing = false;
 
+  /** Interruptor de asignación automática de cuentas COP (estado global, viene del backend). */
+  autoAsignacion = false;
+  autoAsignacionCargando = false;
+
+  /** Momento de la última respuesta CONFIRMADA por Binance. null = todavía no hubo ninguna. */
+  private ultimaCargaOkMs: number | null = null;
+  /** La última consulta falló. */
+  errorCarga = false;
+  /** Segundos desde la última confirmación (se refresca en el tick de 1s). */
+  segundosDesdeConfirmacion = 0;
+  /** A partir de acá la lista se considera NO confiable y se avisa en pantalla. */
+  private readonly MAX_SEG_SIN_CONFIRMAR = 60;
+
   anuncios: AnuncioDto[] = [];
+
+  /** AnuncioDto no trae id, así que la identidad es la cuenta más el tipo de anuncio:
+   *  una cuenta no puede tener dos anuncios del mismo tipo a la vez. */
+  trackByAnuncio = (i: number, a: AnuncioDto) =>
+    a ? `${a.cuenta}|${a.tipo}` : i;
   loadingAnuncios = false;
   ultimaActualizacionAnuncios: string | null = null;
 
@@ -95,7 +125,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private countdownTimer?: ReturnType<typeof setInterval>;
   /** Polling rápido de saldos: mantiene balance+cupo al día sin depender del SSE (que Railway rompe). */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
-  private readonly SALDOS_POLL_MS = 5000;
+  /** Respaldo por si el SSE se cae (Railway). El SSE ya empuja los cambios al instante,
+   *  así que esto es solo una red de seguridad: no hace falta que sea agresivo.
+   *  Estaba en 5s y, con varias pantallas abiertas, saturaba el backend sin aportar nada. */
+  private readonly SALDOS_POLL_MS = 20000;
 
   constructor(
     private syncService: P2PSyncService,
@@ -103,13 +136,20 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     private sseService: P2PSseService,
     private notification: NotificationService,
     private anunciosService: AnunciosService,
-    private saldosSse: SaldosSseService
+    private saldosSse: SaldosSseService,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  /** El cronómetro sigue latiendo un instante después de destruir la vista; sin esto,
+   *  detectChanges() sobre una vista ya destruida lanza error. */
+  private destruido = false;
 
   ngOnInit(): void {
     this.loadCuentasCop();
     this.loadOrdenes();
     this.loadAnuncios();
+    this.loadAutoAsignacion();
     this.startCountdown();
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
@@ -136,6 +176,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destruido = true;
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
@@ -178,22 +219,77 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   // ── Countdown ────────────────────────────────────────────────
 
+  /**
+   * El tick corre FUERA de la zona de Angular a propósito.
+   *
+   * Por defecto, cualquier setInterval dentro de la zona hace que Angular revise TODA la
+   * aplicación —los 64 componentes y todas sus expresiones— en cada latido. Con este reloj más
+   * el de la barra superior y el de operadores, eso pasaba tres veces por segundo, siempre,
+   * aunque no hubiera cambiado nada.
+   *
+   * Corriendo afuera, el latido no dispara nada; al final refrescamos SOLO este componente con
+   * detectChanges(). El usuario ve exactamente lo mismo, pero el trabajo es una fracción.
+   */
   private startCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
-    this.countdownTimer = setInterval(() => {
-      this.countdown--;
-      // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
-      // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
-      this.recomputarSaldos();
-      if (this.countdown <= 0) {
-        this.loadOrdenes();
-        this.countdown = this.REFRESH_INTERVAL;
-      }
-    }, 1000);
+    this.zone.runOutsideAngular(() => {
+      this.countdownTimer = setInterval(() => {
+        if (this.destruido) return;
+
+        this.countdown--;
+        // Antigüedad de la lista: si lleva mucho sin confirmarse, la vista lo avisa.
+        if (this.ultimaCargaOkMs != null) {
+          this.segundosDesdeConfirmacion = Math.floor((Date.now() - this.ultimaCargaOkMs) / 1000);
+        }
+        // Red de seguridad: recalcula los saldos cada segundo desde this.ordenes, así el naranja
+        // nunca se queda "pegado" aunque algún evento no haya disparado el recálculo.
+        this.recomputarSaldos();
+
+        if (this.countdown <= 0) {
+          this.countdown = this.REFRESH_INTERVAL;
+          // loadOrdenes hace una petición HTTP: vuelve a la zona para que, cuando llegue la
+          // respuesta, Angular se entere y pinte las órdenes nuevas.
+          this.zone.run(() => this.loadOrdenes());
+          return;
+        }
+
+        // Refresca solo este componente y sus hijos, no la aplicación entera.
+        this.cdr.detectChanges();
+      }, 1000);
+    });
   }
 
   resetCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
+  }
+
+  // ── Asignación automática ─────────────────────────────────────
+
+  /** Lee el estado del interruptor (global) al entrar a la vista. */
+  loadAutoAsignacion(): void {
+    this.syncService.getAutoAsignacion().subscribe({
+      next: r => this.autoAsignacion = !!r?.activa,
+      error: () => { /* silencioso: si falla, queda en OFF visual */ }
+    });
+  }
+
+  /** Prende/apaga la asignación automática de cuentas COP a las ventas en curso. */
+  toggleAutoAsignacion(): void {
+    if (this.autoAsignacionCargando) return;
+    this.autoAsignacionCargando = true;
+    const nuevo = !this.autoAsignacion;
+    this.syncService.setAutoAsignacion(nuevo)
+      .pipe(finalize(() => this.autoAsignacionCargando = false))
+      .subscribe({
+        next: r => {
+          this.autoAsignacion = !!r?.activa;
+          this.notification.success(this.autoAsignacion
+            ? 'Asignación automática ACTIVADA. El sistema asignará las cuentas COP solo.'
+            : 'Asignación automática apagada. Vuelve al modo manual.');
+          if (this.autoAsignacion) { this.loadOrdenes(); this.resetCountdown(); }
+        },
+        error: () => this.notification.error('No se pudo cambiar la asignación automática.')
+      });
   }
 
   // ── Carga de datos ────────────────────────────────────────────
@@ -208,6 +304,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => { this.loading = false; this.refreshing = false; }))
       .subscribe({
         next: data => {
+          // Respuesta confirmada por Binance: a partir de acá la lista es de fiar.
+          this.ultimaCargaOkMs = Date.now();
+          this.errorCarga = false;
+          this.segundosDesdeConfirmacion = 0;
+
           // ── Detectar órdenes marcadas "ya cayó" (RECIBIDO) que YA salieron de la lista de
           //    activas: significa que la venta se completó y el backend ya acreditó su COP en el
           //    saldo real. Para que el VERDE no baje ni un segundo (el monto pasa de "recibido en
@@ -280,11 +381,46 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
             }
           }
 
+          this.particionarOrdenes();
           // Las órdenes afectan el label "cupo lleno" del dropdown → recomputar opciones.
           this.recomputarVistaCop();
         },
-        error: () => this.notification.error('No se pudo cargar las órdenes activas.')
+        // OJO: al fallar NO se vacía la lista a propósito (un corte de un segundo no debe
+        // borrar órdenes reales que el operador está gestionando), pero SÍ se marca como no
+        // confirmada. Sin esta marca, un fallo sostenido dejaba en pantalla órdenes que ya no
+        // existían en Binance y el operador podía pre-asignarles plata que nunca iba a llegar.
+        error: () => {
+          this.errorCarga = true;
+          this.notification.error('No se pudo confirmar las órdenes con Binance.');
+        }
       });
+  }
+
+  /** Separa las órdenes en las dos pestañas. Se llama cada vez que llega una lista nueva. */
+  private particionarOrdenes(): void {
+    const enCurso: ActiveP2POrder[] = [];
+    const otras: ActiveP2POrder[] = [];
+    for (const o of this.ordenes) {
+      if ((o.status || '').toUpperCase() === this.ESTADO_EN_CURSO) enCurso.push(o);
+      else otras.push(o);
+    }
+    this.ordenesEnCurso = enCurso;
+    this.ordenesOtras = otras;
+  }
+
+  /** True si la lista lleva demasiado tiempo sin confirmarse contra Binance. */
+  get listaNoConfirmada(): boolean {
+    if (this.ultimaCargaOkMs == null) return this.errorCarga;
+    return this.errorCarga && this.segundosDesdeConfirmacion >= this.MAX_SEG_SIN_CONFIRMAR;
+  }
+
+  /** Texto legible de hace cuánto se confirmó la lista por última vez. */
+  get desdeUltimaConfirmacion(): string {
+    if (this.ultimaCargaOkMs == null) return 'nunca';
+    const s = this.segundosDesdeConfirmacion;
+    if (s < 60) return `hace ${s} s`;
+    const m = Math.floor(s / 60);
+    return m < 60 ? `hace ${m} min` : `hace ${Math.floor(m / 60)} h`;
   }
 
   loadCuentasCop(): void {
@@ -338,7 +474,28 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         // Aviso (NO bloqueo) si con esta asignación el amarillo se pasa del cupo.
         this.avisarSiExcedeCupo(copId);
       },
-      error: () => this.notification.error('Error al guardar pre-asignación.')
+      // El guardado FALLÓ → hay que DESHACER lo que ya se pintó de forma optimista.
+      // Sin esto, la venta seguía viéndose asignada en pantalla (sub-fila con "Ya cayó /
+      // Pendiente", la cuenta en el dropdown y el monto sumando al saldo naranja) mientras el
+      // servidor no tenía nada guardado. De ahí venía el "ya está asignada pero el sistema
+      // dice que no": la pantalla mostraba un estado que nunca se persistió.
+      error: (err) => {
+        delete this.naranjaAsignada[orderNumber];
+
+        const live = this.ordenes.find(o => o.orderNumber === orderNumber);
+        const target = live ?? orden;
+        target.preAsignadoCopId = null;
+        target.preAsignadoCopNombre = null;
+
+        this.seleccionPendiente = { ...this.seleccionPendiente, [orderNumber]: null };
+        this.recomputarVistaCop();
+
+        // Se muestra el motivo REAL que manda el servidor en vez de un texto genérico:
+        // sin él no había forma de saber por qué falló.
+        this.notification.error(
+          err?.error?.error || 'No se pudo guardar la pre-asignación. Quedó sin asignar, intenta de nuevo.'
+        );
+      }
     });
   }
 
@@ -430,11 +587,18 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     return m[bank] ?? '#6b7280';
   }
 
-  /** Copia al portapapeles los datos de la cuenta COP: nombre, banco, cédula y número de cuenta. */
+  /** Texto legible del tipo de cuenta. Las cuentas viejas no lo tienen: se asume Ahorros,
+   *  que es el default con el que quedaron al agregar el campo. */
+  tipoCuentaLabel(c: AccountCop): string {
+    return c.tipoCuenta === 'CORRIENTE' ? 'Corriente' : 'Ahorros';
+  }
+
+  /** Copia al portapapeles los datos de la cuenta COP: nombre, banco, tipo, cédula y número. */
   copiarCuenta(c: AccountCop): void {
     const lineas = [
       `Nombre: ${c.name || '—'}`,
       `Banco: ${c.bankType || '—'}`,
+      `Tipo de cuenta: ${this.tipoCuentaLabel(c)}`,
       `Cédula: ${c.cedula || '—'}`,
       `Número de cuenta: ${c.numeroCuenta || '—'}`,
     ];

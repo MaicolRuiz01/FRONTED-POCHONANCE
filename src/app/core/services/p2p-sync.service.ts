@@ -68,4 +68,16 @@ export class P2PSyncService {
   setEstadoManual(orderNumber: string, estado: 'RECIBIDO' | 'PENDIENTE'): Observable<any> {
     return this.http.put(`${this.activeUrl}/pre-asignacion/${orderNumber}/estado`, {}, { params: { estado } });
   }
+
+  // ── Asignación automática (interruptor global) ───────────────
+
+  /** Estado actual del interruptor de asignación automática. */
+  getAutoAsignacion(): Observable<{ activa: boolean }> {
+    return this.http.get<{ activa: boolean }>(`${this.activeUrl}/auto-asignacion`);
+  }
+
+  /** Prende/apaga la asignación automática de cuentas COP a las ventas en curso. */
+  setAutoAsignacion(activa: boolean): Observable<{ activa: boolean }> {
+    return this.http.put<{ activa: boolean }>(`${this.activeUrl}/auto-asignacion`, { activa });
+  }
 }

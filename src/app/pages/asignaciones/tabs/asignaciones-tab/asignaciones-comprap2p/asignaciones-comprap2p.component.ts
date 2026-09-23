@@ -117,15 +117,20 @@ export class AsignacionesComprap2pComponent implements OnInit {
     this.loading = true;
     this.noBuysMessage = '';
 
+    // Sin filtro de cuenta se piden TODAS las pendientes, no solo las de hoy: es lo mismo que
+    // cuenta la card "Asignar", así que si ahí aparece una deuda, acá está la fila para saldarla.
+    // Con filtro de cuenta se mantiene la consulta del día, que es la que existe por cuenta.
     const req$ = this.selectedBinanceAccount
       ? this.buyService.getTodayNoAsignadas(this.selectedBinanceAccount.name)
-      : this.buyService.getTodayNoAsignadasAllAccounts();
+      : this.buyService.getNoAsignadasTodas();
 
     req$.subscribe({
       next: (buys: BuyP2PDto[]) => {
         this.allBuysP2P = buys ?? [];
         if (this.allBuysP2P.length === 0) {
-          this.noBuysMessage = 'No hay compras P2P no asignadas hoy.';
+          this.noBuysMessage = this.selectedBinanceAccount
+            ? `No hay compras P2P sin asignar hoy en ${this.selectedBinanceAccount.name}.`
+            : 'No hay compras P2P sin asignar — ¡todo al día!';
         }
         this.loading = false;
       },

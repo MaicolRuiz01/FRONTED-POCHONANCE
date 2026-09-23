@@ -70,6 +70,13 @@
       <div class="cop-header-inner">
         <img class="bank-logo-header" [src]="bankLogo(account.bankType)" [alt]="account.bankType">
         <span class="cop-card-name">{{ account.name }}</span>
+        <!-- Tipo de cuenta: se muestra acá porque es dato que el operador le pasa al cliente
+             para consignar; si se equivoca de tipo, la transferencia rebota. -->
+        <span class="cop-card-tipo"
+              [class.cop-card-tipo--corriente]="account.tipoCuenta === 'CORRIENTE'"
+              pTooltip="Tipo de cuenta bancaria" tooltipPosition="top">
+          {{ tipoCuentaLabel(account) }}
+        </span>
         <!-- ID de la cuenta, en la esquina del card. Va como último item del flex (no absoluto)
              para que nunca se monte encima del nombre cuando este es largo. -->
         <span class="cop-card-id" *ngIf="account.id != null"
@@ -232,6 +239,13 @@
       </p-dropdown>
     </div>
 
+    <div class="p-col-12">
+      <label>Tipo de cuenta</label>
+      <p-dropdown [options]="tiposCuenta" [(ngModel)]="newAccount.tipoCuenta"
+        optionLabel="label" optionValue="value" [appendTo]="'body'">
+      </p-dropdown>
+    </div>
+
     <div class="p-col-12 p-md-6">
       <label for="numeroCuenta">Número de cuenta</label>
       <input id="numeroCuenta" type="text" pInputText [(ngModel)]="newAccount.numeroCuenta" />
@@ -279,7 +293,7 @@
 
     <!-- Info cupo de la cuenta seleccionada -->
     <div *ngIf="selectedCuentaOrigenId" style="background:var(--surface-100,#f9fafb); border:1px solid var(--surface-border,#e5e7eb); border-radius:8px; padding:10px 14px; font-size:.83rem;">
-      <ng-container *ngFor="let c of cuentas">
+      <ng-container *ngFor="let c of cuentas; trackBy: trackByCuenta">
         <ng-container *ngIf="c.id === selectedCuentaOrigenId">
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <span style="color:var(--text-color-secondary,#6b7280);">Cupo cajero disponible</span>

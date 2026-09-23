@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -90,8 +90,26 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     private operadorService: OperadorService,
     private notification: NotificationService,
     private confirm: ConfirmationService,
-    private accountService: AccountCopService
+    private accountService: AccountCopService,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  /** El cronómetro late un instante más después de destruir la vista; sin esto,
+   *  detectChanges() sobre una vista ya destruida lanza error. */
+  private destruido = false;
+
+  /**
+   * Identidad de cada tarjeta de operador.
+   *
+   * Sin esto, cada refresco silencioso (cada 20 s) traía objetos nuevos y Angular, al no poder
+   * reconocerlos, destruía y reconstruía TODAS las tarjetas del panel — aunque no hubiera
+   * cambiado nada. Eso es lo que hacía parpadear la pantalla y perder el scroll cada 20 s.
+   * Con el username como identidad, solo se repinta lo que de verdad cambió.
+   */
+  trackByOperador = (_: number, c: OperadorCard) => c.username;
+
+  trackByPago = (i: number, p: any) => p?.id ?? i;
 
   ngOnInit(): void {
     this.cargar();
@@ -100,7 +118,17 @@ export class OperadoresComponent implements OnInit, OnDestroy {
     this.accountService.getAllCajas().subscribe({ next: d => this.cajas = d, error: () => {} });
     // Cada segundo suma tiempo a las jornadas activas y recalcula el pago, para que el
     // cronómetro no se vea congelado en "0 s" mientras el operador está trabajando.
-    this.tickTimer = setInterval(() => this.tickJornadasActivas(), 1000);
+    //
+    // Corre FUERA de la zona de Angular: dentro, cada latido obligaba a revisar TODA la
+    // aplicación (los 64 componentes) una vez por segundo, aunque solo cambiara un número de
+    // esta pantalla. Afuera no dispara nada, y al final se refresca solo este componente.
+    this.zone.runOutsideAngular(() => {
+      this.tickTimer = setInterval(() => {
+        if (this.destruido) return;
+        this.tickJornadasActivas();
+        this.cdr.detectChanges();
+      }, 1000);
+    });
 
     // Resincronizar con el servidor cada 20 s.
     // El tick de arriba es solo cosmético: suma segundos a ciegas. Sin este refresco, el panel
@@ -111,6 +139,7 @@ export class OperadoresComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destruido = true;
     if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
     if (this.refreshTimer) { clearInterval(this.refreshTimer); this.refreshTimer = null; }
   }

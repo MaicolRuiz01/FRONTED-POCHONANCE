@@ -54,6 +54,7 @@ export class AsignacionesVentasComponent implements OnInit {
   selectedClientId: number | null = null;
 
   loading: boolean = false;
+  syncing: boolean = false;
   isMobile: boolean = false;
 
   startDate: Date | null = null;
@@ -116,6 +117,25 @@ export class AsignacionesVentasComponent implements OnInit {
       }
     })
 
+  }
+
+  /** Botón "Sincronizar ahora": fuerza una importación inmediata (no espera al scheduler de
+   *  20 min ni a que alguien recargue la página) para cuando el cliente hizo una venta y la
+   *  quiere ver reflejada al instante. */
+  sincronizarAhora(): void {
+    this.syncing = true;
+    this.sellService.importarVentasAutomaticamente().subscribe({
+      next: () => {
+        this.syncing = false;
+        this.loadSales();
+        this.notificationService.success('Ventas sincronizadas');
+      },
+      error: err => {
+        console.error('Error al sincronizar ventas', err);
+        this.syncing = false;
+        this.notificationService.error('No se pudo sincronizar las ventas');
+      }
+    });
   }
 
   loadSales(): void {

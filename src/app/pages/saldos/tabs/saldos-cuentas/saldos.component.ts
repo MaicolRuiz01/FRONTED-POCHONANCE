@@ -20,7 +20,7 @@ import { BalanceService } from '../../../../core/services/balance.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CryptoAverageRateService, CryptoAverageRateDto } from '../../../../core/services/crypto-average-rate.service';
 import { AverageRateDto, AverageRateService } from '../../../../core/services/average-rate.service';
-import { finalize, switchMap } from 'rxjs/operators';
+import { finalize, switchMap, filter } from 'rxjs/operators';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { AccountVesService } from '../../../../core/services/AccountVes.service';
 import { CuentasTabComponent } from '../cuentas-tab/cuentas-tab.component';
@@ -30,7 +30,7 @@ import { CajaComponent } from '../balance/caja.component';
 import { ClientesComponentW } from '../../../clientes/container/clientes-wrapper.component';
 import { ClienteService } from '../../../../core/services/cliente.service';
 import { SupplierService } from '../../../../core/services/supplier.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { BalanceGeneralService } from '../../../../core/services/balance-general.service';
 import { VesAverageRateApiService, VesAverageRateDto } from '../../../../core/services/ves-average-rate.service';
 import { TooltipModule } from 'primeng/tooltip';
@@ -81,10 +81,12 @@ export class SaldosComponent implements OnInit, OnDestroy {
   private saldosSub?: Subscription;
   /** Poll rápido de respaldo para el total COP (con el 4x1000 diferido de hoy). */
   private saldosPollTimer?: ReturnType<typeof setInterval>;
-  private readonly SALDOS_POLL_MS = 6000;
+  /** Respaldo por si el SSE se cae (Railway). El SSE ya empuja los cambios al instante,
+   *  así que esto es solo una red de seguridad: no hace falta que sea agresivo.
+   *  Estaba en 5s y, con varias pantallas abiertas, saturaba el backend sin aportar nada. */
+  private readonly SALDOS_POLL_MS = 20000;
   totalCriptosUsdt = 0;
   balanceTotalExternoCop = 0;
-  totalBalanceUsd = 0;
   totalBalanceCop = 0;
   latestRate = 0;
   balanceTotalExterno = 0;
@@ -142,6 +144,15 @@ export class SaldosComponent implements OnInit, OnDestroy {
 
   accounts: DisplayAccount[] = [];
 
+  /**
+   * Identidad de cada tarjeta de cuenta.
+   *
+   * Importa más de lo habitual acá: estas tarjetas tienen estado propio en la vista
+   * (isFlipped, syncing). Sin identidad, cualquier refresco las destruía y reconstruía, así que
+   * una tarjeta girada se enderezaba sola y el spinner de sincronización se cortaba a la mitad.
+   */
+  trackByCuentaCripto = (i: number, a: DisplayAccount) => a?.id ?? a?.correo ?? a?.address ?? i;
+
   newAccount: AccountBinance = {
     // incluye id opcional si tu interfaz lo tiene en el service
     // id: undefined,
@@ -178,7 +189,30 @@ export class SaldosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.saldosSub?.unsubscribe();
+    this.routerSub?.unsubscribe();
     clearInterval(this.saldosPollTimer);
+  }
+
+  /** Suscripción al router para volver al hub cuando se reclica "SALDOS" en el menú. */
+  private routerSub?: Subscription;
+
+  /**
+   * Si el usuario está en una sub-vista (Cuentas COP, Criptos, etc.) y vuelve a hacer clic en
+   * "SALDOS" en el menú, la ruta no cambia (sigue en /saldos), así que aquí escuchamos la
+   * navegación (habilitada con onSameUrlNavigation:'reload') y regresamos al hub RESUMEN.
+   * No se resetea cuando viene el query param ?tab=... (deep-link directo a una sub-vista).
+   */
+  private escucharNavegacionSaldos(): void {
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        const url = this.router.url;
+        const esSaldos = url === '/' || url === '/saldos'
+          || url.startsWith('/saldos?') || url.startsWith('/?');
+        if (esSaldos && !url.includes('tab=')) {
+          this.viewMode = 'RESUMEN';
+        }
+      });
   }
 
   /** Refresca SOLO el total COP disponible (liviano) para que la card refleje el 4x1000 diferido de hoy. */
@@ -190,6 +224,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Volver al hub al reclicar "SALDOS" en el menú estando en una sub-vista.
+    this.escucharNavegacionSaldos();
+
     // Tiempo real para la card "CUENTAS COP": SSE + poll de respaldo (aunque el SSE se caiga).
     this.saldosSse.connect();
     this.saldosSub = this.saldosSse.cambioSaldos$
@@ -203,7 +240,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
         // 2) Una vez hecho (o aunque falle), cargamos todo lo demás
         this.loadAccounts();
         this.getTotalBalance();
-        this.getBalanceTotalInterno();
         this.getBalanceTotalExterno();
         this.loadCryptoRatesToday();
         this.loadAverageRate();
@@ -266,12 +302,9 @@ export class SaldosComponent implements OnInit, OnDestroy {
   }
 
 
-  getBalanceTotalInterno() {
-    this.accountService.getBalanceTotalInterno().subscribe({
-      next: res => this.totalBalanceUsd = res,
-      error: err => console.error('Error obteniendo saldo total interno:', err)
-    });
-  }
+  // Se eliminó getBalanceTotalInterno(): el saldo interno ya no existe en el sistema.
+  // Además nunca se mostraba en pantalla — se pedía tres veces por carga y el resultado
+  // se guardaba en una variable que nadie leía. Todo el saldo se lee ahora en vivo.
 
   loadAccounts() {
     this.loading = true;  // 👈 empieza la carga
@@ -668,7 +701,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
           });
           // refresca tarjetas y totales
           this.loadAccounts();
-          this.getBalanceTotalInterno();
           this.getTotalBalance();
         },
         error: _ => {
@@ -700,7 +732,6 @@ export class SaldosComponent implements OnInit, OnDestroy {
 
           // refresca tarjetas y totales internos
           this.loadAccounts();
-          this.getBalanceTotalInterno();
           this.getTotalBalance();
         },
         error: _ => {

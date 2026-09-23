@@ -95,7 +95,7 @@
   <!-- Grid de tarjetas de anuncios -->
   <div *ngIf="!loadingAnuncios && anuncios.length > 0" class="vc-anuncios-grid">
 
-    <div *ngFor="let a of anuncios" class="vc-anuncio-card"
+    <div *ngFor="let a of anuncios; trackBy: trackByAnuncio" class="vc-anuncio-card"
          [class.sell]="a.tipo?.toUpperCase() === 'SELL'"
          [class.buy]="a.tipo?.toUpperCase() === 'BUY'">
 
@@ -134,11 +134,8 @@
         </div>
       </div>
 
-      <!-- Footer: hora -->
-      <div class="vc-anuncio-footer">
-        <i class="pi pi-clock text-xs"></i>
-        <span>{{ a.horaAnuncio }}</span>
-      </div>
+      <!-- Se quitó el footer con la hora del anuncio: no aportaba nada y además venía vacío,
+           así que se pintaba el epoch cero ("1969-12-31 19:00:00") en todas las tarjetas. -->
 
     </div>
 
@@ -160,6 +157,20 @@
       {{ sseConectado ? 'En vivo' : 'Reconectando' }}
     </span>
 
+    <!-- Interruptor: asignación automática de cuentas COP a las ventas en curso -->
+    <button type="button"
+            class="vc-auto-btn"
+            [class.on]="autoAsignacion"
+            [disabled]="autoAsignacionCargando"
+            (click)="toggleAutoAsignacion()"
+            [pTooltip]="autoAsignacion
+              ? 'Asignación automática ACTIVA — el sistema asigna las cuentas COP solo'
+              : 'Asignación automática apagada — asignación manual'"
+            tooltipPosition="top">
+      <i class="pi" [ngClass]="autoAsignacionCargando ? 'pi-spin pi-spinner' : (autoAsignacion ? 'pi-bolt' : 'pi-power-off')"></i>
+      Auto: {{ autoAsignacion ? 'ON' : 'OFF' }}
+    </button>
+
     <span class="vc-countdown" [class.urgent]="countdown <= 5">
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>
@@ -172,6 +183,23 @@
   <!-- ══════════════════════════════════════════
        SECCIÓN 2 — ÓRDENES EN CURSO
   ══════════════════════════════════════════ -->
+
+  <!-- ══════════════════════════════════════════
+       AVISO: la lista no se pudo confirmar con Binance.
+       Es importante que se vea: sin esto, un fallo sostenido dejaba órdenes
+       fantasma en pantalla y el operador podía asignarles plata que nunca iba a llegar.
+  ══════════════════════════════════════════ -->
+  <div *ngIf="listaNoConfirmada && ordenes.length > 0" class="vc-stale">
+    <i class="pi pi-exclamation-triangle"></i>
+    <div class="vc-stale-txt">
+      <b>Esta lista no está confirmada con Binance.</b>
+      Última confirmación {{ desdeUltimaConfirmacion }}. Puede que estas órdenes ya no existan
+      — no las asignes hasta que vuelva a actualizarse.
+    </div>
+    <button pButton type="button" icon="pi pi-refresh" label="Reintentar"
+            class="p-button-sm p-button-warning"
+            (click)="loadOrdenes(); resetCountdown()" [loading]="refreshing"></button>
+  </div>
 
   <!-- Vacío órdenes -->
   <div *ngIf="!loading && ordenes.length === 0" class="vc-empty">
@@ -187,9 +215,55 @@
     Por ahora se muestran todas.
   </div>
 
-  <!-- Tabla órdenes — usa [loading] nativo para NO destruir el componente en cada refresh -->
-  <p-table *ngIf="ordenes.length > 0 || loading"
-           [value]="ordenes"
+  <!-- ══════════════════════════════════════════
+       Dos pestañas: "En curso" (el caso habitual, se abre por defecto) y el resto
+       de estados. Ambas usan la MISMA plantilla de tabla (tablaOrdenes, abajo) en vez de
+       duplicarla, para que cualquier cambio futuro aplique a las dos sí o sí.
+  ══════════════════════════════════════════ -->
+  <p-tabView *ngIf="ordenes.length > 0 || loading" styleClass="vc-tabs">
+
+    <p-tabPanel>
+      <ng-template pTemplate="header">
+        <i class="pi pi-sync"></i>
+        <span class="vc-tab-label">En curso</span>
+        <span class="vc-tab-badge">{{ ordenesEnCurso.length }}</span>
+      </ng-template>
+      <!-- mostrarEstado: false — acá todas las órdenes están "En curso", que es justo lo que ya
+           dice la pestaña. Repetir la etiqueta en cada fila solo gastaba ancho de columna. -->
+      <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
+        $implicit: ordenesEnCurso,
+        vacio: 'No hay ventas en curso en este momento.',
+        mostrarEstado: false
+      }"></ng-container>
+    </p-tabPanel>
+
+    <p-tabPanel>
+      <ng-template pTemplate="header">
+        <i class="pi pi-flag"></i>
+        <span class="vc-tab-label">Otros estados</span>
+        <span class="vc-tab-badge" [class.vc-tab-badge--alerta]="ordenesOtras.length > 0">
+          {{ ordenesOtras.length }}
+        </span>
+      </ng-template>
+      <!-- mostrarEstado: true — acá sí conviven varios estados (pago recibido, pendiente,
+           apelada), así que la etiqueta es el dato que distingue una fila de otra. -->
+      <ng-container *ngTemplateOutlet="tablaOrdenes; context: {
+        $implicit: ordenesOtras,
+        vacio: 'No hay ventas en otros estados (pago recibido, pendientes o apeladas).',
+        mostrarEstado: true
+      }"></ng-container>
+    </p-tabPanel>
+
+  </p-tabView>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     PLANTILLA COMPARTIDA DE LA TABLA DE ÓRDENES
+     Recibe la lista a mostrar y el texto de "sin resultados".
+══════════════════════════════════════════ -->
+<ng-template #tablaOrdenes let-lista let-vacio="vacio" let-mostrarEstado="mostrarEstado">
+  <p-table [value]="lista"
            dataKey="orderNumber"
            [loading]="loading"
            [rowHover]="true"
@@ -198,7 +272,7 @@
 
     <ng-template pTemplate="header">
       <tr>
-        <th>Estado · Cuenta</th>
+        <th>{{ mostrarEstado ? 'Estado · Cuenta' : 'Cuenta' }}</th>
         <th>Hora</th>
         <th class="text-right">COP (miles)</th>
         <th class="text-right">Tasa</th>
@@ -213,7 +287,8 @@
         <!-- Estado + Cuenta Binance combinados -->
         <td>
           <div class="vc-estado-cuenta">
-            <p-tag [severity]="statusSeverity(orden.status)"
+            <p-tag *ngIf="mostrarEstado"
+                   [severity]="statusSeverity(orden.status)"
                    [icon]="statusIcon(orden.status)"
                    [value]="orden.statusLabel">
             </p-tag>
@@ -288,9 +363,14 @@
 
     </ng-template>
 
-  </p-table>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="vc-tab-vacio">{{ vacio }}</td>
+      </tr>
+    </ng-template>
 
-</div>
+  </p-table>
+</ng-template>
 
 <!-- ══════════════════════════════════════════
      MODAL AUTOMÁTICO — CUPO LLENO

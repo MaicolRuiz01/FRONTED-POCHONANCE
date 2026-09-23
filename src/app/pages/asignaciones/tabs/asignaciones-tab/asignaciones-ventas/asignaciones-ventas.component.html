@@ -1,6 +1,15 @@
 <div class="card">
-  <h2>Asignar Ventas</h2>
-  
+  <div class="ventas-header">
+    <h2>Asignar Ventas</h2>
+    <p-button
+      icon="pi pi-refresh"
+      label="Sincronizar ahora"
+      styleClass="p-button-sm p-button-outlined"
+      [loading]="syncing"
+      (click)="sincronizarAhora()">
+    </p-button>
+  </div>
+
   <p *ngIf="loading" class="spinner-container">
     <p-progressSpinner></p-progressSpinner>
   </p>

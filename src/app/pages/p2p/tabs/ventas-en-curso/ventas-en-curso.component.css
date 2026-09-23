@@ -174,6 +174,32 @@
 }
 
 /* ── Indicador SSE ── */
+/* Interruptor de asignación automática */
+.vc-auto-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.vc-auto-btn:hover:not(:disabled) { border-color: #94a3b8; }
+.vc-auto-btn:disabled { opacity: 0.6; cursor: default; }
+.vc-auto-btn.on {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  border-color: transparent;
+  color: #073b2b;
+}
+.vc-auto-btn .pi { font-size: 0.8rem; }
+
 .vc-sse-badge {
   display: inline-flex;
   align-items: center;
@@ -491,3 +517,151 @@
   gap: 12px; flex-wrap: wrap;
 }
 .vc-estado-btns { display: flex; gap: 6px; }
+
+/* ── Aviso de lista sin confirmar contra Binance ──
+   Deliberadamente llamativo: mientras esté visible, las órdenes de la tabla pueden ser
+   fantasma (quedaron de una carga anterior porque la consulta a Binance está fallando). */
+.vc-stale {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 14px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.vc-stale > .pi-exclamation-triangle {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.vc-stale-txt {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.79rem;
+  line-height: 1.45;
+}
+
+/* ── Pestañas: En curso / Otros estados ── */
+.vc-tabs .p-tabview-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px !important;
+}
+
+.vc-tab-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Contador de cada pestaña: deja ver de un vistazo cuántas hay en cada estado
+   sin tener que cambiar de pestaña. */
+.vc-tab-badge {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Si hay órdenes en otros estados se resalta: suelen necesitar atención
+   (pago recibido por liberar, o una venta apelada). */
+.vc-tab-badge--alerta {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.vc-tab-vacio {
+  text-align: center;
+  padding: 26px 0;
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+/* ══════════════════════════════════════════
+   CELULAR
+   Este componente no tenía NINGUNA regla para pantallas chicas, y es el que más usa el
+   operador desde el teléfono. Todo lo de abajo corrige eso.
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Nada puede empujar la página a lo ancho ──
+     La tabla es más ancha que un teléfono y arrastraba la página entera hacia la derecha:
+     el encabezado y las tarjetas quedaban cortados por la izquierda. Ahora el desborde
+     lo absorbe la tabla con su propio scroll, no la página. */
+  .vc-wrapper {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── Barra "Ventas en curso" ──
+     Era un flex de una sola línea con cinco elementos (título, En vivo, Auto, cuenta
+     regresiva y refrescar). Sin permiso para pasar de renglón, el título se partía en tres
+     líneas ("Ventas / en / curso") y el botón de refrescar se salía de la pantalla. */
+  .vc-divider {
+    flex-wrap: wrap;
+    gap: 8px;
+    row-gap: 10px;
+  }
+
+  /* El título ocupa su propio renglón completo y ya no se parte. */
+  .vc-divider-label {
+    flex: 1 0 100%;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  /* Los controles caen al renglón de abajo y, si no caben, siguen bajando en vez de
+     desbordarse. Se achican un poco para que entren los cuatro en una sola línea. */
+  .vc-sse-badge,
+  .vc-auto-btn,
+  .vc-countdown {
+    font-size: 0.68rem;
+  }
+  .vc-auto-btn { padding: 3px 8px; }
+
+  /* Pega el botón de refrescar al borde derecho, alineado con la tabla. */
+  .vc-divider-btn { margin-left: auto; }
+
+  /* ── Tabla ──
+     Se aprieta para que quepan más columnas antes de tener que desplazar. */
+  .vc-table { font-size: 0.78rem; }
+
+  /* El scroll horizontal DEBE vivir dentro de la tabla, no en la página.
+     Se fuerza explícitamente porque de esto depende que la columna "Cuenta COP" siga siendo
+     alcanzable: con overflow-x oculto arriba y sin scroll propio acá, esa columna quedaría
+     inaccesible y el operador no podría asignar nada desde el teléfono.
+     Va con ::ng-deep porque .p-datatable-wrapper lo genera PrimeNG, fuera de esta plantilla. */
+  :host ::ng-deep .vc-table .p-datatable-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Tarjetas de anuncios ──
+     minmax(230px) ya daba una sola columna en el teléfono; se quita el ancho mínimo
+     para que la tarjeta use todo el ancho disponible sin provocar desborde. */
+  .vc-anuncios-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* ── Aviso de lista sin confirmar ──
+     Es el aviso más importante de la pantalla: en celular pasa a columna para que el texto
+     se lea completo y el botón de reintentar quede accesible en vez de comprimido. */
+  .vc-stale {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

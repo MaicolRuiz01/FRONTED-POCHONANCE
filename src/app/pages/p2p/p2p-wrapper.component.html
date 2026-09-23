@@ -191,7 +191,7 @@
     <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text"
       (click)="showConciliacionModal = false"></button>
     <button pButton label="Solicitar revisión" icon="pi pi-search"
-      [disabled]="conciliacionSeleccionadas.size === 0"
+      [disabled]="enviandoConciliacion || conciliacionSeleccionadas.size === 0"
       [loading]="enviandoConciliacion"
       (click)="enviarSolicitudesConciliacion()">
     </button>

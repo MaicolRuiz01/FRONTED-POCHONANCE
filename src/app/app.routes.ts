@@ -72,6 +72,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/operadores/operadores.component').then(m => m.OperadoresComponent),
         canActivate: [adminGuard]
       },
+      {
+        // Diagnóstico de la tasa promedio: solo lectura, solo ADMIN.
+        path: 'tasa-promedio',
+        loadComponent: () => import('./pages/tasa-promedio/tasa-promedio.component').then(m => m.TasaPromedioComponent),
+        canActivate: [adminGuard]
+      },
     ]
   },
 

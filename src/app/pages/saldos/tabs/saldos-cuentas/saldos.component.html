@@ -178,7 +178,7 @@
 
   <!-- Grid de cuentas -->
   <div class="binance-grid" *ngIf="!loading && filteredAccounts.length > 0">
-    <div *ngFor="let account of filteredAccounts" class="bc-card">
+    <div *ngFor="let account of filteredAccounts; trackBy: trackByCuentaCripto" class="bc-card">
 
       <!-- Cabecera: nombre + acciones -->
       <div class="bc-card-header" [class.bc-card-header--inactiva]="account.activa === false">

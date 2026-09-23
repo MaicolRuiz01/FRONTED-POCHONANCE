@@ -1,0 +1,162 @@
+/* ── Encabezado ── */
+.tp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.tp-title { margin: 0 0 3px; font-size: 1.05rem; font-weight: 700; }
+
+.tp-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+  max-width: 640px;
+  line-height: 1.45;
+}
+
+/* ── Señales de alerta ── */
+.tp-resumen {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.tp-señal {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 13px;
+  border-radius: 9px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.79rem;
+  flex: 1;
+  min-width: 260px;
+}
+
+.tp-señal .pi { font-size: 1.1rem; margin-top: 1px; }
+.tp-señal small { display: block; margin-top: 2px; opacity: .8; font-size: 0.72rem; line-height: 1.35; }
+
+.tp-señal--mal {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+/* ── Estados ── */
+.tp-estado, .tp-error, .tp-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.tp-error { flex-direction: column; color: #b45309; }
+.tp-spinner { width: 34px; height: 34px; }
+
+/* ── Tabla ── */
+.tp-tabla th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+
+.tp-tabla td { font-size: 0.8rem; }
+
+.tp-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tp-fecha { white-space: nowrap; color: #6b7280; font-variant-numeric: tabular-nums; }
+.tp-fuerte { font-weight: 700; color: #111827; }
+.tp-acciones { text-align: right; white-space: nowrap; }
+
+/* Fila con algo raro: base perdida o cuenta que no cierra */
+.tp-row-alerta > td { background: #fffbeb; }
+
+.tp-sube { color: #dc2626; font-weight: 600; }
+.tp-baja { color: #059669; font-weight: 600; }
+
+/* Cuánto se movió el saldo leído entre un recálculo y el siguiente */
+.tp-deriva {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.68rem;
+}
+
+.tp-deriva--alta { background: #fef3c7; color: #92400e; font-weight: 700; }
+
+.tp-ico-alerta { color: #f59e0b; margin-left: 5px; }
+.tp-ico-error { color: #dc2626; margin-right: 4px; }
+
+/* ── Detalle desplegable ── */
+.tp-detalle-row > td { background: #f9fafb; padding: 0 !important; }
+
+.tp-detalle {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+}
+
+.tp-bloque { flex: 1; min-width: 260px; }
+
+.tp-bloque h4 {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color: #6b7280;
+}
+
+.tp-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 0.78rem;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.tp-linea span { color: #6b7280; }
+.tp-linea b { font-variant-numeric: tabular-nums; color: #111827; }
+
+.tp-linea--total { border-bottom: 1px solid #d1d5db; }
+.tp-linea--total b { font-weight: 800; }
+
+.tp-veredicto {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.tp-veredicto--mal {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}

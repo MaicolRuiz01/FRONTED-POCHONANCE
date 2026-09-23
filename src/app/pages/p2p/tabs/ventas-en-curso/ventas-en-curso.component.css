@@ -511,12 +511,11 @@
 .cop-saldo-verde { color: #16a34a; font-weight: 800; }
 .cop-saldo-amarillo { color: #d97706; font-weight: 700; font-size: .82rem; }
 
-/* Sub-fila de pre-asignación con botones de estado */
+/* Sub-fila de pre-asignación (a qué cuenta irá la venta) */
 .vc-subrow-inner {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap;
 }
-.vc-estado-btns { display: flex; gap: 6px; }
 
 /* ── Aviso de lista sin confirmar contra Binance ──
    Deliberadamente llamativo: mientras esté visible, las órdenes de la tabla pueden ser

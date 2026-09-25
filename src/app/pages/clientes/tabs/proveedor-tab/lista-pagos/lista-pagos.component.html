@@ -14,6 +14,7 @@
       <th>Caja</th>
       <th>Cliente</th>
       <th>Proveedor</th>
+      <th>Saldo tras el pago</th>
     </tr>
   </ng-template>
 
@@ -27,6 +28,11 @@
       <td>{{ pago.caja || '-' }}</td>
       <td>{{ pago.pagoCliente || '-' }}</td>
       <td>{{ pago.pagoProveedor || '-' }}</td>
+      <td>
+        @if (estadoDeuda(pago); as d) {
+          {{ d.texto }}@if (d.monto != null) { {{ d.monto | currency:'COP':'symbol':'1.0-0' }} }
+        } @else { - }
+      </td>
        <button pButton label="Eliminar" icon="pi pi-trash danger" (click)="eliminarMovimiento(pago)"></button>
     </tr>
   </ng-template>

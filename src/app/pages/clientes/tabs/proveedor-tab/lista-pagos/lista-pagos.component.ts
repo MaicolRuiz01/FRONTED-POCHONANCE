@@ -29,6 +29,19 @@ export class ListaPagosComponent {
     );
   }
 
+  /**
+   * Cuánto quedó debiéndose DESPUÉS de este pago, en palabras. El backend guarda el saldo del
+   * proveedor en ese momento (+ le debemos, − nos debe). Null en pagos anteriores al campo.
+   */
+  estadoDeuda(pago: any): { texto: string; monto: number | null } | null {
+    const s = pago?.saldoProveedorResultante;
+    if (s == null) return null;
+    if (Math.abs(s) < 0.005) return { texto: 'A paz y salvo', monto: null };
+    return s > 0
+      ? { texto: 'Le quedamos debiendo', monto: s }
+      : { texto: 'Nos queda debiendo', monto: -s };
+  }
+
   eliminarMovimiento(movimiento: Movimiento): void {
     if (this.eliminandoId != null) return;
     if (!confirm('¿Estás seguro de que deseas eliminar este movimiento? Se devolverá el saldo afectado.')) {

@@ -39,7 +39,18 @@
     <ng-template pTemplate="body" let-sale>
       <tr>
         <td>{{ sale.dateFmt }}</td>
-        <td style="font-family:monospace; font-size:.85rem; user-select:all;">{{ sale.numberOrder || '-' }}</td>
+        <td>
+          <span *ngIf="sale.numberOrder; else sinOrden" class="orden-cell">
+            <span class="orden-num orden-larga">{{ sale.numberOrder }}</span>
+            <span class="orden-num orden-corta">{{ sale.numberOrder | slice:0:5 }}…</span>
+            <button type="button" class="orden-copy" [class.copiado]="copiadaOrden === sale.numberOrder"
+              [title]="copiadaOrden === sale.numberOrder ? 'Copiado' : 'Copiar número de orden'"
+              (click)="copiarOrden(sale.numberOrder, $event)">
+              <i class="pi" [ngClass]="copiadaOrden === sale.numberOrder ? 'pi-check' : 'pi-copy'"></i>
+            </button>
+          </span>
+          <ng-template #sinOrden>-</ng-template>
+        </td>
         <td>{{ sale.nameAccountBinance }}</td>
         <td class="text-right">{{ sale.dollarsUsFmt }}</td>
         <td class="text-right">{{ sale.pesosCopFmt }}</td>

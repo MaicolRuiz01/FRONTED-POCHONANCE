@@ -111,38 +111,9 @@
 <!-- ================= VISTA BINANCE ================= -->
 <div *ngIf="viewMode === 'BINANCE'" class="binance-view">
 
-  <!-- Fila superior: resumen + botón nueva cuenta -->
+  <!-- Fila superior: botón nueva cuenta. (La tarjeta "Resumen criptos" se quitó a pedido del
+       cliente; totalCriptosUsdt se sigue calculando porque lo usan otros totales de la página.) -->
   <div class="binance-top-row">
-
-    <!-- Resumen compacto -->
-    <div class="saldo-card saldo-card-crypto binance-resumen-card">
-      <h4 class="saldo-title">Resumen criptos</h4>
-
-      <div class="crypto-total" *ngIf="tasasCriptoHoy.length > 0">
-        <strong>{{ totalCriptosUsdt | number:'1.2-2' }} USDT</strong>
-      </div>
-
-      <ng-container *ngIf="tasasCriptoHoy.length > 0; else noCriptoData">
-        <div class="crypto-list">
-          <div class="crypto-flip-row" *ngFor="let t of tasasCriptoHoy">
-            <div class="crypto-flip-inner">
-              <div class="crypto-face front">
-                <span class="crypto-symbol">{{ t.cripto }}</span>
-                <span class="crypto-amount">{{ (t.saldoFinalCripto * t.tasaPromedioDia) | number:'1.2-2' }} USDT</span>
-              </div>
-              <div class="crypto-face back">
-                <span class="crypto-symbol">{{ t.cripto }}</span>
-                <span class="crypto-extra">Tasa: {{ t.tasaPromedioDia | number:'1.4-6' }} USDT</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-template #noCriptoData>
-        <p class="no-cripto-data">Sin datos de tasas cripto hoy.</p>
-      </ng-template>
-    </div>
 
     <!-- Botón nueva cuenta -->
     <button pButton icon="pi pi-plus" label="Nueva cuenta"

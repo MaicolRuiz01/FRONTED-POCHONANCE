@@ -206,18 +206,12 @@
       <div class="p2p-header">
         <div class="p2p-header-left">
           <h2 class="m-0">
-            <i class="pi pi-bitcoin mr-2 text-yellow-500"></i>P2P Binance
+            <i class="pi pi-bitcoin mr-2 text-yellow-500"></i>P2P
           </h2>
-          <div class="sync-states" *ngIf="syncStates.length > 0">
-            <span *ngFor="let s of syncStates"
-              class="text-xs border-round px-2 py-1 surface-200 text-color-secondary">
-              <i class="pi pi-clock mr-1"></i>
-              <span class="sync-state-text">{{ s.binanceAccountName }}: </span>{{ formatSyncTime(s) }}
-            </span>
-          </div>
-          <span *ngIf="syncStates.length === 0" class="text-sm text-color-secondary sync-state-text">
-            Sin datos de sync aun
-          </span>
+          <!-- Se quitaron los relojes de "última sync completa" y el botón "Sincronizar ahora":
+               la sync completa tarda ~20 min, así que mostraban horas viejas y el botón o
+               respondía "al día" sin revisar nada o se quedaba cargando. Las ventas entran solas
+               por la importación rápida y la red de seguridad corre sola cada 5 min. -->
         </div>
 
         <div class="p2p-header-actions">
@@ -232,16 +226,6 @@
             <span class="ml-1 sync-btn-label">
               <span *ngIf="cuentasActivasCount > 0" class="cuenta-badge">{{ cuentasActivasCount }}</span>
             </span>
-          </button>
-
-          <button pButton
-            icon="pi pi-refresh"
-            class="p-button-outlined p-button-sm"
-            [loading]="syncing"
-            (click)="triggerSync()"
-            pTooltip="Sincronizar ahora"
-            tooltipPosition="left">
-            <span class="sync-btn-label ml-2">Sincronizar ahora</span>
           </button>
         </div>
       </div>

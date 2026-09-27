@@ -568,10 +568,18 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     this.selectedBankType = type;
   }
 
+  /** Filtro por estado de bloqueo; se combina con el de banco. null = todas. */
+  filtroBloqueo: 'BLOQUEADAS' | 'DESBLOQUEADAS' | null = null;
+
+  setFiltroBloqueo(f: 'BLOQUEADAS' | 'DESBLOQUEADAS' | null) {
+    this.filtroBloqueo = f;
+  }
+
   get filteredCuentas(): AccountCop[] {
-    const base = !this.selectedBankType
-      ? this.cuentas
-      : this.cuentas.filter(c => c.bankType === this.selectedBankType);
+    const base = this.cuentas
+      .filter(c => !this.selectedBankType || c.bankType === this.selectedBankType)
+      .filter(c => this.filtroBloqueo === null
+        || (this.filtroBloqueo === 'BLOQUEADAS') === !!c.bloqueada);
 
     // ordenar de mayor a menor balance
     return [...base].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0));

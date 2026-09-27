@@ -18,7 +18,7 @@ import { VentasPendientesComponent } from './tabs/ventas-pendientes/ventas-pendi
 import { VentasAsignadasComponent } from './tabs/ventas-asignadas/ventas-asignadas.component';
 import { ComprasP2pComponent } from './tabs/compras-p2p/compras-p2p.component';
 import { VentasEnCursoComponent } from './tabs/ventas-en-curso/ventas-en-curso.component';
-import { P2PSyncService, P2PSyncState, ActiveP2POrder } from '../../core/services/p2p-sync.service';
+import { P2PSyncService, ActiveP2POrder } from '../../core/services/p2p-sync.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 import { RetiradorService } from '../../core/services/retirador.service';
 
@@ -47,8 +47,6 @@ import { RetiradorService } from '../../core/services/retirador.service';
   styleUrls: ['./p2p-wrapper.component.css']
 })
 export class P2PWrapperComponent implements OnInit, OnDestroy {
-  syncStates: P2PSyncState[] = [];
-  syncing = false;
 
   showCuentasModal = false;
   cuentasCop: AccountCop[] = [];
@@ -228,7 +226,6 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   private p2pSub?: Subscription;
 
   ngOnInit(): void {
-    this.loadSyncStatus();
     this.loadCuentas();
     this.loadActiveOrders();
     // Si otra vista cambia el estado P2P de una cuenta, recargamos para sincronizar
@@ -274,30 +271,6 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadSyncStatus(): void {
-    this.syncService.getSyncStatus().subscribe({
-      next: states => this.syncStates = states ?? []
-    });
-  }
-
-  triggerSync(): void {
-    if (this.syncing) return;
-    this.syncing = true;
-    this.syncService.triggerSync()
-      .pipe(finalize(() => this.syncing = false))
-      .subscribe({
-        next: result => {
-          this.loadSyncStatus();
-          this.messageService.add({
-            severity: result.nuevasVentas > 0 ? 'success' : 'info',
-            summary: 'Sincronizacion',
-            detail: result.mensaje,
-            life: 4000
-          });
-        },
-        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo sincronizar.' })
-      });
-  }
 
   toggleP2P(cuenta: AccountCop): void {
     const id = cuenta.id;
@@ -482,12 +455,5 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
       detail: 'Se detectaron ventas P2P nuevas - tabla actualizada.',
       life: 4000
     });
-    this.loadSyncStatus();
-  }
-
-  formatSyncTime(state: P2PSyncState): string {
-    if (!state.lastSyncTime) return 'Nunca';
-    const d = new Date(state.lastSyncTime);
-    return new Intl.DateTimeFormat('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d);
   }
 }

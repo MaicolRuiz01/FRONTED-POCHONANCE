@@ -57,6 +57,24 @@
 
   </button>
 </div>
+
+<!-- ===== FILTRO POR BLOQUEO (se combina con el de banco) ===== -->
+<div class="bank-filter">
+  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === null"
+    (click)="setFiltroBloqueo(null)" title="Bloqueadas y desbloqueadas">
+    <span class="bank-chip-text">Todas</span>
+  </button>
+  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === 'DESBLOQUEADAS'"
+    (click)="setFiltroBloqueo('DESBLOQUEADAS')" title="Solo desbloqueadas">
+    <i class="pi pi-lock-open"></i>
+    <span class="bank-chip-text">Desbloqueadas</span>
+  </button>
+  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === 'BLOQUEADAS'"
+    (click)="setFiltroBloqueo('BLOQUEADAS')" title="Solo bloqueadas">
+    <i class="pi pi-lock"></i>
+    <span class="bank-chip-text">Bloqueadas</span>
+  </button>
+</div>
 <!-- Tarjetas de cuentas COP -->
 <div class="cop-grid">
   <div *ngFor="let account of filteredCuentas; trackBy: trackByCuenta"

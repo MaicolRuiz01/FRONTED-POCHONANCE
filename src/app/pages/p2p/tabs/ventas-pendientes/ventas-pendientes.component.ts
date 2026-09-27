@@ -30,7 +30,20 @@ type BankType = 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA';
     DropdownModule, InputNumberModule, InputSwitchModule, MultiSelectModule,
     ProgressSpinnerModule, TagModule, TooltipModule
   ],
-  templateUrl: './ventas-pendientes.component.html'
+  templateUrl: './ventas-pendientes.component.html',
+  styles: [`
+    .orden-cell { display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap; }
+    .orden-num { font-family: monospace; font-size: .85rem; }
+    .orden-corta { display: none; }
+    .orden-copy { background: none; border: none; cursor: pointer; padding: .25rem; color: #64748b; line-height: 1; }
+    .orden-copy:hover { color: #4f46e5; }
+    .orden-copy.copiado { color: #16a34a; }
+    /* En móvil el número completo no cabe: se muestran solo los primeros 5 (se copia completo). */
+    @media (max-width: 768px) {
+      .orden-larga { display: none; }
+      .orden-corta { display: inline; }
+    }
+  `]
 })
 export class VentasPendientesComponent implements OnInit, OnDestroy {
   @Output() sseRefresh = new EventEmitter<void>();
@@ -53,6 +66,31 @@ export class VentasPendientesComponent implements OnInit, OnDestroy {
   selectedAssignments: { account: AccountCop; amount: number }[] = [];
 
   private sseSub: Subscription | null = null;
+
+  /** Orden recién copiada: su ícono pasa a check un momento (sin toast). */
+  copiadaOrden: string | null = null;
+  private copiadaTimer?: ReturnType<typeof setTimeout>;
+
+  /** Copia el número de orden COMPLETO (aunque en móvil se vea recortado). */
+  async copiarOrden(numero: string | undefined, event: Event): Promise<void> {
+    event.stopPropagation();
+    if (!numero) return;
+    try {
+      await navigator.clipboard.writeText(numero);
+    } catch {
+      // Respaldo para navegadores sin API de portapapeles.
+      const ta = document.createElement('textarea');
+      ta.value = numero;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+    }
+    this.copiadaOrden = numero;
+    clearTimeout(this.copiadaTimer);
+    this.copiadaTimer = setTimeout(() => this.copiadaOrden = null, 1500);
+  }
 
   constructor(
     private saleService: SaleP2PService,

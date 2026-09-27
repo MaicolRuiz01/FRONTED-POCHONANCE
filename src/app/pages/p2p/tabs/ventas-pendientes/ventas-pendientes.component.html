@@ -28,6 +28,7 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Hora</th>
+        <th>N° orden</th>
         <th>Cuenta Binance</th>
         <th class="text-right">USD</th>
         <th class="text-right">COP</th>
@@ -38,6 +39,7 @@
     <ng-template pTemplate="body" let-sale>
       <tr>
         <td>{{ sale.dateFmt }}</td>
+        <td style="font-family:monospace; font-size:.85rem; user-select:all;">{{ sale.numberOrder || '-' }}</td>
         <td>{{ sale.nameAccountBinance }}</td>
         <td class="text-right">{{ sale.dollarsUsFmt }}</td>
         <td class="text-right">{{ sale.pesosCopFmt }}</td>

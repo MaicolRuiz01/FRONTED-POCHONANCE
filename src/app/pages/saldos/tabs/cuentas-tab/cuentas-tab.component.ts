@@ -526,6 +526,31 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Devuelve los cupos de hoy de la cuenta al máximo de su banco (uso excepcional, con confirmación). */
+  restablecerCupo(account: AccountCop, event: Event) {
+    event.stopPropagation();
+    if (!account.id) return;
+    this.confirmationService.confirm({
+      message: `¿Restablecer el cupo de hoy de <strong>${account.name}</strong>?<br>`
+        + `Cajero y corresponsal vuelven al máximo de su banco, como si empezara el día. El saldo no cambia.`,
+      header: 'Restablecer cupo',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Restablecer',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warning',
+      accept: () => {
+        this.accountService.restablecerCupo(account.id!).subscribe({
+          next: r => {
+            account.cupoCajeroDisponibleHoy = r.cupoCajeroDisponibleHoy;
+            account.cupoCorresponsalDisponibleHoy = r.cupoCorresponsalDisponibleHoy;
+            this.notificationService.success(`Cupo de ${account.name} restablecido`);
+          },
+          error: () => this.notificationService.error('No se pudo restablecer el cupo')
+        });
+      }
+    });
+  }
+
   /** Cuentas seleccionables para los diálogos (retiro/depósito/transferencia): SIN bloqueadas. */
   get cuentasSeleccionables(): AccountCop[] {
     return this.cuentas.filter(c => !c.bloqueada);

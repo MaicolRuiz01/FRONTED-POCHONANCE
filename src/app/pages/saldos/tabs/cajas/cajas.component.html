@@ -9,6 +9,11 @@
     </p>
   </div>
   <div class="flex" style="gap:.5rem;">
+    <button pButton icon="pi pi-arrow-right-arrow-left" label="Transferencia entre cajas"
+      class="p-button-outlined"
+      pTooltip="Mover efectivo de una caja a otra (sin 4x1000)"
+      (click)="abrirTransferencia()">
+    </button>
     <button pButton icon="pi pi-wallet" label="Préstamo de proveedor"
       class="p-button-outlined"
       pTooltip="Un proveedor nos presta efectivo → entra a una caja y sube la deuda con él"
@@ -25,6 +30,47 @@
     </button>
   </div>
 </div>
+
+<!-- Transferencia entre cajas: sale de una caja y entra a otra, monto exacto (sin 4x1000) -->
+<p-dialog header="Transferencia entre cajas" [(visible)]="showTransfer" [modal]="true"
+          [style]="{width:'440px'}" [breakpoints]="{'600px':'95vw'}">
+  <div class="p-fluid" style="display:flex; flex-direction:column; gap:.75rem;">
+    <p style="margin:0; color:#64748b;">
+      El efectivo <strong>sale</strong> de la caja origen y <strong>entra</strong> a la caja destino por el mismo monto (sin 4x1000).
+    </p>
+    <div>
+      <label>Caja origen</label>
+      <p-dropdown [options]="cajas" optionLabel="name" optionValue="id"
+        [(ngModel)]="transferOrigenId" (onChange)="transferDestinoId === transferOrigenId && (transferDestinoId = null)"
+        placeholder="De qué caja sale" [style]="{width:'100%'}"></p-dropdown>
+      <small *ngIf="cajaTransferOrigen" style="color:#64748b;">
+        Disponible: {{ cajaTransferOrigen.saldo | currency:'COP':'symbol':'1.0-0' }}
+      </small>
+    </div>
+    <div>
+      <label>Caja destino</label>
+      <p-dropdown [options]="destinosTransferencia" optionLabel="name" optionValue="id"
+        [(ngModel)]="transferDestinoId" placeholder="A qué caja entra"
+        [style]="{width:'100%'}"></p-dropdown>
+    </div>
+    <div>
+      <label>Monto</label>
+      <p-inputNumber [(ngModel)]="transferMonto" mode="currency" currency="COP" locale="es-CO"
+        [minFractionDigits]="0" [style]="{width:'100%'}"></p-inputNumber>
+      <small *ngIf="transferExcedeSaldo" style="color:#dc2626;">
+        El monto supera el saldo de la caja origen.
+      </small>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" class="p-button-text" (click)="showTransfer = false"
+            [disabled]="transfiriendo"></button>
+    <button pButton [label]="transfiriendo ? 'Guardando…' : 'Transferir'"
+            [icon]="transfiriendo ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right-arrow-left'"
+            (click)="registrarTransferencia()"
+            [disabled]="transfiriendo || transferExcedeSaldo"></button>
+  </ng-template>
+</p-dialog>
 
 <!-- El proveedor nos presta efectivo → entra a una caja (sin 4x1000) -->
 <p-dialog header="Préstamo de proveedor a caja" [(visible)]="showProvACaja" [modal]="true"

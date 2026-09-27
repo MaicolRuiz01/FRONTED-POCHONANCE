@@ -74,6 +74,13 @@ export class CajasComponent implements OnInit, OnDestroy {
   cliACajaMonto = 0;
   guardandoCliACaja = false;
 
+  // Transferencia entre cajas (efectivo de una caja a otra, sin 4x1000)
+  showTransfer = false;
+  transferOrigenId: number | null = null;
+  transferDestinoId: number | null = null;
+  transferMonto = 0;
+  transfiriendo = false;
+
   constructor(
     private movimientoService: MovimientoService,
     private cajaService: CajaService,
@@ -204,6 +211,60 @@ export class CajasComponent implements OnInit, OnDestroy {
       error: () => {
         this.guardandoCliACaja = false;
         this.notificationService.error('No se pudo registrar la entrada.');
+      }
+    });
+  }
+
+  /** Abre el diálogo "mover efectivo de una caja a otra". */
+  abrirTransferencia(): void {
+    this.transferOrigenId = null;
+    this.transferDestinoId = null;
+    this.transferMonto = 0;
+    this.showTransfer = true;
+  }
+
+  get cajaTransferOrigen(): Caja | undefined {
+    return this.cajas.find(c => c.id === this.transferOrigenId);
+  }
+
+  /** Destinos posibles: todas menos la de origen. */
+  get destinosTransferencia(): Caja[] {
+    return this.cajas.filter(c => c.id !== this.transferOrigenId);
+  }
+
+  get transferExcedeSaldo(): boolean {
+    const origen = this.cajaTransferOrigen;
+    return !!origen && (this.transferMonto ?? 0) > (origen.saldo ?? 0);
+  }
+
+  registrarTransferencia(): void {
+    if (this.transfiriendo) return;
+    const origenId = Number(this.transferOrigenId ?? 0);
+    const destinoId = Number(this.transferDestinoId ?? 0);
+    const monto = Number(this.transferMonto ?? 0);
+    if (!origenId || !destinoId || monto <= 0) {
+      this.notificationService.error('Selecciona caja origen, caja destino y un monto válido.');
+      return;
+    }
+    if (origenId === destinoId) {
+      this.notificationService.error('La caja origen y destino no pueden ser la misma.');
+      return;
+    }
+    if (this.transferExcedeSaldo) {
+      this.notificationService.error('Saldo insuficiente en la caja origen.');
+      return;
+    }
+    this.transfiriendo = true;
+    this.movimientoService.registrarTransferenciaCaja(origenId, destinoId, monto).subscribe({
+      next: () => {
+        this.transfiriendo = false;
+        this.showTransfer = false;
+        this.notificationService.success('Transferencia entre cajas registrada.');
+        this.loadCajas();
+      },
+      error: (err) => {
+        this.transfiriendo = false;
+        this.notificationService.error(err?.error?.error || 'No se pudo registrar la transferencia.');
       }
     });
   }

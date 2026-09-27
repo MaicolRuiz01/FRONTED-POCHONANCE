@@ -177,6 +177,10 @@
               pTooltip="Ajustar saldo" tooltipPosition="top"
               (click)="abrirAjusteCuenta(account); $event.stopPropagation()">
             </button>
+            <button pButton icon="pi pi-replay" class="p-button-text p-button-warning p-button-sm"
+              pTooltip="Restablecer cupo del día" tooltipPosition="top"
+              (click)="restablecerCupo(account, $event)">
+            </button>
             <button pButton icon="pi pi-file-excel" class="p-button-text p-button-success p-button-sm"
               pTooltip="Descargar Excel" tooltipPosition="top"
               (click)="downloadExcelAccountCop(account.id!); $event.stopPropagation()">

@@ -55,7 +55,9 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   /** Órdenes P2P en curso (abiertas) — para proyectar el saldo pre-asignado. */
   activeOrders: ActiveP2POrder[] = [];
   loadingCuentas = false;
-  togglingId: number | null = null;
+  /** Cuentas cuya activación/desactivación está en camino. Varias a la vez: el operador puede
+   *  seguir eligiendo cuentas sin esperar a que termine la anterior. */
+  toggling = new Set<number>();
 
   // ── Revisión manual con el bot de conciliación (aparte de P2P a propósito:
   // no queremos que revisar cuentas dependa de cuáles están activas para
@@ -252,10 +254,24 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   }
 
   loadCuentas(): void {
-    this.loadingCuentas = true;
+    // El spinner (que esconde la lista) solo en la PRIMERA carga. Antes salía en cada refresco,
+    // y como activar una cuenta dispara un refresco, la lista desaparecía unos segundos justo
+    // cuando el operador iba a elegir la siguiente.
+    this.loadingCuentas = this.cuentasCop.length === 0;
     this.copService.getAll()
       .pipe(finalize(() => this.loadingCuentas = false))
-      .subscribe({ next: c => this.cuentasCop = c ?? [] });
+      .subscribe({
+        next: c => {
+          const nuevas = c ?? [];
+          // Las que se están activando/desactivando en este momento conservan su estado en
+          // pantalla: el refresco pudo salir antes de que el backend guardara el cambio.
+          const actuales = new Map(this.cuentasCop.map(x => [x.id, x]));
+          this.cuentasCop = nuevas.map(n =>
+            n.id != null && this.toggling.has(n.id) && actuales.has(n.id)
+              ? { ...n, activaParaP2P: actuales.get(n.id)!.activaParaP2P, cupoTipoP2P: actuales.get(n.id)!.cupoTipoP2P }
+              : n);
+        }
+      });
   }
 
   loadSyncStatus(): void {
@@ -284,29 +300,34 @@ export class P2PWrapperComponent implements OnInit, OnDestroy {
   }
 
   toggleP2P(cuenta: AccountCop): void {
-    if (!cuenta.id || this.togglingId === cuenta.id) return;
-    this.togglingId = cuenta.id;
-    this.copService.toggleActivaParaP2P(cuenta.id)
-      .pipe(finalize(() => this.togglingId = null))
+    const id = cuenta.id;
+    if (id == null || this.toggling.has(id)) return;
+    this.toggling.add(id);
+    // La lista puede haberse refrescado mientras tanto (objetos nuevos): se actualiza la fila
+    // vigente por id, no la referencia vieja.
+    const fila = () => this.cuentasCop.find(c => c.id === id) ?? cuenta;
+    const tipo = this.filtroTipo;
+    this.copService.toggleActivaParaP2P(id)
       .subscribe({
         next: updated => {
-          cuenta.activaParaP2P = updated.activaParaP2P;
-          // Al activarla, queda con el medio de la pestaña actual (cajero o corresponsal).
-          if (updated.activaParaP2P && cuenta.id) {
-            cuenta.cupoTipoP2P = this.filtroTipo;
-            this.copService.setCupoTipo(cuenta.id, this.filtroTipo).subscribe({
-              next: u => { cuenta.cupoTipoP2P = u.cupoTipoP2P; this.copService.notificarCambioP2P(); }
-            });
+          fila().activaParaP2P = updated.activaParaP2P;
+          if (updated.activaParaP2P) {
+            // Al activarla, queda con el medio de la pestaña actual (cajero o corresponsal).
+            // Se refresca la lista UNA vez, cuando ya quedó guardado también el medio.
+            fila().cupoTipoP2P = tipo;
+            this.copService.setCupoTipo(id, tipo)
+              .pipe(finalize(() => { this.toggling.delete(id); this.copService.notificarCambioP2P(); }))
+              .subscribe({ next: u => fila().cupoTipoP2P = u.cupoTipoP2P });
+          } else {
+            this.toggling.delete(id);
+            this.copService.notificarCambioP2P();
           }
-          this.copService.notificarCambioP2P();
-          this.messageService.add({
-            severity: 'success',
-            summary: updated.activaParaP2P ? 'Cuenta activada' : 'Cuenta desactivada',
-            detail: `${cuenta.name} ${updated.activaParaP2P ? 'incluida en' : 'excluida de'} P2P (${updated.activaParaP2P ? (this.filtroTipo === 'CAJERO' ? 'cajero' : 'corresponsal') : ''})`,
-            life: 2500
-          });
+          // Sin aviso de éxito: el check verde en la fila ya lo dice, y el toast tapaba la lista.
         },
-        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar.' })
+        error: () => {
+          this.toggling.delete(id);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: `No se pudo actualizar ${cuenta.name}.` });
+        }
       });
   }
 

@@ -91,7 +91,7 @@
         <button pButton
           [icon]="c.activaParaP2P ? 'pi pi-check-circle' : 'pi pi-circle'"
           [class]="c.activaParaP2P ? 'p-button-sm p-button-success p-button-text' : 'p-button-sm p-button-secondary p-button-text'"
-          [loading]="togglingId === c.id"
+          [loading]="c.id != null && toggling.has(c.id)"
           (click)="toggleP2P(c)"
           [pTooltip]="c.activaParaP2P ? 'Desactivar' : 'Activar'"
           tooltipPosition="top">

@@ -196,6 +196,12 @@ export class AccountCopService {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/toggle-bloqueo`, {});
   }
 
+  /** Devuelve los cupos de hoy (cajero y corresponsal) al máximo de su banco. Uso excepcional. */
+  restablecerCupo(id: number): Observable<{ cupoCajeroDisponibleHoy: number; cupoCorresponsalDisponibleHoy: number }> {
+    return this.http.post<{ cupoCajeroDisponibleHoy: number; cupoCorresponsalDisponibleHoy: number }>(
+      `${this.apiUrl}/${id}/restablecer-cupo`, {});
+  }
+
   setCupoTipo(id: number, cupoTipoP2P: CupoTipoP2P): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/cupo-tipo`, { cupoTipoP2P });
   }

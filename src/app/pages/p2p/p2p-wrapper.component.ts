@@ -18,6 +18,7 @@ import { VentasPendientesComponent } from './tabs/ventas-pendientes/ventas-pendi
 import { VentasAsignadasComponent } from './tabs/ventas-asignadas/ventas-asignadas.component';
 import { ComprasP2pComponent } from './tabs/compras-p2p/compras-p2p.component';
 import { VentasEnCursoComponent } from './tabs/ventas-en-curso/ventas-en-curso.component';
+import { ChatsHistorialComponent } from './chat/chats-historial.component';
 import { P2PSyncService, ActiveP2POrder } from '../../core/services/p2p-sync.service';
 import { AccountCopService, AccountCop } from '../../core/services/account-cop.service';
 import { RetiradorService } from '../../core/services/retirador.service';
@@ -41,6 +42,7 @@ import { RetiradorService } from '../../core/services/retirador.service';
     VentasAsignadasComponent,
     ComprasP2pComponent,
     VentasEnCursoComponent,
+    ChatsHistorialComponent,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './p2p-wrapper.component.html',

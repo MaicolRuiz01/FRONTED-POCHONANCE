@@ -9,15 +9,27 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { TabViewModule } from 'primeng/tabview';
+import { SidebarModule } from 'primeng/sidebar';
 import { Subscription } from 'rxjs';
 import { finalize, debounceTime } from 'rxjs/operators';
 import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 
-import { P2PSyncService, ActiveP2POrder, SaldoEnCurso } from '../../../../core/services/p2p-sync.service';
+import {
+  P2PSyncService, ActiveP2POrder, SaldoEnCurso, ChatResumenOrden
+} from '../../../../core/services/p2p-sync.service';
+import { ChatOrdenComponent } from '../../chat/chat-orden.component';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
 import { P2PSseService } from '../../../../core/services/p2p-sse.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.service';
+
+/** Estado del envío por chat de la cuenta asignada a una orden (sub-fila). */
+interface EstadoEnvioChat {
+  tipo: 'enviada' | 'pendiente' | 'error' | 'manual';
+  icono: string;
+  texto: string;
+  tooltip: string;
+}
 
 @Component({
   selector: 'app-ventas-en-curso',
@@ -25,7 +37,7 @@ import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.
   imports: [
     CommonModule, FormsModule, TableModule, ButtonModule,
     TagModule, DropdownModule, TooltipModule, ProgressSpinnerModule, DialogModule,
-    TabViewModule
+    TabViewModule, SidebarModule, ChatOrdenComponent
   ],
   templateUrl: './ventas-en-curso.component.html',
   styleUrls: ['./ventas-en-curso.component.css']
@@ -164,6 +176,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.loadOrdenes();
     this.loadAnuncios();
     this.loadAutoAsignacion();
+    this.loadChatAutoEnvio();
+    // Mensajes nuevos del cliente y estado del envío de la cuenta, para cada venta en pantalla.
+    this.resumenChatTimer = setInterval(() => this.refrescarResumenChat(), this.RESUMEN_CHAT_MS);
     this.startCountdown();
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
@@ -198,6 +213,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.saldosSse.disconnect();
     clearInterval(this.countdownTimer);
     clearInterval(this.saldosPollTimer);
+    clearInterval(this.resumenChatTimer);
   }
 
   /** Refresco de saldos COP: saldo real + lo en curso (verde/amarillo) + cupos, calculado en el
@@ -447,6 +463,10 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     }
     this.ordenesEnCurso = enCurso;
     this.ordenesOtras = otras;
+    // Los avisos de chat dependen de la lista de órdenes; si entró una nueva, se consulta ya.
+    const sinResumen = this.ordenes.some(o => !this.resumenChat[o.orderNumber]);
+    this.recomputarChat();
+    if (sinResumen) this.refrescarResumenChat();
   }
 
   /** True si la lista lleva demasiado tiempo sin confirmarse contra Binance. */
@@ -503,6 +523,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       next: () => {
         this.extenderCambioLocal(orderNumber);
         this.refrescarSaldosCop();
+        this.seguirEnvioDeCuenta(orderNumber);
         // Sin toast de "guardada": el cliente lo pidió quitar (molestaba en cada asignación).
         // La confirmación visual es la sub-fila "Cuando complete → cuenta".
         // Aviso (NO bloqueo) si con esta asignación la cuenta se pasa del cupo.
@@ -821,6 +842,187 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   asignarUltima(orden: ActiveP2POrder): void {
     if (this.ultimaCopId == null) return;
     this.dropdownChanged(orden, this.ultimaCopId);
+  }
+
+  // ── Chat de las órdenes ───────────────────────────────────────
+  //
+  // - Al asignar una cuenta COP, el backend le envía sus datos al cliente por el chat
+  //   (interruptor "Chat: ON/OFF"). La sub-fila de cada orden muestra si ya salió.
+  // - Cada orden tiene un ícono de chat con el número de mensajes del cliente que aún no se han
+  //   visto aquí (se guarda en este navegador qué se vio). Clic: abre el chat al costado.
+
+  chatVisible = false;
+  /** Orden cuyo chat está abierto en el panel lateral. */
+  chatOrden: ActiveP2POrder | null = null;
+  /** Proponer en el panel el mensaje con la cuenta asignada (solo si aún no se le envió). */
+  sugerirCuentaEnChat = false;
+
+  chatAutoEnvio = false;
+  chatAutoEnvioCargando = false;
+
+  private resumenChat: Record<string, ChatResumenOrden> = {};
+  /** Derivados cacheados (la vista se repinta cada segundo): se recalculan al llegar datos. */
+  noLeidos: Record<string, number> = {};
+  ultimoEsImagen: Record<string, boolean> = {};
+  tooltipsChat: Record<string, string> = {};
+  estadoEnvio: Record<string, EstadoEnvioChat | undefined> = {};
+
+  /** orderNumber → createTime del último mensaje del cliente ya visto (en este navegador). */
+  private chatVisto: Record<string, number> = this.leerChatVisto();
+  private readonly CHAT_VISTO_KEY = 'poch_chat_visto';
+  /** Órdenes recién asignadas: mientras sale el envío automático se muestran "enviando". */
+  private asignadaRecien: Record<string, number> = {};
+  private resumenChatTimer?: ReturnType<typeof setInterval>;
+  private readonly RESUMEN_CHAT_MS = 10000;
+  private resumenChatEnCurso = false;
+
+  loadChatAutoEnvio(): void {
+    this.syncService.getChatAutoEnvio().subscribe({
+      next: r => { this.chatAutoEnvio = !!r?.activo; this.recomputarChat(); },
+      error: () => { /* silencioso: queda en OFF visual */ }
+    });
+  }
+
+  toggleChatAutoEnvio(): void {
+    if (this.chatAutoEnvioCargando) return;
+    this.chatAutoEnvioCargando = true;
+    this.syncService.setChatAutoEnvio(!this.chatAutoEnvio)
+      .pipe(finalize(() => this.chatAutoEnvioCargando = false))
+      .subscribe({
+        next: r => { this.chatAutoEnvio = !!r?.activo; this.recomputarChat(); },
+        error: () => this.notification.error('No se pudo cambiar el envío automático por chat.')
+      });
+  }
+
+  abrirChat(orden: ActiveP2POrder): void {
+    const r = this.resumenChat[orden.orderNumber];
+    this.sugerirCuentaEnChat = orden.preAsignadoCopId != null
+      && r?.cuentaEnviadaCopId !== orden.preAsignadoCopId;
+    this.chatOrden = orden;
+    this.chatVisible = true;
+    this.marcarChatVisto(orden.orderNumber);
+  }
+
+  /** Al cerrar el panel se destruye la conversación (y con ella su refresco automático). */
+  cerrarChat(): void {
+    this.chatOrden = null;
+  }
+
+  /** Pide al backend los mensajes del cliente y el estado del envío de cada venta en pantalla. */
+  refrescarResumenChat(): void {
+    if (this.resumenChatEnCurso) return;
+    const ordenes = this.ordenes.map(o => ({ orderNumber: o.orderNumber, accountBinance: o.accountBinance }));
+    if (!ordenes.length) {
+      this.resumenChat = {};
+      this.recomputarChat();
+      return;
+    }
+    this.resumenChatEnCurso = true;
+    this.syncService.getResumenChat(ordenes)
+      .pipe(finalize(() => this.resumenChatEnCurso = false))
+      .subscribe({
+        next: lista => {
+          const m: Record<string, ChatResumenOrden> = {};
+          for (const r of lista) m[r.orderNumber] = r;
+          this.resumenChat = m;
+          // El chat abierto se está viendo: lo que llegue ahí no cuenta como "sin ver".
+          if (this.chatOrden) this.marcarChatVisto(this.chatOrden.orderNumber, false);
+          this.recomputarChat();
+        },
+        error: () => { /* silencioso: se reintenta en el próximo ciclo */ }
+      });
+  }
+
+  private marcarChatVisto(orderNumber: string, recomputar = true): void {
+    const tiempos = this.resumenChat[orderNumber]?.clienteTiempos ?? [];
+    const ultimo = tiempos.length ? Math.max(...tiempos) : 0;
+    if (ultimo > (this.chatVisto[orderNumber] ?? 0)) {
+      this.chatVisto = { ...this.chatVisto, [orderNumber]: ultimo };
+      this.guardarChatVisto();
+    }
+    if (recomputar) this.recomputarChat();
+  }
+
+  /** Recalcula los avisos de cada orden (no leídos, tooltip y estado del envío de la cuenta). */
+  private recomputarChat(): void {
+    const ahora = Date.now();
+    const noLeidos: Record<string, number> = {};
+    const imagen: Record<string, boolean> = {};
+    const tooltips: Record<string, string> = {};
+    const estados: Record<string, EstadoEnvioChat | undefined> = {};
+    for (const o of this.ordenes) {
+      const n = o.orderNumber;
+      const r = this.resumenChat[n];
+      const visto = this.chatVisto[n] ?? 0;
+      noLeidos[n] = r ? r.clienteTiempos.filter(t => t > visto).length : 0;
+      imagen[n] = !!r?.ultimoClienteImagen;
+      const quien = o.counterPartNickName || 'el cliente';
+      tooltips[n] = noLeidos[n] > 0
+        ? `${noLeidos[n]} mensaje(s) nuevo(s) de ${quien}: ${r?.ultimoClienteTexto ?? ''}`
+        : (r?.ultimoClienteTexto ? `Último de ${quien}: ${r.ultimoClienteTexto}` : `Abrir el chat con ${quien}`);
+      estados[n] = this.calcularEstadoEnvio(o, r, ahora);
+    }
+    this.noLeidos = noLeidos;
+    this.ultimoEsImagen = imagen;
+    this.tooltipsChat = tooltips;
+    this.estadoEnvio = estados;
+  }
+
+  tooltipChat(o: ActiveP2POrder): string {
+    return this.tooltipsChat[o.orderNumber] ?? 'Abrir el chat de la orden';
+  }
+
+  private calcularEstadoEnvio(o: ActiveP2POrder, r: ChatResumenOrden | undefined, ahora: number): EstadoEnvioChat | undefined {
+    if (o.preAsignadoCopId == null) return undefined;
+    if (r?.cuentaEnviadaCopId === o.preAsignadoCopId) {
+      return {
+        tipo: 'enviada', icono: 'pi-check',
+        texto: `Cuenta enviada${r.cuentaEnviadaHora ? ' ' + r.cuentaEnviadaHora : ''}`,
+        tooltip: 'Los datos de esta cuenta ya le llegaron al cliente por el chat. Clic para ver el chat.'
+      };
+    }
+    if (r?.envioError) {
+      return {
+        tipo: 'error', icono: 'pi-exclamation-triangle', texto: 'No se envió la cuenta',
+        tooltip: `${r.envioError} — clic para abrir el chat y enviarla a mano`
+      };
+    }
+    const recien = (this.asignadaRecien[o.orderNumber] ?? 0) > ahora;
+    if (r?.envioPendiente || (this.chatAutoEnvio && recien && o.status === this.ESTADO_EN_CURSO)) {
+      return {
+        tipo: 'pendiente', icono: 'pi-clock', texto: 'Enviando cuenta…',
+        tooltip: 'En unos segundos se le envían al cliente los datos de esta cuenta por el chat.'
+      };
+    }
+    return {
+      tipo: 'manual', icono: 'pi-send', texto: 'Enviar por chat',
+      tooltip: 'Abrir el chat de la orden para enviarle al cliente los datos de esta cuenta'
+    };
+  }
+
+  /** Tras asignar: muestra "enviando" y consulta un par de veces hasta que el envío se confirme. */
+  private seguirEnvioDeCuenta(orderNumber: string): void {
+    if (!this.chatAutoEnvio) return;
+    this.asignadaRecien[orderNumber] = Date.now() + 20000;
+    this.recomputarChat();
+    setTimeout(() => this.refrescarResumenChat(), 8000);
+    setTimeout(() => this.refrescarResumenChat(), 14000);
+  }
+
+  private leerChatVisto(): Record<string, number> {
+    try {
+      const raw = localStorage.getItem('poch_chat_visto');
+      const v = raw ? JSON.parse(raw) : {};
+      return v && typeof v === 'object' ? v : {};
+    } catch { return {}; }
+  }
+
+  private guardarChatVisto(): void {
+    try {
+      // Solo se guardan las órdenes recientes (las más nuevas 300) para que no crezca sin fin.
+      const entradas = Object.entries(this.chatVisto).sort((a, b) => b[1] - a[1]).slice(0, 300);
+      localStorage.setItem(this.CHAT_VISTO_KEY, JSON.stringify(Object.fromEntries(entradas)));
+    } catch { /* sin almacenamiento: los avisos solo duran mientras la página esté abierta */ }
   }
 
   /** Extrae solo la hora de un createTime con formato "YYYY-MM-DD HH:mm:ss" */

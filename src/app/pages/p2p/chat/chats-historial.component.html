@@ -1,0 +1,76 @@
+<div class="ch-wrap">
+
+  <!-- Barra: acceso por cuenta, filtros y recarga -->
+  <div class="ch-barra">
+    <div class="ch-chips">
+      <button type="button" class="ch-chip" [class.ch-chip--on]="filtroCuenta === null" (click)="cambiarCuenta(null)">
+        Todas
+      </button>
+      <button *ngFor="let c of cuentas" type="button" class="ch-chip"
+              [class.ch-chip--on]="filtroCuenta === c.cuenta" (click)="cambiarCuenta(c.cuenta)"
+              [title]="c.ok ? 'Puede usar el chat' : (c.error || c.message || 'Sin acceso al chat')">
+        <i class="pi" [ngClass]="c.ok ? 'pi-check-circle ch-ok' : 'pi-times-circle ch-mal'"></i>
+        {{ c.cuenta }}
+      </button>
+    </div>
+    <div class="ch-chips">
+      <button *ngFor="let h of opcionesHoras" type="button" class="ch-chip"
+              [class.ch-chip--on]="horas === h" (click)="cambiarHoras(h)">{{ h }} h</button>
+      <button type="button" class="ch-chip" (click)="cargarOrdenes()" [disabled]="cargandoOrdenes" title="Recargar órdenes">
+        <i class="pi" [ngClass]="cargandoOrdenes || cargandoCuentas ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngFor="let e of erroresOrdenes" class="ch-error">{{ e }}</div>
+
+  <div class="ch-cuerpo">
+    <!-- Lista de órdenes -->
+    <div class="ch-lista">
+      <input type="text" class="ch-buscar" [(ngModel)]="busqueda" (ngModelChange)="filtrar()"
+             placeholder="Buscar por usuario o número de orden">
+      <div class="ch-items">
+        <div *ngIf="!cargandoOrdenes && ordenesFiltradas.length === 0" class="ch-nota ch-centro">
+          No hay órdenes en las últimas {{ horas }} h.
+        </div>
+        <button *ngFor="let o of ordenesFiltradas; trackBy: trackByOrden" type="button" class="ch-item"
+                [class.ch-item--sel]="seleccionada?.orderNumber === o.orderNumber" (click)="elegir(o)">
+          <div class="ch-item-l1">
+            <span class="ch-nick">{{ o.counterPartNickName || 'Usuario sin nombre' }}</span>
+            <span class="ch-hora">{{ o.hora }}</span>
+          </div>
+          <div class="ch-item-l2">
+            <span class="ch-estado" [ngClass]="claseEstado(o.status)">{{ estadoCorto(o.status) }}</span>
+            <span>{{ o.tradeType === 'BUY' ? 'Compra' : 'Venta' }}</span>
+            <span>· {{ monto(o) }}</span>
+            <span class="ch-cuenta">· {{ o.accountBinance }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Conversación -->
+    <div class="ch-chat">
+      <ng-container *ngIf="seleccionada; else sinSeleccion">
+        <div class="ch-chat-head">
+          <div>
+            <div class="ch-nick ch-nick--grande">{{ seleccionada.counterPartNickName || 'Usuario sin nombre' }}</div>
+            <div class="ch-nota">
+              Orden {{ seleccionada.orderNumber }} · {{ seleccionada.accountBinance }} ·
+              {{ estadoCorto(seleccionada.status) }} · {{ monto(seleccionada) }}
+            </div>
+          </div>
+        </div>
+        <app-chat-orden class="ch-chat-body"
+                        [cuenta]="seleccionada.accountBinance"
+                        [orderNumber]="seleccionada.orderNumber"></app-chat-orden>
+      </ng-container>
+      <ng-template #sinSeleccion>
+        <div class="ch-vacio">
+          <i class="pi pi-comments"></i>
+          <span>Elige una orden para ver su chat.</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

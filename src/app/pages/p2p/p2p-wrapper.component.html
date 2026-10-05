@@ -233,12 +233,26 @@
 
     <!-- Ventas Asignadas y Compras P2P se movieron a Movimientos → Asignadas → P2P.
          Aquí queda una única vista de ventas en curso. -->
+    <!-- Dos secciones: Ventas en curso (la principal, abierta por defecto) e Historial de chats.
+         Ventas en curso se monta siempre (sus refrescos siguen aunque se mire el historial);
+         el historial solo se carga la primera vez que se abre su pestaña. -->
     <div class="card p-3">
-      <div class="flex align-items-center gap-2 mb-3">
-        <i class="pi pi-sync text-yellow-500"></i>
-        <h3 class="m-0">Ventas en curso</h3>
-      </div>
-      <app-ventas-en-curso></app-ventas-en-curso>
+      <p-tabView>
+        <p-tabPanel>
+          <ng-template pTemplate="header">
+            <i class="pi pi-sync text-yellow-500 mr-2"></i><span>Ventas en curso</span>
+          </ng-template>
+          <app-ventas-en-curso></app-ventas-en-curso>
+        </p-tabPanel>
+        <p-tabPanel>
+          <ng-template pTemplate="header">
+            <i class="pi pi-comments mr-2"></i><span>Historial de chats</span>
+          </ng-template>
+          <ng-template pTemplate="content">
+            <app-chats-historial></app-chats-historial>
+          </ng-template>
+        </p-tabPanel>
+      </p-tabView>
     </div>
 
     <!-- Botón discreto al final de la página: revisar cuentas Bancolombia con el

@@ -648,3 +648,80 @@
     gap: 8px;
   }
 }
+
+/* ══════════════════════════════════════════
+   CHAT DE BINANCE — botón por orden + panel
+══════════════════════════════════════════ */
+.vc-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+  background: transparent;
+  border: 1px solid rgba(37,99,235,.35);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.vc-chat-btn:hover { background: rgba(37,99,235,.08); }
+.vc-chat-btn .pi { font-size: 0.72rem; }
+.vc-chat-btn--enviada {
+  color: #059669;
+  border-color: rgba(5,150,105,.35);
+}
+.vc-chat-btn--enviada:hover { background: rgba(5,150,105,.08); }
+.vc-chat-btn--pendiente {
+  color: #b45309;
+  border-color: rgba(217,119,6,.35);
+}
+.vc-chat-btn--pendiente:hover { background: rgba(217,119,6,.08); }
+.vc-chat-btn--error {
+  color: #b91c1c;
+  border-color: rgba(220,38,38,.4);
+  background: rgba(220,38,38,.06);
+}
+.vc-chat-btn--error:hover { background: rgba(220,38,38,.12); }
+
+/* Ícono de chat por orden + contador de mensajes del cliente sin ver */
+.vc-chat-ico {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--surface-border, #e5e7eb);
+  background: transparent;
+  color: var(--text-color-secondary, #6b7280);
+  cursor: pointer;
+}
+.vc-chat-ico:hover { color: #2563eb; border-color: rgba(37,99,235,.4); }
+.vc-chat-ico .pi { font-size: 0.8rem; }
+.vc-chat-ico--nuevo {
+  color: #dc2626;
+  border-color: rgba(220,38,38,.45);
+  background: rgba(220,38,38,.07);
+}
+.vc-chat-badge {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* Encabezado del panel lateral del chat */
+.vc-chat-sb-head { display: flex; flex-direction: column; gap: 2px; }
+.vc-chat-sb-nick { font-size: 1rem; font-weight: 700; color: var(--text-color, #111827); }
+.vc-chat-sb-sub  { font-size: 0.75rem; color: var(--text-color-secondary, #6b7280); }

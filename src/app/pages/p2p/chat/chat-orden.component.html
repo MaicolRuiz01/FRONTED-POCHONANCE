@@ -1,0 +1,45 @@
+<div class="co-wrap">
+
+  <!-- Conversación -->
+  <div class="co-head">
+    <span class="co-nota">
+      Conversación <ng-container *ngIf="mensajes">({{ mensajes.length }})</ng-container>
+    </span>
+    <button type="button" class="co-link" (click)="cargar()" [disabled]="cargando">
+      <i class="pi" [ngClass]="cargando ? 'pi-spin pi-spinner' : 'pi-refresh'"></i> Recargar
+    </button>
+  </div>
+
+  <div *ngIf="error" class="co-error">{{ error }}</div>
+
+  <div #conv class="co-conv">
+    <div *ngIf="mensajes === null && cargando" class="co-nota co-centro">Cargando chat…</div>
+    <div *ngIf="mensajes?.length === 0" class="co-nota co-centro">Sin mensajes en esta orden.</div>
+    <div *ngFor="let m of mensajes; trackBy: trackByMensaje"
+         class="co-burbuja" [class.co-burbuja--yo]="m.self" [class.co-burbuja--sistema]="m.type === 'system'">
+      <a *ngIf="m.imageUrl || m.thumbnailUrl" [href]="m.imageUrl || m.thumbnailUrl" target="_blank" rel="noopener">
+        <img [src]="m.thumbnailUrl || m.imageUrl" alt="Imagen del chat" class="co-img">
+      </a>
+      <div *ngIf="m.content" class="co-txt">{{ m.content }}</div>
+      <div *ngIf="!m.content && !m.imageUrl && !m.thumbnailUrl" class="co-txt co-nota">[{{ m.type || 'mensaje' }}]</div>
+      <div class="co-meta">
+        {{ m.self ? 'Tú' : (m.fromNickName || 'Cliente') }} · {{ m.hora }}
+        <i *ngIf="m.self" class="pi" [ngClass]="m.status === 'read' ? 'pi-check-circle' : 'pi-check'"
+           [title]="m.status === 'read' ? 'Leído' : 'Enviado'"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Escribir -->
+  <div *ngIf="errorEnvio" class="co-error">{{ errorEnvio }}</div>
+  <textarea class="co-textarea" rows="4" [(ngModel)]="texto" (keydown)="teclaEnTexto($event)"
+            [placeholder]="armandoTexto ? 'Armando el mensaje con la cuenta asignada…' : 'Escribe un mensaje (Enter envía, Shift+Enter salto de línea)'"></textarea>
+  <div class="co-acciones">
+    <button *ngIf="sugerirCuentaAsignada" type="button" class="co-link" (click)="armarMensajeCuenta()" [disabled]="armandoTexto">
+      <i class="pi pi-id-card"></i> Datos de la cuenta asignada
+    </button>
+    <span class="co-espacio"></span>
+    <button pButton type="button" label="Enviar" icon="pi pi-send" class="p-button-sm"
+            [disabled]="!puedeEnviar" [loading]="enviando" (click)="enviar()"></button>
+  </div>
+</div>

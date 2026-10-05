@@ -171,6 +171,20 @@
       Auto: {{ autoAsignacion ? 'ON' : 'OFF' }}
     </button>
 
+    <!-- Interruptor: al asignar una cuenta COP, enviarle sus datos al cliente por el chat -->
+    <button type="button"
+            class="vc-auto-btn"
+            [class.on]="chatAutoEnvio"
+            [disabled]="chatAutoEnvioCargando"
+            (click)="toggleChatAutoEnvio()"
+            [pTooltip]="chatAutoEnvio
+              ? 'Envío automático ACTIVO — al asignar una cuenta COP, sus datos le llegan al cliente por el chat'
+              : 'Envío automático apagado — la cuenta se envía a mano desde el chat de cada orden'"
+            tooltipPosition="top">
+      <i class="pi" [ngClass]="chatAutoEnvioCargando ? 'pi-spin pi-spinner' : 'pi-send'"></i>
+      Chat: {{ chatAutoEnvio ? 'ON' : 'OFF' }}
+    </button>
+
     <span class="vc-countdown" [class.urgent]="countdown <= 5">
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>
@@ -295,6 +309,14 @@
             <span class="vc-account-badge">
               <i class="pi pi-wallet"></i> {{ orden.accountBinance }}
             </span>
+            <!-- Chat de la orden: el número rojo son los mensajes del cliente que aún no se han visto -->
+            <button type="button" class="vc-chat-ico"
+                    [class.vc-chat-ico--nuevo]="noLeidos[orden.orderNumber] > 0"
+                    (click)="abrirChat(orden)"
+                    [pTooltip]="tooltipChat(orden)" tooltipPosition="top">
+              <i class="pi" [ngClass]="ultimoEsImagen[orden.orderNumber] && noLeidos[orden.orderNumber] > 0 ? 'pi-image' : 'pi-comments'"></i>
+              <span *ngIf="noLeidos[orden.orderNumber] > 0" class="vc-chat-badge">{{ noLeidos[orden.orderNumber] }}</span>
+            </button>
           </div>
         </td>
 
@@ -343,6 +365,14 @@
               <i class="pi pi-bookmark-fill"></i>
               Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
             </span>
+            <!-- Estado del envío de esta cuenta al cliente por el chat (automático al asignar).
+                 Clic: abre el chat de la orden (para ver, reenviar o enviar a mano). -->
+            <button *ngIf="estadoEnvio[orden.orderNumber] as e" type="button" class="vc-chat-btn"
+                    [ngClass]="'vc-chat-btn--' + e.tipo"
+                    (click)="abrirChat(orden)"
+                    [pTooltip]="e.tooltip" tooltipPosition="left">
+              <i class="pi" [ngClass]="e.icono"></i> {{ e.texto }}
+            </button>
           </div>
         </td>
       </tr>
@@ -357,6 +387,30 @@
 
   </p-table>
 </ng-template>
+
+<!-- ══════════════════════════════════════════
+     PANEL LATERAL — CHAT DE LA ORDEN
+     Se abre desde "Enviar por chat" de cada orden: muestra la conversación con el cliente y
+     deja listo el mensaje con la cuenta COP asignada. Va al costado para no tapar la tabla.
+══════════════════════════════════════════ -->
+<!-- Sin máscara (modal=false): la tabla sigue usable mientras el chat está abierto. -->
+<p-sidebar [(visible)]="chatVisible" position="right" (onHide)="cerrarChat()"
+           [modal]="false" [blockScroll]="false" [style]="{ width: '440px', maxWidth: '100vw' }">
+  <ng-template pTemplate="header">
+    <div *ngIf="chatOrden" class="vc-chat-sb-head">
+      <div class="vc-chat-sb-nick">{{ chatOrden.counterPartNickName || 'Cliente' }}</div>
+      <div class="vc-chat-sb-sub">
+        {{ chatOrden.accountBinance }} · ${{ (chatOrden.pesosCop * 1000) | number:'1.0-0' }} ·
+        {{ horaCorta(chatOrden.createTime) }} · {{ chatOrden.preAsignadoCopNombre || 'sin cuenta' }}
+      </div>
+    </div>
+  </ng-template>
+  <app-chat-orden *ngIf="chatOrden"
+                  [cuenta]="chatOrden.accountBinance"
+                  [orderNumber]="chatOrden.orderNumber"
+                  [sugerirCuentaAsignada]="sugerirCuentaEnChat"
+                  (enviado)="refrescarResumenChat()"></app-chat-orden>
+</p-sidebar>
 
 <!-- ══════════════════════════════════════════
      MODAL AUTOMÁTICO — CUPO LLENO

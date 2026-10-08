@@ -23,7 +23,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
     CommonModule, FormsModule, TableModule, ButtonModule, DialogModule,
     DropdownModule, CalendarModule, ProgressSpinnerModule, TagModule, TooltipModule
   ],
-  templateUrl: './ventas-asignadas.component.html'
+  templateUrl: './ventas-asignadas.component.html',
+  styleUrls: ['./ventas-asignadas.component.css']
 })
 export class VentasAsignadasComponent implements OnInit {
   ventas: SaleP2PDto[] = [];
@@ -42,6 +43,30 @@ export class VentasAsignadasComponent implements OnInit {
 
   /** Filtro por cuenta COP (nombre) para la tabla de asignadas. null = todas. */
   filtroCop: string | null = null;
+
+  /** Orden recién copiada: muestra "copiado" un momento (sin toast). */
+  ordenCopiada: string | null = null;
+  private ordenCopiadaTimer?: ReturnType<typeof setTimeout>;
+
+  /** Copia el número de orden COMPLETO (en celular se ve recortado). */
+  async copiarOrden(numero: string | undefined, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!numero) return;
+    try {
+      await navigator.clipboard.writeText(numero);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = numero;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+    }
+    this.ordenCopiada = numero;
+    clearTimeout(this.ordenCopiadaTimer);
+    this.ordenCopiadaTimer = setTimeout(() => this.ordenCopiada = null, 1500);
+  }
 
   constructor(
     private saleService: SaleP2PService,

@@ -202,6 +202,12 @@ export class AccountCopService {
       `${this.apiUrl}/${id}/restablecer-cupo`, {});
   }
 
+  /** Restablece el cupo de hoy de TODAS las cuentas COP. Uso excepcional. */
+  restablecerCupoTodas(): Observable<{ restablecidas: number; sinBanco: number }> {
+    return this.http.post<{ restablecidas: number; sinBanco: number }>(
+      `${this.apiUrl}/restablecer-cupo-todas`, {});
+  }
+
   setCupoTipo(id: number, cupoTipoP2P: CupoTipoP2P): Observable<AccountCop> {
     return this.http.patch<AccountCop>(`${this.apiUrl}/${id}/cupo-tipo`, { cupoTipoP2P });
   }

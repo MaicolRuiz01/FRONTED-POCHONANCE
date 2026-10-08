@@ -19,21 +19,38 @@
     <!-- ══ VENTAS P2P ══ -->
     <p-tabPanel header="Ventas P2P">
       <ng-container *ngIf="!loadingVentas; else cargando">
-        <p-table [value]="ventas" [paginator]="ventas.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+        <ng-container *ngTemplateOutlet="buscador"></ng-container>
+
+        <!-- Resumen: lo que se ve en la tabla (respeta la búsqueda) -->
+        <div class="lv-resumen" *ngIf="ventas.length > 0">
+          <div class="lv-stat">
+            <span class="lv-stat-label">Hoy</span>
+            <span class="lv-stat-val">{{ totalVentasHoyCop | currency:'COP':'$':'1.0-0' }}</span>
+            <span class="lv-stat-sub">{{ ventasHoy.length }} venta(s)</span>
+          </div>
+          <div class="lv-stat">
+            <span class="lv-stat-label">{{ busquedaOrden ? 'Coincidencias' : 'Total' }}</span>
+            <span class="lv-stat-val">{{ totalVentasCop | currency:'COP':'$':'1.0-0' }}</span>
+            <span class="lv-stat-sub">{{ ventasFiltradas.length }} venta(s)</span>
+          </div>
+        </div>
+
+        <p-table [value]="ventasFiltradas" [paginator]="ventasFiltradas.length > 15" [rows]="15"
+                 [rowsPerPageOptions]="[15, 30, 50]" styleClass="p-datatable-sm p-datatable-striped lv-tabla" [scrollable]="true">
           <ng-template pTemplate="header">
-            <tr><th>Fecha</th><th>Orden</th><th class="tr">USDT</th><th class="tr">Pesos</th><th class="tr">Tasa</th><th>Cuenta Binance</th></tr>
+            <tr><th>Fecha</th><th>Orden</th><th class="tr">USDT</th><th class="tr">Pesos</th><th class="tr lv-col-opc">Tasa</th><th class="lv-col-opc">Cuenta Binance</th></tr>
           </ng-template>
           <ng-template pTemplate="body" let-v>
             <tr>
-              <td>{{ v.date | date:'dd/MM/yy HH:mm' }}</td>
-              <td>{{ v.numberOrder }}</td>
+              <td class="lv-fecha">{{ v.date | date:'dd/MM/yy HH:mm' }}</td>
+              <td><ng-container *ngTemplateOutlet="ordenNum; context: { $implicit: v.numberOrder }"></ng-container></td>
               <td class="tr">{{ v.dollarsUs | number:'1.0-2' }}</td>
-              <td class="tr">{{ v.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
-              <td class="tr">{{ v.tasa | number:'1.0-2' }}</td>
-              <td>{{ v.binanceAccount?.name || v.nameAccountBinance || '—' }}</td>
+              <td class="tr lv-monto">{{ v.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr lv-col-opc">{{ v.tasa | number:'1.0-2' }}</td>
+              <td class="lv-col-opc">{{ v.binanceAccount?.name || v.nameAccountBinance || '—' }}</td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="lv-empty">Sin ventas P2P para esta cuenta.</td></tr></ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="lv-empty">{{ busquedaOrden ? 'Ninguna venta coincide con ese número de orden.' : 'Sin ventas P2P para esta cuenta.' }}</td></tr></ng-template>
         </p-table>
       </ng-container>
     </p-tabPanel>
@@ -41,22 +58,24 @@
     <!-- ══ COMPRAS P2P ══ -->
     <p-tabPanel header="Compras P2P">
       <ng-container *ngIf="!loadingCompras; else cargando">
-        <p-table [value]="compras" [paginator]="compras.length > 12" [rows]="12" styleClass="p-datatable-sm" [scrollable]="true">
+        <ng-container *ngTemplateOutlet="buscador"></ng-container>
+        <p-table [value]="comprasFiltradas" [paginator]="comprasFiltradas.length > 15" [rows]="15"
+                 [rowsPerPageOptions]="[15, 30, 50]" styleClass="p-datatable-sm p-datatable-striped lv-tabla" [scrollable]="true">
           <ng-template pTemplate="header">
-            <tr><th>Fecha</th><th>Orden</th><th class="tr">USDT</th><th class="tr">Pesos (total)</th><th class="tr">Asignado a esta cuenta</th><th class="tr">Tasa</th><th>Cuenta Binance</th></tr>
+            <tr><th>Fecha</th><th>Orden</th><th class="tr lv-col-opc">USDT</th><th class="tr lv-col-opc">Pesos (total)</th><th class="tr">Asignado a esta cuenta</th><th class="tr lv-col-opc">Tasa</th><th class="lv-col-opc">Cuenta Binance</th></tr>
           </ng-template>
           <ng-template pTemplate="body" let-c>
             <tr>
-              <td>{{ c.date | date:'dd/MM/yy HH:mm' }}</td>
-              <td>{{ c.numberOrder }}</td>
-              <td class="tr">{{ c.dollarsUs | number:'1.0-2' }}</td>
-              <td class="tr">{{ c.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
-              <td class="tr"><strong>{{ c.montoAsignado | currency:'COP':'$':'1.0-0' }}</strong></td>
-              <td class="tr">{{ c.tasa | number:'1.0-2' }}</td>
-              <td>{{ c.binanceAccountName || '—' }}</td>
+              <td class="lv-fecha">{{ c.date | date:'dd/MM/yy HH:mm' }}</td>
+              <td><ng-container *ngTemplateOutlet="ordenNum; context: { $implicit: c.numberOrder }"></ng-container></td>
+              <td class="tr lv-col-opc">{{ c.dollarsUs | number:'1.0-2' }}</td>
+              <td class="tr lv-col-opc">{{ c.pesosCop | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr lv-monto">{{ c.montoAsignado | currency:'COP':'$':'1.0-0' }}</td>
+              <td class="tr lv-col-opc">{{ c.tasa | number:'1.0-2' }}</td>
+              <td class="lv-col-opc">{{ c.binanceAccountName || '—' }}</td>
             </tr>
           </ng-template>
-          <ng-template pTemplate="emptymessage"><tr><td colspan="7" class="lv-empty">Sin compras P2P asignadas a esta cuenta.</td></tr></ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="7" class="lv-empty">{{ busquedaOrden ? 'Ninguna compra coincide con ese número de orden.' : 'Sin compras P2P asignadas a esta cuenta.' }}</td></tr></ng-template>
         </p-table>
       </ng-container>
     </p-tabPanel>
@@ -162,6 +181,29 @@
     </p-tabPanel>
 
   </p-tabView>
+
+  <!-- Buscador por número de orden (compartido por Ventas y Compras P2P) -->
+  <ng-template #buscador>
+    <div class="lv-buscar">
+      <i class="pi pi-search"></i>
+      <input pInputText type="search" inputmode="numeric" [(ngModel)]="busquedaOrden"
+             placeholder="Buscar por número de orden (o sus últimos dígitos)" />
+    </div>
+  </ng-template>
+
+  <!-- Número de orden: completo en computador, 5 primeros en celular; el botón copia el COMPLETO -->
+  <ng-template #ordenNum let-numero>
+    <span *ngIf="numero; else sinOrden" class="lv-orden">
+      <span class="lv-orden-num lv-orden-larga">{{ numero }}</span>
+      <span class="lv-orden-num lv-orden-corta">{{ numero | slice:0:5 }}…</span>
+      <button type="button" class="lv-copy" [class.copiado]="ordenCopiada === numero"
+              [title]="ordenCopiada === numero ? 'Copiado' : 'Copiar número de orden'"
+              (click)="copiarOrden(numero, $event)">
+        <i class="pi" [ngClass]="ordenCopiada === numero ? 'pi-check' : 'pi-copy'"></i>
+      </button>
+    </span>
+    <ng-template #sinOrden>—</ng-template>
+  </ng-template>
 
   <ng-template #cargando>
     <div class="lv-loading"><p-progressSpinner strokeWidth="4" [style]="{'width':'34px','height':'34px'}"></p-progressSpinner></div>

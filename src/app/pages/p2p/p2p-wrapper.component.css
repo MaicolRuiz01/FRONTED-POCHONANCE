@@ -369,3 +369,36 @@
   color: var(--text-color-secondary, #64748b);
   white-space: nowrap;
 }
+
+/* ══════════════════════════════════════════
+   CELULAR — aprovechar el ancho
+   Había cuatro cajas anidadas sumando margen a cada lado (página 32px + columna 8px +
+   tarjeta 16px + pestañas 20px ≈ 76px por lado): en un teléfono de 375px quedaban ~220px
+   útiles y el selector de cuenta COP se cortaba. Solo esta pantalla y solo en celular.
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Recupera parte del margen de la página (común a todas las pantallas, no se toca allá). */
+  :host {
+    display: block;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+  }
+
+  .grid { margin: 0; }
+  .grid > .col-12 { padding: 0; }
+
+  /* .p-3 de PrimeFlex lleva !important, por eso hace falta aquí también. */
+  .card.p-3 {
+    padding: 0.75rem !important;
+    border-radius: 10px;
+  }
+
+  /* Pestañas "Ventas en curso / Historial de chats": sin margen lateral propio. */
+  :host ::ng-deep .p-tabview .p-tabview-panels {
+    padding: 0.75rem 0 0;
+  }
+  :host ::ng-deep .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    padding: 0.75rem 0.6rem;
+    white-space: nowrap;
+  }
+}

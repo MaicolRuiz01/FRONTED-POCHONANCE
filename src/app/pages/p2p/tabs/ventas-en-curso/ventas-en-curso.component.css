@@ -117,7 +117,8 @@
   padding: 8px 14px;
   margin-bottom: 12px;
 }
-.vc-warning i { color: #d97706; }
+.vc-warning i { color: #d97706; flex-shrink: 0; }
+.vc-warning span { flex: 1; min-width: 0; line-height: 1.4; }
 
 /* ── Sub-fila pre-asignación ── */
 .vc-subrow td {
@@ -725,3 +726,145 @@
 .vc-chat-sb-head { display: flex; flex-direction: column; gap: 2px; }
 .vc-chat-sb-nick { font-size: 1rem; font-weight: 700; color: var(--text-color, #111827); }
 .vc-chat-sb-sub  { font-size: 0.75rem; color: var(--text-color-secondary, #6b7280); }
+
+/* ══════════════════════════════════════════
+   NÚMERO DE ORDEN — corto en pantalla, se copia completo
+══════════════════════════════════════════ */
+.vc-orden { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.vc-orden-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary, #6b7280);
+}
+.vc-orden-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border: none; border-radius: 6px; background: none;
+  color: #94a3b8; cursor: pointer; line-height: 1;
+}
+.vc-orden-copy:hover { color: #4f46e5; background: rgba(79,70,229,.08); }
+.vc-orden-copy.copiado { color: #16a34a; }
+.vc-orden-copy .pi { font-size: 0.8rem; }
+/* ══════════════════════════════════════════
+   FILAS COMPACTAS DE ÓRDENES (solo celular)
+   En computador se sigue usando la tabla; bajo 768px se cambia a estas filas.
+══════════════════════════════════════════ */
+.vc-cards { display: none; }
+
+.vc-mrow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 2px 10px 8px;
+  border-bottom: 1px solid var(--surface-border, #e5e7eb);
+  border-left: 3px solid transparent;
+}
+.vc-mrow--payed  { border-left-color: #16a34a; background: #f0fdf4; }
+.vc-mrow--appeal { border-left-color: #dc2626; background: #fef2f2; }
+
+.vc-mrow-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.vc-mrow-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.vc-mrow-sub {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  font-size: 0.72rem; color: var(--text-color-secondary, #6b7280);
+}
+:host ::ng-deep .vc-mrow-tag { font-size: 0.62rem; padding: 1px 6px; }
+
+.vc-mrow-monto { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; flex-shrink: 0; }
+.vc-mrow-cop  { font-size: 1.05rem; font-weight: 800; color: var(--text-color, #111827); font-variant-numeric: tabular-nums; }
+.vc-mrow-tasa { font-size: 0.68rem; color: var(--text-color-secondary, #9ca3af); }
+
+/* Estado del envío de la cuenta al cliente, junto al selector (estilo WhatsApp). */
+.vc-envio-ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 30px; height: 40px;
+  border: none; background: none; padding: 0; cursor: pointer;
+  color: #94a3b8; font-size: 0.85rem;
+}
+.vc-envio-ico--enviada { color: #16a34a; }
+.vc-envio-ico--error   { color: #dc2626; font-size: 1rem; }
+.vc-doble-check { display: inline-flex; }
+.vc-doble-check .pi + .pi { margin-left: -7px; }
+
+@media (max-width: 768px) {
+
+  /* Tabla fuera, filas dentro. */
+  .vc-tabla-desktop { display: none; }
+  .vc-cards { display: flex; flex-direction: column; }
+
+  /* El selector no puede empujar el botón "=" fuera de la pantalla: se encoge y corta el
+     nombre con "…" en vez de crecer con el texto ("Javier Rivera — cupo lleno"). */
+  .vc-card-assign { gap: 6px; }
+  .vc-card-assign p-dropdown { flex: 1 1 0; min-width: 0; }
+  :host ::ng-deep .vc-card-assign .p-dropdown { width: 100%; min-width: 0; }
+  :host ::ng-deep .vc-card-assign .p-dropdown-label {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    padding-top: 9px; padding-bottom: 9px;
+  }
+  .vc-card-assign .vc-repeat-btn { width: 42px; height: 40px; flex: 0 0 42px; }
+
+  /* Nombre de la cuenta más chico: cabe más y la fila se ve menos cargada. */
+  :host ::ng-deep .vc-card-assign .p-dropdown-label { font-size: 0.78rem; }
+
+  /* Cuenta ya enviada al cliente: el selector se pinta de verde. Error: rojo. */
+  :host ::ng-deep .vc-envio--enviada .p-dropdown { border-color: #16a34a; background: #f0fdf4; }
+  :host ::ng-deep .vc-envio--enviada .p-dropdown-label { color: #15803d; font-weight: 600; }
+  :host ::ng-deep .vc-envio--error .p-dropdown { border-color: #dc2626; background: #fef2f2; }
+
+  /* ── Cuentas COP activas: dos columnas ──
+     Antes cada cuenta ocupaba un renglón entero (había que bajar media pantalla antes de ver
+     una venta). Se probó una fila deslizable y no gustó; quedan de dos en dos. */
+  .cop-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .cop-mini-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "dot body icons"
+      "dot body remove";
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 4px;
+    min-width: 0;
+    max-width: none;
+    padding: 6px 7px;
+  }
+  .cop-mini-dot    { grid-area: dot; }
+  .cop-mini-body   { grid-area: body; min-width: 0; }
+  .cop-mini-icons  { grid-area: icons; justify-self: end; gap: 3px; }
+  .cop-mini-remove { grid-area: remove; justify-self: end; width: 26px; height: 26px; }
+  .cop-mini-icon   { width: 22px; height: 22px; font-size: 0.72rem; }
+  .cop-mini-name   { font-size: 0.74rem; }
+
+  /* Aviso de "sin anuncios": compacto, no debe empujar las ventas hacia abajo. */
+  .vc-anuncios-empty { padding: 8px 12px; font-size: 0.74rem; }
+
+  /* Pestañas: que "En curso" y "Otros estados" no se partan en dos renglones. */
+  :host ::ng-deep .vc-tabs .p-tabview-nav-link {
+    white-space: nowrap;
+    padding: 10px 12px !important;
+    gap: 6px;
+  }
+  :host ::ng-deep .vc-tabs .p-tabview-panels { padding: 6px 0 0; }
+}
+
+/* ══════════════════════════════════════════
+   VENTA QUE PASÓ A SU CUENTA DEL CUPO (entró con la tolerancia)
+   Rojo claro: es un aviso, no un error; la venta está bien asignada.
+══════════════════════════════════════════ */
+.vc-row-excede td { background: #fef2f2 !important; }
+.vc-row-excede td:first-child { box-shadow: inset 3px 0 0 #dc2626; }
+.vc-excede-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 700; color: #b91c1c;
+  background: #fee2e2; border: 1px solid #fecaca;
+  border-radius: 999px; padding: 2px 9px;
+}
+.vc-excede-badge .pi { font-size: .7rem; }
+
+.vc-mrow--excede { border-left-color: #dc2626; background: #fef2f2; }
+.vc-excede-txt { font-size: .68rem; font-weight: 700; color: #b91c1c; }

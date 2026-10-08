@@ -60,7 +60,10 @@ export class OrdenesCriptoComponent implements OnInit {
       .listar(this.filtroCuenta || undefined)
       .pipe(finalize(() => (this.loadingTable = false)))
       .subscribe({
-        next: (data) => (this.ordenes = data.map((d) => this.adapt(d))),
+        // Más reciente primero. Sin filtro de cuenta el backend devuelve en orden de guardado
+        // (findAll, de la más vieja a la más nueva), así que se ordena acá siempre.
+        next: (data) => (this.ordenes = data.map((d) => this.adapt(d)).sort((a: any, b: any) =>
+          (new Date(b.fechaOperacion ?? 0).getTime() || 0) - (new Date(a.fechaOperacion ?? 0).getTime() || 0))),
         error: () => (this.ordenes = [])
       });
   }

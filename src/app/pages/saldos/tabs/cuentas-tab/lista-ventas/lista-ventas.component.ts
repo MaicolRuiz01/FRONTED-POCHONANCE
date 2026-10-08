@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AccountCopService, CompraP2PCuenta } from '../../../../../core/services/account-cop.service';
@@ -16,7 +18,7 @@ import { MovimientoService, MovimientoVistaCuentaCopDto, MovimientoAjusteDto } f
 @Component({
   selector: 'app-lista-ventas',
   standalone: true,
-  imports: [CommonModule, TableModule, CardModule, ButtonModule, TabViewModule, TagModule, ProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, InputTextModule, TableModule, CardModule, ButtonModule, TabViewModule, TagModule, ProgressSpinnerModule],
   templateUrl: './lista-ventas.component.html',
   styleUrls: ['./lista-ventas.component.css']
 })
@@ -36,6 +38,49 @@ export class ListaVentasComponent implements OnInit {
   loadingCompras = false; comprasLoaded = false;
   loadingMovs = false;    movsLoaded = false;
   loadingAjustes = false; ajustesLoaded = false;
+
+  // ── Búsqueda por número de orden (Ventas y Compras P2P) ──
+  /** Texto buscado: basta con un pedazo del número (p. ej. los últimos dígitos). */
+  busquedaOrden = '';
+
+  private coincide(numero?: string | null): boolean {
+    const q = this.busquedaOrden.replace(/\s+/g, '');
+    return !q || (numero ?? '').includes(q);
+  }
+  get ventasFiltradas(): SaleP2PDto[] { return this.ventas.filter(v => this.coincide(v.numberOrder)); }
+  get comprasFiltradas(): CompraP2PCuenta[] { return this.compras.filter(c => this.coincide(c.numberOrder)); }
+
+  // ── Resumen de ventas (sobre la lista filtrada) ──
+  private esHoy(fecha: any): boolean {
+    const d = new Date(fecha), h = new Date();
+    return d.getFullYear() === h.getFullYear() && d.getMonth() === h.getMonth() && d.getDate() === h.getDate();
+  }
+  get totalVentasCop(): number { return this.ventasFiltradas.reduce((t, v) => t + (Number(v.pesosCop) || 0), 0); }
+  get ventasHoy(): SaleP2PDto[] { return this.ventasFiltradas.filter(v => this.esHoy(v.date)); }
+  get totalVentasHoyCop(): number { return this.ventasHoy.reduce((t, v) => t + (Number(v.pesosCop) || 0), 0); }
+
+  // ── Copiar número de orden (sin toast: el ícono pasa a ✓ un momento) ──
+  ordenCopiada: string | null = null;
+  private ordenCopiadaTimer?: ReturnType<typeof setTimeout>;
+
+  async copiarOrden(numero: string | undefined | null, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!numero) return;
+    try {
+      await navigator.clipboard.writeText(numero);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = numero;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+    }
+    this.ordenCopiada = numero;
+    clearTimeout(this.ordenCopiadaTimer);
+    this.ordenCopiadaTimer = setTimeout(() => this.ordenCopiada = null, 1500);
+  }
 
   constructor(
     private route: ActivatedRoute,

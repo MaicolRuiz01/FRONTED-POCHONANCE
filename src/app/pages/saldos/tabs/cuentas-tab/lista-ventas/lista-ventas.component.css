@@ -25,3 +25,68 @@
 .lv-empty { text-align: center; color: #9ca3af; padding: 1.5rem 0; }
 
 .lv-loading { display: flex; justify-content: center; padding: 2rem 0; }
+
+/* ── Buscador por número de orden ── */
+.lv-buscar {
+  position: relative;
+  margin: 4px 0 12px;
+  max-width: 420px;
+}
+.lv-buscar .pi {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: #9ca3af; font-size: .85rem;
+}
+.lv-buscar input { width: 100%; padding-left: 34px; }
+
+/* ── Resumen de ventas ── */
+.lv-resumen { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.lv-stat {
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 8px 14px; min-width: 150px;
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+}
+.lv-stat-label { font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.lv-stat-val { font-size: 1.15rem; font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; }
+.lv-stat-sub { font-size: .72rem; color: #6b7280; }
+
+/* ── Tabla ── */
+.lv-fecha { white-space: nowrap; color: #4b5563; }
+.lv-monto { font-weight: 700; color: #111827; font-variant-numeric: tabular-nums; }
+
+/* ── Número de orden + copiar ── */
+.lv-orden { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.lv-orden-num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; color: #374151; }
+.lv-orden-corta { display: none; }
+.lv-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border: none; border-radius: 6px; background: none;
+  color: #94a3b8; cursor: pointer; line-height: 1;
+}
+.lv-copy:hover { color: #4f46e5; background: rgba(79,70,229,.08); }
+.lv-copy.copiado { color: #16a34a; }
+
+/* ── Celular ── */
+@media (max-width: 768px) {
+  .lv-title { font-size: 1.25rem; }
+  .lv-saldo-val { font-size: 1.15rem; }
+  .lv-header { margin-bottom: 10px; padding-bottom: 10px; }
+
+  /* Número de orden: 5 primeros (el botón copia el completo). */
+  .lv-orden-larga { display: none; }
+  .lv-orden-corta { display: inline; }
+  .lv-copy { width: 34px; height: 34px; }
+
+  /* Columnas secundarias fuera: con todas, la tabla no cabía y había que desplazar de lado. */
+  :host ::ng-deep .lv-tabla .lv-col-opc { display: none; }
+  :host ::ng-deep .lv-tabla { font-size: .8rem; }
+  :host ::ng-deep .lv-tabla .p-datatable-tbody > tr > td,
+  :host ::ng-deep .lv-tabla .p-datatable-thead > tr > th { padding: .45rem .4rem; }
+
+  .lv-stat { flex: 1 1 0; min-width: 0; padding: 7px 10px; }
+  .lv-stat-val { font-size: 1rem; }
+  .lv-buscar { max-width: none; }
+
+  /* Pestañas: que se puedan deslizar sin partir el texto. */
+  :host ::ng-deep .lv-tabs .p-tabview-nav-link { white-space: nowrap; padding: .7rem .7rem; }
+  :host ::ng-deep .lv-tabs .p-tabview-panels { padding: .6rem 0 0; }
+}

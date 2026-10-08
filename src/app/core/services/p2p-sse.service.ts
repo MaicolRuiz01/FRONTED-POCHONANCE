@@ -15,8 +15,9 @@ export interface SseEvent {
  *
  * Railway (proxy HTTP/2) a veces rompe las conexiones SSE (502 / ERR_HTTP2_PROTOCOL_ERROR).
  * Por eso: reconexión con BACKOFF y, tras varios fallos, se deja de intentar (para no inundar
- * la consola). La vista de ventas en curso ya tiene su propio auto-refresco cada pocos segundos,
- * así que sigue actualizándose aunque el SSE se rinda.
+ * la consola) y se vuelve a intentar cada minuto. Antes se rendía para siempre: bastaba un corte de Railway
+ * para que la pantalla quedara sin avisos en vivo hasta recargar la página. La vista de ventas en curso
+ * tiene además su propio auto-refresco, que cubre los ratos sin conexión.
  */
 @Injectable({ providedIn: 'root' })
 export class P2PSseService implements OnDestroy {
@@ -27,21 +28,25 @@ export class P2PSseService implements OnDestroy {
   private readonly MAX_DELAY = 60000;
   private failCount = 0;
   private readonly MAX_SSE_ATTEMPTS = 4;
-  private darsePorVencido = false;
+  /** Cada cuánto se reintenta la conexión después de rendirse (ms). */
+  private readonly REINTENTO_LARGO_MS = 60000;
 
   private nuevaVentaSubject        = new Subject<SseEvent>();
   private cambioOrdenActivaSubject = new Subject<SseEvent>();
+  private cuentasCambiaronSubject  = new Subject<SseEvent>();
   private connectedSubject         = new BehaviorSubject<boolean>(false);
 
   nuevaVenta$        = this.nuevaVentaSubject.asObservable();
   cambioOrdenActiva$ = this.cambioOrdenActivaSubject.asObservable();
+  /** Una cuenta COP se activó o se desactivó para P2P (la lista de cuentas hay que recargarla). */
+  cuentasCambiaron$  = this.cuentasCambiaronSubject.asObservable();
   /** true cuando la conexión SSE está activa, false mientras reconecta / se rinde */
   connected$         = this.connectedSubject.asObservable();
 
   constructor(private zone: NgZone, private auth: AuthService) {}
 
   connect(): void {
-    if (this.eventSource || this.darsePorVencido) return; // ya conectado o rendido
+    if (this.eventSource) return; // ya conectado
 
     const token = this.auth.getToken();
     const url = `${environment.apiUrl}/p2p-events/subscribe${token ? '?token=' + encodeURIComponent(token) : ''}`;
@@ -77,6 +82,14 @@ export class P2PSseService implements OnDestroy {
       });
     });
 
+    this.eventSource.addEventListener('cuentas-p2p-cambiaron', (event: MessageEvent) => {
+      this.zone.run(() => {
+        try {
+          this.cuentasCambiaronSubject.next(JSON.parse(event.data));
+        } catch { /* ignorar */ }
+      });
+    });
+
     this.eventSource.onerror = () => {
       this.zone.run(() => {
         this.connectedSubject.next(false);
@@ -84,8 +97,11 @@ export class P2PSseService implements OnDestroy {
         this.failCount++;
 
         if (this.failCount >= this.MAX_SSE_ATTEMPTS) {
-          // Railway no está dejando el SSE → nos rendimos (la vista igual se auto-refresca sola).
-          this.darsePorVencido = true;
+          // Railway no está dejando el SSE: se pausa y se vuelve a intentar en un minuto
+          // (la vista igual se auto-refresca sola mientras tanto).
+          this.failCount = 0;
+          this.reconnectDelay = 2000;
+          this.reconnectTimer = setTimeout(() => this.connect(), this.REINTENTO_LARGO_MS);
           return;
         }
 
@@ -112,6 +128,7 @@ export class P2PSseService implements OnDestroy {
     this.disconnect();
     this.nuevaVentaSubject.complete();
     this.cambioOrdenActivaSubject.complete();
+    this.cuentasCambiaronSubject.complete();
     this.connectedSubject.complete();
   }
 }

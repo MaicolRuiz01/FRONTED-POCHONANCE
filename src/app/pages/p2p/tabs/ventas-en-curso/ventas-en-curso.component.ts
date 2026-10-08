@@ -146,6 +146,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   private sseSub?: Subscription;
   private sseStatusSub?: Subscription;
+  private cuentasSseSub?: Subscription;
   private p2pSub?: Subscription;
   private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
@@ -183,9 +184,15 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
     this.sseService.connect();
-    this.sseSub = this.sseService.cambioOrdenActiva$.subscribe(() => {
+    // debounceTime agrupa ráfagas (el Auto puede asignar varias ventas seguidas) en una sola consulta.
+    this.sseSub = this.sseService.cambioOrdenActiva$.pipe(debounceTime(400)).subscribe(() => {
       this.loadOrdenes();
       this.resetCountdown();
+    });
+    // Una cuenta se activó o se apagó (desde cualquier pantalla o por el Auto): recargar la lista sola.
+    this.cuentasSseSub = this.sseService.cuentasCambiaron$.pipe(debounceTime(500)).subscribe(() => {
+      this.loadCuentasCop();
+      this.refrescarSaldosCop();
     });
     this.sseStatusSub = this.sseService.connected$.subscribe(v => this.sseConectado = v);
 
@@ -208,6 +215,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.destruido = true;
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
+    this.cuentasSseSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();
@@ -364,6 +372,15 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   resetCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
+  }
+
+  /** Un solo botón de actualizar: órdenes, cuentas, saldos y anuncios. */
+  actualizarTodo(): void {
+    this.loadOrdenes();
+    this.loadCuentasCop();
+    this.refrescarSaldosCop();
+    this.loadAnuncios();
+    this.resetCountdown();
   }
 
   // ── Asignación automática ─────────────────────────────────────

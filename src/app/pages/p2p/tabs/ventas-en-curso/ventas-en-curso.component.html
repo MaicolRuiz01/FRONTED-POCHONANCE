@@ -70,9 +70,7 @@
     <span *ngIf="ultimaActualizacionAnuncios" class="vc-divider-time">
       {{ ultimaActualizacionAnuncios }}
     </span>
-    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
-            pTooltip="Actualizar anuncios" (click)="loadAnuncios()" [loading]="loadingAnuncios">
-    </button>
+    <span *ngIf="loadingAnuncios" class="vc-divider-time"><i class="pi pi-spin pi-spinner"></i></span>
   </div>
 
   <!-- Spinner anuncios -->
@@ -189,7 +187,7 @@
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>
     <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
-            pTooltip="Actualizar ahora" (click)="loadOrdenes(); resetCountdown()"
+            pTooltip="Actualizar todo (órdenes, cuentas y anuncios)" (click)="actualizarTodo()"
             [disabled]="refreshing" [loading]="refreshing">
     </button>
   </div>

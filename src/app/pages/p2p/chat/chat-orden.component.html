@@ -17,8 +17,8 @@
     <div *ngIf="mensajes?.length === 0" class="co-nota co-centro">Sin mensajes en esta orden.</div>
     <div *ngFor="let m of mensajes; trackBy: trackByMensaje"
          class="co-burbuja" [class.co-burbuja--yo]="m.self" [class.co-burbuja--sistema]="m.type === 'system'">
-      <a *ngIf="m.imageUrl || m.thumbnailUrl" [href]="m.imageUrl || m.thumbnailUrl" target="_blank" rel="noopener">
-        <img [src]="m.thumbnailUrl || m.imageUrl" alt="Imagen del chat" class="co-img">
+      <a *ngIf="m.imageUrl || m.thumbnailUrl" [href]="m.imageUrl || m.thumbnailUrl" target="_blank" rel="noopener noreferrer">
+        <img [src]="m.thumbnailUrl || m.imageUrl" alt="Imagen del chat" class="co-img" referrerpolicy="no-referrer">
       </a>
       <div *ngIf="m.content" class="co-txt">{{ m.content }}</div>
       <div *ngIf="!m.content && !m.imageUrl && !m.thumbnailUrl" class="co-txt co-nota">[{{ m.type || 'mensaje' }}]</div>

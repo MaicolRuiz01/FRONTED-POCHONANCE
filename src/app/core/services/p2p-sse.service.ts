@@ -34,12 +34,15 @@ export class P2PSseService implements OnDestroy {
   private nuevaVentaSubject        = new Subject<SseEvent>();
   private cambioOrdenActivaSubject = new Subject<SseEvent>();
   private cuentasCambiaronSubject  = new Subject<SseEvent>();
+  private chatEnvioSubject         = new Subject<SseEvent>();
   private connectedSubject         = new BehaviorSubject<boolean>(false);
 
   nuevaVenta$        = this.nuevaVentaSubject.asObservable();
   cambioOrdenActiva$ = this.cambioOrdenActivaSubject.asObservable();
   /** Una cuenta COP se activó o se desactivó para P2P (la lista de cuentas hay que recargarla). */
   cuentasCambiaron$  = this.cuentasCambiaronSubject.asObservable();
+  /** Terminó un envío automático de la cuenta por el chat: hay que refrescar el estado "Enviando… / Enviada". */
+  chatEnvio$         = this.chatEnvioSubject.asObservable();
   /** true cuando la conexión SSE está activa, false mientras reconecta / se rinde */
   connected$         = this.connectedSubject.asObservable();
 
@@ -90,6 +93,14 @@ export class P2PSseService implements OnDestroy {
       });
     });
 
+    this.eventSource.addEventListener('chat-envio-actualizado', (event: MessageEvent) => {
+      this.zone.run(() => {
+        try {
+          this.chatEnvioSubject.next(JSON.parse(event.data));
+        } catch { /* ignorar */ }
+      });
+    });
+
     this.eventSource.onerror = () => {
       this.zone.run(() => {
         this.connectedSubject.next(false);
@@ -129,6 +140,7 @@ export class P2PSseService implements OnDestroy {
     this.nuevaVentaSubject.complete();
     this.cambioOrdenActivaSubject.complete();
     this.cuentasCambiaronSubject.complete();
+    this.chatEnvioSubject.complete();
     this.connectedSubject.complete();
   }
 }

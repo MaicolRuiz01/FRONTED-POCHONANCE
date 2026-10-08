@@ -147,6 +147,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private sseSub?: Subscription;
   private sseStatusSub?: Subscription;
   private cuentasSseSub?: Subscription;
+  private chatEnvioSseSub?: Subscription;
   private p2pSub?: Subscription;
   private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
@@ -189,6 +190,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       this.loadOrdenes();
       this.resetCountdown();
     });
+    // Terminó un envío de cuenta por el chat: el "Enviando cuenta…" pasa a "Enviada" al instante, sin esperar los 10 s.
+    this.chatEnvioSseSub = this.sseService.chatEnvio$.pipe(debounceTime(200)).subscribe(() => this.refrescarResumenChat());
     // Una cuenta se activó o se apagó (desde cualquier pantalla o por el Auto): recargar la lista sola.
     this.cuentasSseSub = this.sseService.cuentasCambiaron$.pipe(debounceTime(500)).subscribe(() => {
       this.loadCuentasCop();
@@ -217,6 +220,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
     this.cuentasSseSub?.unsubscribe();
+    this.chatEnvioSseSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();

@@ -292,7 +292,8 @@
 
     <div *ngFor="let orden of lista; trackBy: trackByOrden" class="vc-mrow"
          [class.vc-mrow--payed]="orden.status === 'BUYER_PAYED'"
-         [class.vc-mrow--appeal]="orden.status === 'IN_APPEAL'">
+         [class.vc-mrow--appeal]="orden.status === 'IN_APPEAL'"
+         [class.vc-mrow--excede]="excesoPorOrden[orden.orderNumber] > 0">
 
       <!-- Renglón 1: cuenta Binance · hora ........ monto + tasa (sin número de orden en celular) -->
       <div class="vc-mrow-head">
@@ -307,6 +308,9 @@
         <div class="vc-mrow-monto">
           <span class="vc-mrow-cop">${{ orden.pesosCop | number:'1.0-0' }}</span>
           <span class="vc-mrow-tasa">{{ orden.tasa | number:'1.0-0' }}</span>
+          <span *ngIf="excesoPorOrden[orden.orderNumber] > 0" class="vc-excede-txt">
+            excede ${{ excesoPorOrden[orden.orderNumber] | number:'1.0-0' }}
+          </span>
         </div>
       </div>
 
@@ -369,7 +373,8 @@
 
     <ng-template pTemplate="body" let-orden>
       <tr [class.vc-row-payed]="orden.status === 'BUYER_PAYED'"
-          [class.vc-row-appeal]="orden.status === 'IN_APPEAL'">
+          [class.vc-row-appeal]="orden.status === 'IN_APPEAL'"
+          [class.vc-row-excede]="excesoPorOrden[orden.orderNumber] > 0">
 
         <!-- Estado + Cuenta Binance combinados -->
         <td>
@@ -434,12 +439,17 @@
       </tr>
 
       <!-- Sub-fila: a qué cuenta COP irá la venta cuando se complete -->
-      <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow">
+      <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow"
+          [class.vc-row-excede]="excesoPorOrden[orden.orderNumber] > 0">
         <td colspan="6">
           <div class="vc-subrow-inner">
             <span class="vc-preasign-badge">
               <i class="pi pi-bookmark-fill"></i>
               Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
+            </span>
+            <span *ngIf="excesoPorOrden[orden.orderNumber] > 0" class="vc-excede-badge">
+              <i class="pi pi-exclamation-triangle"></i>
+              Excede el cupo por ${{ excesoPorOrden[orden.orderNumber] | number:'1.0-0' }}
             </span>
             <!-- Estado del envío de esta cuenta al cliente por el chat (automático al asignar).
                  Clic: abre el chat de la orden (para ver, reenviar o enviar a mano). -->

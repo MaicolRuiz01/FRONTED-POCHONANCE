@@ -851,3 +851,20 @@
   }
   :host ::ng-deep .vc-tabs .p-tabview-panels { padding: 6px 0 0; }
 }
+
+/* ══════════════════════════════════════════
+   VENTA QUE PASÓ A SU CUENTA DEL CUPO (entró con la tolerancia)
+   Rojo claro: es un aviso, no un error; la venta está bien asignada.
+══════════════════════════════════════════ */
+.vc-row-excede td { background: #fef2f2 !important; }
+.vc-row-excede td:first-child { box-shadow: inset 3px 0 0 #dc2626; }
+.vc-excede-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 700; color: #b91c1c;
+  background: #fee2e2; border: 1px solid #fecaca;
+  border-radius: 999px; padding: 2px 9px;
+}
+.vc-excede-badge .pi { font-size: .7rem; }
+
+.vc-mrow--excede { border-left-color: #dc2626; background: #fef2f2; }
+.vc-excede-txt { font-size: .68rem; font-weight: 700; color: #b91c1c; }

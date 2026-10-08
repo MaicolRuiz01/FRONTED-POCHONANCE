@@ -807,6 +807,55 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.verdePorCuenta = verde;
     this.amarilloPorCuenta = amarillo;
     this.proyectadoPorCuenta = proyectado;
+    this.recomputarExcesos();
+  }
+
+  /**
+   * Ventas que dejaron a su cuenta COP por encima del cupo (orderNumber → exceso en miles).
+   * Con la tolerancia de la asignación automática (hasta $500.000) una venta puede entrar aunque
+   * no quepa entera; esas filas se pintan de rojo para que el operador lo sepa.
+   */
+  excesoPorOrden: Record<string, number> = {};
+
+  /**
+   * Mismo criterio que AsignacionAutomaticaService.disponible() en el backend: el límite es lo que
+   * a la cuenta todavía le queda por retirar HOY por su medio (cupo*DisponibleHoy, que ya descuenta
+   * los retiros del día), y lo que lo va llenando es el saldo real + sus ventas en curso. Las
+   * ventas de cada cuenta se suman de la más vieja a la más nueva: se marca la que cruzó el límite
+   * y las que vinieron después.
+   */
+  private recomputarExcesos(): void {
+    const porCuenta = new Map<number, ActiveP2POrder[]>();
+    for (const o of this.ordenes) {
+      if (o.preAsignadoCopId == null) continue;
+      const lista = porCuenta.get(o.preAsignadoCopId) ?? [];
+      lista.push(o);
+      porCuenta.set(o.preAsignadoCopId, lista);
+    }
+    const exceso: Record<string, number> = {};
+    porCuenta.forEach((ordenes, copId) => {
+      const c = this.cuentasCop.find(x => x.id === copId);
+      if (!c) return;
+      const limite = this.cupoRestanteHoyDe(c);
+      let acumulado = this.saldoVerdeDe(c);
+      [...ordenes]
+        .sort((a, b) => (a.createTime || '').localeCompare(b.createTime || ''))
+        .forEach(o => {
+          acumulado += Number(o.pesosCop) || 0;
+          // Margen de medio peso (en miles) para no marcar por redondeos.
+          if (acumulado - limite > 0.5) exceso[o.orderNumber] = acumulado - limite;
+        });
+    });
+    this.excesoPorOrden = exceso;
+  }
+
+  /** Cupo que a la cuenta le queda por retirar HOY por su medio (miles), como lo ve el backend. */
+  private cupoRestanteHoyDe(c: AccountCop): number {
+    const cajero = Number(c.cupoCajeroDisponibleHoy ?? 0) || 0;
+    const corresponsal = Number(c.cupoCorresponsalDisponibleHoy ?? 0) || 0;
+    if (c.cupoTipoP2P === 'CORRESPONSAL') return corresponsal;
+    if (c.cupoTipoP2P === 'AMBOS') return cajero + corresponsal;
+    return cajero; // CAJERO por defecto
   }
 
   /** VERDE: saldo real de la cuenta (las ventas suman acá cuando se completan e importan). */

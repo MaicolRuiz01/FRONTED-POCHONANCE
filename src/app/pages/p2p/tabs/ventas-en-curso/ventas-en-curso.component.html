@@ -277,7 +277,82 @@
      Recibe la lista a mostrar y el texto de "sin resultados".
 ══════════════════════════════════════════ -->
 <ng-template #tablaOrdenes let-lista let-vacio="vacio" let-mostrarEstado="mostrarEstado">
-  <p-table [value]="lista"
+
+  <!-- ══════════════════════════════════════════
+       CELULAR — una tarjeta por orden (la tabla se oculta por CSS bajo 768px).
+       En la tabla la columna "Cuenta COP" quedaba fuera de la pantalla y había que desplazar
+       a lo ancho para asignar; acá el selector va a todo el ancho de la tarjeta.
+  ══════════════════════════════════════════ -->
+  <div class="vc-cards">
+    <div *ngIf="lista.length === 0 && !loading" class="vc-tab-vacio">{{ vacio }}</div>
+
+    <div *ngFor="let orden of lista; trackBy: trackByOrden" class="vc-card"
+         [class.vc-card--payed]="orden.status === 'BUYER_PAYED'"
+         [class.vc-card--appeal]="orden.status === 'IN_APPEAL'">
+
+      <!-- Renglón 1: estado · cuenta Binance · hora ........ chat -->
+      <div class="vc-card-top">
+        <p-tag *ngIf="mostrarEstado"
+               [severity]="statusSeverity(orden.status)"
+               [icon]="statusIcon(orden.status)"
+               [value]="orden.statusLabel"></p-tag>
+        <span class="vc-account-badge"><i class="pi pi-wallet"></i> {{ orden.accountBinance }}</span>
+        <span class="vc-date">{{ horaCorta(orden.createTime) }}</span>
+        <button type="button" class="vc-chat-ico vc-card-chat"
+                [class.vc-chat-ico--nuevo]="noLeidos[orden.orderNumber] > 0"
+                (click)="abrirChat(orden)" aria-label="Abrir chat de la orden">
+          <i class="pi" [ngClass]="ultimoEsImagen[orden.orderNumber] && noLeidos[orden.orderNumber] > 0 ? 'pi-image' : 'pi-comments'"></i>
+          <span *ngIf="noLeidos[orden.orderNumber] > 0" class="vc-chat-badge">{{ noLeidos[orden.orderNumber] }}</span>
+        </button>
+      </div>
+
+      <!-- Renglón 2: número de orden (copiable) ........ monto + tasa -->
+      <div class="vc-card-mid">
+        <ng-container *ngTemplateOutlet="ordenNum; context: { $implicit: orden.orderNumber }"></ng-container>
+        <div class="vc-card-monto">
+          <span class="vc-card-cop">${{ orden.pesosCop | number:'1.0-0' }}</span>
+          <span class="vc-card-tasa">tasa {{ orden.tasa | number:'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <!-- Renglón 3: asignar cuenta COP, a todo el ancho -->
+      <div class="vc-cop-assign vc-card-assign">
+        <p-dropdown
+          [options]="copOptionsList"
+          [ngModel]="seleccionPendiente[orden.orderNumber]"
+          (ngModelChange)="dropdownChanged(orden, $event)"
+          placeholder="Asignar cuenta COP"
+          [showClear]="true"
+          appendTo="body"
+          styleClass="vc-dropdown"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+        <button pButton type="button"
+          icon="pi pi-equals"
+          class="p-button-outlined vc-repeat-btn"
+          [disabled]="ultimaCopId == null"
+          (click)="asignarUltima(orden)"
+          [attr.aria-label]="ultimaCopId != null ? ('Asignar la última usada: ' + ultimaCopNombre) : 'Aún no has asignado ninguna cuenta'">
+        </button>
+      </div>
+
+      <!-- Renglón 4: a qué cuenta irá + estado del envío por chat -->
+      <div *ngIf="orden.preAsignadoCopId" class="vc-subrow-inner vc-card-pre">
+        <span class="vc-preasign-badge">
+          <i class="pi pi-bookmark-fill"></i>
+          Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
+        </span>
+        <button *ngIf="estadoEnvio[orden.orderNumber] as e" type="button" class="vc-chat-btn"
+                [ngClass]="'vc-chat-btn--' + e.tipo"
+                (click)="abrirChat(orden)">
+          <i class="pi" [ngClass]="e.icono"></i> {{ e.texto }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p-table class="vc-tabla-desktop" [value]="lista"
            dataKey="orderNumber"
            [loading]="loading"
            [rowHover]="true"
@@ -288,6 +363,7 @@
       <tr>
         <th>{{ mostrarEstado ? 'Estado · Cuenta' : 'Cuenta' }}</th>
         <th>Hora</th>
+        <th>Orden</th>
         <th class="text-right">COP (miles)</th>
         <th class="text-right">Tasa</th>
         <th>Cuenta COP</th>
@@ -322,6 +398,9 @@
 
         <!-- Solo hora -->
         <td class="vc-date">{{ horaCorta(orden.createTime) }}</td>
+
+        <!-- Número de orden: corto en pantalla, se copia completo -->
+        <td><ng-container *ngTemplateOutlet="ordenNum; context: { $implicit: orden.orderNumber }"></ng-container></td>
 
         <!-- COP miles -->
         <td class="text-right vc-amount">{{ orden.pesosCop | number:'1.0-0' }}</td>
@@ -359,7 +438,7 @@
 
       <!-- Sub-fila: a qué cuenta COP irá la venta cuando se complete -->
       <tr *ngIf="orden.preAsignadoCopId" class="vc-subrow">
-        <td colspan="5">
+        <td colspan="6">
           <div class="vc-subrow-inner">
             <span class="vc-preasign-badge">
               <i class="pi pi-bookmark-fill"></i>
@@ -381,11 +460,24 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="5" class="vc-tab-vacio">{{ vacio }}</td>
+        <td colspan="6" class="vc-tab-vacio">{{ vacio }}</td>
       </tr>
     </ng-template>
 
   </p-table>
+</ng-template>
+
+<!-- Número de orden: se muestran los 5 primeros caracteres y el botón copia el número COMPLETO.
+     Compartido por la tabla (computador) y las tarjetas (celular). -->
+<ng-template #ordenNum let-numero>
+  <span class="vc-orden" [title]="numero">
+    <span class="vc-orden-num">{{ numero | slice:0:5 }}…</span>
+    <button type="button" class="vc-orden-copy" [class.copiado]="ordenCopiada === numero"
+            (click)="copiarOrden(numero, $event)"
+            [attr.aria-label]="ordenCopiada === numero ? 'Copiado' : 'Copiar número de orden completo'">
+      <i class="pi" [ngClass]="ordenCopiada === numero ? 'pi-check' : 'pi-copy'"></i>
+    </button>
+  </span>
 </ng-template>
 
 <!-- ══════════════════════════════════════════

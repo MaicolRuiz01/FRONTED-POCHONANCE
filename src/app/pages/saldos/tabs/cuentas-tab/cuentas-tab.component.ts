@@ -551,6 +551,37 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     });
   }
 
+  restableciendoTodas = false;
+
+  /** Restablece el cupo de hoy de TODAS las cuentas COP (uso excepcional, con confirmación). */
+  restablecerCupoTodas() {
+    if (this.restableciendoTodas) return;
+    this.confirmationService.confirm({
+      message: `¿Restablecer el cupo de hoy de <strong>TODAS</strong> las cuentas COP?<br>`
+        + `Cajero y corresponsal de cada cuenta vuelven al máximo de su banco, como si empezara el día. `
+        + `Los saldos no cambian.`,
+      header: 'Restablecer cupo de todas',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Restablecer todas',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-warning',
+      accept: () => {
+        this.restableciendoTodas = true;
+        this.accountService.restablecerCupoTodas().subscribe({
+          next: r => {
+            this.restableciendoTodas = false;
+            this.notificationService.success(`Cupo restablecido en ${r.restablecidas} cuenta(s)`);
+            this.loadCuentas();
+          },
+          error: () => {
+            this.restableciendoTodas = false;
+            this.notificationService.error('No se pudo restablecer el cupo de las cuentas');
+          }
+        });
+      }
+    });
+  }
+
   /** Cuentas seleccionables para los diálogos (retiro/depósito/transferencia): SIN bloqueadas. */
   get cuentasSeleccionables(): AccountCop[] {
     return this.cuentas.filter(c => !c.bloqueada);
@@ -568,18 +599,20 @@ export class CuentasTabComponent implements OnInit, OnDestroy {
     this.selectedBankType = type;
   }
 
-  /** Filtro por estado de bloqueo; se combina con el de banco. null = todas. */
-  filtroBloqueo: 'BLOQUEADAS' | 'DESBLOQUEADAS' | null = null;
+  /**
+   * Filtro por bloqueo; se combina con el de banco. Para el cliente "Todas" son las cuentas que
+   * SÍ puede usar (desbloqueadas), así que es el filtro por defecto; las bloqueadas van aparte.
+   */
+  verBloqueadas = false;
 
-  setFiltroBloqueo(f: 'BLOQUEADAS' | 'DESBLOQUEADAS' | null) {
-    this.filtroBloqueo = f;
+  setFiltroBloqueo(bloqueadas: boolean) {
+    this.verBloqueadas = bloqueadas;
   }
 
   get filteredCuentas(): AccountCop[] {
     const base = this.cuentas
       .filter(c => !this.selectedBankType || c.bankType === this.selectedBankType)
-      .filter(c => this.filtroBloqueo === null
-        || (this.filtroBloqueo === 'BLOQUEADAS') === !!c.bloqueada);
+      .filter(c => !!c.bloqueada === this.verBloqueadas);
 
     // ordenar de mayor a menor balance
     return [...base].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0));

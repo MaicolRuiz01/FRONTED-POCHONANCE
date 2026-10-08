@@ -725,3 +725,100 @@
 .vc-chat-sb-head { display: flex; flex-direction: column; gap: 2px; }
 .vc-chat-sb-nick { font-size: 1rem; font-weight: 700; color: var(--text-color, #111827); }
 .vc-chat-sb-sub  { font-size: 0.75rem; color: var(--text-color-secondary, #6b7280); }
+
+/* ══════════════════════════════════════════
+   NÚMERO DE ORDEN — corto en pantalla, se copia completo
+══════════════════════════════════════════ */
+.vc-orden { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.vc-orden-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary, #6b7280);
+}
+.vc-orden-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border: none; border-radius: 6px; background: none;
+  color: #94a3b8; cursor: pointer; line-height: 1;
+}
+.vc-orden-copy:hover { color: #4f46e5; background: rgba(79,70,229,.08); }
+.vc-orden-copy.copiado { color: #16a34a; }
+.vc-orden-copy .pi { font-size: 0.8rem; }
+
+/* ══════════════════════════════════════════
+   TARJETAS DE ÓRDENES (solo celular)
+   En computador se sigue usando la tabla; bajo 768px se cambia a tarjetas.
+══════════════════════════════════════════ */
+.vc-cards { display: none; }
+
+.vc-card {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--surface-border, #e5e7eb);
+  border-left: 4px solid #6366f1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vc-card--payed  { border-left-color: #16a34a; background: #f0fdf4; }
+.vc-card--appeal { border-left-color: #dc2626; background: #fef2f2; }
+
+.vc-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vc-card-top .vc-card-chat { margin-left: auto; }
+
+.vc-card-mid { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vc-card-monto { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.vc-card-cop  { font-size: 1.15rem; font-weight: 800; color: var(--text-color, #111827); font-variant-numeric: tabular-nums; }
+.vc-card-tasa { font-size: 0.72rem; color: var(--text-color-secondary, #6b7280); }
+
+.vc-card-assign .vc-repeat-btn { width: 44px; height: 44px; }
+.vc-card-pre { padding-top: 6px; border-top: 1px dashed var(--surface-border, #e5e7eb); }
+
+@media (max-width: 768px) {
+
+  /* Tabla fuera, tarjetas dentro. */
+  .vc-tabla-desktop { display: none; }
+  .vc-cards { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
+
+  /* Selector de cuenta COP a todo el ancho y con altura cómoda para el dedo. */
+  :host ::ng-deep .vc-card-assign .vc-dropdown { width: 100%; min-height: 44px; }
+  :host ::ng-deep .vc-card-assign .vc-dropdown .p-dropdown-label { padding-top: 11px; padding-bottom: 11px; }
+
+  /* Botones táctiles más grandes (copiar orden, chat). */
+  .vc-orden-copy { width: 36px; height: 36px; }
+  .vc-orden-copy .pi { font-size: 0.95rem; }
+  .vc-card-chat { width: 38px; height: 38px; }
+
+  /* ── Cuentas COP activas ──
+     Antes cada cuenta ocupaba un renglón entero: con 10 cuentas había que bajar media
+     pantalla antes de ver una sola venta. Ahora van en una fila que se desliza de lado. */
+  .cop-strip {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding-bottom: 6px;
+    margin-left: -2px;
+    margin-right: -2px;
+  }
+  .cop-mini-card {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 190px;
+    max-width: none;
+    scroll-snap-align: start;
+  }
+  .cop-mini-remove { width: 32px; height: 32px; font-size: 0.85rem; }
+
+  /* Aviso de "sin anuncios": compacto, no debe empujar las ventas hacia abajo. */
+  .vc-anuncios-empty { padding: 8px 12px; font-size: 0.74rem; }
+
+  /* Pestañas: que "En curso" y "Otros estados" no se partan en dos renglones. */
+  :host ::ng-deep .vc-tabs .p-tabview-nav-link {
+    white-space: nowrap;
+    padding: 10px 12px !important;
+    gap: 6px;
+  }
+  :host ::ng-deep .vc-tabs .p-tabview-panels { padding: 8px 0 0; }
+}

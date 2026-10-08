@@ -214,6 +214,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     clearInterval(this.countdownTimer);
     clearInterval(this.saldosPollTimer);
     clearInterval(this.resumenChatTimer);
+    clearTimeout(this.ordenCopiadaTimer);
   }
 
   /** Refresco de saldos COP: saldo real + lo en curso (verde/amarillo) + cupos, calculado en el
@@ -1023,6 +1024,32 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
       const entradas = Object.entries(this.chatVisto).sort((a, b) => b[1] - a[1]).slice(0, 300);
       localStorage.setItem(this.CHAT_VISTO_KEY, JSON.stringify(Object.fromEntries(entradas)));
     } catch { /* sin almacenamiento: los avisos solo duran mientras la página esté abierta */ }
+  }
+
+  // ── Número de orden: se muestra corto (5 primeros) y se copia COMPLETO ──
+
+  /** Orden recién copiada: su ícono pasa a ✓ un momento. Sin toast, para no tapar la lista. */
+  ordenCopiada: string | null = null;
+  private ordenCopiadaTimer?: ReturnType<typeof setTimeout>;
+
+  async copiarOrden(numero: string, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!numero) return;
+    try {
+      await navigator.clipboard.writeText(numero);
+    } catch {
+      // Respaldo para navegadores sin API de portapapeles.
+      const ta = document.createElement('textarea');
+      ta.value = numero;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+    }
+    this.ordenCopiada = numero;
+    clearTimeout(this.ordenCopiadaTimer);
+    this.ordenCopiadaTimer = setTimeout(() => this.ordenCopiada = null, 1500);
   }
 
   /** Extrae solo la hora de un createTime con formato "YYYY-MM-DD HH:mm:ss" */

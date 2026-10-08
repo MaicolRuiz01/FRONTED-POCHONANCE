@@ -19,6 +19,13 @@
   <button pButton label="Pago Cliente" icon="pi pi-wallet" class="btn-accion btn-pago"
     (click)="abrirDialogPago()"></button>
 
+  <!-- Uso excepcional: devuelve el cupo del día de TODAS las cuentas al máximo (pide confirmación). -->
+  <button pButton label="Restablecer cupos" icon="pi pi-replay"
+    class="p-button-outlined p-button-warning"
+    pTooltip="Restablecer el cupo de hoy de todas las cuentas COP" tooltipPosition="top"
+    [loading]="restableciendoTodas"
+    (click)="restablecerCupoTodas()"></button>
+
   <div class="total-badge" (click)="openCupoDialog()"
        title="Total disponible = suma de saldos − 4x1000 (0,4%)">
     <i class="pi pi-calculator total-badge-icon"></i>
@@ -60,17 +67,12 @@
 
 <!-- ===== FILTRO POR BLOQUEO (se combina con el de banco) ===== -->
 <div class="bank-filter">
-  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === null"
-    (click)="setFiltroBloqueo(null)" title="Bloqueadas y desbloqueadas">
+  <button type="button" class="bank-chip" [class.active]="!verBloqueadas"
+    (click)="setFiltroBloqueo(false)" title="Cuentas disponibles (desbloqueadas)">
     <span class="bank-chip-text">Todas</span>
   </button>
-  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === 'DESBLOQUEADAS'"
-    (click)="setFiltroBloqueo('DESBLOQUEADAS')" title="Solo desbloqueadas">
-    <i class="pi pi-lock-open"></i>
-    <span class="bank-chip-text">Desbloqueadas</span>
-  </button>
-  <button type="button" class="bank-chip" [class.active]="filtroBloqueo === 'BLOQUEADAS'"
-    (click)="setFiltroBloqueo('BLOQUEADAS')" title="Solo bloqueadas">
+  <button type="button" class="bank-chip" [class.active]="verBloqueadas"
+    (click)="setFiltroBloqueo(true)" title="Solo bloqueadas">
     <i class="pi pi-lock"></i>
     <span class="bank-chip-text">Bloqueadas</span>
   </button>

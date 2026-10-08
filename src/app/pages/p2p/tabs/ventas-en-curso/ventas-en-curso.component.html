@@ -224,9 +224,12 @@
   <!-- Aviso si no hay cuentas marcadas para P2P -->
   <div *ngIf="!hayActivasP2P" class="vc-warning">
     <i class="pi pi-info-circle"></i>
-    Ninguna cuenta COP está marcada para P2P. Ve a <strong>Saldos → Cuentas</strong>
-    y activa las cuentas con el ícono <i class="pi pi-bookmark"></i>.
-    Por ahora se muestran todas.
+    <!-- Todo el texto en UN solo span: el contenedor es flex y, suelto, cada trozo de texto y
+         cada <strong> se volvía una columna aparte (en el celular quedaba en 5 columnas). -->
+    <span>
+      Ninguna cuenta COP está activa para P2P. Actívalas con el botón
+      <strong>Cuentas P2P</strong> de arriba. Mientras tanto, al asignar se muestran todas.
+    </span>
   </div>
 
   <!-- ══════════════════════════════════════════
@@ -279,44 +282,40 @@
 <ng-template #tablaOrdenes let-lista let-vacio="vacio" let-mostrarEstado="mostrarEstado">
 
   <!-- ══════════════════════════════════════════
-       CELULAR — una tarjeta por orden (la tabla se oculta por CSS bajo 768px).
-       En la tabla la columna "Cuenta COP" quedaba fuera de la pantalla y había que desplazar
-       a lo ancho para asignar; acá el selector va a todo el ancho de la tarjeta.
+       CELULAR — una fila compacta por orden (la tabla se oculta por CSS bajo 768px).
+       En la tabla la columna "Cuenta COP" quedaba fuera de la pantalla; acá el selector va
+       debajo, a todo el ancho. Sin número de orden ni botones de copiar/chat (pedido del
+       cliente); el ícono de envío junto al selector abre el chat.
   ══════════════════════════════════════════ -->
   <div class="vc-cards">
     <div *ngIf="lista.length === 0 && !loading" class="vc-tab-vacio">{{ vacio }}</div>
 
-    <div *ngFor="let orden of lista; trackBy: trackByOrden" class="vc-card"
-         [class.vc-card--payed]="orden.status === 'BUYER_PAYED'"
-         [class.vc-card--appeal]="orden.status === 'IN_APPEAL'">
+    <div *ngFor="let orden of lista; trackBy: trackByOrden" class="vc-mrow"
+         [class.vc-mrow--payed]="orden.status === 'BUYER_PAYED'"
+         [class.vc-mrow--appeal]="orden.status === 'IN_APPEAL'">
 
-      <!-- Renglón 1: estado · cuenta Binance · hora ........ chat -->
-      <div class="vc-card-top">
-        <p-tag *ngIf="mostrarEstado"
-               [severity]="statusSeverity(orden.status)"
-               [icon]="statusIcon(orden.status)"
-               [value]="orden.statusLabel"></p-tag>
-        <span class="vc-account-badge"><i class="pi pi-wallet"></i> {{ orden.accountBinance }}</span>
-        <span class="vc-date">{{ horaCorta(orden.createTime) }}</span>
-        <button type="button" class="vc-chat-ico vc-card-chat"
-                [class.vc-chat-ico--nuevo]="noLeidos[orden.orderNumber] > 0"
-                (click)="abrirChat(orden)" aria-label="Abrir chat de la orden">
-          <i class="pi" [ngClass]="ultimoEsImagen[orden.orderNumber] && noLeidos[orden.orderNumber] > 0 ? 'pi-image' : 'pi-comments'"></i>
-          <span *ngIf="noLeidos[orden.orderNumber] > 0" class="vc-chat-badge">{{ noLeidos[orden.orderNumber] }}</span>
-        </button>
-      </div>
-
-      <!-- Renglón 2: número de orden (copiable) ........ monto + tasa -->
-      <div class="vc-card-mid">
-        <ng-container *ngTemplateOutlet="ordenNum; context: { $implicit: orden.orderNumber }"></ng-container>
-        <div class="vc-card-monto">
-          <span class="vc-card-cop">${{ orden.pesosCop | number:'1.0-0' }}</span>
-          <span class="vc-card-tasa">tasa {{ orden.tasa | number:'1.0-0' }}</span>
+      <!-- Renglón 1: cuenta Binance · hora ........ monto + tasa (sin número de orden en celular) -->
+      <div class="vc-mrow-head">
+        <div class="vc-mrow-meta">
+          <span class="vc-mrow-sub">
+            <p-tag *ngIf="mostrarEstado" styleClass="vc-mrow-tag"
+                   [severity]="statusSeverity(orden.status)"
+                   [value]="orden.statusLabel"></p-tag>
+            {{ orden.accountBinance }} · {{ horaCorta(orden.createTime) }}
+          </span>
+        </div>
+        <div class="vc-mrow-monto">
+          <span class="vc-mrow-cop">${{ orden.pesosCop | number:'1.0-0' }}</span>
+          <span class="vc-mrow-tasa">{{ orden.tasa | number:'1.0-0' }}</span>
         </div>
       </div>
 
-      <!-- Renglón 3: asignar cuenta COP, a todo el ancho -->
-      <div class="vc-cop-assign vc-card-assign">
+      <!-- Renglón 2: asignar cuenta COP -->
+      <!-- El estado del envío por chat va EN el selector (pedido del cliente, en vez de un renglón
+           aparte): verde + ✓✓ = la cuenta ya le llegó al cliente, como en WhatsApp; ✓ gris =
+           enviándose; rojo + ! = no se pudo enviar. Tocar el ícono abre el chat de la orden. -->
+      <div class="vc-cop-assign vc-card-assign"
+           [ngClass]="orden.preAsignadoCopId && estadoEnvio[orden.orderNumber] ? ('vc-envio--' + estadoEnvio[orden.orderNumber]!.tipo) : ''">
         <p-dropdown
           [options]="copOptionsList"
           [ngModel]="seleccionPendiente[orden.orderNumber]"
@@ -328,6 +327,16 @@
           optionLabel="label"
           optionValue="value">
         </p-dropdown>
+        <button *ngIf="orden.preAsignadoCopId && estadoEnvio[orden.orderNumber] as e"
+                type="button" class="vc-envio-ico" [ngClass]="'vc-envio-ico--' + e.tipo"
+                (click)="abrirChat(orden)" [attr.aria-label]="e.texto + ' — abrir chat'">
+          <ng-container [ngSwitch]="e.tipo">
+            <span *ngSwitchCase="'enviada'" class="vc-doble-check"><i class="pi pi-check"></i><i class="pi pi-check"></i></span>
+            <i *ngSwitchCase="'pendiente'" class="pi pi-check"></i>
+            <i *ngSwitchCase="'error'" class="pi pi-exclamation-circle"></i>
+            <i *ngSwitchDefault class="pi pi-send"></i>
+          </ng-container>
+        </button>
         <button pButton type="button"
           icon="pi pi-equals"
           class="p-button-outlined vc-repeat-btn"
@@ -337,18 +346,6 @@
         </button>
       </div>
 
-      <!-- Renglón 4: a qué cuenta irá + estado del envío por chat -->
-      <div *ngIf="orden.preAsignadoCopId" class="vc-subrow-inner vc-card-pre">
-        <span class="vc-preasign-badge">
-          <i class="pi pi-bookmark-fill"></i>
-          Cuando complete → <strong>{{ orden.preAsignadoCopNombre }}</strong>
-        </span>
-        <button *ngIf="estadoEnvio[orden.orderNumber] as e" type="button" class="vc-chat-btn"
-                [ngClass]="'vc-chat-btn--' + e.tipo"
-                (click)="abrirChat(orden)">
-          <i class="pi" [ngClass]="e.icono"></i> {{ e.texto }}
-        </button>
-      </div>
     </div>
   </div>
 

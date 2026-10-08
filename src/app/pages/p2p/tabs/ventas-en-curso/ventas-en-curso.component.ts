@@ -193,12 +193,13 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.saldosSse.connect();
     this.saldosSub = this.saldosSse.cambioSaldos$
       .pipe(debounceTime(700))
-      .subscribe(() => this.refrescarSaldosCop());
+      .subscribe(() => { this.refrescarSaldosCop(); this.refrescarCuentasP2P(); });
 
     // Respaldo garantizado: aunque el SSE se caiga en Railway, refrescamos los saldos por HTTP
     // cada 5s (getSaldos es liviano: id+balance+cupo). Así el saldo/cupo siempre está al día
     // para saber si una cuenta supera su límite, sin tener que darle refresh a mano.
-    this.saldosPollTimer = setInterval(() => this.refrescarSaldosCop(), this.SALDOS_POLL_MS);
+    this.saldosPollTimer = setInterval(() => { this.refrescarSaldosCop(); this.refrescarCuentasP2P(); },
+      this.SALDOS_POLL_MS);
 
     // Si otra vista (el modal) cambia el estado P2P de una cuenta, recargamos
     this.p2pSub = this.accountCopService.p2pCambio$.subscribe(() => this.loadCuentasCop());
@@ -215,6 +216,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     clearInterval(this.saldosPollTimer);
     clearInterval(this.resumenChatTimer);
     clearTimeout(this.ordenCopiadaTimer);
+    clearTimeout(this.refrescoCuentasTimer);
   }
 
   /** Refresco de saldos COP: saldo real + lo en curso (verde/amarillo) + cupos, calculado en el
@@ -256,6 +258,12 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         }
         this.enCursoPorCuenta = enCurso;
         this.detalleEnCursoPorCuenta = detalle;
+
+        // La asignación automática solo avisa "cambiaron los saldos", no "cambiaron las órdenes":
+        // la fila se quedaba en "Sin asignar" hasta 15 s aunque la venta ya tuviera cuenta (y el
+        // operador, creyendo que el automático falló, la reasignaba a mano). El detalle de esta
+        // misma respuesta dice de qué cuenta es cada venta en curso: se usa para completar la fila.
+        this.completarAsignacionesDesdeSaldos(saldos);
 
         const map = new Map(saldos.map(x => [x.id, x]));
         this.cuentasCop.forEach(c => {
@@ -300,6 +308,35 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  /**
+   * Pone en la fila la cuenta COP que el backend ya le asignó (típicamente la asignación
+   * automática) usando el detalle de /saldos-en-curso, sin esperar la recarga de la lista.
+   * Solo COMPLETA filas sin cuenta: nunca cambia ni quita una cuenta ya visible, y respeta los
+   * cambios recientes del operador (cambiosLocales), que pueden no haberse guardado todavía.
+   */
+  private completarAsignacionesDesdeSaldos(saldos: SaldoEnCurso[]): void {
+    if (!this.ordenes.length) return;
+    const porOrden = new Map(this.ordenes.map(o => [o.orderNumber, o]));
+    let cambio = false;
+    for (const x of saldos) {
+      for (const d of x.detalle ?? []) {
+        const o = porOrden.get(d.orderNumber);
+        if (!o || o.preAsignadoCopId != null || this.cambiosLocales[d.orderNumber]) continue;
+        o.preAsignadoCopId = x.id;
+        o.preAsignadoCopNombre = this.cuentasCop.find(c => c.id === x.id)?.name ?? o.preAsignadoCopNombre;
+        cambio = true;
+      }
+    }
+    if (!cambio) return;
+    // Referencia nueva para que el selector de cada fila se repinte.
+    const sel: Record<string, number | null> = {};
+    for (const o of this.ordenes) sel[o.orderNumber] = o.preAsignadoCopId ?? null;
+    this.seleccionPendiente = sel;
+    // El estado del envío por chat ("Cuenta enviada" / ✓✓) depende de que la fila tenga cuenta.
+    this.recomputarChat();
+    this.refrescarResumenChat();
   }
 
   /** true mientras el endpoint de saldos en curso esté fallando (se usa el respaldo). */
@@ -485,14 +522,68 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     return m < 60 ? `hace ${m} min` : `hace ${Math.floor(m / 60)} h`;
   }
 
+  private cuentasReqSeq = 0;
+  private cuentasAplicadoSeq = 0;
+
   loadCuentasCop(): void {
     // Endpoint liviano (sin llaves Brebe) → mucho más rápido para pintar las mini-cards y el dropdown.
+    const seq = ++this.cuentasReqSeq;
     this.accountCopService.getP2PView().subscribe({
       next: cuentas => {
+        // Respuesta vieja (llegó después de una más nueva) → no pisar datos más frescos.
+        if (seq < this.cuentasAplicadoSeq) return;
+        this.cuentasAplicadoSeq = seq;
+
+        // La cuenta que el operador está quitando en este momento conserva su estado local:
+        // esta respuesta pudo salir antes de que el backend guardara el cambio.
+        if (this.desactivandoId != null) {
+          const local = this.cuentasCop.find(c => c.id === this.desactivandoId);
+          const nueva = cuentas.find(c => c.id === this.desactivandoId);
+          if (local && nueva) nueva.activaParaP2P = local.activaParaP2P;
+        }
+
+        const primeraCarga = this.cuentasCop.length === 0;
+        const activasAntes = this.idsActivas(this.cuentasCop);
         this.cuentasCop = cuentas;
         this.recomputarVistaCop();
+
+        // Si cambió qué cuentas están activas (lo hizo la asignación automática u otro operador),
+        // se avisa al resto de la pantalla P2P: el contador y el modal "Cuentas P2P" también
+        // estaban quedándose con la lista vieja.
+        if (!primeraCarga && activasAntes !== this.idsActivas(cuentas)) {
+          this.accountCopService.notificarCambioP2P();
+        }
       }
     });
+  }
+
+  private idsActivas(cuentas: AccountCop[]): string {
+    return cuentas.filter(c => c.activaParaP2P).map(c => c.id).sort((a, b) => (a ?? 0) - (b ?? 0)).join(',');
+  }
+
+  /**
+   * Recarga las cuentas COP (sobre todo cuáles están activas en P2P) cuando el backend avisa
+   * que cambiaron los saldos. La asignación automática activa y desactiva cuentas y solo
+   * dispara ese aviso; la respuesta de saldos no trae "activa en P2P", así que sin esto la
+   * pantalla seguía ofreciendo para asignar una cuenta que el automático ya había quitado
+   * (hasta recargar la página). Máximo una vez cada 2 s: los avisos de saldo llegan en ráfaga.
+   */
+  private ultimoRefrescoCuentasMs = 0;
+  private refrescoCuentasTimer?: ReturnType<typeof setTimeout>;
+
+  private refrescarCuentasP2P(): void {
+    const espera = 2000 - (Date.now() - this.ultimoRefrescoCuentasMs);
+    if (espera > 0) {
+      if (!this.refrescoCuentasTimer) {
+        this.refrescoCuentasTimer = setTimeout(() => {
+          this.refrescoCuentasTimer = undefined;
+          this.refrescarCuentasP2P();
+        }, espera);
+      }
+      return;
+    }
+    this.ultimoRefrescoCuentasMs = Date.now();
+    this.loadCuentasCop();
   }
 
   loadAnuncios(): void {

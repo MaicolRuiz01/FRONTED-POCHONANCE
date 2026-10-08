@@ -72,3 +72,25 @@
   display: inline-block;
   min-width: 120px;
 }
+
+/* ── Filtros en celular ── (mismo criterio que Movimientos: de dos en dos a todo el ancho) */
+@media (max-width: 768px) {
+  .asig-filtros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 0.75rem;
+    padding: 0.75rem;
+  }
+  .asig-filtro { min-width: 0; }
+  .asig-filtro input,
+  .asig-select,
+  .asig-input { min-width: 0; width: 100%; box-sizing: border-box; }
+  .asig-filtro--ancho,
+  .asig-filtro-btn { grid-column: 1 / -1; }
+  .asig-filtro-btn { align-items: flex-end; }
+}
+
+/* Celular: las pestañas internas (Compras / Ventas · P2P) no suman margen lateral propio. */
+@media (max-width: 768px) {
+  :host ::ng-deep .asig-inner-tabs .p-tabview-panels { padding: 0.6rem 0 0; }
+}

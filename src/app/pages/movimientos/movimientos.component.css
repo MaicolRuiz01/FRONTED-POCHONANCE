@@ -81,3 +81,38 @@
   color: #c0392b;
 }
 
+
+/* ── Filtros en celular ──
+   Con flex + ancho mínimo de 150px cada filtro quedaba en su propio renglón y angosto,
+   dejando media pantalla en blanco. En celular van de dos en dos a todo el ancho; Cuenta
+   (nombres largos) y Limpiar ocupan el renglón completo. */
+@media (max-width: 768px) {
+  .mov-filtros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 0.75rem;
+    padding: 0.75rem;
+  }
+  .mov-filtro { min-width: 0; }
+  .mov-filtro input,
+  .mov-select { min-width: 0; width: 100%; box-sizing: border-box; }
+  .mov-filtro--ancho,
+  .mov-filtro-btn { grid-column: 1 / -1; }
+  .mov-filtro-btn { align-items: flex-end; }
+}
+
+/* ── Celular: aprovechar el ancho ──
+   Página (32px) + pestañas (20px) + pestañas internas de Asignadas (20px) + tarjeta comían
+   ~75px por lado. Solo esta pantalla y solo en celular. */
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+  }
+  :host ::ng-deep .p-tabview .p-tabview-panels { padding: 0.75rem 0.5rem 0; }
+  :host ::ng-deep .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    padding: 0.75rem 0.7rem;
+    white-space: nowrap;
+  }
+}

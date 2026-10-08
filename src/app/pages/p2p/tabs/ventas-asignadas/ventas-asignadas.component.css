@@ -1,0 +1,72 @@
+/* ── Número de orden (computador: completo + botón copiar) ── */
+.va-orden-cell { display: inline-flex; align-items: center; gap: .25rem; white-space: nowrap; }
+.va-orden-num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; }
+.va-copy { background: none; border: none; cursor: pointer; padding: .25rem; color: #64748b; line-height: 1; }
+.va-copy:hover { color: #4f46e5; }
+.va-copy.copiado { color: #16a34a; }
+
+:host ::ng-deep .va-filtro-cop { min-width: 210px; }
+
+/* ── Filas compactas (solo celular) ── */
+.va-filas { display: none; }
+
+.va-resumen {
+  font-size: .75rem;
+  color: var(--text-color-secondary, #6b7280);
+  padding: 0 2px 6px;
+  border-bottom: 1px solid var(--surface-border, #e5e7eb);
+}
+
+.va-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--surface-border, #e5e7eb);
+}
+.va-fila-izq { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.va-fila-der { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+
+.va-orden {
+  align-self: flex-start;
+  border: none; background: none; padding: 0; cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .85rem; font-weight: 600;
+  color: var(--text-color, #374151);
+  text-decoration: underline dotted #cbd5e1;
+  text-underline-offset: 3px;
+}
+.va-orden.copiado { color: #16a34a; text-decoration: none; }
+.va-orden .pi { font-size: .72rem; }
+
+.va-sub { font-size: .7rem; color: var(--text-color-secondary, #6b7280); }
+.va-cop-cuenta {
+  font-size: .76rem; font-weight: 600; color: #1d4ed8;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.va-cop-cuenta .pi { font-size: .62rem; }
+.va-monto { font-size: 1rem; font-weight: 800; color: var(--text-color, #111827); font-variant-numeric: tabular-nums; }
+.va-modificar { margin-top: 2px; width: 34px; height: 30px; }
+
+@media (max-width: 768px) {
+  .va-tabla { display: none; }
+  .va-filas { display: block; }
+
+  /* Menos relleno en la tarjeta: estaba dentro de dos pestañas más y quedaba angosta. */
+  .va-card { padding: .75rem; margin-bottom: 0; }
+  .va-titulo { font-size: 1.05rem; }
+
+  /* Filtros: fechas de dos en dos; Buscar y la cuenta COP a todo el ancho. */
+  .va-filtros {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    width: 100%;
+  }
+  .va-filtros > * { min-width: 0; }
+  :host ::ng-deep .va-filtros .p-calendar,
+  :host ::ng-deep .va-filtros .p-calendar input { width: 100%; }
+  .va-filtros > button,
+  .va-filtros > p-dropdown { grid-column: 1 / -1; }
+  :host ::ng-deep .va-filtro-cop { width: 100%; min-width: 0; }
+}

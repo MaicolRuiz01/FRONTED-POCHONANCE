@@ -3,6 +3,14 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { AuthService } from './auth.service';
 
+export interface VentaGrandeEvent {
+  estado: 'ASIGNADA' | 'SIN_ASIGNAR_TOPE' | 'SIN_CUENTA';
+  orderNumber: string;
+  montoMiles: number;
+  cuentaBinance?: string;
+  cuentaCop?: string | null;
+}
+
 export interface SseEvent {
   tipo: string;
   cantidad?: number;
@@ -35,6 +43,7 @@ export class P2PSseService implements OnDestroy {
   private cambioOrdenActivaSubject = new Subject<SseEvent>();
   private cuentasCambiaronSubject  = new Subject<SseEvent>();
   private chatEnvioSubject         = new Subject<SseEvent>();
+  private ventaGrandeSubject       = new Subject<VentaGrandeEvent>();
   private connectedSubject         = new BehaviorSubject<boolean>(false);
 
   nuevaVenta$        = this.nuevaVentaSubject.asObservable();
@@ -43,6 +52,8 @@ export class P2PSseService implements OnDestroy {
   cuentasCambiaron$  = this.cuentasCambiaronSubject.asObservable();
   /** Terminó un envío automático de la cuenta por el chat: hay que refrescar el estado "Enviando… / Enviada". */
   chatEnvio$         = this.chatEnvioSubject.asObservable();
+  /** Llegó una venta grande (asignada o sin asignar): la pantalla muestra un aviso que no se quita solo. */
+  ventaGrande$       = this.ventaGrandeSubject.asObservable();
   /** true cuando la conexión SSE está activa, false mientras reconecta / se rinde */
   connected$         = this.connectedSubject.asObservable();
 
@@ -101,6 +112,14 @@ export class P2PSseService implements OnDestroy {
       });
     });
 
+    this.eventSource.addEventListener('venta-grande', (event: MessageEvent) => {
+      this.zone.run(() => {
+        try {
+          this.ventaGrandeSubject.next(JSON.parse(event.data));
+        } catch { /* ignorar */ }
+      });
+    });
+
     this.eventSource.onerror = () => {
       this.zone.run(() => {
         this.connectedSubject.next(false);
@@ -141,6 +160,7 @@ export class P2PSseService implements OnDestroy {
     this.cambioOrdenActivaSubject.complete();
     this.cuentasCambiaronSubject.complete();
     this.chatEnvioSubject.complete();
+    this.ventaGrandeSubject.complete();
     this.connectedSubject.complete();
   }
 }

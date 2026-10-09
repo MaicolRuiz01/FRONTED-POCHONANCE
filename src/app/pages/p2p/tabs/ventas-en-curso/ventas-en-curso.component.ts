@@ -19,7 +19,7 @@ import {
 } from '../../../../core/services/p2p-sync.service';
 import { ChatOrdenComponent } from '../../chat/chat-orden.component';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
-import { P2PSseService } from '../../../../core/services/p2p-sse.service';
+import { P2PSseService, VentaGrandeEvent } from '../../../../core/services/p2p-sse.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.service';
 
@@ -148,6 +148,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   private sseStatusSub?: Subscription;
   private cuentasSseSub?: Subscription;
   private chatEnvioSseSub?: Subscription;
+  private ventaGrandeSseSub?: Subscription;
   private p2pSub?: Subscription;
   private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
@@ -192,6 +193,8 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     });
     // Terminó un envío de cuenta por el chat: el "Enviando cuenta…" pasa a "Enviada" al instante, sin esperar los 10 s.
     this.chatEnvioSseSub = this.sseService.chatEnvio$.pipe(debounceTime(200)).subscribe(() => this.refrescarResumenChat());
+    // Venta grande: aviso flotante que no se quita solo (las ventas de más de $10M no se asignan solas).
+    this.ventaGrandeSseSub = this.sseService.ventaGrande$.subscribe(v => this.avisarVentaGrande(v));
     // Una cuenta se activó o se apagó (desde cualquier pantalla o por el Auto): recargar la lista sola.
     this.cuentasSseSub = this.sseService.cuentasCambiaron$.pipe(debounceTime(500)).subscribe(() => {
       this.loadCuentasCop();
@@ -221,6 +224,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.sseStatusSub?.unsubscribe();
     this.cuentasSseSub?.unsubscribe();
     this.chatEnvioSseSub?.unsubscribe();
+    this.ventaGrandeSseSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();
@@ -414,6 +418,21 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   resetCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
+  }
+
+  private avisarVentaGrande(v: VentaGrandeEvent): void {
+    const pesos = '$' + Math.round((Number(v.montoMiles) || 0) * 1000).toLocaleString('es-CO');
+    const orden = (v.orderNumber || '').slice(-6);
+    if (v.estado === 'SIN_ASIGNAR_TOPE') {
+      this.notification.ventaGrande('Venta MUY GRANDE sin asignar',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}). Es de más de $10M: el Auto no la asigna sola, asígnala a mano.`, 'error');
+    } else if (v.estado === 'SIN_CUENTA') {
+      this.notification.ventaGrande('Venta grande sin cuenta',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}). No cabe en ninguna cuenta: revisa y asígnala a mano.`, 'error');
+    } else {
+      this.notification.ventaGrande('Venta grande',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}) asignada a ${v.cuentaCop ?? 'una cuenta'}. Está pendiente de esta venta.`, 'warn');
+    }
   }
 
   /** Un solo botón de actualizar: órdenes, cuentas, saldos y anuncios. */

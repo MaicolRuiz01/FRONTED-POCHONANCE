@@ -889,8 +889,31 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.excesoPorOrden = exceso;
   }
 
+  /**
+   * True si la cuenta trabaja con el cupo de corresponsal del DÍA SIGUIENTE: de noche (desde las 18:30, hora de
+   * Bogotá) solo se usa cajero, así que una cuenta marcada CORRESPONSAL a esa hora es una que ya agotó el cupo de
+   * hoy y recibe ventas contra el cupo completo de mañana. Pasada la medianoche el cupo ya es el de hoy.
+   */
+  esCupoDeManana(c: AccountCop): boolean {
+    if (c.cupoTipoP2P !== 'CORRESPONSAL') return false;
+    const d = new Date();
+    const minutosBogota = (((d.getUTCHours() + 19) % 24) * 60) + d.getUTCMinutes(); // Bogotá = UTC-5, sin horario de verano
+    return minutosBogota >= 18 * 60 + 30;
+  }
+
+  /** Texto del icono de corresponsal: el cupo que le queda hoy, o el cupo completo de mañana si trabaja con ese. */
+  corresponsalTooltip(c: AccountCop): string {
+    const fmt = (n: number) => Math.round(n).toLocaleString('es-CO');
+    if (this.esCupoDeManana(c)) {
+      const max = this.cupoMax[c.bankType]?.corresponsal ?? 0;
+      return `Corresponsal de MAÑANA: $${fmt(max)} (cupo completo del día siguiente)`;
+    }
+    return `Corresponsal: $${fmt(c.cupoCorresponsalDisponibleHoy ?? 0)}`;
+  }
+
   /** Cupo que a la cuenta le queda por retirar HOY por su medio (miles), como lo ve el backend. */
   private cupoRestanteHoyDe(c: AccountCop): number {
+    if (this.esCupoDeManana(c)) return this.cupoMax[c.bankType]?.corresponsal ?? 0;
     const cajero = Number(c.cupoCajeroDisponibleHoy ?? 0) || 0;
     const corresponsal = Number(c.cupoCorresponsalDisponibleHoy ?? 0) || 0;
     if (c.cupoTipoP2P === 'CORRESPONSAL') return corresponsal;
@@ -915,7 +938,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   medioLabel(c: AccountCop): string {
-    if (c.cupoTipoP2P === 'CORRESPONSAL') return 'corresponsal';
+    if (c.cupoTipoP2P === 'CORRESPONSAL') return this.esCupoDeManana(c) ? 'corresponsal de mañana' : 'corresponsal';
     if (c.cupoTipoP2P === 'AMBOS') return 'cajero+corresponsal';
     return 'cajero';
   }

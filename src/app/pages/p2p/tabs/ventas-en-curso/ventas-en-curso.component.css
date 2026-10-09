@@ -465,6 +465,12 @@
   color: #ef4444;
 }
 
+/* Corresponsal con el cupo completo del día siguiente (de noche): no es el cupo de hoy, se distingue en azul. */
+.cop-icon--manana {
+  background: rgba(59, 130, 246, 0.14);
+  color: #3b82f6;
+}
+
 .cop-mini-remove {
   display: flex;
   align-items: center;

@@ -40,9 +40,10 @@
         </span>
         <span class="cop-mini-icon"
               *ngIf="c.cupoTipoP2P !== 'CAJERO'"
-              [class.cop-icon--ok]="(c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
-              [class.cop-icon--agotado]="(c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
-              pTooltip="Corresponsal: ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}"
+              [class.cop-icon--manana]="esCupoDeManana(c)"
+              [class.cop-icon--ok]="!esCupoDeManana(c) && (c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
+              [class.cop-icon--agotado]="!esCupoDeManana(c) && (c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
+              [pTooltip]="corresponsalTooltip(c)"
               tooltipPosition="top">
           <i class="pi pi-building"></i>
         </span>

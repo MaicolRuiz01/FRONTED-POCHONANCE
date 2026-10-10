@@ -17,6 +17,14 @@ export class NotificationService {
     this.msg.add({ severity: 'warn', summary, detail, life: 4000 });
   }
 
+  /**
+   * Aviso grande y fijo (no se quita solo) para ventas peligrosas. Va por una llave propia: solo lo muestra el
+   * <p-toast key="venta-grande"> de la pantalla P2P, para que no salga duplicado en el toast general.
+   */
+  ventaGrande(summary: string, detail: string, severity: 'warn' | 'error' = 'warn'): void {
+    this.msg.add({ key: 'venta-grande', severity, summary, detail, sticky: true });
+  }
+
   info(detail: string, summary = 'Info'): void {
     this.msg.add({ severity: 'info', summary, detail, life: 3500 });
   }

@@ -19,7 +19,7 @@ import {
 } from '../../../../core/services/p2p-sync.service';
 import { ChatOrdenComponent } from '../../chat/chat-orden.component';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
-import { P2PSseService } from '../../../../core/services/p2p-sse.service';
+import { P2PSseService, VentaGrandeEvent } from '../../../../core/services/p2p-sse.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AnunciosService, AnuncioDto } from '../../../../core/services/anuncios.service';
 
@@ -146,6 +146,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   private sseSub?: Subscription;
   private sseStatusSub?: Subscription;
+  private cuentasSseSub?: Subscription;
+  private chatEnvioSseSub?: Subscription;
+  private ventaGrandeSseSub?: Subscription;
   private p2pSub?: Subscription;
   private saldosSub?: Subscription;
   private countdownTimer?: ReturnType<typeof setInterval>;
@@ -183,9 +186,19 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
     // Escuchar SSE — si el backend detecta cambio de estado, recargamos
     this.sseService.connect();
-    this.sseSub = this.sseService.cambioOrdenActiva$.subscribe(() => {
+    // debounceTime agrupa ráfagas (el Auto puede asignar varias ventas seguidas) en una sola consulta.
+    this.sseSub = this.sseService.cambioOrdenActiva$.pipe(debounceTime(400)).subscribe(() => {
       this.loadOrdenes();
       this.resetCountdown();
+    });
+    // Terminó un envío de cuenta por el chat: el "Enviando cuenta…" pasa a "Enviada" al instante, sin esperar los 10 s.
+    this.chatEnvioSseSub = this.sseService.chatEnvio$.pipe(debounceTime(200)).subscribe(() => this.refrescarResumenChat());
+    // Venta grande: aviso flotante que no se quita solo (las ventas de más de $10M no se asignan solas).
+    this.ventaGrandeSseSub = this.sseService.ventaGrande$.subscribe(v => this.avisarVentaGrande(v));
+    // Una cuenta se activó o se apagó (desde cualquier pantalla o por el Auto): recargar la lista sola.
+    this.cuentasSseSub = this.sseService.cuentasCambiaron$.pipe(debounceTime(500)).subscribe(() => {
+      this.loadCuentasCop();
+      this.refrescarSaldosCop();
     });
     this.sseStatusSub = this.sseService.connected$.subscribe(v => this.sseConectado = v);
 
@@ -209,6 +222,9 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.destruido = true;
     this.sseSub?.unsubscribe();
     this.sseStatusSub?.unsubscribe();
+    this.cuentasSseSub?.unsubscribe();
+    this.chatEnvioSseSub?.unsubscribe();
+    this.ventaGrandeSseSub?.unsubscribe();
     this.p2pSub?.unsubscribe();
     this.saldosSub?.unsubscribe();
     this.saldosSse.disconnect();
@@ -402,6 +418,30 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
 
   resetCountdown(): void {
     this.countdown = this.REFRESH_INTERVAL;
+  }
+
+  private avisarVentaGrande(v: VentaGrandeEvent): void {
+    const pesos = '$' + Math.round((Number(v.montoMiles) || 0) * 1000).toLocaleString('es-CO');
+    const orden = (v.orderNumber || '').slice(-6);
+    if (v.estado === 'SIN_ASIGNAR_TOPE') {
+      this.notification.ventaGrande('Venta MUY GRANDE sin asignar',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}). Es de más de $10M: el Auto no la asigna sola, asígnala a mano.`, 'error');
+    } else if (v.estado === 'SIN_CUENTA') {
+      this.notification.ventaGrande('Venta grande sin cuenta',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}). No cabe en ninguna cuenta: revisa y asígnala a mano.`, 'error');
+    } else {
+      this.notification.ventaGrande('Venta grande',
+        `${pesos} (orden …${orden}, ${v.cuentaBinance ?? ''}) asignada a ${v.cuentaCop ?? 'una cuenta'}. Está pendiente de esta venta.`, 'warn');
+    }
+  }
+
+  /** Un solo botón de actualizar: órdenes, cuentas, saldos y anuncios. */
+  actualizarTodo(): void {
+    this.loadOrdenes();
+    this.loadCuentasCop();
+    this.refrescarSaldosCop();
+    this.loadAnuncios();
+    this.resetCountdown();
   }
 
   // ── Asignación automática ─────────────────────────────────────
@@ -849,8 +889,31 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.excesoPorOrden = exceso;
   }
 
+  /**
+   * True si la cuenta trabaja con el cupo de corresponsal del DÍA SIGUIENTE: de noche (desde las 18:30, hora de
+   * Bogotá) solo se usa cajero, así que una cuenta marcada CORRESPONSAL a esa hora es una que ya agotó el cupo de
+   * hoy y recibe ventas contra el cupo completo de mañana. Pasada la medianoche el cupo ya es el de hoy.
+   */
+  esCupoDeManana(c: AccountCop): boolean {
+    if (c.cupoTipoP2P !== 'CORRESPONSAL') return false;
+    const d = new Date();
+    const minutosBogota = (((d.getUTCHours() + 19) % 24) * 60) + d.getUTCMinutes(); // Bogotá = UTC-5, sin horario de verano
+    return minutosBogota >= 18 * 60 + 30;
+  }
+
+  /** Texto del icono de corresponsal: el cupo que le queda hoy, o el cupo completo de mañana si trabaja con ese. */
+  corresponsalTooltip(c: AccountCop): string {
+    const fmt = (n: number) => Math.round(n).toLocaleString('es-CO');
+    if (this.esCupoDeManana(c)) {
+      const max = this.cupoMax[c.bankType]?.corresponsal ?? 0;
+      return `Corresponsal de MAÑANA: $${fmt(max)} (cupo completo del día siguiente)`;
+    }
+    return `Corresponsal: $${fmt(c.cupoCorresponsalDisponibleHoy ?? 0)}`;
+  }
+
   /** Cupo que a la cuenta le queda por retirar HOY por su medio (miles), como lo ve el backend. */
   private cupoRestanteHoyDe(c: AccountCop): number {
+    if (this.esCupoDeManana(c)) return this.cupoMax[c.bankType]?.corresponsal ?? 0;
     const cajero = Number(c.cupoCajeroDisponibleHoy ?? 0) || 0;
     const corresponsal = Number(c.cupoCorresponsalDisponibleHoy ?? 0) || 0;
     if (c.cupoTipoP2P === 'CORRESPONSAL') return corresponsal;
@@ -875,7 +938,7 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
   }
 
   medioLabel(c: AccountCop): string {
-    if (c.cupoTipoP2P === 'CORRESPONSAL') return 'corresponsal';
+    if (c.cupoTipoP2P === 'CORRESPONSAL') return this.esCupoDeManana(c) ? 'corresponsal de mañana' : 'corresponsal';
     if (c.cupoTipoP2P === 'AMBOS') return 'cajero+corresponsal';
     return 'cajero';
   }

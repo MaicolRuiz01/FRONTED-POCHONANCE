@@ -40,9 +40,10 @@
         </span>
         <span class="cop-mini-icon"
               *ngIf="c.cupoTipoP2P !== 'CAJERO'"
-              [class.cop-icon--ok]="(c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
-              [class.cop-icon--agotado]="(c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
-              pTooltip="Corresponsal: ${{ (c.cupoCorresponsalDisponibleHoy ?? 0) | number:'1.0-0' }}"
+              [class.cop-icon--manana]="esCupoDeManana(c)"
+              [class.cop-icon--ok]="!esCupoDeManana(c) && (c.cupoCorresponsalDisponibleHoy ?? 1) > 0"
+              [class.cop-icon--agotado]="!esCupoDeManana(c) && (c.cupoCorresponsalDisponibleHoy ?? 1) <= 0"
+              [pTooltip]="corresponsalTooltip(c)"
               tooltipPosition="top">
           <i class="pi pi-building"></i>
         </span>
@@ -70,9 +71,7 @@
     <span *ngIf="ultimaActualizacionAnuncios" class="vc-divider-time">
       {{ ultimaActualizacionAnuncios }}
     </span>
-    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
-            pTooltip="Actualizar anuncios" (click)="loadAnuncios()" [loading]="loadingAnuncios">
-    </button>
+    <span *ngIf="loadingAnuncios" class="vc-divider-time"><i class="pi pi-spin pi-spinner"></i></span>
   </div>
 
   <!-- Spinner anuncios -->
@@ -189,7 +188,7 @@
       <i class="pi pi-clock"></i> actualiza en {{ countdown }} s
     </span>
     <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm vc-divider-btn"
-            pTooltip="Actualizar ahora" (click)="loadOrdenes(); resetCountdown()"
+            pTooltip="Actualizar todo (órdenes, cuentas y anuncios)" (click)="actualizarTodo()"
             [disabled]="refreshing" [loading]="refreshing">
     </button>
   </div>

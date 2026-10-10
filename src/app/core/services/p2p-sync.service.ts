@@ -78,6 +78,11 @@ export class P2PSyncService {
     return this.http.get<SaldoEnCurso[]>(`${this.activeUrl}/saldos-en-curso`);
   }
 
+  /** Canal REAL con el que el Auto trabaja cada cuenta: CORRESPONSAL, CAJERO o CORRESPONSAL_MANANA (por id de cuenta COP). */
+  getCanalesTrabajo(): Observable<Record<number, string>> {
+    return this.http.get<Record<number, string>>(`${this.activeUrl}/canales-trabajo`);
+  }
+
   savePreAsignacion(req: PreAsignacionRequest): Observable<any> {
     return this.http.post(`${this.activeUrl}/pre-asignacion`, req);
   }

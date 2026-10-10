@@ -314,6 +314,12 @@
         </div>
       </div>
 
+      <!-- El cliente marcó que pagó: liberar (pide confirmación y código 2FA) -->
+      <button *ngIf="orden.status === 'BUYER_PAYED'" type="button" class="vc-liberar-btn vc-liberar-btn--card"
+              (click)="abrirLiberar(orden)">
+        <i class="pi pi-unlock"></i> Liberar
+      </button>
+
       <!-- Renglón 2: asignar cuenta COP -->
       <!-- El estado del envío por chat va EN el selector (pedido del cliente, en vez de un renglón
            aparte): verde + ✓✓ = la cuenta ya le llegó al cliente, como en WhatsApp; ✓ gris =
@@ -394,6 +400,13 @@
                     [pTooltip]="tooltipChat(orden)" tooltipPosition="top">
               <i class="pi" [ngClass]="ultimoEsImagen[orden.orderNumber] && noLeidos[orden.orderNumber] > 0 ? 'pi-image' : 'pi-comments'"></i>
               <span *ngIf="noLeidos[orden.orderNumber] > 0" class="vc-chat-badge">{{ noLeidos[orden.orderNumber] }}</span>
+            </button>
+            <!-- El cliente marcó que pagó: liberar (pide confirmación y código 2FA) -->
+            <button *ngIf="orden.status === 'BUYER_PAYED'" type="button" class="vc-liberar-btn"
+                    (click)="abrirLiberar(orden)"
+                    pTooltip="Liberar el cripto de esta venta (pide confirmar el pago y el código de Authenticator)"
+                    tooltipPosition="top">
+              <i class="pi pi-unlock"></i> Liberar
             </button>
           </div>
         </td>
@@ -510,6 +523,67 @@
                   [sugerirCuentaAsignada]="sugerirCuentaEnChat"
                   (enviado)="refrescarResumenChat()"></app-chat-orden>
 </p-sidebar>
+
+<!-- ══════════════════════════════════════════
+     DIÁLOGO — LIBERAR ORDEN
+     Liberar es IRREVERSIBLE: exige marcar que el pago llegó y el código de Google Authenticator.
+     Binance no soporta oficialmente liberar por API: si lo rechaza, se muestra su motivo y
+     "Abrir en Binance" para liberarla allá. Sin toasts: el resultado queda en el diálogo.
+══════════════════════════════════════════ -->
+<p-dialog header="Liberar orden" [(visible)]="liberarVisible" [modal]="true"
+  [style]="{ width: '440px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+  <ng-container *ngIf="liberarOrden as o">
+    <div class="vc-lib-resumen">
+      <div class="vc-lib-fila"><span>Cliente</span><strong>{{ o.counterPartNickName || '—' }}</strong></div>
+      <div class="vc-lib-fila"><span>Debe haber llegado</span><strong>${{ (o.pesosCop * 1000) | number:'1.0-0' }}</strong></div>
+      <div class="vc-lib-fila"><span>A la cuenta</span><strong>{{ o.preAsignadoCopNombre || 'sin cuenta asignada' }}</strong></div>
+      <div class="vc-lib-fila"><span>Se liberan</span><strong>{{ o.dollarsUs | number:'1.2-2' }} USDT</strong></div>
+      <div class="vc-lib-fila"><span>Cuenta Binance · orden</span><strong>{{ o.accountBinance }} · …{{ o.orderNumber | slice:-6 }}</strong></div>
+    </div>
+
+    <ng-container *ngIf="!liberarResultado?.ok">
+      <div class="vc-lib-aviso">
+        <i class="pi pi-exclamation-triangle"></i>
+        Liberar no se puede deshacer. Revisa en el banco que el dinero ya está en la cuenta antes de seguir.
+      </div>
+
+      <label class="vc-lib-check">
+        <input type="checkbox" [(ngModel)]="liberarConfirmado" [disabled]="liberando">
+        Confirmo que el pago llegó completo a la cuenta
+      </label>
+
+      <label class="vc-lib-label" for="vc-lib-codigo">Código de Google Authenticator</label>
+      <input id="vc-lib-codigo" class="vc-lib-codigo" type="text" inputmode="numeric" autocomplete="one-time-code"
+             maxlength="6" placeholder="000000"
+             [ngModel]="liberarCodigo" (ngModelChange)="codigoLiberarCambiado($event)"
+             (keydown.enter)="confirmarLiberar()" [disabled]="liberando">
+    </ng-container>
+
+    <div *ngIf="liberarResultado as r" class="vc-lib-resultado" [class.vc-lib-resultado--ok]="r.ok">
+      <i class="pi" [ngClass]="r.ok ? 'pi-check-circle' : 'pi-times-circle'"></i>
+      <div>
+        <div>{{ r.mensaje }}</div>
+        <div *ngIf="!r.ok && r.paso === 'verificacion'" class="vc-lib-nota">
+          Binance no permite liberar esta orden por API (solo lo habilita para socios en lista blanca).
+          Libérala en Binance con el botón de abajo.
+        </div>
+        <div *ngIf="!r.ok && r.codigoBinance" class="vc-lib-nota">Código de Binance: {{ r.codigoBinance }}</div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template pTemplate="footer">
+    <a *ngIf="liberarOrden" class="p-button p-button-outlined p-button-sm vc-lib-enlace"
+       [href]="enlaceBinance(liberarOrden)" target="_blank" rel="noopener noreferrer">
+      <i class="pi pi-external-link"></i>&nbsp;Abrir en Binance
+    </a>
+    <button *ngIf="!liberarResultado?.ok" pButton type="button" label="Liberar" icon="pi pi-unlock"
+            class="p-button-danger p-button-sm"
+            [disabled]="!puedeLiberar" [loading]="liberando" (click)="confirmarLiberar()"></button>
+    <button *ngIf="liberarResultado?.ok" pButton type="button" label="Cerrar" class="p-button-sm"
+            (click)="liberarVisible = false"></button>
+  </ng-template>
+</p-dialog>
 
 <!-- ══════════════════════════════════════════
      MODAL AUTOMÁTICO — CUPO LLENO

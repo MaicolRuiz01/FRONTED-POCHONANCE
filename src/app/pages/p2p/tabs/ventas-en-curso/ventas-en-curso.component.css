@@ -868,3 +868,109 @@
 
 .vc-mrow--excede { border-left-color: #dc2626; background: #fef2f2; }
 .vc-excede-txt { font-size: .68rem; font-weight: 700; color: #b91c1c; }
+
+/* ══════════════════════════════════════════
+   LIBERAR ORDEN — botón (solo en BUYER_PAYED) y diálogo
+══════════════════════════════════════════ */
+.vc-liberar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #059669;
+  background: #059669;
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vc-liberar-btn:hover { background: #047857; border-color: #047857; }
+.vc-liberar-btn .pi { font-size: 0.75rem; }
+.vc-liberar-btn--card {
+  width: 100%;
+  justify-content: center;
+  padding: 7px 12px;
+  margin: 6px 0 2px;
+  font-size: 0.85rem;
+}
+
+.vc-lib-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-100, #f3f4f6);
+  margin-bottom: 12px;
+}
+.vc-lib-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+.vc-lib-fila span { color: var(--text-color-secondary, #6b7280); }
+.vc-lib-fila strong { color: var(--text-color, #111827); text-align: right; }
+
+.vc-lib-aviso {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(217,119,6,.35);
+  background: rgba(245,158,11,.1);
+  color: #92400e;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+}
+.vc-lib-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  cursor: pointer;
+  color: var(--text-color, #111827);
+}
+.vc-lib-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-color-secondary, #6b7280);
+  margin-bottom: 4px;
+}
+.vc-lib-codigo {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--surface-border, #d1d5db);
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-size: 1.3rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-family: inherit;
+  color: var(--text-color, #111827);
+  background: var(--surface-0, #fff);
+}
+.vc-lib-resultado {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid rgba(220,38,38,.3);
+  background: rgba(220,38,38,.07);
+  color: #991b1b;
+  font-size: 0.83rem;
+  word-break: break-word;
+}
+.vc-lib-resultado--ok {
+  border-color: rgba(5,150,105,.35);
+  background: rgba(16,185,129,.1);
+  color: #065f46;
+}
+.vc-lib-nota { margin-top: 4px; font-size: 0.76rem; opacity: 0.9; }
+.vc-lib-enlace { text-decoration: none; }

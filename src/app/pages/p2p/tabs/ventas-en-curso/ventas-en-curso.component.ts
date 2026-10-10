@@ -15,7 +15,7 @@ import { finalize, debounceTime } from 'rxjs/operators';
 import { SaldosSseService } from '../../../../core/services/saldos-sse.service';
 
 import {
-  P2PSyncService, ActiveP2POrder, SaldoEnCurso, ChatResumenOrden
+  P2PSyncService, ActiveP2POrder, SaldoEnCurso, ChatResumenOrden, LiberarResultado
 } from '../../../../core/services/p2p-sync.service';
 import { ChatOrdenComponent } from '../../chat/chat-orden.component';
 import { AccountCopService, AccountCop } from '../../../../core/services/account-cop.service';
@@ -1190,6 +1190,70 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
     this.ordenCopiada = numero;
     clearTimeout(this.ordenCopiadaTimer);
     this.ordenCopiadaTimer = setTimeout(() => this.ordenCopiada = null, 1500);
+  }
+
+  // ── Liberar orden ─────────────────────────────────────────────
+  //
+  // Cuando el cliente marcó que pagó (BUYER_PAYED) aparece "Liberar". Se intenta liberar por la
+  // API de Binance con el código de Google Authenticator del operador; Binance no soporta esto
+  // oficialmente (solo para socios en lista blanca), así que si lo rechaza se muestra el motivo
+  // y el botón "Abrir en Binance" para liberarla allá.
+
+  /** Página de la orden en Binance. Si Binance cambia la ruta, se ajusta solo aquí. */
+  private readonly BINANCE_ORDEN_URL = 'https://p2p.binance.com/es/fiatOrderDetail?orderNo=';
+
+  liberarVisible = false;
+  liberarOrden: ActiveP2POrder | null = null;
+  liberarCodigo = '';
+  /** El operador confirma que vio la plata en la cuenta (liberar es irreversible). */
+  liberarConfirmado = false;
+  liberando = false;
+  liberarResultado: LiberarResultado | null = null;
+
+  abrirLiberar(orden: ActiveP2POrder): void {
+    this.liberarOrden = orden;
+    this.liberarCodigo = '';
+    this.liberarConfirmado = false;
+    this.liberarResultado = null;
+    this.liberarVisible = true;
+  }
+
+  enlaceBinance(orden: ActiveP2POrder): string {
+    return this.BINANCE_ORDEN_URL + encodeURIComponent(orden.orderNumber);
+  }
+
+  get puedeLiberar(): boolean {
+    return !!this.liberarOrden && this.liberarConfirmado && /^\d{6}$/.test(this.liberarCodigo)
+      && !this.liberando && !this.liberarResultado?.ok;
+  }
+
+  /** Deja solo dígitos en el código (pegado con espacios, etc.). */
+  codigoLiberarCambiado(valor: string): void {
+    this.liberarCodigo = (valor || '').replace(/\D/g, '').slice(0, 6);
+  }
+
+  confirmarLiberar(): void {
+    if (!this.puedeLiberar || !this.liberarOrden) return;
+    const orden = this.liberarOrden;
+    this.liberando = true;
+    this.liberarResultado = null;
+    this.syncService.liberarOrden(orden.orderNumber, orden.accountBinance, this.liberarCodigo)
+      .pipe(finalize(() => this.liberando = false))
+      .subscribe({
+        next: r => {
+          this.liberarResultado = r;
+          // El código ya se usó (o no sirvió): se limpia para no reenviarlo por error.
+          this.liberarCodigo = '';
+          if (r.ok) { this.loadOrdenes(); this.resetCountdown(); }
+        },
+        error: err => {
+          this.liberarCodigo = '';
+          this.liberarResultado = {
+            orderNumber: orden.orderNumber, ok: false, paso: 'conexion',
+            mensaje: err?.error?.mensaje ?? 'No se pudo contactar al servidor. Revisa en Binance si la orden quedó liberada.'
+          };
+        }
+      });
   }
 
   /** Extrae solo la hora de un createTime con formato "YYYY-MM-DD HH:mm:ss" */

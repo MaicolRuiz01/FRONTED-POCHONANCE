@@ -106,6 +106,11 @@ export class P2PSyncService {
     return this.http.get<ChatCredencialPrueba[]>(`${this.activeUrl}/chat/probar-credencial${q}`);
   }
 
+  /** Libera la orden en Binance con el código de Google Authenticator del operador. */
+  liberarOrden(orderNumber: string, accountBinance: string, codigo: string): Observable<LiberarResultado> {
+    return this.http.post<LiberarResultado>(`${this.activeUrl}/liberar`, { orderNumber, accountBinance, codigo });
+  }
+
   /** Interruptor del envío automático de la cuenta COP por chat al asignar. */
   getChatAutoEnvio(): Observable<{ activo: boolean }> {
     return this.http.get<{ activo: boolean }>(`${this.activeUrl}/chat/auto-envio`);
@@ -164,6 +169,17 @@ export interface OrdenRecienteChat {
   createTime: number;         // epoch ms
   hora: string | null;        // "dd/MM HH:mm" hora Colombia
   accountBinance: string;
+}
+
+/** Resultado de intentar liberar una orden desde Pochonance. */
+export interface LiberarResultado {
+  orderNumber: string;
+  ok: boolean;
+  /** Dónde falló: validacion | verificacion (Binance no deja liberar por API) | liberacion | conexion. */
+  paso?: string;
+  mensaje: string;
+  codigoBinance?: string | null;
+  respuestaCruda?: string;
 }
 
 /** Resumen del chat de una venta en curso. */

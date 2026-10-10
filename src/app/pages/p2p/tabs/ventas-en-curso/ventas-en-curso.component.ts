@@ -239,6 +239,11 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
    *  backend en una sola lectura. Se llama al cargar órdenes, por SSE, tras cada cambio del
    *  operador y por el polling de respaldo. */
   private refrescarSaldosCop(): void {
+    // Canal real de cada cuenta (para el icono). Si falla, se sigue con la deducción por la marca y la hora.
+    this.syncService.getCanalesTrabajo().subscribe({
+      next: m => { this.canalTrabajoPorCuenta = m || {}; this.cdr.markForCheck(); },
+      error: () => { /* sin dato: se usa la marca */ }
+    });
     const seq = ++this.saldosReqSeq;
     const pedidoEn = Date.now();
     this.syncService.getSaldosEnCurso().subscribe({
@@ -894,7 +899,20 @@ export class VentasEnCursoComponent implements OnInit, OnDestroy {
    * Bogotá) solo se usa cajero, así que una cuenta marcada CORRESPONSAL a esa hora es una que ya agotó el cupo de
    * hoy y recibe ventas contra el cupo completo de mañana. Pasada la medianoche el cupo ya es el de hoy.
    */
+  /** Canal REAL que informa el backend por cuenta (se refresca con los saldos). Si no hay dato, se deduce de la marca. */
+  private canalTrabajoPorCuenta: Record<number, string> = {};
+
+  /** Tipo con el que se dibuja la cuenta: el canal real si se conoce; si no, la marca guardada. */
+  tipoVisual(c: AccountCop): string {
+    const real = c.id != null ? this.canalTrabajoPorCuenta[c.id] : undefined;
+    if (real === 'CAJERO') return 'CAJERO';
+    if (real === 'CORRESPONSAL' || real === 'CORRESPONSAL_MANANA') return 'CORRESPONSAL';
+    return c.cupoTipoP2P ?? 'CAJERO';
+  }
+
   esCupoDeManana(c: AccountCop): boolean {
+    const real = c.id != null ? this.canalTrabajoPorCuenta[c.id] : undefined;
+    if (real) return real === 'CORRESPONSAL_MANANA'; // dato real del backend: manda sobre cualquier deducción
     if (c.cupoTipoP2P !== 'CORRESPONSAL') return false;
     const d = new Date();
     const minutosBogota = (((d.getUTCHours() + 19) % 24) * 60) + d.getUTCMinutes(); // Bogotá = UTC-5, sin horario de verano
